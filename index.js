@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
 
 app.use('/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 const mailer = nodemailer.createTransport({
   service: 'gmail',
@@ -53,9 +53,28 @@ app.get('/verify-payment', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.post('/analyze-palm', async (req, res) => {
+  try {
+    const { photos, name } = req.body;
+    if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS serveris veikia: http://localhost:${PORT}`));
+    const content = [];
+    for (const p of photos) {
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: p.type, data: p.data }
+      });
+    }
+    content.push({
+      type: 'text',
+      text: `Tu esi gilios intuicijos delno skaitymo ir astrologijos ekspertas. Išanalizuok šias delno nuotraukas ir pateik IŠSAMŲ, ASMENINĮ skaitymą.
+
+Atsakyk TIKTAI JSON formatu be jokio teksto prieš ar po. Be markdown žymėjimų.
+
+{
+  "charakteris": "3-4 sakiniai apie asmenybę pagal delno linijas",
+  "sielos_misija": "3-4 sakiniai apie sielos paskirtį šiame gyvenime",
+  "gyvenimo_tikslas": "2-3 sakiniai apie gyvenimo kryptį ir tikslą",
+  "dovanos_tekstas": "2-3 sakiniai apie talentus ir dvasines dovanas",
+  "dovanos_sarasas": ["Dovana1","Dovana2","Dovana3","Dovana4","Dovana5"],
+  "meile_santykiai": "3-4 sakiniai apie meilės li
