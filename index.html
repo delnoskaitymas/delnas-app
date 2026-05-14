@@ -483,32 +483,12 @@ function animateLoading(){
 // ── CLAUDE API ──
 async function callClaude(){
   const activePhotos=photos.filter(Boolean);
-  const content=[];
-  for(const p of activePhotos){content.push({type:'image',source:{type:'base64',media_type:p.type,data:p.data.split(',')[1]}});}
-  const name=window.userName||'';
-  content.push({type:'text',text:`Tu esi gilios intuicijos delno skaitymo ir astrologijos ekspertas. Išanalizuok šias delno nuotraukas ir pateik IŠSAMŲ, ASMENINĮ skaitymą.
-
-Atsakyk TIKTAI JSON formatu be jokio teksto prieš ar po. Be markdown žymėjimų.
-
-{
-  "charakteris": "3-4 sakiniai apie asmenybę pagal delno linijas",
-  "sielos_misija": "3-4 sakiniai apie sielos paskirtį šiame gyvenime",
-  "gyvenimo_tikslas": "2-3 sakiniai apie gyvenimo kryptį ir tikslą",
-  "dovanos_tekstas": "2-3 sakiniai apie talentus ir dvasines dovanas",
-  "dovanos_sarasas": ["Dovana1","Dovana2","Dovana3","Dovana4","Dovana5"],
-  "meile_santykiai": "3-4 sakiniai apie meilės liniją ir santykių potencialą",
-  "astrologija": "3-4 sakiniai apie planetų kalnų ženklus delne",
-  "stiprybes": ["Stiprybė1","Stiprybė2","Stiprybė3","Stiprybė4","Stiprybė5","Stiprybė6"]
+  const photoData=activePhotos.map(p=>({type:p.type,data:p.data.split(',')[1]}));
+  const res=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||''})});
+  if(!res.ok)throw new Error('Serverio klaida');
+  return await res.json();
 }
-
-Kalba: lietuvių. Tonas: mistiškas, šiltas, asmeniškas. Pateik konkrečias įžvalgas pagal matomus delno bruožus.${name?' Asmens vardas: '+name+'.':''}`});
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content}]})});
-  const data=await res.json();
-  return JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-}
-
 function getFallback(){return{charakteris:"Jūsų gyvenimo linija giliai įrėžta — stipri gyvybinė energija. Proto linija suka žemyn link Mėnulio kalno — intuicija ir kūrybiškumas.",sielos_misija:"Jūsų sielos misija — nešti šviesą ir ryšį. Delno centras atviras — esate gimę bendrauti ir gydyti.",gyvenimo_tikslas:"Apollono kalnas ryškus — kūryba ir menai yra jūsų kelio dalis.",dovanos_tekstas:"Ypatingas empatijos ir komunikacijos talentas — žmonės jaučiasi suprasti jūsų akivaizdoje.",dovanos_sarasas:["Intuicija","Empatija","Kūrybiškumas","Komunikacija","Lyderystė"],meile_santykiai:"Širdies linija giliai įrėžta — mylite visa esybe. Veneros kalnas pilnas — intensyvi jausminė energija.",astrologija:"Jupiterio kalnas — lyderystės energija. Saturno kalnas — siekis stabilumo. Saulės kalnas — kūrybos šviesa.",stiprybes:["Empatija","Intuicija","Ryžtas","Kūrybiškumas","Šilumas","Išmintis"]};}
-
 function displayResult(r){
   const name=window.userName||'';
   document.getElementById('res-name').textContent=(name?name+' — ':'')+'Delno Skaitymas';
@@ -524,4 +504,3 @@ function displayResult(r){
 }
 </script>
 </body>
-</html>
