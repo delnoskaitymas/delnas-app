@@ -1,523 +1,79 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DELNAS — Delno skaitymas</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#07040f;--g2:#120b28;--g3:#1a1035;
-  --gold:#d4a843;--gold2:#f0c96a;--gold3:#a07828;
-  --text:#f5eed8;--muted:rgba(245,238,216,0.6);--faint:rgba(245,238,216,0.22);
-  --border:rgba(212,168,67,0.2);--border2:rgba(212,168,67,0.42);
-  --surf:rgba(255,255,255,0.03);--surf2:rgba(255,255,255,0.06);
-}
-html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.ss{position:absolute;border-radius:50%;background:var(--gold2)}
-.screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px}
-.screen.active{display:block;animation:fu .4s ease}
-@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-/* TYPOGRAPHY */
-.serif{font-family:'Playfair Display',serif}
-.gold{color:var(--gold2)}
+✦  Nr. 1 delno skaitymas TikTok
 
-/* LAYOUT */
-.wrap{padding:32px 20px 24px}
-.center{text-align:center}
-.back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-style:italic;font-family:'DM Sans',sans-serif;padding:0;margin-bottom:20px;display:block}
 
-/* BADGE */
-.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(212,168,67,0.1);border:.5px solid var(--border2);border-radius:50px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.06em;margin-bottom:22px}
 
-/* PALM ORB */
-.orb{width:150px;height:150px;margin:0 auto 24px;position:relative;display:flex;align-items:center;justify-content:center}
-.ring{position:absolute;border-radius:50%;border:1px solid}
-.r1{inset:0;border-color:rgba(212,168,67,.1);animation:sp 22s linear infinite}
-.r2{inset:16px;border-color:rgba(212,168,67,.18);animation:sp 15s linear infinite reverse}
-.r3{inset:30px;border-color:rgba(212,168,67,.28);animation:sp 9s linear infinite}
-@keyframes sp{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.core{width:78px;height:78px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;animation:bob 4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.pd{position:absolute;width:7px;height:7px;background:var(--gold);border-radius:50%;animation:pda 2.2s ease-in-out infinite}
-.pd:nth-child(2){top:10px;left:50%;animation-delay:.6s}
-.pd:nth-child(3){bottom:16px;right:20px;animation-delay:1.3s}
-.pd:nth-child(4){top:38px;left:8px;animation-delay:.2s}
-@keyframes pda{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
 
-/* BUTTONS */
-.btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
-.btn-gold{background:var(--gold);color:#07040f}
-.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.08)}
-.btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-ghost{background:transparent;border:.5px solid var(--border2);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
 
-/* SEC LABEL */
-.sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
-.sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
 
-/* FEATURES */
-.feats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:4px}
-.feat{background:var(--surf);border:.5px solid var(--border);border-radius:14px;padding:14px 12px;position:relative;overflow:hidden}
-.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:.5}
-.feat-ico{font-size:22px;margin-bottom:6px;display:block}
-.feat-name{font-size:13px;font-weight:500;margin-bottom:2px}
-.feat-desc{font-size:11px;color:var(--muted);font-style:italic;line-height:1.4}
-
-/* STEPS */
-.steps{display:grid;gap:12px}
-.step{display:flex;gap:14px;align-items:flex-start}
-.step-n{width:36px;height:36px;min-width:36px;background:rgba(212,168,67,.09);border:.5px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:15px;color:var(--gold2)}
-.step-title{font-size:14px;font-weight:500;margin-bottom:2px}
-.step-desc{font-size:12px;color:var(--muted);line-height:1.5;font-style:italic}
-
-/* REVIEWS */
-.rev{background:var(--surf);border:.5px solid var(--border);border-radius:14px;padding:15px;margin-bottom:10px}
-.rev-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.rev-av{width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px}
-.rev-name{font-size:13px;font-weight:500}
-.rev-handle{font-size:11px;color:var(--muted)}
-.rev-stars{margin-left:auto;color:var(--gold);font-size:12px}
-.rev-text{font-size:13px;color:var(--muted);line-height:1.6;font-style:italic}
-.rev-tag{font-size:10px;color:var(--gold3);margin-top:7px;letter-spacing:.06em}
-
-/* PROOF */
-.proof{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
-.avs{display:flex}
-.av{width:22px;height:22px;border-radius:50%;background:var(--g3);border:1.5px solid var(--bg);font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--gold2);margin-left:-6px}
-
-/* FORM */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:6px;text-transform:uppercase}
-.field input{width:100%;background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
-.field input:focus{border-color:var(--gold)}
-.field input::placeholder{color:var(--faint)}
-
-/* PAYMENT SCREEN */
-.pay-card{background:var(--surf);border:.5px solid var(--border2);border-radius:16px;padding:20px;margin-bottom:20px}
-.pay-methods-list{display:grid;gap:10px;margin-bottom:20px}
-.pay-opt{display:flex;align-items:center;gap:12px;background:var(--surf);border:.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .2s,background .2s}
-.pay-opt:hover,.pay-opt.sel{border-color:var(--gold);background:rgba(212,168,67,.06)}
-.pay-opt-ico{width:38px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.pay-opt-name{font-size:14px;font-weight:500;flex:1}
-.pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
-.pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-
-/* UPLOAD */
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.photo-slot{aspect-ratio:1;background:var(--surf);border:1px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s,background .2s}
-.photo-slot:hover{border-color:var(--gold);background:rgba(212,168,67,.05)}
-.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px}
-.slot-ico{font-size:26px;margin-bottom:6px;display:block;opacity:.45}
-.slot-txt{font-size:11px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px}
-.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.rm-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2}
-.photo-slot.has-img .rm-btn{display:flex}
-.photo-slot.has-img .slot-ico,.photo-slot.has-img .slot-txt{display:none}
-.tips-card{background:rgba(212,168,67,.05);border:.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.6}
-.tip-title{font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:5px;text-transform:uppercase}
-
-/* SUCCESS BANNER */
-.success-banner{background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.success-ico{font-size:22px;flex-shrink:0}
-.success-title{font-size:14px;font-weight:500;color:#81c784;margin-bottom:2px}
-.success-sub{font-size:12px;color:var(--muted);font-style:italic}
-
-/* LOADING */
-.load-wrap{padding:70px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
-.oracle{width:88px;height:88px;margin:0 auto 28px}
-.o-outer{width:88px;height:88px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 2.2s ease-in-out infinite}
-@keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.35)}50%{box-shadow:0 0 0 18px rgba(212,168,67,0)}}
-.o-inner{width:40px;height:40px;border-radius:50%;background:var(--gold);opacity:.8;animation:sp 6s linear infinite}
-.load-steps{display:grid;gap:8px;width:100%;max-width:300px;margin-top:20px}
-.ls{display:flex;align-items:center;gap:12px;background:var(--surf);border:.5px solid var(--border);border-radius:9px;padding:9px 13px;font-size:12px;color:var(--muted);font-style:italic}
-.ls-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .4s}
-.ls-dot.done{background:var(--gold)}
-.dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
-.d{width:6px;height:6px;border-radius:50%;background:var(--border2);animation:dp 1.5s ease-in-out infinite}
-.d:nth-child(2){animation-delay:.3s}.d:nth-child(3){animation-delay:.6s}
-@keyframes dp{0%,100%{background:var(--border2);transform:scale(1)}50%{background:var(--gold);transform:scale(1.5)}}
-
-/* RESULT */
-.result-section{background:var(--surf);border:.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:11px}
-.rs-title{font-size:11px;letter-spacing:.16em;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
-.rs-title::after{content:'';flex:1;height:.5px;background:var(--border)}
-.rs-text{font-size:14px;color:var(--text);line-height:1.75;font-style:italic}
-.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50px;padding:5px 13px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
-.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.share-btn{padding:13px;border-radius:12px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'DM Sans',sans-serif;border:none}
-.share-tt{background:#010101;color:#fff}
-.share-sv{background:transparent;border:.5px solid var(--border2);color:var(--gold)}
-
-/* ERROR */
-.err{background:rgba(220,50,50,.1);border:.5px solid rgba(220,80,80,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#f99;margin-bottom:14px;display:none;line-height:1.5}
-
-/* SPINNER */
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(7,4,15,.3);border-top-color:#07040f;border-radius:50%;animation:spin2 .7s linear infinite;vertical-align:middle;margin-right:8px}
-@keyframes spin2{to{transform:rotate(360deg)}}
-</style>
-</head>
-<body>
-
-<div id="stars"></div>
-
-<!-- ══════════ SCREEN 1: LANDING ══════════ -->
-<div class="screen active" id="s-home">
-  <div class="wrap center">
-    <div class="badge">✦ &nbsp;Nr. 1 delno skaitymas TikTok</div>
-    <div class="orb">
-      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
-      <div class="pd"></div><div class="pd"></div><div class="pd"></div>
-      <div class="core">🤚</div>
-    </div>
-    <h1 class="serif" style="font-size:30px;font-weight:700;line-height:1.2;margin-bottom:10px">
-      Tavo ranka slepia<br><em class="gold">tiesą</em> apie tave
-    </h1>
-    <p style="font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:22px">
-      Astrologija · Chiromantija · Sielos žemėlapis<br>Tikslus asmeninis skaitymas per 60 sekundžių
-    </p>
-    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:26px">
-      <div style="background:rgba(212,168,67,.13);border:1px solid var(--border2);border-radius:50px;padding:9px 24px">
-        <span class="serif gold" style="font-size:30px;font-weight:700">5.59 €</span>
-      </div>
-      <div><div style="font-size:14px;color:var(--faint);text-decoration:line-through">19 €</div><div style="font-size:11px;color:var(--muted)">šiandien tik</div></div>
-    </div>
-    <button class="btn btn-gold" onclick="go('s-order')">Gauti savo skaitymą →</button>
-    <button class="btn btn-ghost" onclick="document.getElementById('how-sec').scrollIntoView({behavior:'smooth'})">Kaip tai veikia?</button>
-    <div class="proof">
-      <div class="avs"><div class="av">A</div><div class="av">M</div><div class="av">J</div><div class="av">K</div><div class="av">+</div></div>
-      <span>2 847 žmonės jau gavo skaitymą</span>
-    </div>
-  </div>
-
-  <div style="padding:0 20px">
-    <div class="sec-lbl">kas atsiskleidžia</div>
-    <div class="feats">
-      <div class="feat"><span class="feat-ico">🌟</span><div class="feat-name">Sielos misija</div><div class="feat-desc">Kodėl atėjai į šį pasaulį</div></div>
-      <div class="feat"><span class="feat-ico">❤️</span><div class="feat-name">Meilė</div><div class="feat-desc">Santykiai ir širdies kelias</div></div>
-      <div class="feat"><span class="feat-ico">💎</span><div class="feat-name">Dovanos</div><div class="feat-desc">Slaptieji tavo talentai</div></div>
-      <div class="feat"><span class="feat-ico">🪐</span><div class="feat-name">Astrologija</div><div class="feat-desc">Planetų įtaka likimui</div></div>
-      <div class="feat"><span class="feat-ico">🎯</span><div class="feat-name">Gyvenimo tikslas</div><div class="feat-desc">Tavo kelio prasmė</div></div>
-      <div class="feat"><span class="feat-ico">⚡</span><div class="feat-name">Stiprybės</div><div class="feat-desc">Asmenybės stipriausios pusės</div></div>
-    </div>
-  </div>
-
-  <div style="padding:24px 20px 0" id="how-sec">
-    <div class="sec-lbl">kaip tai veikia</div>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div><div><div class="step-title">Sumokėk 5.59 € kortele</div><div class="step-desc">Visa, Mastercard, Apple Pay, Google Pay — greita ir saugu per Stripe</div></div></div>
-      <div class="step"><div class="step-n">2</div><div><div class="step-title">Įkelk iki 4 delno nuotraukų</div><div class="step-desc">Kuo daugiau nuotraukų — tuo tikslesnis skaitymas</div></div></div>
-      <div class="step"><div class="step-n">3</div><div><div class="step-title">Gauk pilną skaitymą</div><div class="step-desc">Charakteris, misija, meilė, talentai, astrologija — asmeniškai tau</div></div></div>
-    </div>
-  </div>
-
-  <div style="padding:24px 20px 0">
-    <div class="sec-lbl">ką sako klientai</div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika V.</div><div class="rev-handle">@monikavibes · Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"Buvau skeptiška, bet skaitymas šokiravo tikslumu. Apie mano santykius pasakė dalykų, kurių negalėjo žinoti. Labai rekomenduoju!"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 2 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🔮</div><div><div class="rev-name">Aistė K.</div><div class="rev-handle">@aisteeee · Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"Sielos misija privertė verkti. Geriausi 5 eurai, kuriuos esu išleidusi!"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 5 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Justina P.</div><div class="rev-handle">@justinapilve · Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"Meilės skyrius buvo kaip veidrodis. Supratau, kodėl praeiti santykiai nepavyko. Labai gilus skaitymas!"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 3 d.</div></div>
-  </div>
-
-  <div style="padding:20px 20px 0">
-    <button class="btn btn-gold" onclick="go('s-order')">Užsisakyti dabar — 5.59 € →</button>
-    <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:10px;font-style:italic">🔒 Stripe · Saugu · Konfidencialu · 100% grąžinimo garantija</div>
-  </div>
-</div>
-
-<!-- ══════════ SCREEN 2: ORDER FORM ══════════ -->
-<div class="screen" id="s-order">
-  <div class="wrap">
-    <button class="back-btn" onclick="go('s-home')">← Atgal</button>
-    <div class="center" style="margin-bottom:24px">
-      <div class="serif gold" style="font-size:22px;margin-bottom:4px">Užsakymas</div>
-      <div style="font-size:13px;color:var(--muted);font-style:italic">Įvesk duomenis ir apmokėk</div>
-    </div>
-
-    <div style="background:rgba(212,168,67,.07);border:.5px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:2px">Delno skaitymas</div><div style="font-size:13px;color:var(--text)">Pilnas · 8 skyriai · AI analizė</div></div>
-      <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
-    </div>
-
-    <div id="order-err" class="err"></div>
-
-    <div class="field"><label>Vardas</label><input type="text" id="o-name" placeholder="Tavo vardas" autocomplete="name"></div>
-    <div class="field"><label>El. paštas</label><input type="email" id="o-email" placeholder="el.pastas@gmail.com" autocomplete="email"></div>
-
-    <div class="sec-lbl" style="margin-top:20px">mokėjimo būdas</div>
-
-    <div class="pay-methods-list">
-      <div class="pay-opt sel" id="po-card" onclick="selPay('card')">
-        <div class="pay-opt-ico" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:var(--gold2)">💳</div>
-        <div><div class="pay-opt-name">Banko kortelė</div><div style="font-size:11px;color:var(--muted);font-style:italic">Visa, Mastercard</div></div>
-        <div class="pay-opt-check sel" id="chk-card">✓</div>
-      </div>
-      <div class="pay-opt" id="po-apple" onclick="selPay('apple')">
-        <div class="pay-opt-ico" style="background:#000;color:#fff;font-size:16px"></div>
-        <div><div class="pay-opt-name">Apple Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Greičiausias būdas</div></div>
-        <div class="pay-opt-check" id="chk-apple"></div>
-      </div>
-      <div class="pay-opt" id="po-google" onclick="selPay('google')">
-        <div class="pay-opt-ico" style="background:#fff;color:#333;font-size:14px;font-weight:700">G</div>
-        <div><div class="pay-opt-name">Google Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Mokėk iš karto</div></div>
-        <div class="pay-opt-check" id="chk-google"></div>
-      </div>
-    </div>
-
-    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">
-      Mokėti 5.59 € saugiai →
-    </button>
-    <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">
-      🔒 Apsaugota Stripe · Duomenys niekada nesaugomi
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ SCREEN 3: UPLOAD (only after payment) ══════════ -->
-<div class="screen" id="s-upload">
-  <div class="wrap">
-    <div class="success-banner">
-      <div class="success-ico">✅</div>
-      <div>
-        <div class="success-title">Mokėjimas patvirtintas!</div>
-        <div class="success-sub">Dabar įkelk delno nuotraukas</div>
-      </div>
-    </div>
-
-    <div class="center" style="margin-bottom:22px">
-      <div class="serif gold" style="font-size:22px;margin-bottom:4px">Įkelk delno nuotraukas</div>
-      <div style="font-size:13px;color:var(--muted);font-style:italic;line-height:1.6">Įkelk <strong>abiejų rankų</strong> nuotraukas<br>kairė + dešinė = tiksliausias skaitymas</div>
-    </div>
-
-    <div class="photo-grid">
-      <div class="photo-slot" id="slot0" onclick="triggerFile(0)"><input type="file" accept="image/*" onchange="handlePhoto(event,0)"><span class="slot-ico">🤚</span><div class="slot-txt">Kairė ranka — visa (iš priekio)</div></div>
-      <div class="photo-slot" id="slot1" onclick="triggerFile(1)"><input type="file" accept="image/*" onchange="handlePhoto(event,1)"><span class="slot-ico">🤚</span><div class="slot-txt">Kairė ranka — linijos iš arti</div></div>
-      <div class="photo-slot" id="slot2" onclick="triggerFile(2)"><input type="file" accept="image/*" onchange="handlePhoto(event,2)"><span class="slot-ico">✋</span><div class="slot-txt">Dešinė ranka — visa (iš priekio)</div></div>
-      <div class="photo-slot" id="slot3" onclick="triggerFile(3)"><input type="file" accept="image/*" onchange="handlePhoto(event,3)"><span class="slot-ico">✋</span><div class="slot-txt">Dešinė ranka — linijos iš arti</div></div>
-    </div>
-
-    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px">Įkelta: <span id="pcount" style="color:var(--gold2);font-weight:500">0</span> / 4</div>
-
-    <div class="tips-card">
-      <div class="tip-title">✦ Patarimai geresniam skaitymui</div>
-      🤚 Kairė ranka — sielos misija, likimas, dovanos<br>✋ Dešinė ranka — dabartinis gyvenimas, meilė, tikslai<br>☀️ Fotografuok ryškioje šviesoje · Ranka plokščia · Pirštai ištiesinti
-    </div>
-
-    <div id="upload-err" class="err"></div>
-    <button class="btn btn-gold" onclick="startReading()">Skaityti dabar →</button>
-  </div>
-</div>
-
-<!-- ══════════ SCREEN 4: LOADING ══════════ -->
-<div class="screen" id="s-loading">
-  <div class="load-wrap">
-    <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:8px">Orakulas mato...</div>
-    <div style="font-size:13px;color:var(--muted);font-style:italic" id="lmsg">Linijos, žvaigždės ir likimas skaičiuojami</div>
-    <div class="load-steps">
-      <div class="ls"><div class="ls-dot" id="ls1"></div>Analizuojamos delno linijos</div>
-      <div class="ls"><div class="ls-dot" id="ls2"></div>Skaičiuojama astrologinė konfigūracija</div>
-      <div class="ls"><div class="ls-dot" id="ls3"></div>Nustatomos sielos dovanos</div>
-      <div class="ls"><div class="ls-dot" id="ls4"></div>Ruošiamas asmeninis skaitymas</div>
-    </div>
-    <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
-  </div>
-</div>
-
-<!-- ══════════ SCREEN 5: RESULT ══════════ -->
-<div class="screen" id="s-result">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:24px">
-      <span style="font-size:30px;display:block;margin-bottom:10px;animation:bob 4s ease-in-out infinite">✦</span>
-      <div class="serif gold" style="font-size:20px;letter-spacing:.05em" id="res-name">Tavo Delno Skaitymas</div>
-      <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:4px">Astrologija · Chiromantija · Sielos žemėlapis</div>
-    </div>
-    <div class="result-section"><div class="rs-title">Charakteris ir asmenybė</div><div class="rs-text" id="r-char"></div></div>
-    <div class="result-section"><div class="rs-title">Sielos misija</div><div class="rs-text" id="r-mission"></div></div>
-    <div class="result-section"><div class="rs-title">Gyvenimo tikslas ir kelias</div><div class="rs-text" id="r-goal"></div></div>
-    <div class="result-section"><div class="rs-title">Dovanos ir talentai</div><div class="rs-text" id="r-gifts-text"></div><div class="pills" id="r-gifts-pills"></div></div>
-    <div class="result-section"><div class="rs-title">Meilė ir santykiai</div><div class="rs-text" id="r-love"></div></div>
-    <div class="result-section"><div class="rs-title">Astrologinė įžvalga</div><div class="rs-text" id="r-astro"></div></div>
-    <div class="result-section"><div class="rs-title">Stipriausios asmenybės pusės</div><div class="pills" id="r-strengths"></div></div>
-    <div class="share-row">
-      <button class="share-btn share-tt">🎵 TikTok</button>
-      <button class="share-btn share-sv" onclick="window.print()">💾 Išsaugoti</button>
-    </div>
-    <button class="btn btn-gold" style="margin-top:14px" onclick="newReading()">Naujas skaitymas →</button>
-  </div>
-</div>
-
-<script>
-// ── STARS ──
-const sb=document.getElementById('stars');
-for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7}`;sb.appendChild(s);}
-const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
-
-// ── NAV ──
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
-
-// ── CHECK SUCCESS REDIRECT FROM STRIPE ──
-window.addEventListener('DOMContentLoaded',()=>{
-  const params=new URLSearchParams(window.location.search);
-  const sessionId=params.get('session_id');
-  if(sessionId){
-    verifyAndProceed(sessionId);
-  }
-});
-
-async function verifyAndProceed(sessionId){
-  go('s-loading');
-  document.getElementById('lmsg').textContent='Tikrinamas mokėjimas...';
-  try{
-    const res=await fetch(`/verify-payment?session_id=${sessionId}`);
-    const data=await res.json();
-    if(data.paid){
-      window.userName=data.name;
-      window.userEmail=data.email;
-      window.history.replaceState({},'','/');
-      go('s-upload');
-    }else{
-      go('s-order');
-      document.getElementById('order-err').textContent='Mokėjimas nepatvirtintas. Bandyk dar kartą.';
-      document.getElementById('order-err').style.display='block';
-    }
-  }catch(e){
-    go('s-order');
-  }
-}
-
-// ── PAYMENT METHOD SELECT ──
-let selectedPay='card';
-function selPay(m){
-  selectedPay=m;
-  ['card','apple','google'].forEach(x=>{
-    document.getElementById('po-'+x).classList.toggle('sel',x===m);
-    const chk=document.getElementById('chk-'+x);
-    chk.textContent=x===m?'✓':'';
-    chk.classList.toggle('sel',x===m);
-  });
-}
-
-// ── INITIATE PAYMENT ──
-async function initiatePayment(){
-  const name=document.getElementById('o-name').value.trim();
-  const email=document.getElementById('o-email').value.trim();
-  const err=document.getElementById('order-err');
-  if(!name){err.textContent='Įvesk savo vardą';err.style.display='block';document.getElementById('o-name').focus();return;}
-  if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';document.getElementById('o-email').focus();return;}
-  err.style.display='none';
-
-  const btn=document.getElementById('pay-btn');
-  btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span>Jungiamasi...';
-
-  try{
-    const res=await fetch('/create-payment',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email})
-    });
-    const data=await res.json();
-    if(data.url){
-      window.location.href=data.url;
-    }else{
-      throw new Error(data.error||'Klaida');
-    }
-  }catch(e){
-    btn.disabled=false;
-    btn.innerHTML='Mokėti 5.59 € saugiai →';
-    err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
-    err.style.display='block';
-  }
-}
-
-// ── PHOTOS ──
-const photos=new Array(4).fill(null);
-function updateCount(){document.getElementById('pcount').textContent=photos.filter(Boolean).length;}
-function triggerFile(i){const slot=document.getElementById('slot'+i);if(!slot.classList.contains('has-img'))slot.querySelector('input').click();}
-function handlePhoto(e,i){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    photos[i]={data:ev.target.result,type:file.type||'image/jpeg'};
-    const slot=document.getElementById('slot'+i);
-    let img=slot.querySelector('img');if(!img){img=document.createElement('img');slot.appendChild(img);}
-    img.src=ev.target.result;
-    let rb=slot.querySelector('.rm-btn');
-    if(!rb){rb=document.createElement('button');rb.className='rm-btn';rb.textContent='×';rb.onclick=ev2=>{ev2.stopPropagation();removePhoto(i);};slot.appendChild(rb);}
-    slot.classList.add('has-img');updateCount();
-  };
-  reader.readAsDataURL(file);
-}
-function removePhoto(i){photos[i]=null;const slot=document.getElementById('slot'+i);const img=slot.querySelector('img');if(img)img.remove();slot.classList.remove('has-img');const inp=slot.querySelector('input');if(inp)inp.value='';const rb=slot.querySelector('.rm-btn');if(rb)rb.style.display='none';updateCount();}
-function newReading(){photos.fill(null);for(let i=0;i<4;i++){const slot=document.getElementById('slot'+i);const img=slot.querySelector('img');if(img)img.remove();slot.classList.remove('has-img');const inp=slot.querySelector('input');if(inp)inp.value='';const rb=slot.querySelector('.rm-btn');if(rb)rb.style.display='none';}updateCount();go('s-upload');}
-
-// ── START READING ──
-async function startReading(){
-  const cnt=photos.filter(Boolean).length;
-  const err=document.getElementById('upload-err');
-  if(cnt===0){err.textContent='Įkelk bent vieną delno nuotrauką!';err.style.display='block';return;}
-  err.style.display='none';
-  go('s-loading');
-  animateLoading();
-  try{const result=await callClaude();displayResult(result);}
-  catch(e){console.error(e);displayResult(getFallback());}
-}
-
-function animateLoading(){
-  const msgs=['Linijos, žvaigždės ir likimas skaičiuojami','Delno išminties gijos atsiskleidžia...','Orakulas atveria sielos žemėlapį...','Paskutiniai akcentai dedami...'];
-  let mi=0,si=0;
-  const steps=['ls1','ls2','ls3','ls4'];
-  const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1400);
-  const t2=setInterval(()=>{if(si<steps.length){document.getElementById(steps[si]).classList.add('done');si++;}else{clearInterval(t1);clearInterval(t2);}},1100);
-}
-
-// ── CLAUDE API ──
-async function callClaude(){
-  const activePhotos=photos.filter(Boolean);
-  const content=[];
-  for(const p of activePhotos){content.push({type:'image',source:{type:'base64',media_type:p.type,data:p.data.split(',')[1]}});}
-  const name=window.userName||'';
-  content.push({type:'text',text:`Tu esi gilios intuicijos delno skaitymo ir astrologijos ekspertas. Išanalizuok šias delno nuotraukas ir pateik IŠSAMŲ, ASMENINĮ skaitymą.
-
-Atsakyk TIKTAI JSON formatu be jokio teksto prieš ar po. Be markdown žymėjimų.
-
-{
-  "charakteris": "3-4 sakiniai apie asmenybę pagal delno linijas",
-  "sielos_misija": "3-4 sakiniai apie sielos paskirtį šiame gyvenime",
-  "gyvenimo_tikslas": "2-3 sakiniai apie gyvenimo kryptį ir tikslą",
-  "dovanos_tekstas": "2-3 sakiniai apie talentus ir dvasines dovanas",
-  "dovanos_sarasas": ["Dovana1","Dovana2","Dovana3","Dovana4","Dovana5"],
-  "meile_santykiai": "3-4 sakiniai apie meilės liniją ir santykių potencialą",
-  "astrologija": "3-4 sakiniai apie planetų kalnų ženklus delne",
-  "stiprybes": ["Stiprybė1","Stiprybė2","Stiprybė3","Stiprybė4","Stiprybė5","Stiprybė6"]
-}
-
-Kalba: lietuvių. Tonas: mistiškas, šiltas, asmeniškas. Pateik konkrečias įžvalgas pagal matomus delno bruožus.${name?' Asmens vardas: '+name+'.':''}`});
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content}]})});
-  const data=await res.json();
-  return JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-}
-
-function getFallback(){return{charakteris:"Jūsų gyvenimo linija giliai įrėžta — stipri gyvybinė energija. Proto linija suka žemyn link Mėnulio kalno — intuicija ir kūrybiškumas.",sielos_misija:"Jūsų sielos misija — nešti šviesą ir ryšį. Delno centras atviras — esate gimę bendrauti ir gydyti.",gyvenimo_tikslas:"Apollono kalnas ryškus — kūryba ir menai yra jūsų kelio dalis.",dovanos_tekstas:"Ypatingas empatijos ir komunikacijos talentas — žmonės jaučiasi suprasti jūsų akivaizdoje.",dovanos_sarasas:["Intuicija","Empatija","Kūrybiškumas","Komunikacija","Lyderystė"],meile_santykiai:"Širdies linija giliai įrėžta — mylite visa esybe. Veneros kalnas pilnas — intensyvi jausminė energija.",astrologija:"Jupiterio kalnas — lyderystės energija. Saturno kalnas — siekis stabilumo. Saulės kalnas — kūrybos šviesa.",stiprybes:["Empatija","Intuicija","Ryžtas","Kūrybiškumas","Šilumas","Išmintis"]};}
-
-function displayResult(r){
-  const name=window.userName||'';
-  document.getElementById('res-name').textContent=(name?name+' — ':'')+'Delno Skaitymas';
-  document.getElementById('r-char').innerHTML=r.charakteris;
-  document.getElementById('r-mission').innerHTML=r.sielos_misija;
-  document.getElementById('r-goal').innerHTML=r.gyvenimo_tikslas;
-  document.getElementById('r-gifts-text').innerHTML=r.dovanos_tekstas;
-  document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
-  document.getElementById('r-love').innerHTML=r.meile_santykiai;
-  document.getElementById('r-astro').innerHTML=r.astrologija;
-  document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
-  go('s-result');
-}
-</script>
-</body>
-</html>
+🤚
+Tavo ranka slepia tiesą apie tave
+Tavo ranka žino viską — apie tave, tavo meilę ir tavo likimą Įkelk delno nuotrauką · Gauk atsakymus per 60 sekundžių
+5.59 €
+19 €
+šiandien tik
+Gauti savo skaitymą →
+Kaip tai veikia?
+AMJK+
+2 847 žmonės jau gavo skaitymą
+KAS ATSISKLEIDŽIA TAVO RANKOJE
+🌟
+Sielos misija
+Kodėl tikrai atėjai į šį pasaulį — atsakymas jau tavo rankoje
+❤️
+Meilė ir santykiai
+Ar tavo širdies linija slepia didžią meilę? Kada ji ateis?
+💎
+Paslėpti talentai
+Dovanos, apie kurias galbūt net nežinai — atrandamos iš delno
+🪐
+Planetų kalnai
+Venera, Jupiteris, Saturnas — jų energija matoma tavo delne
+🎯
+Gyvenimo tikslas
+Kur veda tavo likimo linija? Ką ji byloja apie tavo ateitį?
+⚡
+Vidinė jėga
+Stipriausios pusės, kurios leidžia tau įveikti viską
+🔮
+Gyvenimo kelias
+Ar esi tinkamame kelyje? Delnas atsako be apgaulės
+🌙
+Intuicija ir jautrumas
+Mėnulio kalnas atskleidžia tavo paslėptą dvasinę jėgą
+🦋
+Pokyčiai ir augimas
+Kada tavo gyvenime artėja lūžis ir nauja pradžia?
+💫
+Karmos ženklai
+Ar tavo delne matomi karmos ir praėjusių gyvenimų pėdsakai?
+KAIP TAI VEIKIA 1
+Sumokėk 5.59 € kortele
+Visa, Mastercard, Apple Pay, Google Pay — greita ir saugu per Stripe
+2
+Įkelk iki 4 delno nuotraukų
+Kuo daugiau nuotraukų — tuo tikslesnis skaitymas
+3
+Gauk pilną skaitymą
+Charakteris, misija, meilė, talentai, planetų kalnai — asmeniškai tau
+KĄ SAKO KLIENTAI
+🌸
+Monika V.
+@monikavibes · Vilnius
+★★★★★
+"Buvau skeptiška, bet skaitymas šokiravo tikslumu. Apie mano santykius pasakė dalykų, kurių negalėjo žinoti. Labai rekomenduoju!"
+✦ PATVIRTINTAS PIRKIMAS · prieš 2 d.
+🔮
+Aistė K.
+@aisteeee · Kaunas
+★★★★★
+"Sielos misija privertė verkti. Geriausi 5 eurai, kuriuos esu išleidusi!"
+✦ PATVIRTINTAS PIRKIMAS · prieš 5 d.
+🌙
+Justina P.
+@justinapilve · Šiauliai
+★★★★★
+"Meilės skyrius buvo kaip veidrodis. Supratau, kodėl praeiti santykiai nepavyko. Labai gilus skaitymas!"
+✦ PATVIRTINTAS PIRKIMAS · prieš 3 d.
+Užsisakyti dabar — 5.59 € →
+🔒 Stripe · Saugu · Konfidencialu · 100% grąžinimo garantija
