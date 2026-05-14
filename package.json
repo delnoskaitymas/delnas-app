@@ -2,7 +2,7 @@
   "name": "delnas-app",
   "version": "1.0.0",
   "description": "Delno skaitymas app su Stripe mokėjimais",
-  "main": "server/index.js",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
