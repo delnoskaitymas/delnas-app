@@ -8,7 +8,6 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
-
 app.use('/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 
@@ -57,24 +56,35 @@ app.post('/analyze-palm', async (req, res) => {
   try {
     const { photos, name } = req.body;
     if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
-
     const content = [];
     for (const p of photos) {
-      content.push({
-        type: 'image',
-        source: { type: 'base64', media_type: p.type, data: p.data }
-      });
+      content.push({ type: 'image', source: { type: 'base64', media_type: p.type, data: p.data } });
     }
     content.push({
       type: 'text',
-      text: `Tu esi gilios intuicijos delno skaitymo ir astrologijos ekspertas. Išanalizuok šias delno nuotraukas ir pateik IŠSAMŲ, ASMENINĮ skaitymą.
+      text: `Tu esi gilios intuicijos delno skaitymo ekspertas. Išanalizuok šias delno nuotraukas ir pateik IŠSAMŲ skaitymą. Atsakyk TIKTAI JSON formatu be jokio teksto prieš ar po. Be markdown žymėjimų. {"charakteris":"...","sielos_misija":"...","gyvenimo_tikslas":"...","dovanos_tekstas":"...","dovanos_sarasas":["..."],"meile_santykiai":"...","astrologija":"...","stiprybes":["..."]} Kalba: lietuvių. Tonas: mistiškas, šiltas.${name ? ' Vardas: ' + name + '.' : ''}`
+    });
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, messages: [{ role: 'user', content }] })
+    });
+    const data = await response.json();
+    const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+    res.json(JSON.parse(text));
+  } catch (err) {
+    console.error('Klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-Atsakyk TIKTAI JSON formatu be jokio teksto prieš ar po. Be markdown žymėjimų.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-{
-  "charakteris": "3-4 sakiniai apie asmenybę pagal delno linijas",
-  "sielos_misija": "3-4 sakiniai apie sielos paskirtį šiame gyvenime",
-  "gyvenimo_tikslas": "2-3 sakiniai apie gyvenimo kryptį ir tikslą",
-  "dovanos_tekstas": "2-3 sakiniai apie talentus ir dvasines dovanas",
-  "dovanos_sarasas": ["Dovana1","Dovana2","Dovana3","Dovana4","Dovana5"],
-  "meile_santykiai": "3-4 sakiniai apie meilės li
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`DELNAS veikia: http://localhost:${PORT}`));
