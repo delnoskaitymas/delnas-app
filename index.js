@@ -1,4 +1,4 @@
-// v6 — galutinis
+// v9 — galutinis
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -41,7 +41,7 @@ app.post('/create-payment', async (req, res) => {
     if (!name || !email) return res.status(400).json({ error: 'Trūksta duomenų' });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 559 }, quantity: 1 }],
+      line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 599 }, quantity: 1 }],
       mode: 'payment',
       customer_email: email,
       metadata: { name, email },
@@ -59,6 +59,10 @@ app.get('/verify-payment', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
     if (session.payment_status === 'paid') {
+      const sessionAge = Date.now() - (session.created * 1000);
+      if (sessionAge > 2 * 60 * 60 * 1000) {
+        return res.json({ paid: false, error: 'Sesija pasibaigė' });
+      }
       const token = createToken(session.metadata.name, session.metadata.email);
       res.json({ paid: true, name: session.metadata.name, email: session.metadata.email, token });
     } else {
@@ -136,8 +140,26 @@ Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
     });
 
     const data = await response.json();
+
+    if (!data.content || data.content.length === 0) {
+      console.error('Tuščias Claude atsakymas:', JSON.stringify(data));
+      return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
+    }
+
     const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
-    const result = JSON.parse(text);
+
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch(parseErr) {
+      console.error('JSON parse klaida:', text.substring(0, 500));
+      return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
+    }
+
+    if (!result || !result.charakteris) {
+      console.error('Netinkamas atsakymas:', text.substring(0, 500));
+      return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
+    }
 
     try {
       await mailer.sendMail({
