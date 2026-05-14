@@ -54,16 +54,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.photo-slot{aspect-ratio:1;background:var(--surf);border:1px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s,background .2s}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.photo-slot{aspect-ratio:1;background:var(--surf);border:1.5px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color .2s,background .2s;cursor:pointer}
 .photo-slot:hover{border-color:var(--gold);background:rgba(212,168,67,.05)}
-.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px}
-.slot-ico{font-size:26px;margin-bottom:6px;display:block;opacity:.45}
-.slot-txt{font-size:11px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px}
-.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.rm-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2}
-.photo-slot.has-img .rm-btn{display:flex}
-.photo-slot.has-img .slot-ico,.photo-slot.has-img .slot-txt{display:none}
+.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px;z-index:1;pointer-events:none}
+.slot-ico{font-size:28px;margin-bottom:8px;display:block;opacity:.5;position:relative;z-index:0;pointer-events:none}
+.slot-txt{font-size:12px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px;position:relative;z-index:0;pointer-events:none}
+.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:5;width:100%;height:100%;font-size:0}
+.rm-btn{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.8);border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:6;line-height:1}
 .tips-card{background:rgba(212,168,67,.05);border:.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8}
 .tip-title{font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:5px;text-transform:uppercase}
 .success-banner{background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
@@ -128,7 +126,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </p>
     <div style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 20px;margin-bottom:24px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Pilnas skaitymas — 8 skyriai</div>
-      <div class="serif gold" style="font-size:36px;font-weight:700">5.59 €</div>
+      <div class="serif gold" style="font-size:36px;font-weight:700">5.99 €</div>
       <div style="font-size:11px;color:var(--faint);margin-top:2px;text-decoration:line-through">įprastai 19 €</div>
     </div>
     <button class="btn btn-gold" style="font-size:17px;padding:17px" onclick="go('s-order')">Gauti savo skaitymą →</button>
@@ -152,7 +150,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="background:rgba(212,168,67,.07);border:.5px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
       <div><div style="font-size:12px;color:var(--muted);margin-bottom:2px">Delno skaitymas</div><div style="font-size:13px;color:var(--text)">Pilnas · 8 skyriai · AI analizė</div></div>
-      <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
+      <div class="serif gold" style="font-size:26px;font-weight:700">5.99 €</div>
     </div>
     <div id="order-err" class="err"></div>
     <div class="field"><label>Vardas</label><input type="text" id="o-name" placeholder="Tavo vardas" autocomplete="name"></div>
@@ -175,7 +173,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="pay-opt-check" id="chk-google"></div>
       </div>
     </div>
-    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
+    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.99 € saugiai →</button>
     <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Apsaugota Stripe · Duomenys niekada nesaugomi</div>
   </div>
 </div>
@@ -192,8 +190,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:13px;color:var(--muted);font-style:italic;line-height:1.6">Kairė + dešinė ranka<br>kuo geresnė nuotrauka — tuo tikslesnis skaitymas</div>
     </div>
     <div class="photo-grid">
-      <div class="photo-slot" id="slot0" onclick="triggerFile(0)"><input type="file" accept="image/*" onchange="handlePhoto(event,0)"><span class="slot-ico">🤚</span><div class="slot-txt">Kairė ranka</div></div>
-      <div class="photo-slot" id="slot1" onclick="triggerFile(1)"><input type="file" accept="image/*" onchange="handlePhoto(event,1)"><span class="slot-ico">✋</span><div class="slot-txt">Dešinė ranka</div></div>
+      <div class="photo-slot" id="slot0">
+        <input type="file" accept="image/*" onchange="handlePhoto(event,0)">
+        <span class="slot-ico">🤚</span>
+        <div class="slot-txt">Kairė ranka</div>
+      </div>
+      <div class="photo-slot" id="slot1">
+        <input type="file" accept="image/*" onchange="handlePhoto(event,1)">
+        <span class="slot-ico">✋</span>
+        <div class="slot-txt">Dešinė ranka</div>
+      </div>
     </div>
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px">Įkelta: <span id="pcount" style="color:var(--gold2);font-weight:500">0</span> / 2</div>
     <div class="tips-card">
@@ -308,7 +314,7 @@ async function initiatePayment(){
     else throw new Error(data.error||'Klaida');
   }catch(e){
     btn.disabled=false;
-    btn.innerHTML='Mokėti 5.59 € saugiai →';
+    btn.innerHTML='Mokėti 5.99 € saugiai →';
     err.textContent='Klaida: '+e.message;
     err.style.display='block';
   }
@@ -316,28 +322,45 @@ async function initiatePayment(){
 
 const photos=new Array(2).fill(null);
 function updateCount(){document.getElementById('pcount').textContent=photos.filter(Boolean).length;}
-function triggerFile(i){const slot=document.getElementById('slot'+i);if(!slot.classList.contains('has-img'))slot.querySelector('input').click();}
+
 function handlePhoto(e,i){
-  const file=e.target.files[0];if(!file)return;
+  const file=e.target.files[0];
+  if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
     photos[i]={data:ev.target.result,type:file.type||'image/jpeg'};
     const slot=document.getElementById('slot'+i);
-    let img=slot.querySelector('img');if(!img){img=document.createElement('img');slot.appendChild(img);}
+    let img=slot.querySelector('img');
+    if(!img){img=document.createElement('img');slot.appendChild(img);}
     img.src=ev.target.result;
+    slot.querySelector('.slot-ico').style.display='none';
+    slot.querySelector('.slot-txt').style.display='none';
     let rb=slot.querySelector('.rm-btn');
-    if(!rb){rb=document.createElement('button');rb.className='rm-btn';rb.textContent='×';rb.onclick=ev2=>{ev2.stopPropagation();removePhoto(i);};slot.appendChild(rb);}
-    slot.classList.add('has-img');updateCount();
+    if(!rb){
+      rb=document.createElement('button');
+      rb.className='rm-btn';
+      rb.innerHTML='×';
+      rb.onclick=ev2=>{
+        ev2.preventDefault();
+        ev2.stopPropagation();
+        removePhoto(i);
+      };
+      slot.appendChild(rb);
+    }
+    rb.style.display='flex';
+    updateCount();
   };
   reader.readAsDataURL(file);
 }
+
 function removePhoto(i){
   photos[i]=null;
   const slot=document.getElementById('slot'+i);
   const img=slot.querySelector('img');if(img)img.remove();
-  slot.classList.remove('has-img');
   const inp=slot.querySelector('input');if(inp)inp.value='';
   const rb=slot.querySelector('.rm-btn');if(rb)rb.style.display='none';
+  slot.querySelector('.slot-ico').style.display='block';
+  slot.querySelector('.slot-txt').style.display='block';
   updateCount();
 }
 
@@ -383,15 +406,16 @@ async function callClaude(){
 }
 
 function displayResult(r){
+  if(!r)return;
   const name=window.userName||'';
   document.getElementById('res-name').textContent=(name?name+' — ':'')+'Delno Skaitymas';
-  document.getElementById('r-char').innerHTML=r.charakteris;
-  document.getElementById('r-mission').innerHTML=r.sielos_misija;
-  document.getElementById('r-goal').innerHTML=r.gyvenimo_tikslas;
-  document.getElementById('r-gifts-text').innerHTML=r.dovanos_tekstas;
+  document.getElementById('r-char').innerHTML=r.charakteris||'';
+  document.getElementById('r-mission').innerHTML=r.sielos_misija||'';
+  document.getElementById('r-goal').innerHTML=r.gyvenimo_tikslas||'';
+  document.getElementById('r-gifts-text').innerHTML=r.dovanos_tekstas||'';
   document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
-  document.getElementById('r-love').innerHTML=r.meile_santykiai;
-  document.getElementById('r-astro').innerHTML=r.astrologija;
+  document.getElementById('r-love').innerHTML=r.meile_santykiai||'';
+  document.getElementById('r-astro').innerHTML=r.astrologija||'';
   document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
   go('s-result');
 }
