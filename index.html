@@ -246,8 +246,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:6px">Orakulas mato...</div>
-    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Linijos, žvaigždės ir likimas skaičiuojami</div>
+    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:6px">Analizuojama...</div>
+    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Analizuojamos delno linijos...</div>
     <div style="width:100%;max-width:300px;margin-bottom:4px">
       <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
         <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .5s linear"></div>
@@ -436,7 +436,7 @@ async function startReading(){
 }
 
 function animateLoading(){
-  const msgs=['Linijos, žvaigždės ir likimas skaičiuojami','Delno išminties gijos atsiskleidžia...','Orakulas atveria sielos žemėlapį...','Paskutiniai akcentai dedami...'];
+  const msgs=['Analizuojamos delno linijos...','Ruošiamas tavo skaitymas...','Dar kelios sekundės...','Beveik baigta...'];
   let mi=0;
   const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1800);
 
