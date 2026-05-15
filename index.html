@@ -25,13 +25,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .wrap{padding:32px 20px 24px}
 .center{text-align:center}
 .back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-style:italic;font-family:'DM Sans',sans-serif;padding:0;margin-bottom:20px;display:block}
-.orb{width:130px;height:130px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
+.orb{width:160px;height:160px;margin:0 auto 22px;position:relative;display:flex;align-items:center;justify-content:center}
 .ring{position:absolute;border-radius:50%;border:1px solid}
 .r1{inset:0;border-color:rgba(212,168,67,.1);animation:sp 22s linear infinite}
 .r2{inset:14px;border-color:rgba(212,168,67,.18);animation:sp 15s linear infinite reverse}
 .r3{inset:26px;border-color:rgba(212,168,67,.28);animation:sp 9s linear infinite}
 @keyframes sp{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.core{width:70px;height:70px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;animation:bob 4s ease-in-out infinite}
+.core{width:86px;height:86px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;animation:bob 4s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 .pd{position:absolute;width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pda 2.2s ease-in-out infinite}
 .pd:nth-child(2){top:10px;left:50%;animation-delay:.6s}
@@ -81,45 +81,37 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .d{width:6px;height:6px;border-radius:50%;background:var(--border2);animation:dp 1.5s ease-in-out infinite}
 .d:nth-child(2){animation-delay:.3s}.d:nth-child(3){animation-delay:.6s}
 @keyframes dp{0%,100%{background:var(--border2);transform:scale(1)}50%{background:var(--gold);transform:scale(1.5)}}
-
-/* RESULT — naujas stilius */
-.result-hero{text-align:center;padding:40px 20px 32px;position:relative}
+.rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
+.rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
+.rs-std{background:rgba(255,255,255,0.03);border:.5px solid rgba(212,168,67,0.18)}
+.rs-feat{background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.38)}
+.rs-feat::before{opacity:.9}
+.rs-label{font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.rs-feat .rs-label{color:var(--gold2);font-size:11px}
+.rs-label::after{content:'';flex:1;height:.5px;background:var(--border)}
+.rs-icon{font-size:18px;margin-bottom:10px;display:block}
+.rs-body{font-size:14px;color:var(--text);line-height:1.85;font-style:italic}
+.rs-body p{margin-bottom:12px}
+.rs-body p:last-child{margin-bottom:0}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
+.result-hero{text-align:center;padding:40px 20px 28px}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
-.result-hero-orb .ring{position:absolute;border-radius:50%;border:1px solid}
 .rh1{inset:0;border-color:rgba(212,168,67,.25);animation:sp 18s linear infinite}
 .rh2{inset:12px;border-color:rgba(212,168,67,.4);animation:sp 12s linear infinite reverse}
 .rh3{inset:24px;border-color:rgba(212,168,67,.6);animation:sp 7s linear infinite}
 .result-hero-core{width:62px;height:62px;background:rgba(212,168,67,.12);border:1.5px solid rgba(212,168,67,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;animation:pulse3 3s ease-in-out infinite}
 .result-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);letter-spacing:.03em;margin-bottom:6px}
-.result-subtitle{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
-.result-divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto}
-
-.rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
-.rs-standard{background:rgba(255,255,255,0.03);border:.5px solid rgba(212,168,67,0.18)}
-.rs-featured{background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.35)}
-.rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
-.rs-featured::before{opacity:.8}
-.rs-label{font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.rs-label::after{content:'';flex:1;height:.5px;background:var(--border)}
-.rs-featured .rs-label{color:var(--gold2);font-size:11px}
-.rs-icon{font-size:18px;margin-bottom:10px;display:block}
-.rs-body{font-size:14px;color:var(--text);line-height:1.85;font-style:italic}
-.rs-body p{margin-bottom:12px}
-.rs-body p:last-child{margin-bottom:0}
-
-.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
-
-.result-final{text-align:center;padding:28px 20px;margin:8px 0 16px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
-.result-final-stars{font-size:18px;letter-spacing:8px;margin-bottom:10px;color:var(--gold)}
-.result-final-text{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:var(--muted);line-height:1.7}
-
-.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-.share-btn-tt{width:100%;padding:15px;border-radius:13px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;border:none;background:#010101;color:#fff;letter-spacing:.02em;transition:transform .15s,filter .15s}
-.share-btn-tt:hover{transform:translateY(-2px);filter:brightness(1.2)}
-.share-btn-sv{width:100%;padding:15px;border-radius:13px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;border:1px solid var(--gold);background:transparent;color:var(--gold);letter-spacing:.02em;transition:transform .15s,filter .15s}
-.share-btn-sv:hover{transform:translateY(-2px);filter:brightness(1.1)}
-
+.result-subtitle{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.result-divider{width:60px;height:1px;background:var(--gold);margin:0 auto;opacity:.5}
+.result-final{text-align:center;padding:24px 16px;margin:8px 0 14px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
+.result-final-stars{font-size:18px;letter-spacing:8px;color:var(--gold);margin-bottom:8px}
+.result-final-text{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--muted);line-height:1.7}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.share-btn-tt{width:100%;padding:15px;border-radius:13px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;border:none;background:#010101;color:#fff;transition:transform .15s}
+.share-btn-tt:hover{transform:translateY(-2px)}
+.share-btn-sv{width:100%;padding:15px;border-radius:13px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;border:1px solid var(--gold);background:transparent;color:var(--gold);transition:transform .15s}
+.share-btn-sv:hover{transform:translateY(-2px)}
 .err{background:rgba(220,50,50,.1);border:.5px solid rgba(220,80,80,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#f99;margin-bottom:14px;display:none;line-height:1.5}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(7,4,15,.3);border-top-color:#07040f;border-radius:50%;animation:spin2 .7s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin2{to{transform:rotate(360deg)}}
@@ -140,32 +132,40 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 1: LANDING -->
 <div class="screen active" id="s-home">
-  <div class="wrap center" style="padding-top:48px">
-    <div style="font-size:12px;color:var(--gold);letter-spacing:.12em;margin-bottom:16px;text-transform:uppercase">✦ Kaip matei TikTok'e ✦</div>
+  <div class="wrap center" style="padding-top:40px">
     <div class="orb">
       <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
       <div class="pd"></div><div class="pd"></div><div class="pd"></div>
       <div class="core">🤚</div>
     </div>
-    <h1 class="serif" style="font-size:28px;font-weight:700;line-height:1.25;margin-bottom:12px">
+    <h1 class="serif" style="font-size:32px;font-weight:700;line-height:1.2;margin-bottom:14px">
       Tavo ranka žino<br><em class="gold">viską apie tave</em>
     </h1>
-    <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px">
+    <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
       Įkelk dvi delno nuotraukas.<br>Gauk gilų, asmeninį skaitymą per 60 sekundžių.
     </p>
-    <div style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 20px;margin-bottom:24px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Pilnas skaitymas — 8 skyriai</div>
-      <div class="serif gold" style="font-size:36px;font-weight:700">5.59 €</div>
-      <div style="font-size:11px;color:var(--faint);margin-top:2px;text-decoration:line-through">įprastai 19 €</div>
+    <div style="background:rgba(212,168,67,.1);border:1.5px solid rgba(212,168,67,.4);border-radius:18px;padding:20px 24px;margin-bottom:22px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.06em">PILNAS SKAITYMAS — 8 SKYRIAI</div>
+      <div class="serif gold" style="font-size:44px;font-weight:700;line-height:1">5.59 €</div>
+      <div style="font-size:12px;color:var(--faint);margin-top:4px">
+        <span style="text-decoration:line-through">19 €</span>
+        <span style="color:var(--gold);margin-left:8px">— šiandien tik</span>
+      </div>
     </div>
-    <button class="btn btn-gold" style="font-size:17px;padding:17px" onclick="go('s-order')">Gauti savo skaitymą →</button>
-    <div style="margin-top:12px;font-size:12px;color:var(--faint)">🔒 Stripe · Saugu · Konfidencialu</div>
-    <div style="margin-top:32px;padding-top:24px;border-top:.5px solid var(--border);text-align:left">
-      <div class="sec-lbl">ką sako klientai</div>
-      <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika V.</div><div class="rev-handle">@monikavibes · Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"merginos darykite. sėdėjau ir žandikaulis krito. apie tą vieną santykį kurį vis dar prisimenu — parašė taip tiksliai kad net baisu. iš kur"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 2 d.</div></div>
-      <div class="rev"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Aistė K.</div><div class="rev-handle">@aisteeee · Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"maniau bus kažkoks bendras horoskopas. ne. parašė kad aš visada myliu per daug ir lieku viena su tuo. tai mano terapeutė man sakė po metų 😭 o čia iš nuotraukos"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 4 d.</div></div>
-      <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Justina P.</div><div class="rev-handle">@justinapilve · Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"sielos misija dalis — perskaičiau keturis kartus. nusiųsčiau mamai bet ji suprastų kad aš apie save viską žinau 💀"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 1 d.</div></div>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="go('s-order')">Gauti savo skaitymą →</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;font-size:12px;color:var(--faint);margin-bottom:8px">
+      <span>🔒 Stripe</span><span>·</span><span>✓ Saugu</span><span>·</span><span>♾ Konfidencialu</span>
     </div>
+    <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
+      Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonių gavo savo skaitymą
+    </div>
+  </div>
+  <div style="padding:0 20px">
+    <div style="height:.5px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent);margin:8px 0 24px"></div>
+    <div class="sec-lbl">ką sako klientai</div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika V.</div><div class="rev-handle">@monikavibes · Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"merginos darykite. sėdėjau ir žandikaulis krito. apie tą vieną santykį kurį vis dar prisimenu — parašė taip tiksliai kad net baisu. iš kur"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 2 d.</div></div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Aistė K.</div><div class="rev-handle">@aisteeee · Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"maniau bus kažkoks bendras horoskopas. ne. parašė kad aš visada myliu per daug ir lieku viena su tuo. tai mano terapeutė man sakė po metų 😭 o čia iš nuotraukos"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 4 d.</div></div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Justina P.</div><div class="rev-handle">@justinapilve · Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">"sielos misija dalis — perskaičiau keturis kartus. nusiųsčiau mamai bet ji suprastų kad aš apie save viską žinau 💀"</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 1 d.</div></div>
   </div>
 </div>
 
@@ -260,7 +260,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 5: RESULT -->
 <div class="screen" id="s-result">
-
   <div class="result-hero">
     <div class="result-hero-orb">
       <div class="ring rh1"></div>
@@ -272,61 +271,22 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="result-subtitle">Chiromantija · Sielos žemėlapis · AI analizė</div>
     <div class="result-divider"></div>
   </div>
-
   <div style="padding:0 20px 32px">
-
-    <div class="rs rs-featured">
-      <span class="rs-icon">🌟</span>
-      <div class="rs-label">Charakteris ir asmenybė</div>
-      <div class="rs-body" id="r-char"></div>
-    </div>
-
-    <div class="rs rs-featured">
-      <span class="rs-icon">✨</span>
-      <div class="rs-label">Sielos misija</div>
-      <div class="rs-body" id="r-mission"></div>
-    </div>
-
-    <div class="rs rs-standard">
-      <span class="rs-icon">🎯</span>
-      <div class="rs-label">Gyvenimo tikslas ir kelias</div>
-      <div class="rs-body" id="r-goal"></div>
-    </div>
-
-    <div class="rs rs-standard">
-      <span class="rs-icon">💎</span>
-      <div class="rs-label">Dovanos ir talentai</div>
-      <div class="rs-body" id="r-gifts-text"></div>
-      <div class="pills" id="r-gifts-pills"></div>
-    </div>
-
-    <div class="rs rs-featured">
-      <span class="rs-icon">❤️</span>
-      <div class="rs-label">Meilė ir santykiai</div>
-      <div class="rs-body" id="r-love"></div>
-    </div>
-
-    <div class="rs rs-standard">
-      <span class="rs-icon">🪐</span>
-      <div class="rs-label">Planetų kalnai delne</div>
-      <div class="rs-body" id="r-astro"></div>
-    </div>
-
-    <div class="rs rs-standard">
-      <div class="rs-label">Stipriausios asmenybės pusės</div>
-      <div class="pills" id="r-strengths"></div>
-    </div>
-
+    <div class="rs rs-feat"><span class="rs-icon">🌟</span><div class="rs-label">Charakteris ir asmenybė</div><div class="rs-body" id="r-char"></div></div>
+    <div class="rs rs-feat"><span class="rs-icon">✨</span><div class="rs-label">Sielos misija</div><div class="rs-body" id="r-mission"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">🎯</span><div class="rs-label">Gyvenimo tikslas ir kelias</div><div class="rs-body" id="r-goal"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">💎</span><div class="rs-label">Dovanos ir talentai</div><div class="rs-body" id="r-gifts-text"></div><div class="pills" id="r-gifts-pills"></div></div>
+    <div class="rs rs-feat"><span class="rs-icon">❤️</span><div class="rs-label">Meilė ir santykiai</div><div class="rs-body" id="r-love"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">🪐</span><div class="rs-label">Planetų kalnai delne</div><div class="rs-body" id="r-astro"></div></div>
+    <div class="rs rs-std"><div class="rs-label">Stipriausios asmenybės pusės</div><div class="pills" id="r-strengths"></div></div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Grįžk ir perskaityk dar kartą — kas antrą kartą skamba giliau.</div>
     </div>
-
     <div class="share-row">
       <button class="share-btn-tt" onclick="shareToTikTok()">🎵 Dalintis TikTok</button>
       <button class="share-btn-sv" onclick="window.print()">💾 Išsaugoti</button>
     </div>
-
   </div>
 </div>
 
@@ -496,15 +456,10 @@ function displayResult(r){
   if(!r)return;
   const name=window.userName||'';
   document.getElementById('res-name').textContent=(name?name+' — ':'')+'Delno Skaitymas';
-
-  // Skaidyti tekstą į pastraipas
   function formatText(text){
     if(!text)return'';
-    return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>
-      `<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`
-    ).join('');
+    return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
   }
-
   document.getElementById('r-char').innerHTML=formatText(r.charakteris);
   document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
   document.getElementById('r-goal').innerHTML=formatText(r.gyvenimo_tikslas);
