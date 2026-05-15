@@ -86,7 +86,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-title::after{content:'';flex:1;height:.5px;background:var(--border)}
 .rs-text{font-size:14px;color:var(--text);line-height:1.8;font-style:italic}
 .pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50px;padding:5px 13px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
+.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50%;padding:5px 13px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
 .share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .share-btn{padding:13px;border-radius:12px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'DM Sans',sans-serif;border:none}
 .share-tt{background:#010101;color:#fff}
@@ -126,7 +126,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </p>
     <div style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 20px;margin-bottom:24px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Pilnas skaitymas — 8 skyriai</div>
-      <div class="serif gold" style="font-size:36px;font-weight:700">5.99 €</div>
+      <div class="serif gold" style="font-size:36px;font-weight:700">5.59 €</div>
       <div style="font-size:11px;color:var(--faint);margin-top:2px;text-decoration:line-through">įprastai 19 €</div>
     </div>
     <button class="btn btn-gold" style="font-size:17px;padding:17px" onclick="go('s-order')">Gauti savo skaitymą →</button>
@@ -150,7 +150,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="background:rgba(212,168,67,.07);border:.5px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
       <div><div style="font-size:12px;color:var(--muted);margin-bottom:2px">Delno skaitymas</div><div style="font-size:13px;color:var(--text)">Pilnas · 8 skyriai · AI analizė</div></div>
-      <div class="serif gold" style="font-size:26px;font-weight:700">5.99 €</div>
+      <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
     </div>
     <div id="order-err" class="err"></div>
     <div class="field"><label>Vardas</label><input type="text" id="o-name" placeholder="Tavo vardas" autocomplete="name"></div>
@@ -173,7 +173,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="pay-opt-check" id="chk-google"></div>
       </div>
     </div>
-    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.99 € saugiai →</button>
+    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
     <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Apsaugota Stripe · Duomenys niekada nesaugomi</div>
   </div>
 </div>
@@ -314,7 +314,7 @@ async function initiatePayment(){
     else throw new Error(data.error||'Klaida');
   }catch(e){
     btn.disabled=false;
-    btn.innerHTML='Mokėti 5.99 € saugiai →';
+    btn.innerHTML='Mokėti 5.59 € saugiai →';
     err.textContent='Klaida: '+e.message;
     err.style.display='block';
   }
@@ -326,13 +326,24 @@ function updateCount(){document.getElementById('pcount').textContent=photos.filt
 function handlePhoto(e,i){
   const file=e.target.files[0];
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    photos[i]={data:ev.target.result,type:file.type||'image/jpeg'};
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d');
+  const image=new Image();
+  image.onload=()=>{
+    let w=image.width,h=image.height;
+    const max=1200;
+    if(w>max||h>max){
+      if(w>h){h=Math.round(h*max/w);w=max;}
+      else{w=Math.round(w*max/h);h=max;}
+    }
+    canvas.width=w;canvas.height=h;
+    ctx.drawImage(image,0,0,w,h);
+    const compressed=canvas.toDataURL('image/jpeg',0.85);
+    photos[i]={data:compressed,type:'image/jpeg'};
     const slot=document.getElementById('slot'+i);
     let img=slot.querySelector('img');
     if(!img){img=document.createElement('img');slot.appendChild(img);}
-    img.src=ev.target.result;
+    img.src=compressed;
     slot.querySelector('.slot-ico').style.display='none';
     slot.querySelector('.slot-txt').style.display='none';
     let rb=slot.querySelector('.rm-btn');
@@ -340,16 +351,14 @@ function handlePhoto(e,i){
       rb=document.createElement('button');
       rb.className='rm-btn';
       rb.innerHTML='×';
-      rb.onclick=ev2=>{
-        ev2.preventDefault();
-        ev2.stopPropagation();
-        removePhoto(i);
-      };
+      rb.onclick=ev2=>{ev2.preventDefault();ev2.stopPropagation();removePhoto(i);};
       slot.appendChild(rb);
     }
     rb.style.display='flex';
     updateCount();
   };
+  const reader=new FileReader();
+  reader.onload=ev=>{image.src=ev.target.result;};
   reader.readAsDataURL(file);
 }
 
