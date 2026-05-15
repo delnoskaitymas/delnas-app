@@ -1,4 +1,4 @@
-// v12 — galutinis
+// v13 — JSON fix
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -126,9 +126,9 @@ DRAUDŽIAMA:
 - Sakiniai kurie skamba kaip horoskopas
 - Kartotis tarp skyrių
 
-Atsakyk TIKTAI JSON formatu, be jokio teksto prieš ar po, be markdown:
+LABAI SVARBU: Atsakyk TIKTAI grynu JSON formatu. Jokio teksto prieš JSON, jokio teksto po JSON, jokių markdown simbolių, jokių komentarų. Tik { ... }.
 
-{"charakteris":"mažiausiai 6 sakiniai — kas tu esi iš tikrųjų, kaip mąstai, ko bijai, ką slėpi, kaip elgiesi su žmonėmis","sielos_misija":"mažiausiai 6 sakiniai — kodėl atėjai į šį pasaulį, kas tavo gyvenime svarbiausia iš tikrųjų, net jei pats to dar nesuvokei","gyvenimo_tikslas":"mažiausiai 6 sakiniai — kur eini, kas laukia, ko neprarask, ko dar nepadarei bet privalai, kas tave stabdo","dovanos_tekstas":"mažiausiai 6 sakiniai — kokios tavo dovanos ir kaip jos pasireiškia, ko kiti pas tave ateina, kuo tu kitiems ypatingas net nesuprasdamas","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5","Dovana 6"],"meile_santykiai":"mažiausiai 6 sakiniai — kaip myli, ko ieškai, ką jau išgyvenai, kas tavo santykiuose kartojasi, kas tave žeidžia, kas laukia","astrologija":"mažiausiai 6 sakiniai — kokios energijos veikia tavo gyvenimą, kokia tavo vidinė jėga ir kokia tamsa, su kuo kovojai ir su kuo dar kovosi","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5","Stiprybė 6","Stiprybė 7"]}
+{"charakteris":"mažiausiai 6 sakiniai","sielos_misija":"mažiausiai 6 sakiniai","gyvenimo_tikslas":"mažiausiai 6 sakiniai","dovanos_tekstas":"mažiausiai 6 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5","Dovana 6"],"meile_santykiai":"mažiausiai 6 sakiniai","astrologija":"mažiausiai 6 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5","Stiprybė 6","Stiprybė 7"]}
 
 Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
     });
@@ -136,7 +136,7 @@ Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4000, messages: [{ role: 'user', content }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, messages: [{ role: 'user', content }] })
     });
 
     const data = await response.json();
@@ -146,13 +146,15 @@ Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
-    const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+    const rawText = data.content.map(b => b.text || '').join('');
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    const text = jsonMatch ? jsonMatch[0] : rawText.replace(/```json|```/g, '').trim();
 
     let result;
     try {
       result = JSON.parse(text);
     } catch(parseErr) {
-      console.error('JSON parse klaida:', text.substring(0, 500));
+      console.error('JSON parse klaida:', rawText.substring(0, 500));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
