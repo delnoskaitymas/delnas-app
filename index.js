@@ -1,4 +1,4 @@
-// v9 — galutinis
+// v10 — galutinis
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -41,7 +41,7 @@ app.post('/create-payment', async (req, res) => {
     if (!name || !email) return res.status(400).json({ error: 'Trūksta duomenų' });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 599 }, quantity: 1 }],
+      line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 559 }, quantity: 1 }],
       mode: 'payment',
       customer_email: email,
       metadata: { name, email },
@@ -86,7 +86,7 @@ app.post('/analyze-palm', async (req, res) => {
 
     const content = [];
     for (const p of photos) {
-      content.push({ type: 'image', source: { type: 'base64', media_type: p.type, data: p.data } });
+      content.push({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
     }
 
     const userName = name || tokenEntry.name || '';
