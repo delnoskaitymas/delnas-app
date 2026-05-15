@@ -73,7 +73,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .o-outer{width:88px;height:88px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 2.2s ease-in-out infinite}
 @keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.35)}50%{box-shadow:0 0 0 18px rgba(212,168,67,0)}}
 .o-inner{width:40px;height:40px;border-radius:50%;background:var(--gold);opacity:.8;animation:sp 6s linear infinite}
-.load-steps{display:grid;gap:8px;width:100%;max-width:300px;margin-top:20px}
+.load-steps{display:grid;gap:8px;width:100%;max-width:300px;margin-top:16px}
 .ls{display:flex;align-items:center;gap:12px;background:var(--surf);border:.5px solid var(--border);border-radius:9px;padding:9px 13px;font-size:12px;color:var(--muted);font-style:italic}
 .ls-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .4s}
 .ls-dot.done{background:var(--gold)}
@@ -246,8 +246,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:8px">Orakulas mato...</div>
-    <div style="font-size:13px;color:var(--muted);font-style:italic" id="lmsg">Linijos, žvaigždės ir likimas skaičiuojami</div>
+    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:6px">Orakulas mato...</div>
+    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Linijos, žvaigždės ir likimas skaičiuojami</div>
+    <div style="width:100%;max-width:300px;margin-bottom:4px">
+      <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
+        <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .5s linear"></div>
+      </div>
+      <div id="ptime" style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">~60 sek.</div>
+    </div>
     <div class="load-steps">
       <div class="ls"><div class="ls-dot" id="ls1"></div>Analizuojamos delno linijos</div>
       <div class="ls"><div class="ls-dot" id="ls2"></div>Skaitomi planetų kalnai delne</div>
@@ -431,10 +437,28 @@ async function startReading(){
 
 function animateLoading(){
   const msgs=['Linijos, žvaigždės ir likimas skaičiuojami','Delno išminties gijos atsiskleidžia...','Orakulas atveria sielos žemėlapį...','Paskutiniai akcentai dedami...'];
-  let mi=0,si=0;
-  const steps=['ls1','ls2','ls3','ls4'];
-  const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1400);
-  const t2=setInterval(()=>{if(si<steps.length){document.getElementById(steps[si]).classList.add('done');si++;}else{clearInterval(t1);clearInterval(t2);}},1100);
+  let mi=0;
+  const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1800);
+
+  const total=60;
+  let elapsed=0;
+  const pbar=document.getElementById('pbar');
+  const ptime=document.getElementById('ptime');
+  const stepTimes=[{id:'ls1',at:0},{id:'ls2',at:15},{id:'ls3',at:35},{id:'ls4',at:50}];
+
+  const t2=setInterval(()=>{
+    if(elapsed>=total){clearInterval(t2);clearInterval(t1);return;}
+    elapsed+=0.5;
+    const pct=Math.min((elapsed/total)*100,100);
+    pbar.style.width=pct+'%';
+    const left=Math.max(Math.round(total-elapsed),0);
+    ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
+    stepTimes.forEach(st=>{
+      if(elapsed>=st.at){
+        document.getElementById(st.id).classList.add('done');
+      }
+    });
+  },500);
 }
 
 async function callClaude(){
