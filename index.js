@@ -1,4 +1,4 @@
-// v14 — JSON fix v2
+// v15 — token fix + prompt optimizacija
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -20,14 +20,6 @@ function createToken(name, email) {
   validTokens.set(token, { name, email, used: false, createdAt: Date.now() });
   setTimeout(() => validTokens.delete(token), 2 * 60 * 60 * 1000);
   return token;
-}
-
-function validateAndConsume(token) {
-  const entry = validTokens.get(token);
-  if (!entry) return null;
-  if (entry.used) return null;
-  entry.used = true;
-  return entry;
 }
 
 const mailer = nodemailer.createTransport({
@@ -77,93 +69,106 @@ app.post('/analyze-palm', async (req, res) => {
   try {
     const { photos, name, token } = req.body;
 
-    const tokenEntry = validateAndConsume(token);
+    // Validuojam tokeną BEZ sunaudojimo
+    const tokenEntry = validTokens.get(token);
     if (!tokenEntry) {
-      return res.status(403).json({ error: 'Mokėjimas nepatvirtintas arba skaitymas jau buvo atliktas. Norėdami naujo skaitymo — sumokėkite dar kartą.' });
+      return res.status(403).json({ error: 'Mokėjimas nepatvirtintas. Norėdami skaitymo — sumokėkite.' });
+    }
+    if (tokenEntry.used) {
+      return res.status(403).json({ error: 'Skaitymas jau atliktas. Norėdami naujo — sumokėkite dar kartą.' });
     }
 
-    if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
+    if (!photos || photos.length === 0) {
+      return res.status(400).json({ error: 'Nėra nuotraukų' });
+    }
 
     const content = [];
     for (const p of photos) {
-      content.push({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
+      });
     }
 
     const userName = name || tokenEntry.name || '';
 
     content.push({
       type: 'text',
-      text: `Tu esi delno skaitymo meistras. Gauni dvi nuotraukas — kairę ir dešinę ranką.
+      text: `Vardas: ${userName}. Tu esi delno skaitymo meistras. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą.
 
-Tavo tikslas: parašyti skaitymą kuris žmogų privers sustoti ir pagalvoti "iš kur jie žino". Ne šablonas — o tikslus, intimus, gilus tekstas kuris atspindi universalią žmogišką tiesą taip konkrečiai, kad kiekvienas atpažįsta save.
+RAŠYMO STILIUS:
+- Rašyk konkrečiai ir intymiai, ne abstrakčiai. Pvz: "Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias" — ne "tu jautrus".
+- Kiekvienas skyrius 4-5 sakiniai. Trumpai bet giliai.
+- Maišyk šviesą ir šešėlį — tiesa kartais skauda.
+- Kalba: lietuvių. Kreipkis "tu".
 
-TECHNIKA — kaip rašyti kad skambėtų asmeniškai:
+ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių markdown simbolių.
 
-Vietoj "tu esi jautrus žmogus" rašyk:
-"Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias iš visų — ir niekas to nemato. Tu išmokai slėpti tai po šypsena."
-
-Vietoj "tu trokšti meilės" rašyk:
-"Tu ne kartą save sulaikei — nepasakei ko norėjai, nepasirodei koks esi iš tikrųjų, nes bijojo kad bus per daug. Ir dėl to praradai dalykų kurių vis dar gailiesi."
-
-Vietoj "tu esi stiprus" rašyk:
-"Žmonės pas tave ateina su savo problemomis nes jaučia kad tu susitvarkysi. Ir tu susitvarkai. Bet kas ateina pas tave kai tau sunku? Dažniausiai — niekas."
-
-Vietoj "artėja pokyčiai" rašyk:
-"Yra kažkas ką žinai kad reikia pakeisti — ir jau kurį laiką žinai. Bet vis dar lauki. Ne laiko — drąsos."
-
-PRINCIPAI:
-- Kiekvienas skyrius mažiausiai 6 sakiniai
-- Kalbėk apie konkrečius momentus, jausmus, situacijas — ne abstrakčias savybes
-- Naudok "tu" — tiesiogiai, intymiai, kaip žmogus kuris tave pažįsta
-- Maišyk šviesą ir šešėlį — ne tik komplimentai, bet ir tiesos kurios šiek tiek skauda
-- Kalbėk apie santykius, praradimus, baimes, troškimus, slaptus dalykus
-- Baik kiekvieną skyrių kažkuo kas suteikia viltį arba stiprybę
-- Tonas: šiltas, tikslus, poetiškas — kaip geriausias draugas kuris mato tave giliau nei tu pats
-
-DRAUDŽIAMA:
-- Bendros frazės kurios netinka niekam konkrečiai
-- Komplimentai be gelmės
-- Sakiniai kurie skamba kaip horoskopas
-- Kartotis tarp skyrių
-
-LABAI SVARBU: Atsakyk TIKTAI grynu JSON formatu. Jokio teksto prieš JSON, jokio teksto po JSON, jokių markdown simbolių, jokių komentarų. Tik { ... }.
-
-{"charakteris":"mažiausiai 6 sakiniai","sielos_misija":"mažiausiai 6 sakiniai","gyvenimo_tikslas":"mažiausiai 6 sakiniai","dovanos_tekstas":"mažiausiai 6 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5","Dovana 6"],"meile_santykiai":"mažiausiai 6 sakiniai","astrologija":"mažiausiai 6 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5","Stiprybė 6","Stiprybė 7"]}
-
-Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
+{"charakteris":"4-5 sakiniai","sielos_misija":"4-5 sakiniai","gyvenimo_tikslas":"4-5 sakiniai","dovanos_tekstas":"4-5 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"4-5 sakiniai","astrologija":"4-5 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, messages: [{ role: 'user', content }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content }]
+      })
     });
 
     const data = await response.json();
+
+    // Diagnostika Railway loguose
+    console.log('stop_reason:', data.stop_reason);
+    console.log('usage:', JSON.stringify(data.usage));
 
     if (!data.content || data.content.length === 0) {
       console.error('Tuščias Claude atsakymas:', JSON.stringify(data));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
+    if (data.stop_reason === 'max_tokens') {
+      console.error('ATSAKYMAS NUKIRPTAS — JSON neužbaigtas');
+      return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
+    }
+
     const rawText = data.content.map(b => b.text || '').join('');
-    const cleaned = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    console.log('RAW ilgis:', rawText.length);
+    console.log('RAW pradžia:', rawText.substring(0, 150));
+    console.log('RAW pabaiga:', rawText.substring(rawText.length - 150));
+
+    const cleaned = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    const text = jsonMatch ? jsonMatch[0] : cleaned;
+
+    if (!jsonMatch) {
+      console.error('JSON nerastas. Cleaned:', cleaned.substring(0, 400));
+      return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
+    }
 
     let result;
     try {
-      result = JSON.parse(text);
-    } catch(parseErr) {
-      console.error('JSON parse klaida:', cleaned.substring(0, 500));
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('JSON parse klaida:', parseErr.message);
+      console.error('Bandyta parse:', jsonMatch[0].substring(0, 400));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
     if (!result || !result.charakteris) {
-      console.error('Netinkamas atsakymas:', text.substring(0, 500));
+      console.error('Netinkamas rezultatas:', JSON.stringify(result).substring(0, 300));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
+    // Tokenas sunaudojamas TIK po sėkmingos analizės
+    tokenEntry.used = true;
+    console.log('Analizė sėkminga:', userName);
+
+    // El. paštas (klaida nestabdo rezultato)
     try {
       await mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -172,13 +177,13 @@ Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
         html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#07040f;font-family:Georgia,serif"><div style="max-width:600px;margin:0 auto;padding:40px 24px"><div style="text-align:center;margin-bottom:32px"><div style="font-size:32px;margin-bottom:12px">✦</div><h1 style="color:#d4a843;font-size:24px;margin:0 0 6px">${userName ? userName + ' —' : ''} Tavo Delno Skaitymas</h1><p style="color:rgba(245,238,216,0.5);font-size:13px;margin:0;font-style:italic">Delno planetų kalnai · Chiromantija · Sielos žemėlapis</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Charakteris ir asmenybė</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.charakteris}</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Sielos misija</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.sielos_misija}</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Gyvenimo tikslas ir kelias</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.gyvenimo_tikslas}</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Dovanos ir talentai</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.dovanos_tekstas}</p><div style="margin-top:12px">${(result.dovanos_sarasas||[]).map(d=>`<span style="background:rgba(212,168,67,0.1);border:0.5px solid rgba(212,168,67,0.3);border-radius:50px;padding:4px 12px;font-size:12px;color:#f0c96a;display:inline-block;margin:3px">${d}</span>`).join('')}</div></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Meilė ir santykiai</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.meile_santykiai}</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Planetų kalnai delne</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${result.astrologija}</p></div><div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:28px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">Stipriausios asmenybės pusės</div><div>${(result.stiprybes||[]).map(s=>`<span style="background:rgba(212,168,67,0.1);border:0.5px solid rgba(212,168,67,0.3);border-radius:50px;padding:4px 12px;font-size:12px;color:#f0c96a;display:inline-block;margin:3px">${s}</span>`).join('')}</div></div><div style="text-align:center;padding-top:24px;border-top:0.5px solid rgba(212,168,67,0.15)"><p style="color:rgba(245,238,216,0.35);font-size:12px;line-height:1.7;margin:0;font-style:italic">Šis skaitymas sukurtas tik tau ✦<br>Išsaugok jį — galėsi grįžti ir perskaityti dar kartą</p></div></div></body></html>`
       });
     } catch (mailErr) {
-      console.error('Laiško klaida:', mailErr);
+      console.error('Laiško klaida (nesvarbi):', mailErr.message);
     }
 
     res.json(result);
 
   } catch (err) {
-    console.error('Klaida:', err);
+    console.error('Klaida /analyze-palm:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -188,4 +193,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v15 veikia: http://localhost:${PORT}`));
