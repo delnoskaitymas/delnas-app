@@ -15,7 +15,7 @@
   --surf:rgba(255,255,255,0.03);--surf2:rgba(255,255,255,0.06);
 }
 html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s}
 .ss{position:absolute;border-radius:50%;background:var(--gold2)}
 .screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px}
 .screen.active{display:block;animation:fu .4s ease}
@@ -220,12 +220,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div class="photo-grid">
       <div class="photo-slot" id="slot0">
-        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event,0)">
+        <input type="file" accept="image/*" onchange="handlePhoto(event,0)">
         <span class="slot-ico">🤚</span>
         <div class="slot-txt">Kairė ranka</div>
       </div>
       <div class="photo-slot" id="slot1">
-        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event,1)">
+        <input type="file" accept="image/*" onchange="handlePhoto(event,1)">
         <span class="slot-ico">✋</span>
         <div class="slot-txt">Dešinė ranka</div>
       </div>
@@ -301,7 +301,13 @@ const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7}`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
 
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  // Žvaigždės slepiamos rezultato ekrane
+  document.getElementById('stars').style.opacity = id==='s-result' ? '0' : '1';
+}
 
 window.addEventListener('DOMContentLoaded',()=>{
   const params=new URLSearchParams(window.location.search);
