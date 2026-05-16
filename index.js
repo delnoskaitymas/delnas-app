@@ -1,4 +1,4 @@
-// v22 — visi mokėjimo būdai automatiškai
+// v23 — profesionali analizė, faktai, kiekvienas skyrius apie save
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -92,35 +92,31 @@ app.post('/analyze-palm', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Vardas: ${userName}. Tu esi psichologas ir žmogaus prigimties žinovas. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą lietuvių kalba.
+      text: `Vardas: ${userName}. Tu esi profesionalus chiromantijos ir žmogaus charakterio analitikas. Pažvelk į šias dvi delno nuotraukas ir pateik tikslią, profesionalią analizę lietuvių kalba.
 
-KALBA: Taisyklinga lietuvių kalba. Jokių gramatikos klaidų. Paprasti, natūralūs sakiniai.
+SVARBU — ANALIZĖS PRINCIPAI:
+- Rašyk tik konkrečius faktus ir teiginius apie šį žmogų
+- Jokios poezijos, metaforų ar pasakojimų
+- Jokio pamokslavimo ar patarimų kaip gyventi
+- Trumpi, tiesūs sakiniai — kaip gydytojo diagnozė
+- Kiekvienas skyrius kalba TIKTAI apie savo temą — jokio kartojimo
+- Kalba: taisyklinga lietuvių kalba, kreipkis "tu"
 
-TONAS: Kalbi kaip artimas draugas, kuris tave pažįsta geriau nei tu pats. Tiesiai, paprastai, be metaforų ir poetinių frazių.
+SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
 
-STILIUS:
-✓ "Tau sunku prašyti pagalbos. Net kai tikrai reikia, dažniausiai sakai kad viskas gerai."
-✓ "Santykiuose tu duodi daugiau nei gauni. Tai ne silpnybė — bet tau reikia žmonių, kurie tai pastebi."
-✓ "Yra vienas dalykas kurį jau seniai žinai kad reikia pakeisti. Vis dar lauki tinkamo momento."
-✗ NE: metaforos, poetiniai posūkiai, "sielos kelias", "šviesos nešimas", "vandens dvasia"
-✗ NE: abstrakčios frazės kurios tinka visiems
-✗ NE: komplimentai be konkretumo
-✗ NE: kartoti tą pačią temą per skirtingus skyrius — kiekvienas skyrius turi atskleisti KĄ KITĄ
+charakteris — tik apie asmenybės bruožus: kaip mąsto, kaip priima sprendimus, kaip elgiasi su kitais
+sielos_misija — tik apie tai ko šis žmogus viduje ieško gyvenime ir kas jam suteikia prasmę
+gyvenimo_tikslas — tik apie tai ką nori pasiekti ir sukurti gyvenime
+dovanos_tekstas — tik apie talentus ir natūralius gebėjimus
+meile_santykiai — tik apie meilę: kaip myli, ko ieško partnerijoje, kokie santykių modeliai
+astrologija — tik apie delno planetų kalnus ir ką jie atskleidžia apie temperamentą
+stiprybes — tik konkrečios stiprybės kaip faktų sąrašas
 
-SKYRIŲ TEMOS — kiekvienas skyrius kalba apie SKIRTINGĄ gyvenimo sritį:
-- charakteris: kaip žmogus elgiasi su savimi ir pasauliu
-- sielos_misija: ko žmogus ieško gyvenime, kas jam suteikia prasmę
-- gyvenimo_tikslas: ką žmogus nori sukurti ar pasiekti
-- dovanos_tekstas: kokius talentus ir gebėjimus turi
-- meile_santykiai: kaip myli, ko bijo santykiuose, ko ieško
-- astrologija: charakterio bruožai per planetų prizmę — BEZ aukojimosi temos
-- stiprybes: konkrečios stiprybės, NE bendros frazės
+KIEKVIENAS skyrius: 5-6 trumpi, konkretūs sakiniai. Tik faktai. Be įžangų ir išvadų.
 
-KIEKVIENAS skyrius: 6-7 konkretūs, paprasti sakiniai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
-LABAI SVARBU: Atsakyk TIKTAI grynu JSON. Pradėk tiesiai nuo { simbolio. Jokio teksto prieš JSON. Jokio teksto po JSON. Jokių backtick simbolių. Jokių markdown žymių.
-
-{"charakteris":"6-7 sakiniai","sielos_misija":"6-7 sakiniai","gyvenimo_tikslas":"6-7 sakiniai","dovanos_tekstas":"6-7 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"6-7 sakiniai","astrologija":"6-7 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
+{"charakteris":"5-6 sakiniai","sielos_misija":"5-6 sakiniai","gyvenimo_tikslas":"5-6 sakiniai","dovanos_tekstas":"5-6 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"5-6 sakiniai","astrologija":"5-6 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
     // Retry logika overloaded_error atveju
@@ -219,4 +215,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v22 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v23 veikia: http://localhost:${PORT}`));
