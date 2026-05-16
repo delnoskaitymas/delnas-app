@@ -55,12 +55,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
 .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.photo-slot{aspect-ratio:1;background:var(--surf);border:1.5px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color .2s,background .2s;cursor:pointer}
-.photo-slot:hover{border-color:var(--gold);background:rgba(212,168,67,.05)}
+.photo-slot{aspect-ratio:1;background:var(--surf);border:1.5px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color .2s,background .2s}
 .photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px;z-index:1;pointer-events:none}
-.slot-ico{font-size:28px;margin-bottom:8px;display:block;opacity:.5;position:relative;z-index:0;pointer-events:none}
-.slot-txt{font-size:12px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px;position:relative;z-index:0;pointer-events:none}
-.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:5;width:100%;height:100%;font-size:0}
+.slot-ico{font-size:28px;margin-bottom:6px;display:block;opacity:.5}
+.slot-txt{font-size:12px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px;margin-bottom:10px}
+.slot-btns{display:flex;gap:6px;z-index:5;position:relative}
+.slot-btn{background:rgba(212,168,67,.15);border:.5px solid rgba(212,168,67,.35);border-radius:8px;padding:6px 10px;color:var(--gold2);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.slot-btn:hover{background:rgba(212,168,67,.3)}
 .rm-btn{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.8);border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:6;line-height:1}
 .tips-card{background:rgba(212,168,67,.05);border:.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8}
 .tip-title{font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:5px;text-transform:uppercase}
@@ -220,14 +221,24 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div class="photo-grid">
       <div class="photo-slot" id="slot0">
-        <input type="file" accept="image/*" onchange="handlePhoto(event,0)">
+        <input type="file" accept="image/*" id="file0" style="display:none" onchange="handlePhoto(event,0)">
+        <input type="file" accept="image/*" capture id="cam0" style="display:none" onchange="handlePhoto(event,0)">
         <span class="slot-ico">🤚</span>
         <div class="slot-txt">Kairė ranka</div>
+        <div class="slot-btns">
+          <button class="slot-btn" onclick="document.getElementById('cam0').click()">📷 Foto</button>
+          <button class="slot-btn" onclick="document.getElementById('file0').click()">🖼 Galerija</button>
+        </div>
       </div>
       <div class="photo-slot" id="slot1">
-        <input type="file" accept="image/*" onchange="handlePhoto(event,1)">
+        <input type="file" accept="image/*" id="file1" style="display:none" onchange="handlePhoto(event,1)">
+        <input type="file" accept="image/*" capture id="cam1" style="display:none" onchange="handlePhoto(event,1)">
         <span class="slot-ico">✋</span>
         <div class="slot-txt">Dešinė ranka</div>
+        <div class="slot-btns">
+          <button class="slot-btn" onclick="document.getElementById('cam1').click()">📷 Foto</button>
+          <button class="slot-btn" onclick="document.getElementById('file1').click()">🖼 Galerija</button>
+        </div>
       </div>
     </div>
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px">Įkelta: <span id="pcount" style="color:var(--gold2);font-weight:500">0</span> / 2</div>
@@ -305,8 +316,7 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  // Žvaigždės slepiamos rezultato ekrane
-  document.getElementById('stars').style.opacity = id==='s-result' ? '0' : '1';
+  document.getElementById('stars').style.opacity=id==='s-result'?'0':'1';
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
@@ -403,6 +413,7 @@ function handlePhoto(e,i){
       img.src=compressed;
       slot.querySelector('.slot-ico').style.display='none';
       slot.querySelector('.slot-txt').style.display='none';
+      slot.querySelector('.slot-btns').style.display='none';
       let rb=slot.querySelector('.rm-btn');
       if(!rb){
         rb=document.createElement('button');
@@ -431,10 +442,11 @@ function removePhoto(i){
   photos[i]=null;
   const slot=document.getElementById('slot'+i);
   const img=slot.querySelector('img');if(img)img.remove();
-  const inp=slot.querySelector('input');if(inp)inp.value='';
+  ['file'+i,'cam'+i].forEach(id=>{const inp=document.getElementById(id);if(inp)inp.value='';});
   const rb=slot.querySelector('.rm-btn');if(rb)rb.style.display='none';
   slot.querySelector('.slot-ico').style.display='block';
   slot.querySelector('.slot-txt').style.display='block';
+  slot.querySelector('.slot-btns').style.display='flex';
   updateCount();
 }
 
