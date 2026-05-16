@@ -1,4 +1,4 @@
-// v15 — token fix + prompt optimizacija
+// v16 — haiku modelis + gilesni aprašymai
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -69,7 +69,6 @@ app.post('/analyze-palm', async (req, res) => {
   try {
     const { photos, name, token } = req.body;
 
-    // Validuojam tokeną BEZ sunaudojimo
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) {
       return res.status(403).json({ error: 'Mokėjimas nepatvirtintas. Norėdami skaitymo — sumokėkite.' });
@@ -94,17 +93,18 @@ app.post('/analyze-palm', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Vardas: ${userName}. Tu esi delno skaitymo meistras. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą.
+      text: `Vardas: ${userName}. Tu esi delno skaitymo meistras. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą lietuvių kalba.
 
-RAŠYMO STILIUS:
-- Rašyk konkrečiai ir intymiai, ne abstrakčiai. Pvz: "Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias" — ne "tu jautrus".
-- Kiekvienas skyrius 4-5 sakiniai. Trumpai bet giliai.
-- Maišyk šviesą ir šešėlį — tiesa kartais skauda.
-- Kalba: lietuvių. Kreipkis "tu".
+STILIUS — rašyk KONKREČIAI ir INTYMIAI:
+✓ "Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias iš visų — ir niekas to nemato. Tu išmokai slėpti tai po šypsena."
+✓ "Tu ne kartą save sulaikei — nepasakei ko norėjai, nes bijojai būti per daug. Ir dėl to praradai dalykų kurių vis dar gailiesi."
+✗ NE: "tu jautrus žmogus" / "tu trokšti meilės" / "artėja pokyčiai"
 
-ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių markdown simbolių.
+KIEKVIENAS skyrius: 6-7 sakiniai. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
 
-{"charakteris":"4-5 sakiniai","sielos_misija":"4-5 sakiniai","gyvenimo_tikslas":"4-5 sakiniai","dovanos_tekstas":"4-5 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"4-5 sakiniai","astrologija":"4-5 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
+ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
+
+{"charakteris":"6-7 sakiniai","sielos_misija":"6-7 sakiniai","gyvenimo_tikslas":"6-7 sakiniai","dovanos_tekstas":"6-7 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"6-7 sakiniai","astrologija":"6-7 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -115,15 +115,14 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių markdown simbolių.
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4000,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 5000,
         messages: [{ role: 'user', content }]
       })
     });
 
     const data = await response.json();
 
-    // Diagnostika Railway loguose
     console.log('stop_reason:', data.stop_reason);
     console.log('usage:', JSON.stringify(data.usage));
 
@@ -168,7 +167,6 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių markdown simbolių.
     tokenEntry.used = true;
     console.log('Analizė sėkminga:', userName);
 
-    // El. paštas (klaida nestabdo rezultato)
     try {
       await mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -193,4 +191,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v15 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v16 veikia: http://localhost:${PORT}`));
