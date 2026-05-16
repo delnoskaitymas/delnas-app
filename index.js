@@ -1,4 +1,4 @@
-// v18 — retry logika overloaded_error atveju
+// v19 — sonnet modelis + 6-7 sakiniai
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -103,11 +103,11 @@ STILIUS — rašyk KONKREČIAI ir INTYMIAI:
 ✗ NE: abstrakčios frazės, poetiniai posūkiai, netaisyklingos konstrukcijos
 ✗ NE: "tu jautrus žmogus" / "tu trokšti meilės" / "artėja pokyčiai"
 
-KIEKVIENAS skyrius: 8-10 sakinių. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+KIEKVIENAS skyrius: 6-7 sakiniai. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
 
 ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
 
-{"charakteris":"8-10 sakinių","sielos_misija":"8-10 sakinių","gyvenimo_tikslas":"8-10 sakinių","dovanos_tekstas":"8-10 sakinių","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"8-10 sakinių","astrologija":"8-10 sakinių","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
+{"charakteris":"6-7 sakiniai","sielos_misija":"6-7 sakiniai","gyvenimo_tikslas":"6-7 sakiniai","dovanos_tekstas":"6-7 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"6-7 sakiniai","astrologija":"6-7 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
     // Retry logika overloaded_error atveju
@@ -121,8 +121,8 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 6000,
+          model: 'claude-sonnet-4-5',
+          max_tokens: 5000,
           messages: [{ role: 'user', content }]
         })
       });
@@ -204,4 +204,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v18 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v19 veikia: http://localhost:${PORT}`));
