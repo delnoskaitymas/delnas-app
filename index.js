@@ -1,4 +1,4 @@
-// v19 — sonnet modelis + 6-7 sakiniai
+// v20 — geresnis promptas + json fix
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -93,19 +93,23 @@ app.post('/analyze-palm', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Vardas: ${userName}. Tu esi delno skaitymo meistras. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą lietuvių kalba.
+      text: `Vardas: ${userName}. Tu esi psichologas ir žmogaus prigimties žinovas. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą lietuvių kalba.
 
 KALBA: Taisyklinga lietuvių kalba. Jokių gramatikos klaidų. Paprasti, natūralūs sakiniai.
 
-STILIUS — rašyk KONKREČIAI ir INTYMIAI:
-✓ "Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias iš visų — ir niekas to nemato. Tu išmokai slėpti tai po šypsena."
-✓ "Ne kartą save sulaikei ir nepasakei ko norėjai, nes bijojai būti per daug. Ir dėl to praradai dalykų, kurių vis dar gailiesi."
-✗ NE: abstrakčios frazės, poetiniai posūkiai, netaisyklingos konstrukcijos
-✗ NE: "tu jautrus žmogus" / "tu trokšti meilės" / "artėja pokyčiai"
+TONAS: Kalbi kaip artimas draugas, kuris tave pažįsta geriau nei tu pats. Tiesiai, paprastai, be metaforų ir poetinių frazių.
 
-KIEKVIENAS skyrius: 6-7 sakiniai. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+STILIUS:
+✓ "Tau sunku prašyti pagalbos. Net kai tikrai reikia, dažniausiai sakai kad viskas gerai."
+✓ "Santykiuose tu duodi daugiau nei gauni. Tai ne silpnybė — bet tau reikia žmonių, kurie tai pastebi."
+✓ "Yra vienas dalykas kurį jau seniai žinai kad reikia pakeisti. Vis dar lauki tinkamo momento."
+✗ NE: metaforos, poetiniai posūkiai, "sielos kelias", "šviesos nešimas", "vandens dvasia"
+✗ NE: abstrakčios frazės kurios tinka visiems
+✗ NE: komplimentai be konkretumo
 
-ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
+KIEKVIENAS skyrius: 6-7 konkretūs, paprasti sakiniai. Kalbėk apie realias situacijas, elgesį, jausmus. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+
+LABAI SVARBU: Atsakyk TIKTAI grynu JSON. Pradėk tiesiai nuo { simbolio. Jokio teksto prieš JSON. Jokio teksto po JSON. Jokių backtick simbolių. Jokių markdown žymių.
 
 {"charakteris":"6-7 sakiniai","sielos_misija":"6-7 sakiniai","gyvenimo_tikslas":"6-7 sakiniai","dovanos_tekstas":"6-7 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"6-7 sakiniai","astrologija":"6-7 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
@@ -123,7 +127,16 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
         body: JSON.stringify({
           model: 'claude-sonnet-4-5',
           max_tokens: 5000,
-          messages: [{ role: 'user', content }]
+          messages: [
+            {
+              role: 'user',
+              content
+            },
+            {
+              role: 'assistant',
+              content: '{'
+            }
+          ]
         })
       });
       data = await response.json();
@@ -149,16 +162,15 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
-    const rawText = data.content.map(b => b.text || '').join('');
+    const rawText = '{' + data.content.map(b => b.text || '').join('');
     console.log('RAW ilgis:', rawText.length);
     console.log('RAW pradžia:', rawText.substring(0, 150));
     console.log('RAW pabaiga:', rawText.substring(rawText.length - 150));
 
-    const cleaned = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
-      console.error('JSON nerastas. Cleaned:', cleaned.substring(0, 400));
+      console.error('JSON nerastas:', rawText.substring(0, 400));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
@@ -204,4 +216,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v19 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v20 veikia: http://localhost:${PORT}`));
