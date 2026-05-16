@@ -1,4 +1,4 @@
-// v16 — haiku modelis + gilesni aprašymai
+// v17 — geresni aprašymai + taisyklinga kalba
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -95,16 +95,19 @@ app.post('/analyze-palm', async (req, res) => {
       type: 'text',
       text: `Vardas: ${userName}. Tu esi delno skaitymo meistras. Pažvelk į šias dvi rankas ir parašyk gilų, asmeninį skaitymą lietuvių kalba.
 
+KALBA: Taisyklinga lietuvių kalba. Jokių gramatikos klaidų. Paprasti, natūralūs sakiniai.
+
 STILIUS — rašyk KONKREČIAI ir INTYMIAI:
 ✓ "Yra momentų kai esi kambaryje pilname žmonių ir jautiesi vienišiausias iš visų — ir niekas to nemato. Tu išmokai slėpti tai po šypsena."
-✓ "Tu ne kartą save sulaikei — nepasakei ko norėjai, nes bijojai būti per daug. Ir dėl to praradai dalykų kurių vis dar gailiesi."
+✓ "Ne kartą save sulaikei ir nepasakei ko norėjai, nes bijojai būti per daug. Ir dėl to praradai dalykų, kurių vis dar gailiesi."
+✗ NE: abstrakčios frazės, poetiniai posūkiai, netaisyklingos konstrukcijos
 ✗ NE: "tu jautrus žmogus" / "tu trokšti meilės" / "artėja pokyčiai"
 
-KIEKVIENAS skyrius: 6-7 sakiniai. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+KIEKVIENAS skyrius: 8-10 sakinių. Konkrečios situacijos, jausmai, momentai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
 
 ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
 
-{"charakteris":"6-7 sakiniai","sielos_misija":"6-7 sakiniai","gyvenimo_tikslas":"6-7 sakiniai","dovanos_tekstas":"6-7 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"6-7 sakiniai","astrologija":"6-7 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
+{"charakteris":"8-10 sakinių","sielos_misija":"8-10 sakinių","gyvenimo_tikslas":"8-10 sakinių","dovanos_tekstas":"8-10 sakinių","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"8-10 sakinių","astrologija":"8-10 sakinių","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -116,7 +119,7 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 5000,
+        max_tokens: 6000,
         messages: [{ role: 'user', content }]
       })
     });
@@ -191,4 +194,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v16 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v17 veikia: http://localhost:${PORT}`));
