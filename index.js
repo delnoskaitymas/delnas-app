@@ -1,4 +1,4 @@
-// v13 — JSON fix
+// v14 — JSON fix v2
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -147,14 +147,15 @@ Kalba: lietuvių. Vardas: ${userName || 'nežinomas'}.`
     }
 
     const rawText = data.content.map(b => b.text || '').join('');
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    const text = jsonMatch ? jsonMatch[0] : rawText.replace(/```json|```/g, '').trim();
+    const cleaned = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    const text = jsonMatch ? jsonMatch[0] : cleaned;
 
     let result;
     try {
       result = JSON.parse(text);
     } catch(parseErr) {
-      console.error('JSON parse klaida:', rawText.substring(0, 500));
+      console.error('JSON parse klaida:', cleaned.substring(0, 500));
       return res.status(500).json({ error: 'Analizės klaida. Bandyk dar kartą.' });
     }
 
