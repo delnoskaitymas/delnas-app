@@ -1,4 +1,4 @@
-// v17 — geresni aprašymai + taisyklinga kalba
+// v18 — retry logika overloaded_error atveju
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -110,21 +110,31 @@ ATSAKYK TIKTAI JSON. Jokio teksto prieš ar po. Jokių \`\`\` simbolių.
 {"charakteris":"8-10 sakinių","sielos_misija":"8-10 sakinių","gyvenimo_tikslas":"8-10 sakinių","dovanos_tekstas":"8-10 sakinių","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"8-10 sakinių","astrologija":"8-10 sakinių","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
     });
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 6000,
-        messages: [{ role: 'user', content }]
-      })
-    });
+    // Retry logika overloaded_error atveju
+    let data;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 6000,
+          messages: [{ role: 'user', content }]
+        })
+      });
+      data = await response.json();
 
-    const data = await response.json();
+      if (data?.error?.type === 'overloaded_error') {
+        console.log(`Overloaded, bandymas ${attempt}/3, laukiam ${attempt * 3} sek...`);
+        if (attempt < 3) await new Promise(r => setTimeout(r, 3000 * attempt));
+        continue;
+      }
+      break;
+    }
 
     console.log('stop_reason:', data.stop_reason);
     console.log('usage:', JSON.stringify(data.usage));
@@ -194,4 +204,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v17 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v18 veikia: http://localhost:${PORT}`));
