@@ -1,4 +1,4 @@
-// v20 — geresnis promptas + json fix
+// v21 — skyriai nekartoja temos
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -106,8 +106,18 @@ STILIUS:
 ✗ NE: metaforos, poetiniai posūkiai, "sielos kelias", "šviesos nešimas", "vandens dvasia"
 ✗ NE: abstrakčios frazės kurios tinka visiems
 ✗ NE: komplimentai be konkretumo
+✗ NE: kartoti tą pačią temą per skirtingus skyrius — kiekvienas skyrius turi atskleisti KĄ KITĄ
 
-KIEKVIENAS skyrius: 6-7 konkretūs, paprasti sakiniai. Kalbėk apie realias situacijas, elgesį, jausmus. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
+SKYRIŲ TEMOS — kiekvienas skyrius kalba apie SKIRTINGĄ gyvenimo sritį:
+- charakteris: kaip žmogus elgiasi su savimi ir pasauliu
+- sielos_misija: ko žmogus ieško gyvenime, kas jam suteikia prasmę
+- gyvenimo_tikslas: ką žmogus nori sukurti ar pasiekti
+- dovanos_tekstas: kokius talentus ir gebėjimus turi
+- meile_santykiai: kaip myli, ko bijo santykiuose, ko ieško
+- astrologija: charakterio bruožai per planetų prizmę — BEZ aukojimosi temos
+- stiprybes: konkrečios stiprybės, NE bendros frazės
+
+KIEKVIENAS skyrius: 6-7 konkretūs, paprasti sakiniai. Maišyk šviesą ir šešėlį. Baik viltimi ar stiprybe. Kreipkis "tu".
 
 LABAI SVARBU: Atsakyk TIKTAI grynu JSON. Pradėk tiesiai nuo { simbolio. Jokio teksto prieš JSON. Jokio teksto po JSON. Jokių backtick simbolių. Jokių markdown žymių.
 
@@ -128,14 +138,8 @@ LABAI SVARBU: Atsakyk TIKTAI grynu JSON. Pradėk tiesiai nuo { simbolio. Jokio t
           model: 'claude-sonnet-4-5',
           max_tokens: 5000,
           messages: [
-            {
-              role: 'user',
-              content
-            },
-            {
-              role: 'assistant',
-              content: '{'
-            }
+            { role: 'user', content },
+            { role: 'assistant', content: '{' }
           ]
         })
       });
@@ -216,4 +220,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v20 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v21 veikia: http://localhost:${PORT}`));
