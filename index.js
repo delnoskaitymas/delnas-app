@@ -1,4 +1,4 @@
-// v21 — skyriai nekartoja temos
+// v22 — visi mokėjimo būdai automatiškai
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -32,7 +32,6 @@ app.post('/create-payment', async (req, res) => {
     const { name, email } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Trūksta duomenų' });
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 559 }, quantity: 1 }],
       mode: 'payment',
       customer_email: email,
@@ -220,4 +219,4 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`DELNAS v21 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v22 veikia: http://localhost:${PORT}`));
