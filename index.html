@@ -15,7 +15,7 @@
   --surf:rgba(255,255,255,0.03);--surf2:rgba(255,255,255,0.06);
 }
 html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2)}
 .screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px}
 .screen.active{display:block;animation:fu .4s ease}
@@ -142,22 +142,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       Tavo ranka žino<br><em class="gold">viską apie tave</em>
     </h1>
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
-      Įkelk dvi delno nuotraukas.<br>Gauk gilų, asmeninį skaitymą per 60 sekundžių.
+      Pradėk savo delnų analizę dabar.<br>Sužinok, ką slepia tavo gyvenimo linijos.
     </p>
-    <div style="background:rgba(212,168,67,.1);border:1.5px solid rgba(212,168,67,.4);border-radius:18px;padding:20px 24px;margin-bottom:22px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.06em">PILNAS SKAITYMAS — 7 SKYRIAI</div>
-      <div class="serif gold" style="font-size:44px;font-weight:700;line-height:1">5.59 €</div>
-      <div style="font-size:12px;color:var(--faint);margin-top:4px">
-        <span style="text-decoration:line-through">19 €</span>
-        <span style="color:var(--gold);margin-left:8px">— šiandien tik</span>
-      </div>
-    </div>
-    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="go('s-order')">Gauti savo skaitymą →</button>
-    <div style="display:flex;align-items:center;justify-content:center;gap:14px;font-size:12px;color:var(--faint);margin-bottom:8px">
-      <span>🔒 Stripe</span><span>·</span><span>✓ Saugu</span><span>·</span><span>♾ Konfidencialu</span>
-    </div>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="go('s-order')">Skenuoti delnus →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
-      Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonių gavo savo skaitymą
+      Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
     </div>
   </div>
   <div style="padding:0 20px">
@@ -305,7 +294,6 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  document.getElementById('stars').style.opacity=id==='s-home'?'1':'0';
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
