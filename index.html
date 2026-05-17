@@ -247,7 +247,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
     <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:6px">Analizuojama...</div>
-    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Analizuojamos delno linijos...</div>
+    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Analizuojami delnai...</div>
     <div style="width:100%;max-width:300px;margin-bottom:4px">
       <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
         <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .5s linear"></div>
@@ -255,10 +255,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="ptime" style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">~60 sek.</div>
     </div>
     <div class="load-steps">
-      <div class="ls"><div class="ls-dot" id="ls1"></div>Analizuojamos delno linijos</div>
-      <div class="ls"><div class="ls-dot" id="ls2"></div>Skaitomi planetų kalnai delne</div>
-      <div class="ls"><div class="ls-dot" id="ls3"></div>Nustatomos sielos dovanos</div>
-      <div class="ls"><div class="ls-dot" id="ls4"></div>Ruošiamas asmeninis skaitymas</div>
+      <div class="ls"><div class="ls-dot" id="ls1"></div>Analizuojami delnai</div>
+      <div class="ls"><div class="ls-dot" id="ls2"></div>Skaitomos tavo gyvenimo linijos</div>
+      <div class="ls"><div class="ls-dot" id="ls3"></div>Atskleidžiamos tavo savybės</div>
+      <div class="ls"><div class="ls-dot" id="ls4"></div>Nustatomos tavo prigimtinės dovanos</div>
     </div>
     <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
   </div>
@@ -305,7 +305,7 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  document.getElementById('stars').style.opacity=id==='s-result'?'0':'1';
+  document.getElementById('stars').style.opacity=id==='s-home'?'1':'0';
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
@@ -456,7 +456,7 @@ async function startReading(){
 }
 
 function animateLoading(){
-  const msgs=['Analizuojamos delno linijos...','Ruošiamas tavo skaitymas...','Dar kelios sekundės...','Beveik baigta...'];
+  const msgs=['Analizuojami delnai...','Skaitomos gyvenimo linijos...','Dar kelios sekundės...','Beveik baigta...'];
   let mi=0;
   const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1800);
   const total=60;
