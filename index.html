@@ -121,10 +121,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:320px;height:390px;border-radius:22px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(212,168,67,.18);z-index:10}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-palm-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
-.cam-palm-overlay svg{
-  filter:drop-shadow(0 0 14px rgba(201,168,76,0.9)) drop-shadow(0 0 4px rgba(201,168,76,0.6));
-  opacity:0.82;
-}
+.cam-palm-overlay svg{filter:drop-shadow(0 0 12px rgba(201,168,76,0.85));opacity:0.65}
 .cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2.4s ease-in-out infinite;z-index:4;pointer-events:none}
 @keyframes camScan{0%{top:6%;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:92%;opacity:0}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
@@ -173,45 +170,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 2: KAMERA -->
-<div id="s-camera">
-  <div class="cam-progress">
-    <div class="cam-dot" id="cam-dot1"></div>
-    <div class="cam-dot inactive" id="cam-dot2"></div>
-  </div>
-  <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div class="cam-sub">Pasistenkite, kad aplinkui būtų geras apšvietimas,<br>o pirštai būtų išskėsti.</div>
-  <div class="cam-viewport">
-    <video id="cam-video" autoplay playsinline muted></video>
-    <div class="cam-palm-overlay" id="cam-palm-svg">
-      <svg id="hand-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 437 532" width="255" height="320"
-        style="filter:drop-shadow(0 0 18px rgba(201,168,76,1)) drop-shadow(0 0 6px rgba(201,168,76,0.8));opacity:0.92;transform:scaleX(-1);">
-        <path fill="rgba(15,10,5,0.85)" stroke="#C9A84C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"
-        d="M257.5 13c.3.5 1.3 1 2.2 1 2.5 0 8.3 4.9 8.3 7 0 1 .5 2 1.2 2.2 1.2.4 2.2 9.1 3.8 32.8.5 7.4 1.5 18 2.1 23.5s1.1 13.6 1 18-.1 16.1-.1 26c.1 9.9.1 24.5.2 32.5 0 8-.3 21-.7 28.8-.5 9.7-.4 15.1.3 16.5.6 1.2 1.3 3.5 1.4 5.1.2 1.6 1.1 3.4 2.1 4 1.6.9 2.4.5 5.3-2.8 1.9-2.2 3.4-4.7 3.4-5.7s.4-2 .9-2.3c1.2-.8 2.3-7.7 5.1-31.6.7-5.8 1.6-11.3 2.1-12.2s.9-6.6.9-12.7c0-6.2.4-11.2 1-11.6.6-.3 1-2.4 1-4.6 0-2.1.5-3.9 1-3.9.6 0 1-1.5 1-3.4s.5-3.8 1-4.1c.6-.3 1-2.6 1-5s.5-4.7 1-5c.6-.3 1-2.5 1-4.9 0-2.3.4-4.6.9-5.1.5-.6 1.2-4.6 1.5-9 .8-12.2 1.7-18.9 2.7-20 .5-.5.9-2.4.9-4.3 0-3.2 2.2-11.6 4.1-15.4.5-1 .9-2.5.9-3.3s.5-1.5 1-1.5c.6 0 1-.7 1-1.6 0-1.7 1-2.8 6.1-6.7 2.9-2.2 4.6-2.7 9.3-2.7 3.2 0 6.7.5 7.9 1.1 2.7 1.4 7.7 7 7.7 8.6 0 .7.5 1.3 1 1.3.6 0 1 1 1 2.3s.5 2.8 1 3.3c1.4 1.4.6 50.8-.9 62.4-.7 4.7-1.4 17.3-1.7 28-.2 10.7-.9 20.4-1.4 21.5s-1.1 5.4-1.4 9.5c-1 14.2-3.3 27.8-5.4 31.7-.7 1.2-1.2 3.3-1.2 4.7s-.4 2.8-1 3.1c-.5.3-1 2.4-1 4.6 0 2.1-.4 3.9-1 3.9s-1 4.6-1 11.8c0 11.3.1 11.9 2.3 13 3.5 1.7 6.1 2.2 7.3 1.4 1.7-1.1 8.4-12.1 8.4-13.7 0-.7.5-1.7 1-2 .6-.3 1-1.5 1-2.6 0-1 .5-1.9 1-1.9.6 0 1-.7 1-1.5s.4-2.3.9-3.3c.8-1.5 1.6-3.4 4.2-9.7.5-1.1 1.6-4.4 2.5-7.3s2-5.5 2.5-5.8.9-1.6.9-3c0-1.3.5-2.4 1-2.4.6 0 1-1.1 1-2.4 0-1.4.5-2.8 1-3.1.6-.3 1-1.5 1-2.6 0-1 .5-1.9 1-1.9.6 0 1-.9 1-2s.5-2 1-2c.6 0 1-.9 1-1.9 0-1.1.5-2.3 1-2.6.6-.3 1-1.3 1-2.1 0-.7 1.6-4.8 3.5-9 1.9-4.1 3.5-8.2 3.5-9s.5-1.4 1-1.4c.6 0 1-1.3 1-2.9 0-1.7.5-3.3 1-3.6.6-.3 1-1.5 1-2.5 0-5 6.6-12.9 13.6-16.5 3.8-1.9 5-2.1 7.9-1.2 4.9 1.5 13.5 9.8 13.5 13 0 1.4.5 2.9 1.1 3.3.7.4.8 2 .4 4.3-.3 2-.9 6.5-1.2 10.1-.2 3.6-.9 6.9-1.4 7.5-.5.5-.9 2.8-.9 5.1 0 2.4-.4 4.6-1 4.9-.5.3-1 2.4-1 4.5s-.4 4.2-1 4.5c-.5.3-1 1.9-1 3.5s-.4 3.2-1 3.5c-.5.3-1 1.5-1 2.6 0 1-.4 2.7-.9 3.7-.8 1.7-2.8 6.2-5.1 11.7-.7 1.6-1.6 3.8-2.1 4.7-.5 1-.9 2.5-.9 3.3s-.4 1.5-1 1.5c-.5 0-1 .9-1 2s-.5 3-1.2 4.3c-2.3 4.4-2.8 5.7-2.8 6.7 0 2.6-10.9 25-12.2 25-.4 0-.8.9-.8 2s-.4 2-1 2c-.5 0-1 .9-1 1.9 0 1.1-.4 2.3-1 2.6-.5.3-1 1.6-1 2.9 0 1.2-.4 2.6-.9 3.2-1.2 1.3-2.1 7.7-3.1 22.9-1.5 24.2-2.8 39-3.7 41.5-.5 1.4-1 10.1-1.1 19.4-.1 10.1-.6 17.4-1.2 18-.5.5-1 2.5-1 4.2 0 1.8-.5 3.6-1 3.9s-1 2.1-1 4-.4 3.7-1 4c-.5.3-1 2.2-1 4.1s-.4 3.4-1 3.4c-.5 0-1 1.8-1 3.9 0 2.2-.4 4.3-1 4.6-.5.3-1 1.8-1 3.3s-1.6 6-3.5 9.9c-1.9 4-3.5 7.9-3.5 8.8 0 .8-.4 1.5-1 1.5-.5 0-1 1.3-1 3 0 1.6-.4 3-1 3-.5 0-1 1.1-1 2.5s-.4 2.5-1 2.5c-.5 0-1 .9-1 2s-.4 2-1 2c-.5 0-1 .6-1 1.3s-.8 2.2-1.7 3.3c-1 1-3.1 3.8-4.7 6.1-1.6 2.4-3.2 4.3-3.7 4.3-.4 0-1 11.6-1.3 25.7-.2 14.2-.8 28.3-1.3 31.4l-.8 5.7-71.9.6c-39.5.3-72.9.9-74.2 1.2-2.2.6-2.4.3-2.4-2.7 0-1.9-.5-5-1-6.9-1-3.1-1.5-6.4-3.6-21.5-.4-2.2-1-4.4-1.5-5-.5-.5-.9-2.1-.9-3.6s-.4-3.1-1-3.4c-.5-.3-1-1.7-1-3.1 0-1.3-.4-3.2-.9-4.2-.5-.9-1.7-3.5-2.8-5.7-1.2-2.6-2.7-4.1-4.1-4.3-1.2-.2-2.2-.8-2.2-1.3s-.7-.9-1.6-.9c-1.4 0-10.7-6.1-16.4-10.7-.8-.6-3.5-2.7-5.9-4.5s-4.9-4.2-5.5-5.3-1.4-2.2-1.7-2.5c-.8-.8-7.4-11-9.7-15.1-3.9-7.1-4.7-8.3-7.5-11.2-1.5-1.7-2.7-3.6-2.7-4.3 0-.8-.4-1.4-.8-1.4s-1.6-1.5-2.7-3.3c-1-1.7-2.7-4.1-3.7-5.1-1-1.1-1.8-2.6-1.8-3.3s-.4-1.3-.8-1.3c-.5 0-1.5-1.2-2.3-2.7-.8-1.6-1.8-3.3-2.4-3.9-.5-.6-1.9-2.3-3-3.8-1.1-1.6-2.9-4-4-5.4-2.5-3.3-5.4-8.2-6.1-10.5-.4-.9-1-1.7-1.4-1.7s-1.3-1.4-2-3c-.7-1.7-1.6-3-2.1-3s-.9-.5-.9-1.1-1.9-3.8-4.3-7.2-4.9-7.6-5.7-9.2c-.8-1.7-1.7-3.2-2-3.5-1.2-1.2-5-9.3-5-10.6 0-.8-.4-1.4-1-1.4-.5 0-1-1.1-1-2.5s-.4-2.5-1-2.5c-.5 0-1-.5-1-1.2 0-.6-.9-3-1.9-5.2-1.9-4-4.3-9.7-6.3-14.6-.6-1.4-1.4-3.3-1.9-4.2-.5-1-.9-2.5-.9-3.3s-.4-1.5-1-1.5c-.5 0-1-.9-1-1.9 0-1.1-.4-2.3-1-2.6-.5-.3-1-1.5-1-2.6 0-1-.3-1.9-.8-1.9-.4 0-1.5-1.7-2.4-3.8-1-2-3.4-6.4-5.3-9.7-2-3.3-3.8-6.8-4.2-7.8-.3-.9-.9-1.7-1.4-1.7s-.9-1.5-.9-3.4-.4-3.8-1-4.1c-1.3-.8-1.3-25.5 0-25.5.6 0 1-.7 1-1.5 0-.9.8-1.9 1.7-2.2 1-.4 2.1-1.1 2.4-1.6 1-1.4 24.6-1.4 26.1.1.6.6 2 1.2 3 1.2s1.8.4 1.8 1c0 .5.9 1 2 1s2 .4 2 1c0 .5.7 1 1.5 1 1.7 0 11.5 9.1 11.5 10.6 0 .6.8 1.9 1.7 3 1 1.1 2.3 2.9 2.9 4 2.3 4.2 4.2 8 5.4 10.9.7 1.6 1.6 3.8 2.1 4.7.5 1 .9 2.4.9 3.2 0 3 4.7 10.2 10.8 16.4 3.4 3.5 6.2 6.8 6.2 7.4 0 .5.9 1.8 2 3s2 2.8 2 3.5.4 1.3.8 1.3c.5 0 1.5 1.2 2.3 2.7 2 4.1 10.1 12.2 12.2 12.3.9 0 1.7.4 1.7 1 0 1.9 4.1 1 6.7-1.6 1.4-1.4 4.1-5.1 5.9-8.2 3.2-5.3 3.4-6.1 3.4-14.8 0-5.1.4-9.6 1-9.9.6-.4 1-7.5 1-18.1 0-10.9-.4-17.4-1-17.4-.5 0-1-1.5-1-3.3 0-1.9-.7-4.9-1.6-6.7-1.4-2.6-1.7-7.5-2-26.4-.3-23.3-1.4-40.3-3.4-53.1-.6-3.9-1.5-11.5-2-17s-1.4-14.5-2-20-1.1-12.3-1.1-15c.1-9.8 1.8-43 2.4-45 .3-1.1.8-3.3 1.2-4.8.6-3.1 9.6-12.7 13.5-14.4 7.5-3.2 13.4-4.1 14.5-2.3.3.5 1.5 1 2.6 1 1 0 1.9.4 1.9 1 0 .5.5 1 1.2 1 1.6 0 7.8 6.1 7.8 7.7 0 .7.5 1.3 1 1.3.6 0 1 1.1 1 2.4 0 1.4.5 2.8 1 3.1.6.3 1 1.9 1 3.6 0 1.6.4 2.9.9 2.9 1.6 0 2.3 10.1 2.7 42 .2 17.3.8 32.4 1.4 33.5.5 1.1 1.1 4.7 1.4 8 .2 3.3 1.2 9.6 2.1 14s2 15.6 2.5 25c1.1 20.7 3.2 35.9 5.1 37.1.5.3.9 1.4.9 2.5 0 1 .5 1.9 1 1.9.6 0 1 .6 1 1.2 0 .7 1 2.5 2.3 4 2.7 3.1 4.9 2.4 7.1-2.5 2.7-5.9 3.5-45.7 2.6-118.2-.5-32.6.3-46.5 2.9-51.4.6-1.1 1.1-3.2 1.1-4.7 0-4.9 5.3-19.4 7.2-19.4.4 0 .8-.6.8-1.4 0-1.8 4.8-6.4 9.7-9.3 4-2.3 13.6-3.2 14.8-1.3"/>
-      </svg>
-      <div id="hand-label" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:6;">
-        <span style="background:rgba(0,0,0,0.55);color:rgba(201,168,76,0.9);font-size:11px;letter-spacing:.14em;padding:4px 14px;border-radius:20px;border:0.5px solid rgba(201,168,76,.3);">🤚 KAIRĖ RANKA</span>
-      </div>
-    </div>
-    <div class="cam-scan-line"></div>
-    <div class="cam-flash" id="cam-flash"></div>
-    <div class="cam-error" id="cam-error">
-      <div class="cam-error-ico">📷</div>
-      <div class="cam-error-title">Kamera nepasiekiama</div>
-      <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
-      <button class="cam-retry-btn" onclick="startCamera()">Bandyti dar kartą</button>
-    </div>
-  </div>
-  <div class="cam-shutter-wrap">
-    <div class="cam-shutter" onclick="capturePhoto()">
-      <div class="cam-shutter-inner"></div>
-    </div>
-    <div class="cam-hint">Paspausti, kai ranka paruošta</div>
-  </div>
-  <canvas id="cam-canvas" style="display:none"></canvas>
-</div>
-
-<!-- SCREEN 3: ORDER -->
+<!-- SCREEN 2: ORDER -->
 <div class="screen" id="s-order">
   <div class="wrap">
     <button class="back-btn" onclick="go('s-home')">← Atgal</button>
@@ -251,6 +210,43 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
     <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Mokėjimas apsaugotas Stripe</div>
   </div>
+</div>
+
+<!-- SCREEN 3: KAMERA -->
+<div id="s-camera">
+  <!-- Progresijos taškeliai (3: pradžia, kairė, dešinė) -->
+  <div class="cam-progress">
+    <div class="cam-dot" id="cam-dot1"></div>
+    <div class="cam-dot inactive" id="cam-dot2"></div>
+    <div class="cam-dot inactive" id="cam-dot3"></div>
+  </div>
+  <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
+  <div class="cam-sub">Pasistenkite, kad aplinkui būtų geras apšvietimas,<br>o pirštai būtų išskėsti.</div>
+  <div class="cam-viewport">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <div class="cam-palm-overlay" id="cam-palm-svg">
+      <svg id="hand-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 437 532" width="255" height="320"
+        style="filter:drop-shadow(0 0 12px rgba(201,168,76,0.85));opacity:0.65;transform:scaleX(1);">
+        <path fill="none" stroke="#C9A84C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"
+        d="M257.5 13c.3.5 1.3 1 2.2 1 2.5 0 8.3 4.9 8.3 7 0 1 .5 2 1.2 2.2 1.2.4 2.2 9.1 3.8 32.8.5 7.4 1.5 18 2.1 23.5s1.1 13.6 1 18-.1 16.1-.1 26c.1 9.9.1 24.5.2 32.5 0 8-.3 21-.7 28.8-.5 9.7-.4 15.1.3 16.5.6 1.2 1.3 3.5 1.4 5.1.2 1.6 1.1 3.4 2.1 4 1.6.9 2.4.5 5.3-2.8 1.9-2.2 3.4-4.7 3.4-5.7s.4-2 .9-2.3c1.2-.8 2.3-7.7 5.1-31.6.7-5.8 1.6-11.3 2.1-12.2s.9-6.6.9-12.7c0-6.2.4-11.2 1-11.6.6-.3 1-2.4 1-4.6 0-2.1.5-3.9 1-3.9.6 0 1-1.5 1-3.4s.5-3.8 1-4.1c.6-.3 1-2.6 1-5s.5-4.7 1-5c.6-.3 1-2.5 1-4.9 0-2.3.4-4.6.9-5.1.5-.6 1.2-4.6 1.5-9 .8-12.2 1.7-18.9 2.7-20 .5-.5.9-2.4.9-4.3 0-3.2 2.2-11.6 4.1-15.4.5-1 .9-2.5.9-3.3s.5-1.5 1-1.5c.6 0 1-.7 1-1.6 0-1.7 1-2.8 6.1-6.7 2.9-2.2 4.6-2.7 9.3-2.7 3.2 0 6.7.5 7.9 1.1 2.7 1.4 7.7 7 7.7 8.6 0 .7.5 1.3 1 1.3.6 0 1 1 1 2.3s.5 2.8 1 3.3c1.4 1.4.6 50.8-.9 62.4-.7 4.7-1.4 17.3-1.7 28-.2 10.7-.9 20.4-1.4 21.5s-1.1 5.4-1.4 9.5c-1 14.2-3.3 27.8-5.4 31.7-.7 1.2-1.2 3.3-1.2 4.7s-.4 2.8-1 3.1c-.5.3-1 2.4-1 4.6 0 2.1-.4 3.9-1 3.9s-1 4.6-1 11.8c0 11.3.1 11.9 2.3 13 3.5 1.7 6.1 2.2 7.3 1.4 1.7-1.1 8.4-12.1 8.4-13.7 0-.7.5-1.7 1-2 .6-.3 1-1.5 1-2.6 0-1 .5-1.9 1-1.9.6 0 1-.7 1-1.5s.4-2.3.9-3.3c.8-1.5 1.6-3.4 4.2-9.7.5-1.1 1.6-4.4 2.5-7.3s2-5.5 2.5-5.8.9-1.6.9-3c0-1.3.5-2.4 1-2.4.6 0 1-1.1 1-2.4 0-1.4.5-2.8 1-3.1.6-.3 1-1.5 1-2.6 0-1 .5-1.9 1-1.9.6 0 1-.9 1-2s.5-2 1-2c.6 0 1-.9 1-1.9 0-1.1.5-2.3 1-2.6.6-.3 1-1.3 1-2.1 0-.7 1.6-4.8 3.5-9 1.9-4.1 3.5-8.2 3.5-9s.5-1.4 1-1.4c.6 0 1-1.3 1-2.9 0-1.7.5-3.3 1-3.6.6-.3 1-1.5 1-2.5 0-5 6.6-12.9 13.6-16.5 3.8-1.9 5-2.1 7.9-1.2 4.9 1.5 13.5 9.8 13.5 13 0 1.4.5 2.9 1.1 3.3.7.4.8 2 .4 4.3-.3 2-.9 6.5-1.2 10.1-.2 3.6-.9 6.9-1.4 7.5-.5.5-.9 2.8-.9 5.1 0 2.4-.4 4.6-1 4.9-.5.3-1 2.4-1 4.5s-.4 4.2-1 4.5c-.5.3-1 1.9-1 3.5s-.4 3.2-1 3.5c-.5.3-1 1.5-1 2.6 0 1-.4 2.7-.9 3.7-.8 1.7-2.8 6.2-5.1 11.7-.7 1.6-1.6 3.8-2.1 4.7-.5 1-.9 2.5-.9 3.3s-.4 1.5-1 1.5c-.5 0-1 .9-1 2s-.5 3-1.2 4.3c-2.3 4.4-2.8 5.7-2.8 6.7 0 2.6-10.9 25-12.2 25-.4 0-.8.9-.8 2s-.4 2-1 2c-.5 0-1 .9-1 1.9 0 1.1-.4 2.3-1 2.6-.5.3-1 1.6-1 2.9 0 1.2-.4 2.6-.9 3.2-1.2 1.3-2.1 7.7-3.1 22.9-1.5 24.2-2.8 39-3.7 41.5-.5 1.4-1 10.1-1.1 19.4-.1 10.1-.6 17.4-1.2 18-.5.5-1 2.5-1 4.2 0 1.8-.5 3.6-1 3.9s-1 2.1-1 4-.4 3.7-1 4c-.5.3-1 2.2-1 4.1s-.4 3.4-1 3.4c-.5 0-1 1.8-1 3.9 0 2.2-.4 4.3-1 4.6-.5.3-1 1.8-1 3.3s-1.6 6-3.5 9.9c-1.9 4-3.5 7.9-3.5 8.8 0 .8-.4 1.5-1 1.5-.5 0-1 1.3-1 3 0 1.6-.4 3-1 3-.5 0-1 1.1-1 2.5s-.4 2.5-1 2.5c-.5 0-1 .9-1 2s-.4 2-1 2c-.5 0-1 .6-1 1.3s-.8 2.2-1.7 3.3c-1 1-3.1 3.8-4.7 6.1-1.6 2.4-3.2 4.3-3.7 4.3-.4 0-1 11.6-1.3 25.7-.2 14.2-.8 28.3-1.3 31.4l-.8 5.7-71.9.6c-39.5.3-72.9.9-74.2 1.2-2.2.6-2.4.3-2.4-2.7 0-1.9-.5-5-1-6.9-1-3.1-1.5-6.4-3.6-21.5-.4-2.2-1-4.4-1.5-5-.5-.5-.9-2.1-.9-3.6s-.4-3.1-1-3.4c-.5-.3-1-1.7-1-3.1 0-1.3-.4-3.2-.9-4.2-.5-.9-1.7-3.5-2.8-5.7-1.2-2.6-2.7-4.1-4.1-4.3-1.2-.2-2.2-.8-2.2-1.3s-.7-.9-1.6-.9c-1.4 0-10.7-6.1-16.4-10.7-.8-.6-3.5-2.7-5.9-4.5s-4.9-4.2-5.5-5.3-1.4-2.2-1.7-2.5c-.8-.8-7.4-11-9.7-15.1-3.9-7.1-4.7-8.3-7.5-11.2-1.5-1.7-2.7-3.6-2.7-4.3 0-.8-.4-1.4-.8-1.4s-1.6-1.5-2.7-3.3c-1-1.7-2.7-4.1-3.7-5.1-1-1.1-1.8-2.6-1.8-3.3s-.4-1.3-.8-1.3c-.5 0-1.5-1.2-2.3-2.7-.8-1.6-1.8-3.3-2.4-3.9-.5-.6-1.9-2.3-3-3.8-1.1-1.6-2.9-4-4-5.4-2.5-3.3-5.4-8.2-6.1-10.5-.4-.9-1-1.7-1.4-1.7s-1.3-1.4-2-3c-.7-1.7-1.6-3-2.1-3s-.9-.5-.9-1.1-1.9-3.8-4.3-7.2-4.9-7.6-5.7-9.2c-.8-1.7-1.7-3.2-2-3.5-1.2-1.2-5-9.3-5-10.6 0-.8-.4-1.4-1-1.4-.5 0-1-1.1-1-2.5s-.4-2.5-1-2.5c-.5 0-1-.5-1-1.2 0-.6-.9-3-1.9-5.2-1.9-4-4.3-9.7-6.3-14.6-.6-1.4-1.4-3.3-1.9-4.2-.5-1-.9-2.5-.9-3.3s-.4-1.5-1-1.5c-.5 0-1-.9-1-1.9 0-1.1-.4-2.3-1-2.6-.5-.3-1-1.5-1-2.6 0-1-.3-1.9-.8-1.9-.4 0-1.5-1.7-2.4-3.8-1-2-3.4-6.4-5.3-9.7-2-3.3-3.8-6.8-4.2-7.8-.3-.9-.9-1.7-1.4-1.7s-.9-1.5-.9-3.4-.4-3.8-1-4.1c-1.3-.8-1.3-25.5 0-25.5.6 0 1-.7 1-1.5 0-.9.8-1.9 1.7-2.2 1-.4 2.1-1.1 2.4-1.6 1-1.4 24.6-1.4 26.1.1.6.6 2 1.2 3 1.2s1.8.4 1.8 1c0 .5.9 1 2 1s2 .4 2 1c0 .5.7 1 1.5 1 1.7 0 11.5 9.1 11.5 10.6 0 .6.8 1.9 1.7 3 1 1.1 2.3 2.9 2.9 4 2.3 4.2 4.2 8 5.4 10.9.7 1.6 1.6 3.8 2.1 4.7.5 1 .9 2.4.9 3.2 0 3 4.7 10.2 10.8 16.4 3.4 3.5 6.2 6.8 6.2 7.4 0 .5.9 1.8 2 3s2 2.8 2 3.5.4 1.3.8 1.3c.5 0 1.5 1.2 2.3 2.7 2 4.1 10.1 12.2 12.2 12.3.9 0 1.7.4 1.7 1 0 1.9 4.1 1 6.7-1.6 1.4-1.4 4.1-5.1 5.9-8.2 3.2-5.3 3.4-6.1 3.4-14.8 0-5.1.4-9.6 1-9.9.6-.4 1-7.5 1-18.1 0-10.9-.4-17.4-1-17.4-.5 0-1-1.5-1-3.3 0-1.9-.7-4.9-1.6-6.7-1.4-2.6-1.7-7.5-2-26.4-.3-23.3-1.4-40.3-3.4-53.1-.6-3.9-1.5-11.5-2-17s-1.4-14.5-2-20-1.1-12.3-1.1-15c.1-9.8 1.8-43 2.4-45 .3-1.1.8-3.3 1.2-4.8.6-3.1 9.6-12.7 13.5-14.4 7.5-3.2 13.4-4.1 14.5-2.3.3.5 1.5 1 2.6 1 1 0 1.9.4 1.9 1 0 .5.5 1 1.2 1 1.6 0 7.8 6.1 7.8 7.7 0 .7.5 1.3 1 1.3.6 0 1 1.1 1 2.4 0 1.4.5 2.8 1 3.1.6.3 1 1.9 1 3.6 0 1.6.4 2.9.9 2.9 1.6 0 2.3 10.1 2.7 42 .2 17.3.8 32.4 1.4 33.5.5 1.1 1.1 4.7 1.4 8 .2 3.3 1.2 9.6 2.1 14s2 15.6 2.5 25c1.1 20.7 3.2 35.9 5.1 37.1.5.3.9 1.4.9 2.5 0 1 .5 1.9 1 1.9.6 0 1 .6 1 1.2 0 .7 1 2.5 2.3 4 2.7 3.1 4.9 2.4 7.1-2.5 2.7-5.9 3.5-45.7 2.6-118.2-.5-32.6.3-46.5 2.9-51.4.6-1.1 1.1-3.2 1.1-4.7 0-4.9 5.3-19.4 7.2-19.4.4 0 .8-.6.8-1.4 0-1.8 4.8-6.4 9.7-9.3 4-2.3 13.6-3.2 14.8-1.3"/>
+      </svg>
+    </div>
+    <div class="cam-scan-line"></div>
+    <div class="cam-flash" id="cam-flash"></div>
+    <div class="cam-error" id="cam-error">
+      <div class="cam-error-ico">📷</div>
+      <div class="cam-error-title">Kamera nepasiekiama</div>
+      <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
+      <button class="cam-retry-btn" onclick="startCamera()">Bandyti dar kartą</button>
+    </div>
+  </div>
+  <div class="cam-shutter-wrap">
+    <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()">
+      <div class="cam-shutter-inner"></div>
+    </div>
+    <div class="cam-hint">Paspausti, kai ranka paruošta</div>
+  </div>
+  <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
 
 <!-- SCREEN 4: LOADING -->
@@ -316,9 +312,9 @@ function go(id){
   cam.classList.remove('active');
   if(id==='s-camera'){
     cam.classList.add('active');
-  } else {
+  }else{
     const el=document.getElementById(id);
-    if(el) el.classList.add('active');
+    if(el)el.classList.add('active');
   }
   if(id==='s-order'){
     const banner=document.getElementById('photos-done-banner');
@@ -359,7 +355,7 @@ async function verifyAndProceed(sessionId){
         err.style.display='block';
         go('s-order');
       });
-    } else {
+    }else{
       go('s-order');
       const err=document.getElementById('order-err');
       err.textContent='Mokėjimas nepatvirtintas. Bandyk dar kartą.';
@@ -390,8 +386,8 @@ async function initiatePayment(){
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span>Jungiamasi...';
   try{
-    if(photoLeft) sessionStorage.setItem('photoLeft', photoLeft);
-    if(photoRight) sessionStorage.setItem('photoRight', photoRight);
+    if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
+    if(photoRight) sessionStorage.setItem('photoRight',photoRight);
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
     const data=await res.json();
     if(data.url){window.location.href=data.url;}
@@ -422,21 +418,20 @@ function updateCameraUI(){
   const title=document.getElementById('cam-title');
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
+  const dot3=document.getElementById('cam-dot3');
   const svg=document.getElementById('hand-svg');
-  const label=document.getElementById('hand-label');
-  const labelStyle='background:rgba(0,0,0,0.55);color:rgba(201,168,76,0.9);font-size:11px;letter-spacing:.14em;padding:4px 14px;border-radius:20px;border:0.5px solid rgba(201,168,76,.3);';
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
-    if(svg) svg.style.transform='scaleX(-1)';
-    if(label) label.innerHTML=`<span style="${labelStyle}">🤚 KAIRĖ RANKA</span>`;
+    if(dot3) dot3.classList.add('inactive');
+    if(svg) svg.style.transform='scaleX(1)';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
-    if(svg) svg.style.transform='scaleX(1)';
-    if(label) label.innerHTML=`<span style="${labelStyle}">✋ DEŠINĖ RANKA</span>`;
+    if(dot3) dot3.classList.add('inactive');
+    if(svg) svg.style.transform='scaleX(-1)';
   }
 }
 
@@ -491,9 +486,11 @@ function capturePhoto(){
       camHand='right';
       updateCameraUI();
     },320);
-  } else {
+  }else{
     photoRight=dataURL;
     stopCamera();
+    const dot3=document.getElementById('cam-dot3');
+    if(dot3) dot3.classList.remove('inactive');
     go('s-order');
   }
 }
@@ -557,7 +554,7 @@ function shareToTikTok(){
   const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati delnaskaitymas.lt #delnaskaitymas #chiromantija #tiktoklietuva`;
   if(navigator.share){
     navigator.share({title:'Mano delno skaitymas',text:text,url:window.location.href});
-  } else {
+  }else{
     navigator.clipboard.writeText(text+'\n'+window.location.href);
     alert('Tekstas nukopijuotas! Įkelk į TikTok.');
   }
