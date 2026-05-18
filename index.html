@@ -54,20 +54,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.photo-slot{aspect-ratio:1;background:var(--surf);border:1.5px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color .2s,background .2s;cursor:pointer}
-.photo-slot:hover{border-color:var(--gold);background:rgba(212,168,67,.05)}
-.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px;z-index:1;pointer-events:none}
-.slot-ico{font-size:28px;margin-bottom:8px;display:block;opacity:.5;position:relative;z-index:0;pointer-events:none}
-.slot-txt{font-size:12px;color:var(--muted);text-align:center;font-style:italic;line-height:1.4;padding:0 8px;position:relative;z-index:0;pointer-events:none}
-.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:5;width:100%;height:100%;font-size:0}
-.rm-btn{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.8);border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:6;line-height:1}
-.tips-card{background:rgba(212,168,67,.05);border:.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8}
-.tip-title{font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:5px;text-transform:uppercase}
-.success-banner{background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.success-ico{font-size:22px;flex-shrink:0}
-.success-title{font-size:14px;font-weight:500;color:#81c784;margin-bottom:2px}
-.success-sub{font-size:12px;color:var(--muted);font-style:italic}
 .load-wrap{padding:70px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
 .oracle{width:88px;height:88px;margin:0 auto 28px}
 .o-outer{width:88px;height:88px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 2.2s ease-in-out infinite}
@@ -125,6 +111,86 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rev-tag{font-size:10px;color:var(--gold3);margin-top:7px;letter-spacing:.06em}
 .sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
+
+/* ===== KAMEROS EKRANAS ===== */
+#s-camera{
+  background:#000;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  padding:0;
+  min-height:100vh;
+  overflow:hidden;
+}
+#s-camera.active{
+  display:flex;
+  animation:fu .3s ease;
+}
+.cam-progress{display:flex;gap:14px;margin-top:28px;z-index:10}
+.cam-dot{width:11px;height:11px;border-radius:50%;background:var(--gold);transition:opacity .3s}
+.cam-dot.inactive{opacity:0.28}
+.cam-title{color:#fff;font-size:17px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.02em;z-index:10}
+.cam-sub{color:#666;font-size:12px;text-align:center;margin-top:6px;padding:0 32px;line-height:1.6;z-index:10}
+.cam-viewport{
+  position:relative;
+  margin-top:18px;
+  width:calc(100vw - 32px);
+  max-width:320px;
+  height:390px;
+  border-radius:22px;
+  overflow:hidden;
+  background:#0a0a0a;
+  border:1px solid rgba(212,168,67,.18);
+  z-index:10;
+}
+#cam-video{width:100%;height:100%;object-fit:cover;display:block}
+.cam-palm-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:3;
+}
+.cam-palm-overlay svg{filter:drop-shadow(0 0 10px rgba(201,168,76,0.65));opacity:.38}
+.cam-scan-line{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);
+  box-shadow:0 0 12px 3px rgba(201,168,76,.55);
+  animation:camScan 2.4s ease-in-out infinite;
+  z-index:4;pointer-events:none;
+}
+@keyframes camScan{
+  0%{top:6%;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:92%;opacity:0}
+}
+.cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
+.cam-palm-shake{animation:palmShake .5s ease !important}
+@keyframes palmShake{
+  0%,100%{transform:scale(1) translateX(0)}
+  20%{transform:scale(1.04) translateX(-4px)}
+  40%{transform:scale(1.04) translateX(4px)}
+  60%{transform:scale(1.02) translateX(-2px)}
+  80%{transform:scale(1.02) translateX(2px)}
+}
+.cam-error{
+  display:none;position:absolute;inset:0;background:#000;
+  flex-direction:column;align-items:center;justify-content:center;
+  z-index:30;padding:24px;
+}
+.cam-error-ico{font-size:42px;margin-bottom:14px}
+.cam-error-title{color:#fff;font-size:15px;font-weight:600;text-align:center;margin-bottom:8px}
+.cam-error-sub{color:#666;font-size:13px;text-align:center;line-height:1.6;margin-bottom:20px}
+.cam-retry-btn{background:var(--gold);color:#07040f;border:none;padding:12px 28px;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.cam-shutter-wrap{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:10}
+.cam-shutter{
+  width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FFE87C,#C9A84C);
+  border:4px solid rgba(138,110,42,.9);
+  box-shadow:0 0 0 6px rgba(201,168,76,.18),0 4px 20px rgba(201,168,76,.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .1s,box-shadow .1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.cam-shutter:active{transform:scale(0.91);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.cam-shutter-inner{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF5C0,#D4A830);border:2px solid rgba(255,255,255,.28)}
+.cam-hint{color:#444;font-size:11px}
 </style>
 </head>
 <body>
@@ -144,7 +210,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
       Pradėk savo delnų analizę dabar.<br>Sužinok, ką slepia tavo gyvenimo linijos.
     </p>
-    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="go('s-order')">Skenuoti delnus →</button>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="openCameraScreen()">Skenuoti delnus →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
       Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
     </div>
@@ -158,7 +224,49 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 2: ORDER -->
+<!-- SCREEN 2: KAMERA -->
+<div id="s-camera">
+  <div class="cam-progress">
+    <div class="cam-dot" id="cam-dot1"></div>
+    <div class="cam-dot inactive" id="cam-dot2"></div>
+  </div>
+  <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
+  <div class="cam-sub">Pasistenkite, kad aplinkui būtų geras apšvietimas,<br>o pirštai būtų išskėsti.</div>
+  <div class="cam-viewport">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <div class="cam-palm-overlay" id="cam-palm-svg">
+      <svg width="190" height="255" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#C9A84C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M75 198 Q58 192 50 176 Q42 160 42 140 L42 90 Q42 81 49 77 Q56 73 63 77 L63 54 Q63 45 69 41 Q76 37 82 41 Q88 37 94 41 Q101 45 101 54 L101 51 Q101 43 107 39 Q114 35 120 39 Q126 43 126 51 L126 59 Q128 50 120 55 Q127 55 127 65 L127 140 Q127 161 118 176 Q109 192 92 198 Z"/>
+          <path d="M63 77 L63 39 Q63 31 56 27 Q49 23 43 27 Q37 31 37 39 L37 100"/>
+          <path d="M82 41 L82 27 Q82 19 76 16 Q70 13 65 17"/>
+          <path d="M101 41 L101 27 Q101 19 107 16 Q113 13 117 17"/>
+          <path d="M120 51 L120 37 Q120 29 126 26 Q132 23 136 29 Q140 35 138 44 L134 90"/>
+          <path d="M48 115 Q65 105 82 110 Q99 115 115 105" stroke-width="1.2" opacity="0.6"/>
+          <path d="M45 135 Q62 128 79 132 Q96 136 112 128" stroke-width="1" opacity="0.45"/>
+          <path d="M55 158 Q72 153 88 156" stroke-width="1" opacity="0.4"/>
+        </g>
+      </svg>
+    </div>
+    <div class="cam-scan-line"></div>
+    <div class="cam-flash" id="cam-flash"></div>
+    <div class="cam-error" id="cam-error">
+      <div class="cam-error-ico">📷</div>
+      <div class="cam-error-title">Kamera nepasiekiama</div>
+      <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
+      <button class="cam-retry-btn" onclick="startCamera()">Bandyti dar kartą</button>
+    </div>
+  </div>
+  <div class="cam-shutter-wrap">
+    <div class="cam-shutter" onclick="capturePhoto()">
+      <div class="cam-shutter-inner"></div>
+    </div>
+    <div class="cam-hint">Paspausti, kai ranka paruošta</div>
+  </div>
+  <canvas id="cam-canvas" style="display:none"></canvas>
+</div>
+
+<!-- SCREEN 3: ORDER -->
 <div class="screen" id="s-order">
   <div class="wrap">
     <button class="back-btn" onclick="go('s-home')">← Atgal</button>
@@ -171,6 +279,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
     </div>
     <div id="order-err" class="err"></div>
+    <div id="photos-done-banner" style="display:none;background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:12px 16px;margin-bottom:18px;align-items:center;gap:12px">
+      <div style="font-size:20px">✅</div>
+      <div><div style="font-size:13px;font-weight:500;color:#81c784">Delno nuotraukos padarytos!</div><div style="font-size:12px;color:var(--muted);font-style:italic">Apmokėk ir analizė prasidės iškart</div></div>
+    </div>
     <div class="field"><label>Vardas</label><input type="text" id="o-name" placeholder="Tavo vardas" autocomplete="name"></div>
     <div class="field"><label>El. paštas</label><input type="email" id="o-email" placeholder="el.pastas@gmail.com" autocomplete="email"></div>
     <div class="sec-lbl" style="margin-top:20px">mokėjimo būdas</div>
@@ -193,41 +305,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
     <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Mokėjimas apsaugotas Stripe</div>
-  </div>
-</div>
-
-<!-- SCREEN 3: UPLOAD -->
-<div class="screen" id="s-upload">
-  <div class="wrap">
-    <div class="success-banner">
-      <div class="success-ico">✅</div>
-      <div><div class="success-title">Mokėjimas patvirtintas!</div><div class="success-sub">Dabar įkelk delno nuotraukas</div></div>
-    </div>
-    <div class="center" style="margin-bottom:22px">
-      <div class="serif gold" style="font-size:22px;margin-bottom:4px">Įkelk delno nuotraukas</div>
-      <div style="font-size:13px;color:var(--muted);font-style:italic;line-height:1.6">Kairė + dešinė ranka<br>kuo geresnė nuotrauka — tuo tikslesnis skaitymas</div>
-    </div>
-    <div class="photo-grid">
-      <div class="photo-slot" id="slot0">
-        <input type="file" accept="image/*" capture onchange="handlePhoto(event,0)">
-        <span class="slot-ico">🤚</span>
-        <div class="slot-txt">Kairė ranka</div>
-      </div>
-      <div class="photo-slot" id="slot1">
-        <input type="file" accept="image/*" capture onchange="handlePhoto(event,1)">
-        <span class="slot-ico">✋</span>
-        <div class="slot-txt">Dešinė ranka</div>
-      </div>
-    </div>
-    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px">Įkelta: <span id="pcount" style="color:var(--gold2);font-weight:500">0</span> / 2</div>
-    <div class="tips-card">
-      <div class="tip-title">✦ Patarimai geresniam skaitymui</div>
-      🤚 Kairė ranka — sielos misija, likimas, dovanos<br>
-      ✋ Dešinė ranka — dabartinis gyvenimas, meilė, tikslai<br>
-      ☀️ Fotografuok ryškioje šviesoje · Ranka plokščia · Pirštai ištiesinti
-    </div>
-    <div id="upload-err" class="err"></div>
-    <button class="btn btn-gold" onclick="startReading()">Skaityti dabar →</button>
   </div>
 </div>
 
@@ -257,9 +334,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-result">
   <div class="result-hero">
     <div class="result-hero-orb">
-      <div class="ring rh1"></div>
-      <div class="ring rh2"></div>
-      <div class="ring rh3"></div>
+      <div class="ring rh1"></div><div class="ring rh2"></div><div class="ring rh3"></div>
       <div class="result-hero-core">🤚</div>
     </div>
     <div class="result-name" id="res-name">Tavo Delno Skaitymas</div>
@@ -286,16 +361,30 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <script>
+/* ---- žvaigždės ---- */
 const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7}`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
 
+/* ---- navigacija ---- */
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const cam=document.getElementById('s-camera');
+  cam.classList.remove('active');
+  if(id==='s-camera'){
+    cam.classList.add('active');
+  } else {
+    const el=document.getElementById(id);
+    if(el) el.classList.add('active');
+  }
+  if(id==='s-order'){
+    const banner=document.getElementById('photos-done-banner');
+    if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';
+  }
   window.scrollTo(0,0);
 }
 
+/* ---- Stripe callback ---- */
 window.addEventListener('DOMContentLoaded',()=>{
   const params=new URLSearchParams(window.location.search);
   const sessionId=params.get('session_id');
@@ -313,8 +402,18 @@ async function verifyAndProceed(sessionId){
       window.userEmail=data.email;
       window.palmToken=data.token;
       window.history.replaceState({},'','/');
-      go('s-upload');
-    }else{
+      go('s-loading');
+      animateLoading();
+      callClaude().then(result=>{
+        displayResult(result);
+      }).catch(e=>{
+        console.error(e);
+        const err=document.getElementById('order-err');
+        err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
+        err.style.display='block';
+        go('s-order');
+      });
+    } else {
       go('s-order');
       const err=document.getElementById('order-err');
       err.textContent='Mokėjimas nepatvirtintas. Bandyk dar kartą.';
@@ -323,6 +422,7 @@ async function verifyAndProceed(sessionId){
   }catch(e){go('s-order');}
 }
 
+/* ---- mokėjimas ---- */
 let selectedPay='card';
 function selPay(m){
   selectedPay=m;
@@ -333,7 +433,6 @@ function selPay(m){
     chk.classList.toggle('sel',x===m);
   });
 }
-
 async function initiatePayment(){
   const name=document.getElementById('o-name').value.trim();
   const email=document.getElementById('o-email').value.trim();
@@ -357,98 +456,108 @@ async function initiatePayment(){
   }
 }
 
-const photos=new Array(2).fill(null);
-function updateCount(){document.getElementById('pcount').textContent=photos.filter(Boolean).length;}
+/* ============================
+   KAMEROS LOGIKA
+   ============================ */
+let camStream=null;
+let camHand='left';
+let photoLeft=null;
+let photoRight=null;
 
-function handlePhoto(e,i){
-  const file=e.target.files[0];
-  if(!file)return;
-  if(!file.type.startsWith('image/')){
-    document.getElementById('upload-err').textContent='Netinkamas failas. Pasirink nuotrauką.';
-    document.getElementById('upload-err').style.display='block';
-    return;
+function openCameraScreen(){
+  camHand='left';
+  photoLeft=null;
+  photoRight=null;
+  updateCameraUI();
+  go('s-camera');
+  startCamera();
+}
+
+function updateCameraUI(){
+  const title=document.getElementById('cam-title');
+  const dot1=document.getElementById('cam-dot1');
+  const dot2=document.getElementById('cam-dot2');
+  if(camHand==='left'){
+    title.textContent='Nufotografuokite kairįjį delną';
+    dot1.classList.remove('inactive');
+    dot2.classList.add('inactive');
+  } else {
+    title.textContent='Nufotografuokite dešinįjį delną';
+    dot1.classList.remove('inactive');
+    dot2.classList.remove('inactive');
   }
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const image=new Image();
-    image.onload=()=>{
-      const canvas=document.createElement('canvas');
-      const ctx=canvas.getContext('2d');
-      let w=image.width,h=image.height;
-      const max=1200;
-      if(w>max||h>max){
-        if(w>h){h=Math.round(h*max/w);w=max;}
-        else{w=Math.round(w*max/h);h=max;}
-      }
-      canvas.width=w;canvas.height=h;
-      ctx.drawImage(image,0,0,w,h);
-      const compressed=canvas.toDataURL('image/jpeg',0.85);
-      photos[i]={data:compressed,type:'image/jpeg'};
-      const slot=document.getElementById('slot'+i);
-      let img=slot.querySelector('img');
-      if(!img){img=document.createElement('img');slot.appendChild(img);}
-      img.src=compressed;
-      slot.querySelector('.slot-ico').style.display='none';
-      slot.querySelector('.slot-txt').style.display='none';
-      let rb=slot.querySelector('.rm-btn');
-      if(!rb){
-        rb=document.createElement('button');
-        rb.className='rm-btn';
-        rb.innerHTML='×';
-        rb.onclick=ev2=>{ev2.preventDefault();ev2.stopPropagation();removePhoto(i);};
-        slot.appendChild(rb);
-      }
-      rb.style.display='flex';
-      updateCount();
-    };
-    image.onerror=()=>{
-      document.getElementById('upload-err').textContent='Nepavyko įkelti nuotraukos. Bandyk kitą.';
-      document.getElementById('upload-err').style.display='block';
-    };
-    image.src=ev.target.result;
-  };
-  reader.onerror=()=>{
-    document.getElementById('upload-err').textContent='Klaida skaitant failą. Bandyk dar kartą.';
-    document.getElementById('upload-err').style.display='block';
-  };
-  reader.readAsDataURL(file);
 }
 
-function removePhoto(i){
-  photos[i]=null;
-  const slot=document.getElementById('slot'+i);
-  const img=slot.querySelector('img');if(img)img.remove();
-  const inp=slot.querySelector('input');if(inp)inp.value='';
-  const rb=slot.querySelector('.rm-btn');if(rb)rb.style.display='none';
-  slot.querySelector('.slot-ico').style.display='block';
-  slot.querySelector('.slot-txt').style.display='block';
-  updateCount();
-}
-
-async function startReading(){
-  const cnt=photos.filter(Boolean).length;
-  const err=document.getElementById('upload-err');
-  if(cnt===0){err.textContent='Įkelk bent vieną delno nuotrauką!';err.style.display='block';return;}
-  err.style.display='none';
-  go('s-loading');
-  animateLoading();
+async function startCamera(){
+  const video=document.getElementById('cam-video');
+  const errorDiv=document.getElementById('cam-error');
+  errorDiv.style.display='none';
   try{
-    const result=await callClaude();
-    displayResult(result);
-  }catch(e){
-    console.error(e);
-    go('s-upload');
-    document.getElementById('upload-err').textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
-    document.getElementById('upload-err').style.display='block';
+    try{
+      camStream=await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+        audio:false
+      });
+    }catch(e){
+      camStream=await navigator.mediaDevices.getUserMedia({
+        video:{width:{ideal:1280},height:{ideal:960}},
+        audio:false
+      });
+    }
+    video.srcObject=camStream;
+  }catch(err){
+    errorDiv.style.display='flex';
+    console.error('Kameros klaida:',err);
   }
 }
 
+function stopCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop());
+    camStream=null;
+  }
+}
+
+function capturePhoto(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  const flash=document.getElementById('cam-flash');
+  const palmSvg=document.getElementById('cam-palm-svg');
+
+  flash.style.opacity='1';
+  setTimeout(()=>{flash.style.opacity='0';},130);
+
+  palmSvg.classList.remove('cam-palm-shake');
+  void palmSvg.offsetWidth;
+  palmSvg.classList.add('cam-palm-shake');
+  setTimeout(()=>palmSvg.classList.remove('cam-palm-shake'),550);
+
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataURL=canvas.toDataURL('image/jpeg',0.85);
+
+  if(camHand==='left'){
+    photoLeft=dataURL;
+    setTimeout(()=>{
+      camHand='right';
+      updateCameraUI();
+    },320);
+  } else {
+    photoRight=dataURL;
+    stopCamera();
+    go('s-order');
+  }
+}
+
+/* ============================
+   ANALIZĖ
+   ============================ */
 function animateLoading(){
   const msgs=['Analizuojami delnai...','Skaitomos gyvenimo linijos...','Dar kelios sekundės...','Beveik baigta...'];
   let mi=0;
   const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1800);
-  const total=60;
-  let elapsed=0;
+  const total=60;let elapsed=0;
   const pbar=document.getElementById('pbar');
   const ptime=document.getElementById('ptime');
   const stepTimes=[{id:'ls1',at:0},{id:'ls2',at:15},{id:'ls3',at:35},{id:'ls4',at:50}];
@@ -459,13 +568,14 @@ function animateLoading(){
     pbar.style.width=pct+'%';
     const left=Math.max(Math.round(total-elapsed),0);
     ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
-    stepTimes.forEach(st=>{if(elapsed>=st.at){document.getElementById(st.id).classList.add('done');}});
+    stepTimes.forEach(st=>{if(elapsed>=st.at)document.getElementById(st.id).classList.add('done');});
   },500);
 }
 
 async function callClaude(){
-  const activePhotos=photos.filter(Boolean);
-  const photoData=activePhotos.map(p=>({type:p.type,data:p.data.split(',')[1]}));
+  const photoData=[];
+  if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+  if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
   const res=await fetch('/analyze-palm',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -502,7 +612,7 @@ function shareToTikTok(){
   const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati delnaskaitymas.lt #delnaskaitymas #chiromantija #tiktoklietuva`;
   if(navigator.share){
     navigator.share({title:'Mano delno skaitymas',text:text,url:window.location.href});
-  }else{
+  } else {
     navigator.clipboard.writeText(text+'\n'+window.location.href);
     alert('Tekstas nukopijuotas! Įkelk į TikTok.');
   }
