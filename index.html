@@ -169,49 +169,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 2: ORDER -->
-<div class="screen" id="s-order">
-  <div class="wrap">
-    <button class="back-btn" onclick="go('s-home')">← Atgal</button>
-    <div class="center" style="margin-bottom:24px">
-      <div class="serif gold" style="font-size:22px;margin-bottom:4px">Užsakymas</div>
-      <div style="font-size:13px;color:var(--muted);font-style:italic">Įvesk duomenis ir apmokėk</div>
-    </div>
-    <div style="background:rgba(212,168,67,.07);border:.5px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:2px">Delno skaitymas</div><div style="font-size:13px;color:var(--text)">Pilnas · 7 skyriai · AI analizė</div></div>
-      <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
-    </div>
-    <div id="order-err" class="err"></div>
-    <div id="photos-done-banner" style="display:none;background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:12px 16px;margin-bottom:18px;align-items:center;gap:12px">
-      <div style="font-size:20px">✅</div>
-      <div><div style="font-size:13px;font-weight:500;color:#81c784">Delno nuotraukos padarytos!</div><div style="font-size:12px;color:var(--muted);font-style:italic">Apmokėk ir analizė prasidės iškart</div></div>
-    </div>
-    <div class="field"><label>Vardas</label><input type="text" id="o-name" placeholder="Tavo vardas" autocomplete="name"></div>
-    <div class="field"><label>El. paštas</label><input type="email" id="o-email" placeholder="el.pastas@gmail.com" autocomplete="email"></div>
-    <div class="sec-lbl" style="margin-top:20px">mokėjimo būdas</div>
-    <div class="pay-methods-list">
-      <div class="pay-opt sel" id="po-card" onclick="selPay('card')">
-        <div class="pay-opt-ico" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:var(--gold2)">💳</div>
-        <div><div class="pay-opt-name">Banko kortelė</div><div style="font-size:11px;color:var(--muted);font-style:italic">Visa, Mastercard</div></div>
-        <div class="pay-opt-check sel" id="chk-card">✓</div>
-      </div>
-      <div class="pay-opt" id="po-apple" onclick="selPay('apple')">
-        <div class="pay-opt-ico" style="background:#000;color:#fff;font-size:16px"></div>
-        <div><div class="pay-opt-name">Apple Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Greičiausias būdas</div></div>
-        <div class="pay-opt-check" id="chk-apple"></div>
-      </div>
-      <div class="pay-opt" id="po-google" onclick="selPay('google')">
-        <div class="pay-opt-ico" style="background:#fff;color:#333;font-size:14px;font-weight:700">G</div>
-        <div><div class="pay-opt-name">Google Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Mokėk iš karto</div></div>
-        <div class="pay-opt-check" id="chk-google"></div>
-      </div>
-    </div>
-    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
-    <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Mokėjimas apsaugotas Stripe</div>
-  </div>
-</div>
-
-<!-- SCREEN 3: KAMERA -->
+<!-- SCREEN 2: KAMERA -->
 <div id="s-camera">
   <div class="cam-progress">
     <div class="cam-dot" id="cam-dot1"></div>
@@ -241,7 +199,63 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
 
-<!-- SCREEN 4: LOADING -->
+<!-- SCREEN 3: INFO (vardas + el. paštas) -->
+<div class="screen" id="s-info">
+  <div class="wrap" style="padding-top:60px">
+    <div class="center" style="margin-bottom:36px">
+      <div style="font-size:36px;margin-bottom:18px">✨</div>
+      <h2 class="serif gold" style="font-size:24px;font-weight:700;margin-bottom:12px;line-height:1.3">Kur atsiųsti tavo<br>asmeninę analizę?</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7">Įvesk savo vardą ir el. paštą, kad AI sugeneruotų<br>tavo <em style="color:var(--gold2)">Sielos Žemėlapį</em>.</p>
+    </div>
+    <div id="info-err" class="err"></div>
+    <div class="field"><label>Vardas</label><input type="text" id="i-name" placeholder="Tavo vardas" autocomplete="name"></div>
+    <div class="field"><label>El. paštas</label><input type="email" id="i-email" placeholder="el.pastas@gmail.com" autocomplete="email"></div>
+    <button class="btn btn-gold" style="font-size:16px;padding:17px;border-radius:14px;margin-top:8px" onclick="submitInfo()">Generuoti mano analizę →</button>
+    <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:12px;font-style:italic">✦ Tavo duomenys naudojami tik analizei sukurti</div>
+  </div>
+</div>
+
+<!-- SCREEN 4: ORDER -->
+<div class="screen" id="s-order">
+  <div class="wrap">
+    <button class="back-btn" onclick="go('s-info')">← Atgal</button>
+    <div class="center" style="margin-bottom:24px">
+      <div class="serif gold" style="font-size:22px;margin-bottom:4px">Užsakymas</div>
+      <div style="font-size:13px;color:var(--muted);font-style:italic">Įvesk duomenis ir apmokėk</div>
+    </div>
+    <div style="background:rgba(212,168,67,.07);border:.5px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:2px">Delno skaitymas</div><div style="font-size:13px;color:var(--text)">Pilnas · 7 skyriai · AI analizė</div></div>
+      <div class="serif gold" style="font-size:26px;font-weight:700">5.59 €</div>
+    </div>
+    <div id="order-err" class="err"></div>
+    <div id="photos-done-banner" style="display:none;background:rgba(76,175,80,.1);border:.5px solid rgba(76,175,80,.35);border-radius:12px;padding:12px 16px;margin-bottom:18px;align-items:center;gap:12px">
+      <div style="font-size:20px">✅</div>
+      <div><div style="font-size:13px;font-weight:500;color:#81c784">Delno nuotraukos padarytos!</div><div style="font-size:12px;color:var(--muted);font-style:italic">Apmokėk ir analizė prasidės iškart</div></div>
+    </div>
+    <div class="sec-lbl" style="margin-top:4px">mokėjimo būdas</div>
+    <div class="pay-methods-list">
+      <div class="pay-opt sel" id="po-card" onclick="selPay('card')">
+        <div class="pay-opt-ico" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:var(--gold2)">💳</div>
+        <div><div class="pay-opt-name">Banko kortelė</div><div style="font-size:11px;color:var(--muted);font-style:italic">Visa, Mastercard</div></div>
+        <div class="pay-opt-check sel" id="chk-card">✓</div>
+      </div>
+      <div class="pay-opt" id="po-apple" onclick="selPay('apple')">
+        <div class="pay-opt-ico" style="background:#000;color:#fff;font-size:16px"></div>
+        <div><div class="pay-opt-name">Apple Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Greičiausias būdas</div></div>
+        <div class="pay-opt-check" id="chk-apple"></div>
+      </div>
+      <div class="pay-opt" id="po-google" onclick="selPay('google')">
+        <div class="pay-opt-ico" style="background:#fff;color:#333;font-size:14px;font-weight:700">G</div>
+        <div><div class="pay-opt-name">Google Pay</div><div style="font-size:11px;color:var(--muted);font-style:italic">Mokėk iš karto</div></div>
+        <div class="pay-opt-check" id="chk-google"></div>
+      </div>
+    </div>
+    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()">Mokėti 5.59 € saugiai →</button>
+    <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;font-style:italic">🔒 Mokėjimas apsaugotas Stripe</div>
+  </div>
+</div>
+
+<!-- SCREEN 5: LOADING -->
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
@@ -263,7 +277,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 5: RESULT -->
+<!-- SCREEN 6: RESULT -->
 <div class="screen" id="s-result">
   <div class="result-hero">
     <div class="result-hero-orb">
@@ -356,6 +370,20 @@ async function verifyAndProceed(sessionId){
   }catch(e){go('s-order');}
 }
 
+function submitInfo(){
+  const name=document.getElementById('i-name').value.trim();
+  const email=document.getElementById('i-email').value.trim();
+  const err=document.getElementById('info-err');
+  if(!name){err.textContent='Įvesk savo vardą';err.style.display='block';document.getElementById('i-name').focus();return;}
+  if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';document.getElementById('i-email').focus();return;}
+  err.style.display='none';
+  document.getElementById('o-name').value=name;
+  document.getElementById('o-email').value=email;
+  const dot3=document.getElementById('cam-dot3');
+  if(dot3) dot3.classList.remove('inactive');
+  go('s-order');
+}
+
 let selectedPay='card';
 function selPay(m){
   selectedPay=m;
@@ -371,8 +399,8 @@ async function initiatePayment(){
   const name=document.getElementById('o-name').value.trim();
   const email=document.getElementById('o-email').value.trim();
   const err=document.getElementById('order-err');
-  if(!name){err.textContent='Įvesk savo vardą';err.style.display='block';document.getElementById('o-name').focus();return;}
-  if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';document.getElementById('o-email').focus();return;}
+  if(!name){err.textContent='Įvesk savo vardą';err.style.display='block';return;}
+  if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';return;}
   err.style.display='none';
   const btn=document.getElementById('pay-btn');
   btn.disabled=true;
@@ -411,16 +439,19 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const dot3=document.getElementById('cam-dot3');
+  const palmSvg=document.getElementById('cam-palm-svg');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
     if(dot3) dot3.classList.add('inactive');
+    if(palmSvg) palmSvg.style.transform='scaleX(-1)';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
     if(dot3) dot3.classList.add('inactive');
+    if(palmSvg) palmSvg.style.transform='scaleX(1)';
   }
 }
 
@@ -478,9 +509,7 @@ function capturePhoto(){
   }else{
     photoRight=dataURL;
     stopCamera();
-    const dot3=document.getElementById('cam-dot3');
-    if(dot3) dot3.classList.remove('inactive');
-    go('s-order');
+    go('s-info');
   }
 }
 
