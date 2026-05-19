@@ -117,44 +117,31 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot{width:11px;height:11px;border-radius:50%;background:var(--gold);transition:opacity .3s}
 .cam-dot.inactive{opacity:0.28}
 .cam-title{color:#fff;font-size:17px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.02em;z-index:10}
-.cam-sub{color:#666;font-size:12px;text-align:center;margin-top:6px;padding:0 32px;line-height:1.6;z-index:10}
-.cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:320px;height:390px;border-radius:22px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(212,168,67,.18);z-index:10}
+.cam-sub{color:#888;font-size:13px;text-align:center;margin-top:7px;padding:0 32px;line-height:1.6;z-index:10}
+.cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:340px;height:420px;border-radius:22px;overflow:hidden;background:#0a0a0a;z-index:10}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-palm-overlay{position:absolute;inset:0;pointer-events:none;z-index:3}
-.cam-corners{position:absolute;inset:12%;pointer-events:none}
-.cam-corner{position:absolute;width:28px;height:28px;transition:border-color .5s,box-shadow .5s}
-.cam-corner.tl{top:0;left:0;border-top:3px solid var(--gold);border-left:3px solid var(--gold);border-radius:4px 0 0 0}
-.cam-corner.tr{top:0;right:0;border-top:3px solid var(--gold);border-right:3px solid var(--gold);border-radius:0 4px 0 0}
-.cam-corner.bl{bottom:0;left:0;border-bottom:3px solid var(--gold);border-left:3px solid var(--gold);border-radius:0 0 0 4px}
-.cam-corner.br{bottom:0;right:0;border-bottom:3px solid var(--gold);border-right:3px solid var(--gold);border-radius:0 0 4px 0}
-.cam-corner.aligned{border-color:#7fff7f;box-shadow:0 0 10px rgba(100,255,120,.7)}
-.cam-status-label{position:absolute;bottom:-28px;left:0;right:0;text-align:center;font-size:12px;color:var(--gold);letter-spacing:.06em;transition:color .4s;font-family:'DM Sans',sans-serif}
-.cam-status-label.aligned{color:#7fff7f}
-.cam-scan-line{position:absolute;left:12%;right:12%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2s ease-in-out infinite;z-index:4;pointer-events:none;top:12%}
-@keyframes camScan{0%{top:12%}50%{top:82%}100%{top:12%}}
+.cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.4) 15%,#FFD700 50%,rgba(201,168,76,.4) 85%,transparent 100%);box-shadow:0 0 14px 4px rgba(201,168,76,.5);animation:camScan 2.2s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
+@keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
 .cam-frozen{position:absolute;inset:0;z-index:5;background-size:cover;background-position:center;display:none}
 .cam-frozen.active{display:block}
-.cam-rescan{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,rgba(100,255,120,.6) 20%,#80ff90 50%,rgba(100,255,120,.6) 80%,transparent 100%);box-shadow:0 0 16px 4px rgba(80,255,100,.7);z-index:6;pointer-events:none;display:none;top:6%}
+.cam-rescan{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,rgba(100,255,120,.6) 20%,#80ff90 50%,rgba(100,255,120,.6) 80%,transparent 100%);box-shadow:0 0 16px 4px rgba(80,255,100,.7);z-index:6;pointer-events:none;display:none;top:4%}
 .cam-rescan.active{display:block;animation:rescanAnim .65s ease-in-out forwards}
-@keyframes rescanAnim{0%{top:6%;opacity:1}100%{top:92%;opacity:.6}}
-.cam-scan-ok{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:7;background:rgba(0,0,0,.18)}
+@keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
+.cam-scan-ok{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:7;background:rgba(0,0,0,.15)}
 .cam-scan-ok.active{display:flex;animation:fadeInOut .7s ease forwards}
 @keyframes fadeInOut{0%{opacity:0}30%{opacity:1}80%{opacity:1}100%{opacity:0}}
 .cam-scan-ok-badge{background:rgba(20,180,60,.92);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 24px rgba(40,220,80,.6)}
-.cam-palm-shake{animation:palmShake .5s ease !important}
-@keyframes palmShake{0%,100%{transform:scale(1) translateX(0)}20%{transform:scale(1.04) translateX(-4px)}40%{transform:scale(1.04) translateX(4px)}60%{transform:scale(1.02) translateX(-2px)}80%{transform:scale(1.02) translateX(2px)}}
-.cam-hint{color:rgba(212,168,67,.8);font-size:12px;text-align:center;letter-spacing:.03em}
 .cam-error{display:none;position:absolute;inset:0;background:#000;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:24px}
 .cam-error-ico{font-size:42px;margin-bottom:14px}
 .cam-error-title{color:#fff;font-size:15px;font-weight:600;text-align:center;margin-bottom:8px}
 .cam-error-sub{color:#666;font-size:13px;text-align:center;line-height:1.6;margin-bottom:20px}
 .cam-retry-btn{background:var(--gold);color:#07040f;border:none;padding:12px 28px;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.cam-shutter-wrap{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:10}
-.cam-shutter{width:74px;height:74px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE87C,#C9A84C);border:4px solid rgba(138,110,42,.9);box-shadow:0 0 0 6px rgba(201,168,76,.18),0 4px 20px rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,box-shadow .1s;-webkit-tap-highlight-color:transparent}
-.cam-shutter:active{transform:scale(0.91);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
-.cam-shutter-inner{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF5C0,#D4A830);border:2px solid rgba(255,255,255,.28)}
-.cam-hint{color:#444;font-size:11px}
+.cam-shutter-wrap{margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:10}
+.cam-shutter{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#FFE87C,#C9A84C);border:none;box-shadow:0 0 0 6px rgba(201,168,76,.2),0 4px 24px rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent}
+.cam-shutter:active{transform:scale(0.89);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.cam-shutter-inner{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF5C0,#D4A830);border:2px solid rgba(255,255,255,.3)}
+.cam-hint{color:rgba(212,168,67,.6);font-size:11px;letter-spacing:.04em}
 </style>
 </head>
 <body>
@@ -196,18 +183,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div class="cam-sub" id="cam-sub">Patraukite ranką taip, kad <strong style="color:var(--gold)">delnas matytųsi rėmelyje</strong>,<br>pirštai nukreipti į viršų.</div>
+  <div class="cam-sub" id="cam-sub">Pirštus lengvai išskėskite ir laikykite ranką<br>tiesiai virš kameros.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
-    <div class="cam-palm-overlay" id="cam-palm-svg">
-      <div class="cam-corners" id="cam-corners">
-        <div class="cam-corner tl" id="cc-tl"></div>
-        <div class="cam-corner tr" id="cc-tr"></div>
-        <div class="cam-corner bl" id="cc-bl"></div>
-        <div class="cam-corner br" id="cc-br"></div>
-        <div class="cam-status-label" id="cam-status-lbl">Ieškoma delno...</div>
-      </div>
-    </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
     <div class="cam-frozen" id="cam-frozen"></div>
@@ -224,7 +202,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()">
       <div class="cam-shutter-inner"></div>
     </div>
-    <div class="cam-hint">Sulygiuokite delną su kontūru ir spauskite mygtuką</div>
+    <div class="cam-hint">Spauskite kai ranka paruošta</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -469,9 +447,6 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const dot3=document.getElementById('cam-dot3');
-  const lbl=document.getElementById('cam-status-lbl');
-  const corners=['cc-tl','cc-tr','cc-bl','cc-br'].map(id=>document.getElementById(id));
-
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
@@ -483,17 +458,6 @@ function updateCameraUI(){
     dot2.classList.remove('inactive');
     if(dot3) dot3.classList.add('inactive');
   }
-
-  // Reset aligned state
-  corners.forEach(c=>c&&c.classList.remove('aligned'));
-  if(lbl){lbl.textContent='Ieškoma delno...';lbl.classList.remove('aligned');}
-
-  // Po 2s — "Sulygiuota" + žali kampučiai
-  clearTimeout(window._alignTimer);
-  window._alignTimer=setTimeout(()=>{
-    corners.forEach(c=>c&&c.classList.add('aligned'));
-    if(lbl){lbl.textContent='✓ Sulygiuota';lbl.classList.add('aligned');}
-  },2000);
 }
 
 async function startCamera(){
@@ -569,12 +533,6 @@ function capturePhoto(){
   frozen.classList.add('active');
   video.style.display='none';
 
-  // Kontūras išnyksta per „scaną"
-  const corners=['cc-tl','cc-tr','cc-bl','cc-br'].map(id=>document.getElementById(id));
-  const lbl=document.getElementById('cam-status-lbl');
-  corners.forEach(c=>c&&(c.style.opacity='0'));
-  if(lbl) lbl.style.opacity='0';
-
   // Žalia rescan linija nubėga per 650ms
   setTimeout(()=>{
     rescan.classList.add('active');
@@ -593,8 +551,6 @@ function capturePhoto(){
     frozen.style.backgroundImage='';
     video.style.display='block';
     rescan.classList.remove('active');
-    corners.forEach(c=>c&&(c.style.opacity='1'));
-    if(lbl) lbl.style.opacity='1';
     shutter.style.pointerEvents='auto';
     if(camHand==='left'){
       photoLeft=dataURL;
