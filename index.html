@@ -566,8 +566,8 @@ function capturePhoto(){
   // ── 3. LOADING EKRANAS (statinis, 2.5s) ────────
   setTimeout(()=>{
     const isLeft=camHand==='left';
-    scanOkText.textContent='Nuotrauka išsaugota';
-    scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinę ranką...':'Analizė pradedama...';
+    scanOkText.textContent='Delnas sėkmingai užfiksuotas';
+    scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'Analizė pradedama...';
     scanOk.classList.add('active');
     shutterWrap.style.display='none';
   },700);
