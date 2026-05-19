@@ -121,11 +121,23 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:320px;height:390px;border-radius:22px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(212,168,67,.18);z-index:10}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-palm-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
-.cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2.4s ease-in-out infinite;z-index:4;pointer-events:none}
-@keyframes camScan{0%{top:6%;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:92%;opacity:0}}
+.cam-palm-svg-el{width:88%;height:88%;transition:filter .4s,opacity .4s}
+.cam-palm-svg-el.aligned path,.cam-palm-svg-el.aligned ellipse{stroke:#7fff7f;filter:drop-shadow(0 0 8px #4cff4c)}
+.cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2s ease-in-out infinite;z-index:4;pointer-events:none;top:6%}
+@keyframes camScan{0%{top:6%}50%{top:90%}100%{top:6%}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
+.cam-frozen{position:absolute;inset:0;z-index:5;background-size:cover;background-position:center;display:none}
+.cam-frozen.active{display:block}
+.cam-rescan{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,rgba(100,255,120,.6) 20%,#80ff90 50%,rgba(100,255,120,.6) 80%,transparent 100%);box-shadow:0 0 16px 4px rgba(80,255,100,.7);z-index:6;pointer-events:none;display:none;top:6%}
+.cam-rescan.active{display:block;animation:rescanAnim .65s ease-in-out forwards}
+@keyframes rescanAnim{0%{top:6%;opacity:1}100%{top:92%;opacity:.6}}
+.cam-scan-ok{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:7;background:rgba(0,0,0,.18)}
+.cam-scan-ok.active{display:flex;animation:fadeInOut .7s ease forwards}
+@keyframes fadeInOut{0%{opacity:0}30%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.cam-scan-ok-badge{background:rgba(20,180,60,.92);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 24px rgba(40,220,80,.6)}
 .cam-palm-shake{animation:palmShake .5s ease !important}
 @keyframes palmShake{0%,100%{transform:scale(1) translateX(0)}20%{transform:scale(1.04) translateX(-4px)}40%{transform:scale(1.04) translateX(4px)}60%{transform:scale(1.02) translateX(-2px)}80%{transform:scale(1.02) translateX(2px)}}
+.cam-hint{color:rgba(212,168,67,.8);font-size:12px;text-align:center;letter-spacing:.03em}
 .cam-error{display:none;position:absolute;inset:0;background:#000;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:24px}
 .cam-error-ico{font-size:42px;margin-bottom:14px}
 .cam-error-title{color:#fff;font-size:15px;font-weight:600;text-align:center;margin-bottom:8px}
@@ -163,9 +175,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="padding:0 20px">
     <div style="height:.5px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent);margin:8px 0 24px"></div>
     <div class="sec-lbl">ką sako klientai</div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">nezinau kaip bet tiksliai apie mane, net baisu kaip gerai 😳</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 2 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Tomas K.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">Labai asmeniška ir tikslu. Rekomenduoju.</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 4 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text">drauge irgi isibande abi nustebom verta ispbandyti</div><div class="rev-tag">✦ PATVIRTINTAS PIRKIMAS · prieš 1 d.</div></div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">nezinau kaip bet tiksliai apie mane, net baisu kaip gerai 😳</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Tomas K.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">Labai asmeniška ir tikslu. Rekomenduoju.</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+    <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text">drauge irgi isibande abi nustebom verta išbandyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
   </div>
 </div>
 
@@ -177,12 +189,34 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div class="cam-sub">Pasistenkite, kad aplinkui būtų geras apšvietimas,<br>o pirštai būtų išskėsti.</div>
+  <div class="cam-sub" id="cam-sub">Laikykite ranką <strong style="color:var(--gold)">arti kameros</strong> — pirštai išskėsti,<br>delnas užpildo visą ekraną.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
-    <div class="cam-palm-overlay" id="cam-palm-svg"></div>
+    <div class="cam-palm-overlay" id="cam-palm-svg">
+      <svg id="palm-outline-svg" class="cam-palm-svg-el" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Nykštys -->
+        <path d="M38 130 Q28 110 32 90 Q36 72 50 70 Q62 68 66 82 Q68 94 62 110" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- Rodomasis pirštas -->
+        <path d="M68 108 Q66 80 70 58 Q74 40 84 38 Q94 36 96 52 Q98 68 94 90 Q90 108 88 118" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- Vidurinis pirštas -->
+        <path d="M90 116 Q90 86 94 62 Q98 42 108 40 Q118 38 120 56 Q122 74 118 96 Q114 116 112 126" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- Bevardis pirštas -->
+        <path d="M114 124 Q116 96 120 74 Q124 56 134 56 Q144 56 144 74 Q144 90 140 112 Q136 128 134 136" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- Mažasis pirštas -->
+        <path d="M136 134 Q140 112 144 96 Q148 80 156 82 Q164 84 162 100 Q160 116 154 132 Q150 144 148 150" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- Delnas -->
+        <path d="M62 110 Q54 126 52 148 Q50 170 54 196 Q58 220 72 236 Q88 250 108 252 Q128 254 146 242 Q162 230 166 210 Q170 188 166 164 Q162 140 148 130 Q140 124 134 136 Q128 148 112 148 Q96 148 88 136 Q80 124 68 118 Z" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" fill="rgba(212,168,67,0.04)" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Gyvenimo linija (dekoratyvinė) -->
+        <path d="M68 170 Q80 178 88 196 Q94 212 92 234" stroke="rgba(212,168,67,0.25)" stroke-width="1" stroke-linecap="round" fill="none" stroke-dasharray="3,4"/>
+        <!-- Širdies linija (dekoratyvinė) -->
+        <path d="M72 152 Q100 148 128 150 Q144 152 154 158" stroke="rgba(212,168,67,0.25)" stroke-width="1" stroke-linecap="round" fill="none" stroke-dasharray="3,4"/>
+      </svg>
+    </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
+    <div class="cam-frozen" id="cam-frozen"></div>
+    <div class="cam-rescan" id="cam-rescan"></div>
+    <div class="cam-scan-ok" id="cam-scan-ok"><div class="cam-scan-ok-badge">✓</div></div>
     <div class="cam-error" id="cam-error">
       <div class="cam-error-ico">📷</div>
       <div class="cam-error-title">Kamera nepasiekiama</div>
@@ -194,7 +228,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()">
       <div class="cam-shutter-inner"></div>
     </div>
-    <div class="cam-hint">Paspausti, kai ranka paruošta</div>
+    <div class="cam-hint">Sulygiuokite delną su kontūru ir spauskite mygtuką</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -439,20 +473,26 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const dot3=document.getElementById('cam-dot3');
-  const palmSvg=document.getElementById('cam-palm-svg');
+  const palmSvgEl=document.getElementById('palm-outline-svg');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
     if(dot3) dot3.classList.add('inactive');
-    if(palmSvg) palmSvg.style.transform='scaleX(-1)';
+    if(palmSvgEl) palmSvgEl.style.transform='scaleX(1)';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
     if(dot3) dot3.classList.add('inactive');
-    if(palmSvg) palmSvg.style.transform='scaleX(1)';
+    if(palmSvgEl) palmSvgEl.style.transform='scaleX(-1)';
   }
+  // Alignment simulation — po 2.5s kontūras pasidaro žalias
+  palmSvgEl && palmSvgEl.classList.remove('aligned');
+  clearTimeout(window._alignTimer);
+  window._alignTimer=setTimeout(()=>{
+    if(palmSvgEl) palmSvgEl.classList.add('aligned');
+  },2500);
 }
 
 async function startCamera(){
@@ -489,28 +529,80 @@ function capturePhoto(){
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
-  const palmSvg=document.getElementById('cam-palm-svg');
+  const frozen=document.getElementById('cam-frozen');
+  const rescan=document.getElementById('cam-rescan');
+  const scanOk=document.getElementById('cam-scan-ok');
+  const shutter=document.getElementById('cam-shutter');
+  const palmSvgEl=document.getElementById('palm-outline-svg');
+
+  // Blokuojame antrą paspaudimą
+  shutter.style.pointerEvents='none';
+
+  // ── 1. FIKSAVIMAS ─────────────────────────────
+  // Flash efektas
   flash.style.opacity='1';
-  setTimeout(()=>{flash.style.opacity='0';},130);
-  palmSvg.classList.remove('cam-palm-shake');
-  void palmSvg.offsetWidth;
-  palmSvg.classList.add('cam-palm-shake');
-  setTimeout(()=>palmSvg.classList.remove('cam-palm-shake'),550);
+  setTimeout(()=>{flash.style.opacity='0';},120);
+
+  // Haptic feedback (jei palaikoma)
+  if(navigator.vibrate) navigator.vibrate(40);
+
+  // Garsas (trumpas klik)
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(1200,ctx.currentTime);
+    gain.gain.setValueAtTime(0.15,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);
+    osc.start(); osc.stop(ctx.currentTime+0.08);
+  }catch(e){}
+
+  // Fotografuojame
   canvas.width=video.videoWidth||640;
   canvas.height=video.videoHeight||480;
   canvas.getContext('2d').drawImage(video,0,0);
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
-  if(camHand==='left'){
-    photoLeft=dataURL;
-    setTimeout(()=>{
+
+  // ── 2. APDOROJIMAS — nuotrauka „užšąla" ───────
+  frozen.style.backgroundImage=`url(${dataURL})`;
+  frozen.classList.add('active');
+  video.style.display='none';
+
+  // Kontūras išnyksta per „scaną"
+  if(palmSvgEl) palmSvgEl.style.opacity='0';
+
+  // Žalia rescan linija nubėga per 650ms
+  setTimeout(()=>{
+    rescan.classList.add('active');
+  },80);
+
+  // ✓ ženklas atsiranda po rescan
+  setTimeout(()=>{
+    rescan.classList.remove('active');
+    scanOk.classList.add('active');
+  },750);
+
+  // ── 3. PERĖJIMAS ───────────────────────────────
+  setTimeout(()=>{
+    scanOk.classList.remove('active');
+    frozen.classList.remove('active');
+    frozen.style.backgroundImage='';
+    video.style.display='block';
+    rescan.classList.remove('active');
+    if(palmSvgEl){palmSvgEl.style.opacity='1';palmSvgEl.classList.remove('aligned');}
+    shutter.style.pointerEvents='auto';
+
+    if(camHand==='left'){
+      photoLeft=dataURL;
       camHand='right';
       updateCameraUI();
-    },320);
-  }else{
-    photoRight=dataURL;
-    stopCamera();
-    go('s-info');
-  }
+    }else{
+      photoRight=dataURL;
+      stopCamera();
+      go('s-info');
+    }
+  },1350);
 }
 
 function animateLoading(){
