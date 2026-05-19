@@ -538,6 +538,7 @@ function capturePhoto(){
   const scanOkText=document.getElementById('scan-ok-text');
   const scanOkSub=document.getElementById('scan-ok-sub');
   const shutter=document.getElementById('cam-shutter');
+  const shutterWrap=shutter.closest('.cam-shutter-wrap');
 
   shutter.style.pointerEvents='none';
 
@@ -568,6 +569,7 @@ function capturePhoto(){
     scanOkText.textContent='Nuotrauka išsaugota';
     scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinę ranką...':'Analizė pradedama...';
     scanOk.classList.add('active');
+    shutterWrap.style.display='none';
   },700);
 
   // ── 4. PERĖJIMAS po 2.5s ───────────────────────
@@ -576,6 +578,7 @@ function capturePhoto(){
     frozen.classList.remove('active');
     frozen.style.backgroundImage='';
     video.style.display='block';
+    shutterWrap.style.display='';
     shutter.style.pointerEvents='auto';
 
     if(camHand==='left'){
