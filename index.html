@@ -227,11 +227,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="info-err" class="err"></div>
     <div class="field">
       <label>Vardas</label>
-      <input type="text" id="i-name" placeholder="Įveskite savo vardą" autocomplete="name" oninput="validatePayForm()">
+      <input type="text" id="i-name" name="name" placeholder="Įveskite savo vardą" autocomplete="name" oninput="validatePayForm()">
     </div>
     <div class="field">
       <label>El. paštas</label>
-      <input type="email" id="i-email" placeholder="Įveskite savo el. paštą" autocomplete="email" oninput="validatePayForm()">
+      <input type="email" id="i-email" name="email" placeholder="Įveskite savo el. paštą" autocomplete="email" oninput="validatePayForm()">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:-6px;margin-bottom:20px;padding-left:2px">Ataskaitą papildomai išsiųsime ir šiuo el. paštu.</div>
 
@@ -247,15 +247,23 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- 4. MOKĖJIMO METODAI -->
     <div style="font-size:11px;letter-spacing:.16em;color:var(--gold);margin-bottom:12px;text-transform:uppercase">Mokėjimo būdas</div>
 
-    <!-- Apple / Google Pay -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <button id="btn-apple" style="background:#000;border:1px solid #333;border-radius:12px;padding:14px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s" onclick="quickPay('apple')" disabled>
-         Apple Pay
-      </button>
-      <button id="btn-google" style="background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;color:#000;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s" onclick="quickPay('google')" disabled>
-        <span style="font-weight:700;font-size:15px;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay
-      </button>
+    <!-- Apple Pay + Google Pay -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <button id="btn-apple" style="background:#000;border:1px solid #333;border-radius:12px;padding:13px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s" onclick="quickPay('apple')" disabled> Apple Pay</button>
+      <button id="btn-google" style="background:#fff;border:1px solid #ddd;border-radius:12px;padding:13px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
     </div>
+
+    <!-- Revolut Pay -->
+    <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;border-radius:12px;padding:13px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s;margin-bottom:10px;letter-spacing:.01em" onclick="quickPay('revolut')" disabled>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#fff"/><path d="M6 5h7.2c2.4 0 4.1 1.5 4.1 3.8 0 1.7-.9 2.9-2.3 3.4l2.6 4.4-.1.4h-2.7l-2.4-4.1H8.6v4.1H6V5zm2.6 2.3v3.4h4.4c1 0 1.7-.6 1.7-1.7s-.7-1.7-1.7-1.7H8.6z" fill="#191C1F"/></svg>
+      Revolut Pay
+    </button>
+
+    <!-- Klarna -->
+    <button id="btn-klarna" style="width:100%;background:#FFB3C7;border:none;border-radius:12px;padding:13px;color:#000;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-family:'DM Sans',sans-serif;opacity:.45;transition:opacity .2s;margin-bottom:10px;letter-spacing:.01em" onclick="quickPay('klarna')" disabled>
+      <svg width="46" height="16" viewBox="0 0 46 16" fill="none"><text x="0" y="13" font-family="Arial" font-size="14" font-weight="900" fill="#000">klarna</text></svg>
+      · Mokėk dalimis
+    </button>
 
     <!-- Kortelė -->
     <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:6px">
@@ -264,17 +272,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <label>Kortelės numeris</label>
         <div style="position:relative">
           <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px">💳</span>
-          <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" style="padding-left:40px" oninput="formatCard(this);validatePayForm()" autocomplete="cc-number">
+          <input type="text" id="card-number" name="cardnumber" placeholder="1234 5678 9012 3456" maxlength="19" style="padding-left:40px" oninput="formatCard(this);validatePayForm()" autocomplete="cc-number" inputmode="numeric">
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="field" style="margin-bottom:0">
           <label>Galioja iki</label>
-          <input type="text" id="card-exp" placeholder="MM/YY" maxlength="5" oninput="formatExp(this);validatePayForm()" autocomplete="cc-exp">
+          <input type="text" id="card-exp" name="cc-exp" placeholder="MM/YY" maxlength="5" oninput="formatExp(this);validatePayForm()" autocomplete="cc-exp" inputmode="numeric">
         </div>
         <div class="field" style="margin-bottom:0">
           <label>CVC</label>
-          <input type="text" id="card-cvc" placeholder="123" maxlength="3" oninput="validatePayForm()" autocomplete="cc-csc">
+          <input type="text" id="card-cvc" name="cvc" placeholder="123" maxlength="3" oninput="validatePayForm()" autocomplete="cc-csc" inputmode="numeric">
         </div>
       </div>
     </div>
@@ -415,12 +423,13 @@ function validatePayForm(){
   const email=document.getElementById('i-email').value.trim();
   const valid=name.length>0&&email.includes('@')&&email.includes('.');
   const btn=document.getElementById('pay-btn');
-  const appleBtn=document.getElementById('btn-apple');
-  const googleBtn=document.getElementById('btn-google');
+  const ids=['btn-apple','btn-google','btn-revolut','btn-klarna'];
   btn.disabled=!valid;
   btn.style.opacity=valid?'1':'0.45';
-  if(appleBtn){appleBtn.disabled=!valid;appleBtn.style.opacity=valid?'1':'0.45';}
-  if(googleBtn){googleBtn.disabled=!valid;googleBtn.style.opacity=valid?'1':'0.45';}
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.disabled=!valid;el.style.opacity=valid?'1':'0.45';}
+  });
 }
 
 function formatCard(el){
