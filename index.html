@@ -120,11 +120,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-sub{color:#666;font-size:12px;text-align:center;margin-top:6px;padding:0 32px;line-height:1.6;z-index:10}
 .cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:320px;height:390px;border-radius:22px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(212,168,67,.18);z-index:10}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-palm-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
-.cam-palm-svg-el{width:88%;height:88%;transition:filter .4s,opacity .4s}
-.cam-palm-svg-el.aligned path,.cam-palm-svg-el.aligned ellipse{stroke:#7fff7f;filter:drop-shadow(0 0 8px #4cff4c)}
-.cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2s ease-in-out infinite;z-index:4;pointer-events:none;top:6%}
-@keyframes camScan{0%{top:6%}50%{top:90%}100%{top:6%}}
+.cam-palm-overlay{position:absolute;inset:0;pointer-events:none;z-index:3}
+.cam-corners{position:absolute;inset:12%;pointer-events:none}
+.cam-corner{position:absolute;width:28px;height:28px;transition:border-color .5s,box-shadow .5s}
+.cam-corner.tl{top:0;left:0;border-top:3px solid var(--gold);border-left:3px solid var(--gold);border-radius:4px 0 0 0}
+.cam-corner.tr{top:0;right:0;border-top:3px solid var(--gold);border-right:3px solid var(--gold);border-radius:0 4px 0 0}
+.cam-corner.bl{bottom:0;left:0;border-bottom:3px solid var(--gold);border-left:3px solid var(--gold);border-radius:0 0 0 4px}
+.cam-corner.br{bottom:0;right:0;border-bottom:3px solid var(--gold);border-right:3px solid var(--gold);border-radius:0 0 4px 0}
+.cam-corner.aligned{border-color:#7fff7f;box-shadow:0 0 10px rgba(100,255,120,.7)}
+.cam-status-label{position:absolute;bottom:-28px;left:0;right:0;text-align:center;font-size:12px;color:var(--gold);letter-spacing:.06em;transition:color .4s;font-family:'DM Sans',sans-serif}
+.cam-status-label.aligned{color:#7fff7f}
+.cam-scan-line{position:absolute;left:12%;right:12%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 20%,#FFD700 50%,rgba(201,168,76,.5) 80%,transparent 100%);box-shadow:0 0 12px 3px rgba(201,168,76,.55);animation:camScan 2s ease-in-out infinite;z-index:4;pointer-events:none;top:12%}
+@keyframes camScan{0%{top:12%}50%{top:82%}100%{top:12%}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
 .cam-frozen{position:absolute;inset:0;z-index:5;background-size:cover;background-position:center;display:none}
 .cam-frozen.active{display:block}
@@ -189,28 +196,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div class="cam-sub" id="cam-sub">Laikykite ranką <strong style="color:var(--gold)">arti kameros</strong> — pirštai išskėsti,<br>delnas užpildo visą ekraną.</div>
+  <div class="cam-sub" id="cam-sub">Patraukite ranką taip, kad <strong style="color:var(--gold)">delnas matytųsi rėmelyje</strong>,<br>pirštai nukreipti į viršų.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
     <div class="cam-palm-overlay" id="cam-palm-svg">
-      <svg id="palm-outline-svg" class="cam-palm-svg-el" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Nykštys -->
-        <path d="M38 130 Q28 110 32 90 Q36 72 50 70 Q62 68 66 82 Q68 94 62 110" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <!-- Rodomasis pirštas -->
-        <path d="M68 108 Q66 80 70 58 Q74 40 84 38 Q94 36 96 52 Q98 68 94 90 Q90 108 88 118" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <!-- Vidurinis pirštas -->
-        <path d="M90 116 Q90 86 94 62 Q98 42 108 40 Q118 38 120 56 Q122 74 118 96 Q114 116 112 126" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <!-- Bevardis pirštas -->
-        <path d="M114 124 Q116 96 120 74 Q124 56 134 56 Q144 56 144 74 Q144 90 140 112 Q136 128 134 136" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <!-- Mažasis pirštas -->
-        <path d="M136 134 Q140 112 144 96 Q148 80 156 82 Q164 84 162 100 Q160 116 154 132 Q150 144 148 150" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <!-- Delnas -->
-        <path d="M62 110 Q54 126 52 148 Q50 170 54 196 Q58 220 72 236 Q88 250 108 252 Q128 254 146 242 Q162 230 166 210 Q170 188 166 164 Q162 140 148 130 Q140 124 134 136 Q128 148 112 148 Q96 148 88 136 Q80 124 68 118 Z" stroke="rgba(212,168,67,0.7)" stroke-width="1.5" fill="rgba(212,168,67,0.04)" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Gyvenimo linija (dekoratyvinė) -->
-        <path d="M68 170 Q80 178 88 196 Q94 212 92 234" stroke="rgba(212,168,67,0.25)" stroke-width="1" stroke-linecap="round" fill="none" stroke-dasharray="3,4"/>
-        <!-- Širdies linija (dekoratyvinė) -->
-        <path d="M72 152 Q100 148 128 150 Q144 152 154 158" stroke="rgba(212,168,67,0.25)" stroke-width="1" stroke-linecap="round" fill="none" stroke-dasharray="3,4"/>
-      </svg>
+      <div class="cam-corners" id="cam-corners">
+        <div class="cam-corner tl" id="cc-tl"></div>
+        <div class="cam-corner tr" id="cc-tr"></div>
+        <div class="cam-corner bl" id="cc-bl"></div>
+        <div class="cam-corner br" id="cc-br"></div>
+        <div class="cam-status-label" id="cam-status-lbl">Ieškoma delno...</div>
+      </div>
     </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
@@ -473,26 +469,31 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const dot3=document.getElementById('cam-dot3');
-  const palmSvgEl=document.getElementById('palm-outline-svg');
+  const lbl=document.getElementById('cam-status-lbl');
+  const corners=['cc-tl','cc-tr','cc-bl','cc-br'].map(id=>document.getElementById(id));
+
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
     if(dot3) dot3.classList.add('inactive');
-    if(palmSvgEl) palmSvgEl.style.transform='scaleX(1)';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
     if(dot3) dot3.classList.add('inactive');
-    if(palmSvgEl) palmSvgEl.style.transform='scaleX(-1)';
   }
-  // Alignment simulation — po 2.5s kontūras pasidaro žalias
-  palmSvgEl && palmSvgEl.classList.remove('aligned');
+
+  // Reset aligned state
+  corners.forEach(c=>c&&c.classList.remove('aligned'));
+  if(lbl){lbl.textContent='Ieškoma delno...';lbl.classList.remove('aligned');}
+
+  // Po 2s — "Sulygiuota" + žali kampučiai
   clearTimeout(window._alignTimer);
   window._alignTimer=setTimeout(()=>{
-    if(palmSvgEl) palmSvgEl.classList.add('aligned');
-  },2500);
+    corners.forEach(c=>c&&c.classList.add('aligned'));
+    if(lbl){lbl.textContent='✓ Sulygiuota';lbl.classList.add('aligned');}
+  },2000);
 }
 
 async function startCamera(){
@@ -533,7 +534,6 @@ function capturePhoto(){
   const rescan=document.getElementById('cam-rescan');
   const scanOk=document.getElementById('cam-scan-ok');
   const shutter=document.getElementById('cam-shutter');
-  const palmSvgEl=document.getElementById('palm-outline-svg');
 
   // Blokuojame antrą paspaudimą
   shutter.style.pointerEvents='none';
@@ -570,7 +570,10 @@ function capturePhoto(){
   video.style.display='none';
 
   // Kontūras išnyksta per „scaną"
-  if(palmSvgEl) palmSvgEl.style.opacity='0';
+  const corners=['cc-tl','cc-tr','cc-bl','cc-br'].map(id=>document.getElementById(id));
+  const lbl=document.getElementById('cam-status-lbl');
+  corners.forEach(c=>c&&(c.style.opacity='0'));
+  if(lbl) lbl.style.opacity='0';
 
   // Žalia rescan linija nubėga per 650ms
   setTimeout(()=>{
@@ -590,9 +593,9 @@ function capturePhoto(){
     frozen.style.backgroundImage='';
     video.style.display='block';
     rescan.classList.remove('active');
-    if(palmSvgEl){palmSvgEl.style.opacity='1';palmSvgEl.classList.remove('aligned');}
+    corners.forEach(c=>c&&(c.style.opacity='1'));
+    if(lbl) lbl.style.opacity='1';
     shutter.style.pointerEvents='auto';
-
     if(camHand==='left'){
       photoLeft=dataURL;
       camHand='right';
