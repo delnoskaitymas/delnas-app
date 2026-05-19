@@ -184,7 +184,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div class="cam-sub" id="cam-sub">Pirštus lengvai išskėskite ir laikykite ranką<br>tiesiai virš kameros.</div>
+  <div class="cam-sub" id="cam-sub">Lengvai išskėskite pirštus ir laikykite delną<br>tiesiai prieš kamerą.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
     <div class="cam-scan-line"></div>
@@ -566,6 +566,9 @@ function capturePhoto(){
   // ── 3. LOADING EKRANAS (statinis, 2.5s) ────────
   setTimeout(()=>{
     const isLeft=camHand==='left';
+    // Viršutinis tekstas keičiasi
+    document.getElementById('cam-title').textContent=isLeft?'Kairysis delnas paruoštas!':'Dešinysis delnas paruoštas!';
+    document.getElementById('cam-sub').style.display='none';
     scanOkText.textContent='Delnas sėkmingai užfiksuotas';
     scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'Analizė pradedama...';
     scanOk.classList.add('active');
@@ -579,6 +582,7 @@ function capturePhoto(){
     frozen.style.backgroundImage='';
     video.style.display='block';
     shutterWrap.style.display='';
+    document.getElementById('cam-sub').style.display='';
     shutter.style.pointerEvents='auto';
 
     if(camHand==='left'){
