@@ -470,18 +470,36 @@ async function startCamera(){
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
   try{
+    // Bandome su zoom:1 — tai priverčia naudoti pagrindinį objektyvą, ne ultra-wide
     try{
       camStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+        video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440},zoom:1},
         audio:false
       });
     }catch(e){
-      camStream=await navigator.mediaDevices.getUserMedia({
-        video:{width:{ideal:1280},height:{ideal:960}},
-        audio:false
-      });
+      try{
+        camStream=await navigator.mediaDevices.getUserMedia({
+          video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+          audio:false
+        });
+      }catch(e2){
+        camStream=await navigator.mediaDevices.getUserMedia({
+          video:{width:{ideal:1280},height:{ideal:960}},
+          audio:false
+        });
+      }
     }
     video.srcObject=camStream;
+    // Jei įrenginys palaiko zoom — nustatome į 1 (tikras, neišplėstas vaizdas)
+    video.onloadedmetadata=()=>{
+      try{
+        const track=camStream.getVideoTracks()[0];
+        const caps=track.getCapabilities&&track.getCapabilities();
+        if(caps&&caps.zoom){
+          track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]});
+        }
+      }catch(e){}
+    };
   }catch(err){
     errorDiv.style.display='flex';
     console.error('Kameros klaida:',err);
