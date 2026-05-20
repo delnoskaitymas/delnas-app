@@ -468,15 +468,13 @@ async function verifyAndProceed(sessionId){
       window.history.replaceState({},'','/');
       if(!photoLeft) photoLeft=sessionStorage.getItem('photoLeft');
       if(!photoRight) photoRight=sessionStorage.getItem('photoRight');
+      const storedBgId=sessionStorage.getItem('bgSessionId');
+      if(storedBgId) window.bgSessionId=storedBgId;
       sessionStorage.removeItem('photoLeft');
       sessionStorage.removeItem('photoRight');
+      sessionStorage.removeItem('bgSessionId');
 
-      // Jei foninė analizė jau baigta — rodyti iškart
-      if(window.bgAnalysisDone&&window.bgAnalysisResult){
-        displayResult(window.bgAnalysisResult);
-        return;
-      }
-      // Jei dar vyksta — paleisti loading ir laukti
+      // Rodyti personalizavimo ekraną ir laukti analizės
       go('s-loading');
       animateLoadingWait();
       waitForAnalysis().then(result=>{
@@ -496,26 +494,42 @@ async function verifyAndProceed(sessionId){
   }catch(e){go('s-info');}
 }
 
-// Laukia kol foninė analizė baigs arba paleidžia naują
 function waitForAnalysis(){
   return new Promise((resolve,reject)=>{
-    // Jei jau baigta
-    if(window.bgAnalysisDone){
-      if(window.bgAnalysisResult) resolve(window.bgAnalysisResult);
-      else reject(new Error(window.bgAnalysisError||'Klaida'));
-      return;
+    const photoData=[];
+    if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+    if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+
+    function tryFetch(){
+      fetch('/analyze-palm',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          photos:photoData,
+          name:window.userName||'',
+          token:window.palmToken||'',
+          sessionId:window.bgSessionId||''
+        })
+      }).then(r=>{
+        if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});
+        return r.json();
+      }).then(resolve).catch(reject);
     }
-    // Tikrinti kas 500ms
-    const check=setInterval(()=>{
-      if(window.bgAnalysisDone){
-        clearInterval(check);
-        if(window.bgAnalysisResult) resolve(window.bgAnalysisResult);
-        else{
-          // Foninė analizė nepavyko — paleisti naują su token
-          callClaude().then(resolve).catch(reject);
+
+    // Jei foninė analizė jau baigta — kviečiam iš karto
+    if(window.bgAnalysisDone){
+      tryFetch();
+    }else{
+      // Laukiame kol baigs arba max 90s
+      let waited=0;
+      const iv=setInterval(()=>{
+        waited+=2;
+        if(window.bgAnalysisDone||waited>=90){
+          clearInterval(iv);
+          tryFetch();
         }
-      }
-    },500);
+      },2000);
+    }
   });
 }
 
@@ -580,6 +594,7 @@ async function initiatePayment(){
   try{
     if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
     if(photoRight) sessionStorage.setItem('photoRight',photoRight);
+    if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
     const data=await res.json();
     if(data.url){window.location.href=data.url;}
@@ -914,33 +929,49 @@ function capturePhoto(){
   },2900);
 }
 
-// Foninė analizė — rezultatas saugomas globaliai
-window.bgAnalysisResult=null;
-window.bgAnalysisError=null;
+// Foninė analizė — rezultatas saugomas serveryje pagal sessionId
+window.bgSessionId=null;
 window.bgAnalysisDone=false;
+window.bgAnalysisError=null;
 
 function startBackgroundAnalysis(){
-  window.bgAnalysisResult=null;
-  window.bgAnalysisError=null;
+  // Generuojame unikalų sessionId
+  window.bgSessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now();
   window.bgAnalysisDone=false;
-  // Siunčiame užklausą fone — neblokuojame UI
+  window.bgAnalysisError=null;
+
   const photoData=[];
   if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
   if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-  fetch('/analyze-palm',{
+
+  fetch('/start-analysis',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||''})
-  }).then(r=>{
-    if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});
-    return r.json();
-  }).then(result=>{
-    window.bgAnalysisResult=result;
-    window.bgAnalysisDone=true;
-  }).catch(e=>{
-    window.bgAnalysisError=e.message;
-    window.bgAnalysisDone=true;
-  });
+    body:JSON.stringify({
+      photos:photoData,
+      name:window.userName||'',
+      sessionId:window.bgSessionId
+    })
+  }).then(r=>r.json()).then(d=>{
+    if(d.started) console.log('Foninė analizė paleista:', window.bgSessionId);
+    else console.warn('Analizė nepaleista:', d.error);
+  }).catch(e=>console.warn('start-analysis klaida:', e));
+
+  // Tikrinamas statusas kas 3s
+  const checkInterval=setInterval(()=>{
+    fetch(`/analysis-status?sessionId=${window.bgSessionId}`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.status==='done'){
+          window.bgAnalysisDone=true;
+          clearInterval(checkInterval);
+        } else if(d.status==='error'){
+          window.bgAnalysisDone=true;
+          window.bgAnalysisError='Serverio klaida';
+          clearInterval(checkInterval);
+        }
+      }).catch(()=>{});
+  },3000);
 }
 
 function animateLoading(){
