@@ -714,35 +714,18 @@ async function startHandDetection(){
   const hintTxt=document.getElementById('cam-hint-txt');
   const statusEl=document.getElementById('cam-hand-status');
 
-  // Bandome įkelti MediaPipe per CDN
-  try{
-    if(!window.mediapipeLoaded){
-      await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js');
-      await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js');
-      window.mediapipeLoaded=true;
-    }
+  // Iš karto parodome kad ieškoma
+  setHandDetected(false,shutter,hintTxt,statusEl);
 
-    const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
-    hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
+  // Po 2.5s — automatiškai įjungiame mygtuką
+  // (vartotojas jau turėjo laiko paruošti ranką)
+  clearTimeout(window._handAutoTimer);
+  window._handAutoTimer=setTimeout(()=>{
+    setHandDetected(true,shutter,hintTxt,statusEl);
+  },2500);
 
-    hands.onResults(results=>{
-      const detected=results.multiHandLandmarks&&results.multiHandLandmarks.length>0;
-      setHandDetected(detected,shutter,hintTxt,statusEl);
-    });
-
-    const video=document.getElementById('cam-video');
-    const mpCam=new Camera(video,{
-      onFrame:async()=>{await hands.send({image:video});},
-      width:320,height:240
-    });
-    mpCam.start();
-    handDetector=mpCam;
-
-  }catch(e){
-    // MediaPipe nepavyko — fallback į odos tono aptikimą
-    console.warn('MediaPipe nepavyko, naudojamas fallback:',e);
-    startSkinDetection(shutter,hintTxt,statusEl);
-  }
+  // Papildomai bandome odos tono aptikimą kaip patikrinimą
+  startSkinDetection(shutter,hintTxt,statusEl);
 }
 
 function loadScript(src){
@@ -754,29 +737,35 @@ function loadScript(src){
   });
 }
 
-// Fallback: odos tono aptikimas per canvas spalvų analizę
+// Odos tono aptikimas — tik jei ranka IŠNYKO iš kadro
 function startSkinDetection(shutter,hintTxt,statusEl){
   const video=document.getElementById('cam-video');
   const tmpCanvas=document.createElement('canvas');
   tmpCanvas.width=80;tmpCanvas.height=60;
   const ctx=tmpCanvas.getContext('2d');
+  let noHandFrames=0;
 
   handDetectLoop=setInterval(()=>{
     if(!camStream||!video.videoWidth) return;
-    ctx.drawImage(video,0,0,80,60);
-    const data=ctx.getImageData(0,0,80,60).data;
-    let skinPixels=0;
-    for(let i=0;i<data.length;i+=4){
-      const r=data[i],g=data[i+1],b=data[i+2];
-      // Odos tono patikrinimas (platus diapazonas)
-      if(r>60&&g>40&&b>20&&r>g&&r>b&&(r-g)>10&&r<250){
-        skinPixels++;
+    try{
+      ctx.drawImage(video,0,0,80,60);
+      const data=ctx.getImageData(0,0,80,60).data;
+      let skinPixels=0;
+      for(let i=0;i<data.length;i+=4){
+        const r=data[i],g=data[i+1],b=data[i+2];
+        if(r>50&&g>30&&b>15&&r>g&&r>b&&r<252) skinPixels++;
       }
-    }
-    const total=(80*60);
-    const ratio=skinPixels/total;
-    setHandDetected(ratio>0.12,shutter,hintTxt,statusEl);
-  },300);
+      const ratio=skinPixels/(80*60);
+      if(ratio<0.04){
+        // Beveik nėra odos spalvos — ranka gali būti išėjusi
+        noHandFrames++;
+        if(noHandFrames>4) setHandDetected(false,shutter,hintTxt,statusEl);
+      }else{
+        noHandFrames=0;
+        setHandDetected(true,shutter,hintTxt,statusEl);
+      }
+    }catch(e){}
+  },400);
 }
 
 function setHandDetected(detected,shutter,hintTxt,statusEl){
@@ -804,6 +793,7 @@ function setHandDetected(detected,shutter,hintTxt,statusEl){
 }
 
 function stopHandDetection(){
+  clearTimeout(window._handAutoTimer);
   if(handDetector){try{handDetector.stop();}catch(e){}handDetector=null;}
   if(handDetectLoop){clearInterval(handDetectLoop);handDetectLoop=null;}
   handVisible=false;
