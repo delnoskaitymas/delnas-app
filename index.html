@@ -54,28 +54,28 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.load-wrap{padding:20px 18px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100vh;box-sizing:border-box;overflow:hidden}
-.load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:3px}
-.load-sub{font-size:12px;color:var(--muted);margin-bottom:0}
-.oracle-wrap{width:170px;height:170px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.load-wrap{padding:16px 16px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden}
+.load-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:2px}
+.load-sub{font-size:11px;color:var(--muted)}
+.oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .oracle-ring{position:absolute;border-radius:50%;border:1.5px solid}
 .or1{inset:0;border-color:rgba(212,168,67,.18);animation:sp 20s linear infinite}
 .or2{inset:12px;border-color:rgba(212,168,67,.28);animation:sp 14s linear infinite reverse}
 .or3{inset:24px;border-color:rgba(212,168,67,.42);animation:sp 9s linear infinite}
 .or4{inset:36px;border-color:rgba(212,168,67,.6);animation:sp 6s linear infinite reverse}
 .oracle-glow{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.12) 0%,transparent 70%);animation:pulse3 2.5s ease-in-out infinite}
-.oracle-palm{position:absolute;inset:44px;border-radius:50%;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.4);display:flex;align-items:center;justify-content:center;font-size:32px;animation:bob 3.5s ease-in-out infinite}
-@keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.3),0 0 20px rgba(212,168,67,.1)}50%{box-shadow:0 0 0 14px rgba(212,168,67,0),0 0 40px rgba(212,168,67,.2)}}
-.pbar-wrap{width:100%;max-width:340px;margin-bottom:0}
+.oracle-palm{position:absolute;inset:44px;border-radius:50%;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.4);display:flex;align-items:center;justify-content:center;font-size:28px;animation:bob 3.5s ease-in-out infinite}
+@keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.3)}50%{box-shadow:0 0 0 12px rgba(212,168,67,0)}}
+.pbar-wrap{width:100%;max-width:340px}
 .pbar-track{width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:4px}
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
-.pbar-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(212,168,67,.6);font-style:italic}
-.load-steps{display:grid;gap:6px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:10px;padding:8px 12px;font-size:11px;color:var(--muted);transition:border-color .4s,background .4s}
+.pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
+.load-steps{display:grid;gap:5px;width:100%;max-width:340px}
+.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:9px;padding:7px 10px;transition:border-color .4s,background .4s}
 .ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
-.ls-icon{width:28px;height:28px;border-radius:7px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.ls-text{flex:1;text-align:left;font-size:11px;line-height:1.3}
-.ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
+.ls-icon{width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ls-text{flex:1;text-align:left;font-size:10px;line-height:1.3;color:var(--muted)}
+.ls-status{font-size:12px;flex-shrink:0;width:16px;text-align:center}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
 .rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
@@ -337,15 +337,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
     </div>
 
-    <div style="position:relative;width:200px;height:200px;flex-shrink:0">
-      <canvas id="oracle-canvas" width="200" height="200" style="display:block"></canvas>
+    <div style="position:relative;width:150px;height:150px;flex-shrink:0">
+      <canvas id="oracle-canvas" width="150" height="150" style="display:block"></canvas>
     </div>
 
     <div class="pbar-wrap">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct">0%</span>
-        <span id="ptime">~22 sek. liko</span>
+        <span id="ptime">~35 sek. liko</span>
       </div>
     </div>
 
@@ -946,7 +946,7 @@ function startOracleCanvas(){
   if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
 
   const ctx=canvas.getContext('2d');
-  const W=200,H=200,cx=100,cy=100;
+  const W=150,H=150,cx=75,cy=75;
 
   // Dalelės
   const particles=[];
@@ -976,13 +976,11 @@ function startOracleCanvas(){
 
     // Fonas — tamsus apskritimas
     ctx.beginPath();
-    ctx.arc(cx,cy,92,0,Math.PI*2);
+    ctx.arc(cx,cy,68,0,Math.PI*2);
     ctx.fillStyle='rgba(7,4,15,0.92)';
     ctx.fill();
-
-    // Išorinis subtilus apskritimas
     ctx.beginPath();
-    ctx.arc(cx,cy,92,0,Math.PI*2);
+    ctx.arc(cx,cy,68,0,Math.PI*2);
     ctx.strokeStyle='rgba(212,168,67,0.12)';
     ctx.lineWidth=1;
     ctx.stroke();
@@ -1019,18 +1017,17 @@ function startOracleCanvas(){
       grad.addColorStop(1,'rgba(212,168,67,0)');
 
       ctx.beginPath();
-      ctx.ellipse(0,0,78,78*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
+      ctx.ellipse(0,0,58,58*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
       ctx.strokeStyle=grad;
-      ctx.lineWidth=2.2;
+      ctx.lineWidth=2;
       ctx.shadowColor='rgba(255,200,50,0.6)';
-      ctx.shadowBlur=8;
+      ctx.shadowBlur=6;
       ctx.stroke();
       ctx.shadowBlur=0;
 
-      // Kibirkštys ant žiedo
       const sparkPos=ring.phase*3;
-      const sx=Math.cos(sparkPos)*78;
-      const sy=Math.sin(sparkPos)*78*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
+      const sx=Math.cos(sparkPos)*58;
+      const sy=Math.sin(sparkPos)*58*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
       ctx.beginPath();
       ctx.arc(sx,sy,3,0,Math.PI*2);
       ctx.fillStyle='rgba(255,240,120,0.95)';
@@ -1043,21 +1040,20 @@ function startOracleCanvas(){
     });
 
     // Vidinis švytėjimas
-    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,52);
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,38);
     glow.addColorStop(0,'rgba(212,168,67,0.18)');
     glow.addColorStop(0.5,'rgba(212,168,67,0.08)');
     glow.addColorStop(1,'rgba(212,168,67,0)');
     ctx.beginPath();
-    ctx.arc(cx,cy,52,0,Math.PI*2);
+    ctx.arc(cx,cy,38,0,Math.PI*2);
     ctx.fillStyle=glow;
     ctx.fill();
 
-    // Delno SVG kaip rasterizuotas tekstas — naudojame canvas tekstą
     const pulse=0.92+Math.sin(t*0.04)*0.08;
     ctx.save();
     ctx.translate(cx,cy);
     ctx.scale(pulse,pulse);
-    ctx.font='44px serif';
+    ctx.font='32px serif';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.shadowColor='rgba(255,200,60,0.8)';
@@ -1091,7 +1087,7 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=22;
+  const totalSec=35;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
@@ -1115,10 +1111,10 @@ function animateLoading(){
     }
   },250);
 
-  setTimeout(()=>activateStep(1,true),300);
-  setTimeout(()=>activateStep(2,true),5500);
-  setTimeout(()=>activateStep(3,true),11000);
-  setTimeout(()=>activateStep(4,false),16500);
+  setTimeout(()=>activateStep(1,true),500);
+  setTimeout(()=>activateStep(2,true),9000);
+  setTimeout(()=>activateStep(3,true),18000);
+  setTimeout(()=>activateStep(4,false),27000);
 }
 
 function activateStep(n,done){
