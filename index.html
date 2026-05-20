@@ -54,19 +54,30 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.load-wrap{padding:70px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
-.oracle{width:88px;height:88px;margin:0 auto 28px}
-.o-outer{width:88px;height:88px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 2.2s ease-in-out infinite}
-@keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.35)}50%{box-shadow:0 0 0 18px rgba(212,168,67,0)}}
-.o-inner{width:40px;height:40px;border-radius:50%;background:var(--gold);opacity:.8;animation:sp 6s linear infinite}
-.load-steps{display:grid;gap:8px;width:100%;max-width:300px;margin-top:16px}
-.ls{display:flex;align-items:center;gap:12px;background:var(--surf);border:.5px solid var(--border);border-radius:9px;padding:9px 13px;font-size:12px;color:var(--muted);font-style:italic}
-.ls-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .4s}
-.ls-dot.done{background:var(--gold)}
-.dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
-.d{width:6px;height:6px;border-radius:50%;background:var(--border2);animation:dp 1.5s ease-in-out infinite}
-.d:nth-child(2){animation-delay:.3s}.d:nth-child(3){animation-delay:.6s}
-@keyframes dp{0%,100%{background:var(--border2);transform:scale(1)}50%{background:var(--gold);transform:scale(1.5)}}
+.load-wrap{padding:32px 20px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.load-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:6px}
+.load-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.oracle-wrap{width:240px;height:240px;position:relative;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;flex-shrink:0}
+.oracle-ring{position:absolute;border-radius:50%;border:1.5px solid}
+.or1{inset:0;border-color:rgba(212,168,67,.18);animation:sp 20s linear infinite}
+.or2{inset:16px;border-color:rgba(212,168,67,.28);animation:sp 14s linear infinite reverse}
+.or3{inset:32px;border-color:rgba(212,168,67,.42);animation:sp 9s linear infinite}
+.or4{inset:48px;border-color:rgba(212,168,67,.6);animation:sp 6s linear infinite reverse}
+.oracle-glow{position:absolute;inset:24px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.12) 0%,transparent 70%);animation:pulse3 2.5s ease-in-out infinite}
+.oracle-palm{position:absolute;inset:56px;border-radius:50%;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.4);display:flex;align-items:center;justify-content:center;font-size:40px;animation:bob 3.5s ease-in-out infinite}
+@keyframes pulse3{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.3),0 0 30px rgba(212,168,67,.1)}50%{box-shadow:0 0 0 20px rgba(212,168,67,0),0 0 60px rgba(212,168,67,.2)}}
+.pbar-wrap{width:100%;max-width:320px;margin-bottom:6px}
+.pbar-track{width:100%;height:4px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:5px}
+.pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
+.pbar-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(212,168,67,.6);font-style:italic}
+.load-steps{display:grid;gap:8px;width:100%;max-width:340px;margin-top:12px}
+.ls{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:12px;padding:11px 14px;font-size:12px;color:var(--muted);transition:border-color .4s,background .4s}
+.ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
+.ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ls-text{flex:1;text-align:left;font-size:12px;line-height:1.4}
+.ls-status{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.ls-dot{display:none}
+.ls-dot.done{display:none}
 .rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
 .rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
 .rs-std{background:rgba(255,255,255,0.03);border:.5px solid rgba(212,168,67,0.18)}
@@ -187,6 +198,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-sub" id="cam-sub">Lengvai išskėskite pirštus ir laikykite delną<br>tiesiai prieš kamerą.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0;transition:opacity .3s"></canvas>
+    <div id="cam-hand-status" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:5;padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:.04em;background:rgba(0,0,0,.6);color:rgba(245,238,216,.5);white-space:nowrap;transition:all .3s">Ieškoma rankos...</div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
     <div class="cam-frozen" id="cam-frozen"></div>
@@ -204,10 +217,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
-    <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()">
+    <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s">
       <div class="cam-shutter-inner"></div>
     </div>
-    <div class="cam-hint">Spauskite, kai ranka paruošta</div>
+    <div class="cam-hint" id="cam-hint-txt">Nukreipkite kamerą į delną</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -320,22 +333,53 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <!-- SCREEN 5: LOADING -->
 <div class="screen" id="s-loading">
   <div class="load-wrap">
-    <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:19px;letter-spacing:.08em;font-weight:700;margin-bottom:6px;text-transform:uppercase">Analizuojami tavo delnai...</div>
-    <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:22px">Nusaitomas linijų žemėlapis ir planetų kalvos.</div>
-    <div style="width:100%;max-width:300px;margin-bottom:20px">
-      <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
-        <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .6s linear"></div>
+    <div class="load-title" id="load-title">ANALIZUOJAMAS TAVO DELNAS...</div>
+    <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
+
+    <!-- Didelis kosminis ratas -->
+    <div class="oracle-wrap">
+      <div class="oracle-ring or1"></div>
+      <div class="oracle-ring or2"></div>
+      <div class="oracle-ring or3"></div>
+      <div class="oracle-ring or4"></div>
+      <div class="oracle-glow"></div>
+      <div class="oracle-palm">🤚</div>
+    </div>
+
+    <!-- Progreso juosta su procentais -->
+    <div class="pbar-wrap">
+      <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
+      <div class="pbar-labels">
+        <span id="ppct">0%</span>
+        <span id="ptime">~16 sek. liko</span>
       </div>
-      <div id="ptime" style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">~15 sek. liko</div>
     </div>
+
+    <!-- 4 žingsniai su ikonomis -->
     <div class="load-steps">
-      <div class="ls" id="ls1"><div class="ls-dot" id="ls1-dot"></div><span id="ls1-txt">Analizuojama asmenybė ir paslėptas potencialas</span></div>
-      <div class="ls" id="ls2"><div class="ls-dot" id="ls2-dot"></div><span id="ls2-txt">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</span></div>
-      <div class="ls" id="ls3"><div class="ls-dot" id="ls3-dot"></div><span id="ls3-txt">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</span></div>
-      <div class="ls" id="ls4"><div class="ls-dot" id="ls4-dot"></div><span id="ls4-txt">Atveriama sielos misija ir planetų įtaka delne</span></div>
+      <div class="ls" id="ls1">
+        <div class="ls-icon">🫀</div>
+        <div class="ls-text">Analizuojama asmenybė ir paslėptas potencialas</div>
+        <div class="ls-status" id="ls1-status">·</div>
+      </div>
+      <div class="ls" id="ls2">
+        <div class="ls-icon">❤️</div>
+        <div class="ls-text">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</div>
+        <div class="ls-status" id="ls2-status">·</div>
+      </div>
+      <div class="ls" id="ls3">
+        <div class="ls-icon">💰</div>
+        <div class="ls-text">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</div>
+        <div class="ls-status" id="ls3-status">·</div>
+      </div>
+      <div class="ls" id="ls4">
+        <div class="ls-icon">🪐</div>
+        <div class="ls-text">Atveriama sielos misija ir planetų įtaka delne</div>
+        <div class="ls-status" id="ls4-status">·</div>
+      </div>
     </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.25);margin-top:20px;font-style:italic;text-align:center">Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
+
+    <div style="font-size:11px;color:rgba(245,238,216,.2);margin-top:18px;font-style:italic">Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
   </div>
 </div>
 
@@ -414,7 +458,6 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 async function verifyAndProceed(sessionId){
   go('s-loading');
-  document.getElementById('lmsg').textContent='Tikrinamas mokėjimas...';
   try{
     const res=await fetch(`/verify-payment?session_id=${sessionId}`);
     const data=await res.json();
@@ -427,12 +470,18 @@ async function verifyAndProceed(sessionId){
       if(!photoRight) photoRight=sessionStorage.getItem('photoRight');
       sessionStorage.removeItem('photoLeft');
       sessionStorage.removeItem('photoRight');
+
+      // Jei foninė analizė jau baigta — rodyti iškart
+      if(window.bgAnalysisDone&&window.bgAnalysisResult){
+        displayResult(window.bgAnalysisResult);
+        return;
+      }
+      // Jei dar vyksta — paleisti loading ir laukti
       go('s-loading');
-      animateLoading();
-      callClaude().then(result=>{
+      animateLoadingWait();
+      waitForAnalysis().then(result=>{
         displayResult(result);
       }).catch(e=>{
-        console.error(e);
         const err=document.getElementById('order-err');
         err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
         err.style.display='block';
@@ -445,6 +494,43 @@ async function verifyAndProceed(sessionId){
       err.style.display='block';
     }
   }catch(e){go('s-info');}
+}
+
+// Laukia kol foninė analizė baigs arba paleidžia naują
+function waitForAnalysis(){
+  return new Promise((resolve,reject)=>{
+    // Jei jau baigta
+    if(window.bgAnalysisDone){
+      if(window.bgAnalysisResult) resolve(window.bgAnalysisResult);
+      else reject(new Error(window.bgAnalysisError||'Klaida'));
+      return;
+    }
+    // Tikrinti kas 500ms
+    const check=setInterval(()=>{
+      if(window.bgAnalysisDone){
+        clearInterval(check);
+        if(window.bgAnalysisResult) resolve(window.bgAnalysisResult);
+        else{
+          // Foninė analizė nepavyko — paleisti naują su token
+          callClaude().then(resolve).catch(reject);
+        }
+      }
+    },500);
+  });
+}
+
+// Loading animacija kol laukiame rezultato po mokėjimo (85%→99%)
+function animateLoadingWait(){
+  const pbar=document.getElementById('pbar');
+  const ptime=document.getElementById('ptime');
+  if(pbar) pbar.style.width='85%';
+  if(ptime) ptime.textContent='Beveik baigta...';
+  let p=85;
+  const t=setInterval(()=>{
+    p=Math.min(p+0.5,99);
+    if(pbar) pbar.style.width=p+'%';
+    if(p>=99) clearInterval(t);
+  },300);
 }
 
 function validatePayForm(){
@@ -552,43 +638,164 @@ async function startCamera(){
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
   try{
-    // Bandome su zoom:1 — tai priverčia naudoti pagrindinį objektyvą, ne ultra-wide
+    // Pirma bandome gauti visus įrenginius ir rinktis tą, kuris nėra ultra-wide
+    let chosenDeviceId=null;
     try{
+      const devices=await navigator.mediaDevices.enumerateDevices();
+      const videoCams=devices.filter(d=>d.kind==='videoinput');
+      // Ultra-wide paprastai turi "wide" arba "0.5" pavadinime
+      const mainCam=videoCams.find(d=>
+        !d.label.toLowerCase().includes('wide')&&
+        !d.label.toLowerCase().includes('0.5')&&
+        !d.label.toLowerCase().includes('ultra')
+      );
+      if(mainCam) chosenDeviceId=mainCam.deviceId;
+    }catch(e){}
+
+    const constraints={
+      video:chosenDeviceId
+        ?{deviceId:{exact:chosenDeviceId},width:{ideal:1280},height:{ideal:960}}
+        :{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+      audio:false
+    };
+
+    try{
+      camStream=await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(e){
       camStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440},zoom:1},
+        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
         audio:false
       });
-    }catch(e){
-      try{
-        camStream=await navigator.mediaDevices.getUserMedia({
-          video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
-          audio:false
-        });
-      }catch(e2){
-        camStream=await navigator.mediaDevices.getUserMedia({
-          video:{width:{ideal:1280},height:{ideal:960}},
-          audio:false
-        });
-      }
     }
+
     video.srcObject=camStream;
-    // Jei įrenginys palaiko zoom — nustatome į 1 (tikras, neišplėstas vaizdas)
+
+    // Zoom fix po užkrovimo
     video.onloadedmetadata=()=>{
       try{
         const track=camStream.getVideoTracks()[0];
         const caps=track.getCapabilities&&track.getCapabilities();
         if(caps&&caps.zoom){
-          track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]});
+          // Nustatome minimalų zoom — tai yra pagrindinis objektyvas
+          track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
         }
       }catch(e){}
+      // Pradedame rankos aptikimą
+      startHandDetection();
     };
+
   }catch(err){
     errorDiv.style.display='flex';
     console.error('Kameros klaida:',err);
   }
 }
 
+let handDetector=null;
+let handDetectLoop=null;
+let handVisible=false;
+
+async function startHandDetection(){
+  const shutter=document.getElementById('cam-shutter');
+  const hintTxt=document.getElementById('cam-hint-txt');
+  const statusEl=document.getElementById('cam-hand-status');
+
+  // Bandome įkelti MediaPipe per CDN
+  try{
+    if(!window.mediapipeLoaded){
+      await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js');
+      window.mediapipeLoaded=true;
+    }
+
+    const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
+    hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
+
+    hands.onResults(results=>{
+      const detected=results.multiHandLandmarks&&results.multiHandLandmarks.length>0;
+      setHandDetected(detected,shutter,hintTxt,statusEl);
+    });
+
+    const video=document.getElementById('cam-video');
+    const mpCam=new Camera(video,{
+      onFrame:async()=>{await hands.send({image:video});},
+      width:320,height:240
+    });
+    mpCam.start();
+    handDetector=mpCam;
+
+  }catch(e){
+    // MediaPipe nepavyko — fallback į odos tono aptikimą
+    console.warn('MediaPipe nepavyko, naudojamas fallback:',e);
+    startSkinDetection(shutter,hintTxt,statusEl);
+  }
+}
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');
+    s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+// Fallback: odos tono aptikimas per canvas spalvų analizę
+function startSkinDetection(shutter,hintTxt,statusEl){
+  const video=document.getElementById('cam-video');
+  const tmpCanvas=document.createElement('canvas');
+  tmpCanvas.width=80;tmpCanvas.height=60;
+  const ctx=tmpCanvas.getContext('2d');
+
+  handDetectLoop=setInterval(()=>{
+    if(!camStream||!video.videoWidth) return;
+    ctx.drawImage(video,0,0,80,60);
+    const data=ctx.getImageData(0,0,80,60).data;
+    let skinPixels=0;
+    for(let i=0;i<data.length;i+=4){
+      const r=data[i],g=data[i+1],b=data[i+2];
+      // Odos tono patikrinimas (platus diapazonas)
+      if(r>60&&g>40&&b>20&&r>g&&r>b&&(r-g)>10&&r<250){
+        skinPixels++;
+      }
+    }
+    const total=(80*60);
+    const ratio=skinPixels/total;
+    setHandDetected(ratio>0.12,shutter,hintTxt,statusEl);
+  },300);
+}
+
+function setHandDetected(detected,shutter,hintTxt,statusEl){
+  if(detected===handVisible) return;
+  handVisible=detected;
+  if(detected){
+    shutter.style.opacity='1';
+    shutter.style.pointerEvents='auto';
+    if(hintTxt) hintTxt.textContent='Spauskite, kai ranka paruošta';
+    if(statusEl){
+      statusEl.textContent='✓ Ranka aptikta';
+      statusEl.style.background='rgba(20,160,60,.8)';
+      statusEl.style.color='#fff';
+    }
+  }else{
+    shutter.style.opacity='0.35';
+    shutter.style.pointerEvents='none';
+    if(hintTxt) hintTxt.textContent='Nukreipkite kamerą į delną';
+    if(statusEl){
+      statusEl.textContent='Ieškoma rankos...';
+      statusEl.style.background='rgba(0,0,0,.6)';
+      statusEl.style.color='rgba(245,238,216,.5)';
+    }
+  }
+}
+
+function stopHandDetection(){
+  if(handDetector){try{handDetector.stop();}catch(e){}handDetector=null;}
+  if(handDetectLoop){clearInterval(handDetectLoop);handDetectLoop=null;}
+  handVisible=false;
+}
+
 function stopCamera(){
+  stopHandDetection();
   if(camStream){
     camStream.getTracks().forEach(t=>t.stop());
     camStream=null;
@@ -683,7 +890,13 @@ function capturePhoto(){
     video.style.display='block';
     shutterWrap.style.display='';
     document.getElementById('cam-sub').style.display='';
-    shutter.style.pointerEvents='auto';
+    // Rankos aptikimas vėl kontroliuoja mygtuką — reset
+    handVisible=false;
+    setHandDetected(false,
+      shutter,
+      document.getElementById('cam-hint-txt'),
+      document.getElementById('cam-hand-status')
+    );
 
     if(camHand==='left'){
       photoLeft=dataURL;
@@ -692,60 +905,105 @@ function capturePhoto(){
     }else{
       photoRight=dataURL;
       stopCamera();
-      go('s-info');
+      // Iškart paleidžiame foninę analizę
+      startBackgroundAnalysis();
+      // Rodome loading ekraną
+      go('s-loading');
+      animateLoading();
     }
   },2900);
+}
+
+// Foninė analizė — rezultatas saugomas globaliai
+window.bgAnalysisResult=null;
+window.bgAnalysisError=null;
+window.bgAnalysisDone=false;
+
+function startBackgroundAnalysis(){
+  window.bgAnalysisResult=null;
+  window.bgAnalysisError=null;
+  window.bgAnalysisDone=false;
+  // Siunčiame užklausą fone — neblokuojame UI
+  const photoData=[];
+  if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+  if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+  fetch('/analyze-palm',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||''})
+  }).then(r=>{
+    if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});
+    return r.json();
+  }).then(result=>{
+    window.bgAnalysisResult=result;
+    window.bgAnalysisDone=true;
+  }).catch(e=>{
+    window.bgAnalysisError=e.message;
+    window.bgAnalysisDone=true;
+  });
 }
 
 function animateLoading(){
   const pbar=document.getElementById('pbar');
   const ptime=document.getElementById('ptime');
-  // Progreso juosta: 15s iki 35%
-  const totalSec=15;
+  const ppct=document.getElementById('ppct');
+  const loadScreen=document.getElementById('s-loading');
+
+  // Reset žingsniai
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('ls'+i);
+    const st=document.getElementById('ls'+i+'-status');
+    if(el) el.classList.remove('active');
+    if(st) st.textContent='·';
+  });
+  if(pbar) pbar.style.width='0%';
+
+  const totalSec=16;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
     const pct=Math.min((elapsed/totalSec)*35,35);
-    pbar.style.width=pct+'%';
+    const pctRound=Math.round(pct);
+    if(pbar) pbar.style.width=pct+'%';
+    if(ppct) ppct.textContent=pctRound+'%';
     const left=Math.max(Math.ceil(totalSec-elapsed),0);
-    ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
-    if(elapsed>=totalSec) clearInterval(t);
+    if(ptime) ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
+    if(elapsed>=totalSec){
+      clearInterval(t);
+      if(ppct) ppct.textContent='35%';
+      // Fade-out → mokėjimas
+      loadScreen.style.transition='opacity .5s';
+      loadScreen.style.opacity='0';
+      setTimeout(()=>{
+        loadScreen.style.opacity='';
+        loadScreen.style.transition='';
+        go('s-info');
+      },500);
+    }
   },250);
 
-  // Žingsniai užsidega kas ~4s
-  // Pradžia — visi tušti
-  const steps=[
-    {dot:'ls1-dot',txt:'ls1-txt',label:'Analizuojama asmenybė ir paslėptas potencialas'},
-    {dot:'ls2-dot',txt:'ls2-txt',label:'Nuskaitomi meilės, santykių ir suderinamumo rodmenys'},
-    {dot:'ls3-dot',txt:'ls3-txt',label:'Skaičiuojama finansinės sėkmės ir karjeros trajektorija'},
-    {dot:'ls4-dot',txt:'ls4-txt',label:'Atveriama sielos misija ir planetų įtaka delne'},
-  ];
-
-  // Iš karto: 4-as žingsnis rodo „Kraunasi..."
-  const lastDot=document.getElementById('ls4-dot');
-  const lastTxt=document.getElementById('ls4-txt');
-  if(lastDot) lastDot.style.background='rgba(212,168,67,0.25)';
-
-  // Po 0s — 1-as
-  setTimeout(()=>activateStep(steps[0],true),300);
-  // Po 4s — 2-as
-  setTimeout(()=>activateStep(steps[1],true),4300);
-  // Po 8s — 3-as
-  setTimeout(()=>activateStep(steps[2],true),8300);
-  // Po 12s — 4-as (paskutinis, su spinner)
-  setTimeout(()=>activateStep(steps[3],false),12300);
+  // Žingsniai kas ~4s
+  setTimeout(()=>activateStep(1,true),300);
+  setTimeout(()=>activateStep(2,true),4500);
+  setTimeout(()=>activateStep(3,true),9000);
+  setTimeout(()=>activateStep(4,false),13500);
 }
 
-function activateStep(step,done){
-  const dot=document.getElementById(step.dot);
-  if(!dot) return;
+function activateStep(n,done){
+  const el=document.getElementById('ls'+n);
+  const st=document.getElementById('ls'+n+'-status');
+  if(!el) return;
+  el.classList.add('active');
   if(done){
-    dot.classList.add('done');
-    dot.style.background='';
+    if(st){st.textContent='✓';st.style.color='#4cff6a';}
   }else{
-    // Spinning indicator — taškas mirksi
-    dot.style.background='var(--gold)';
-    dot.style.animation='pda 0.8s ease-in-out infinite';
+    if(st){
+      st.style.color='rgba(212,168,67,.8)';
+      let frame=0;
+      const spin=['⟳','↻','⟲','↺'];
+      st.textContent=spin[0];
+      setInterval(()=>{frame++;st.textContent=spin[frame%spin.length];},220);
+    }
   }
 }
 
