@@ -217,10 +217,24 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="wrap" style="padding-top:32px;padding-bottom:40px">
 
     <!-- 1. ANTRAŠTĖ -->
-    <div style="text-align:center;margin-bottom:28px">
+    <div style="text-align:center;margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);font-size:26px;margin-bottom:16px">🔒</div>
       <h2 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px">Tavo asmeninė delnų<br>analizė paruošta!</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6">Sėkmingai išanalizavome tavo kairįjį ir dešinįjį delnus.<br><span style="color:var(--gold2);font-weight:500">Atrakink savo delnų analizę.</span></p>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6">Sėkmingai išanalizavome tavo kairįjį ir dešinįjį delnus.</p>
+    </div>
+
+    <!-- SKYRIŲ SĄRAŠAS -->
+    <div style="background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:14px;padding:16px 18px;margin-bottom:22px">
+      <div style="font-size:12px;font-weight:600;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Atrakink savo pilną 7 skyrių knygą:</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div style="font-size:13px;color:var(--text)">🌟 Charakteris ir paslėptas potencialas</div>
+        <div style="font-size:13px;color:var(--text)">✨ Sielos misija ir karminis kelias</div>
+        <div style="font-size:13px;color:var(--text)">❤️ Meilė, santykiai ir suderinamumas</div>
+        <div style="font-size:13px;color:var(--text)">💰 Finansinė sėkmė ir karjeros trajektorija</div>
+        <div style="font-size:13px;color:var(--text)">💎 Prigimtinės dovanos ir paslėpti talentai</div>
+        <div style="font-size:13px;color:var(--text)">🪐 Planetų kalnai delne (Astrologinė įtaka)</div>
+        <div style="font-size:13px;color:var(--text)">⚠️ Didžiausi iššūkiai ir tavo stiprybės</div>
+      </div>
     </div>
 
     <!-- 2. LAUKAI -->
@@ -290,7 +304,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
     <!-- 5. CTA MYGTUKAS -->
     <div id="order-err" class="err"></div>
-    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:17px;padding:18px;border-radius:14px;opacity:.45;transition:opacity .2s">Atrakinti analizę →</button>
+    <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:17px;padding:18px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.04em;font-weight:700">ATRAKINTI ANALIZĘ →</button>
 
     <!-- 6. SAUGUMAS -->
     <div style="text-align:center;font-size:11px;color:rgba(245,238,216,.3);margin-top:14px;line-height:1.7">
@@ -307,21 +321,36 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:20px;letter-spacing:.06em;margin-bottom:6px">Analizuojama...</div>
-    <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:20px;min-height:20px" id="lmsg">Analizuojami delnai...</div>
-    <div style="width:100%;max-width:300px;margin-bottom:4px">
+    <div class="serif gold" style="font-size:19px;letter-spacing:.08em;font-weight:700;margin-bottom:6px;text-transform:uppercase">Analizuojami tavo delnai...</div>
+    <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:22px">Nusaitomas linijų žemėlapis ir planetų kalvos.</div>
+    <div style="width:100%;max-width:300px;margin-bottom:20px">
       <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
-        <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .5s linear"></div>
+        <div id="pbar" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width .6s linear"></div>
       </div>
-      <div id="ptime" style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">~60 sek.</div>
+      <div id="ptime" style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">~15 sek. liko</div>
     </div>
     <div class="load-steps">
-      <div class="ls"><div class="ls-dot" id="ls1"></div>Analizuojami delnai</div>
-      <div class="ls"><div class="ls-dot" id="ls2"></div>Skaitomos tavo gyvenimo linijos</div>
-      <div class="ls"><div class="ls-dot" id="ls3"></div>Atskleidžiamos tavo savybės</div>
-      <div class="ls"><div class="ls-dot" id="ls4"></div>Nustatomos tavo prigimtinės dovanos</div>
+      <div class="ls" id="ls1"><div class="ls-dot" id="ls1-dot"></div><span id="ls1-txt">Analizuojama asmenybė ir paslėptas potencialas</span></div>
+      <div class="ls" id="ls2"><div class="ls-dot" id="ls2-dot"></div><span id="ls2-txt">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</span></div>
+      <div class="ls" id="ls3"><div class="ls-dot" id="ls3-dot"></div><span id="ls3-txt">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</span></div>
+      <div class="ls" id="ls4"><div class="ls-dot" id="ls4-dot"></div><span id="ls4-txt">Atveriama sielos misija ir planetų įtaka delne</span></div>
     </div>
-    <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
+    <div style="font-size:11px;color:rgba(245,238,216,.25);margin-top:20px;font-style:italic;text-align:center">Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
+  </div>
+</div>
+
+<!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS (po mokėjimo, prieš rezultatą) -->
+<div class="screen" id="s-personalizing">
+  <div class="load-wrap">
+    <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
+    <div class="serif gold" style="font-size:18px;letter-spacing:.04em;font-weight:700;margin-bottom:10px;text-align:center;line-height:1.4" id="pers-msg">Mokėjimas gautas.<br>Personalizuojama analizė...</div>
+    <div style="width:100%;max-width:300px;margin:16px 0 8px">
+      <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
+        <div id="pbar2" style="height:100%;background:var(--gold);border-radius:50px;width:85%;transition:width 1s linear"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">Beveik baigta...</div>
+    </div>
+    <div style="font-size:12px;color:rgba(245,238,216,.35);margin-top:12px;font-style:italic;text-align:center">Įterpiamas vardas ir personalizuojami tekstai...</div>
   </div>
 </div>
 
@@ -333,17 +362,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="result-hero-core">🤚</div>
     </div>
     <div class="result-name" id="res-name">Tavo Delno Skaitymas</div>
-    <div class="result-subtitle">Chiromantija · Sielos žemėlapis · AI analizė</div>
+    <div class="result-subtitle">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div class="result-divider"></div>
   </div>
   <div style="padding:0 20px 32px">
-    <div class="rs rs-feat"><span class="rs-icon">🌟</span><div class="rs-label">Charakteris ir asmenybė</div><div class="rs-body" id="r-char"></div></div>
-    <div class="rs rs-feat"><span class="rs-icon">✨</span><div class="rs-label">Sielos misija</div><div class="rs-body" id="r-mission"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">🎯</span><div class="rs-label">Gyvenimo tikslas ir kelias</div><div class="rs-body" id="r-goal"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">💎</span><div class="rs-label">Dovanos ir talentai</div><div class="rs-body" id="r-gifts-text"></div><div class="pills" id="r-gifts-pills"></div></div>
-    <div class="rs rs-feat"><span class="rs-icon">❤️</span><div class="rs-label">Meilė ir santykiai</div><div class="rs-body" id="r-love"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">🪐</span><div class="rs-label">Planetų kalnai delne</div><div class="rs-body" id="r-astro"></div></div>
-    <div class="rs rs-std"><div class="rs-label">Stipriausios asmenybės pusės</div><div class="pills" id="r-strengths"></div></div>
+    <div class="rs rs-feat"><span class="rs-icon">🌟</span><div class="rs-label">Charakteris ir paslėptas potencialas</div><div class="rs-body" id="r-char"></div></div>
+    <div class="rs rs-feat"><span class="rs-icon">✨</span><div class="rs-label">Sielos misija ir karminis kelias</div><div class="rs-body" id="r-mission"></div></div>
+    <div class="rs rs-feat"><span class="rs-icon">❤️</span><div class="rs-label">Meilė, santykiai ir suderinamumas</div><div class="rs-body" id="r-love"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">💰</span><div class="rs-label">Finansinė sėkmė ir karjeros trajektorija</div><div class="rs-body" id="r-finance"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">💎</span><div class="rs-label">Prigimtinės dovanos ir paslėpti talentai</div><div class="rs-body" id="r-gifts-text"></div><div class="pills" id="r-gifts-pills"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">🪐</span><div class="rs-label">Planetų kalnai delne (Astrologinė įtaka)</div><div class="rs-body" id="r-astro"></div></div>
+    <div class="rs rs-std"><span class="rs-icon">⚠️</span><div class="rs-label">Didžiausi iššūkiai ir tavo stiprybės</div><div class="rs-body" id="r-challenges"></div><div class="pills" id="r-strengths"></div></div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Išsaugok — ir grįžk kai prireiks atsakymų.</div>
@@ -669,22 +698,55 @@ function capturePhoto(){
 }
 
 function animateLoading(){
-  const msgs=['Analizuojami delnai...','Skaitomos gyvenimo linijos...','Dar kelios sekundės...','Beveik baigta...'];
-  let mi=0;
-  const t1=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('lmsg').textContent=msgs[mi];},1800);
-  const total=60;let elapsed=0;
   const pbar=document.getElementById('pbar');
   const ptime=document.getElementById('ptime');
-  const stepTimes=[{id:'ls1',at:0},{id:'ls2',at:15},{id:'ls3',at:35},{id:'ls4',at:50}];
-  const t2=setInterval(()=>{
-    if(elapsed>=total){clearInterval(t2);clearInterval(t1);return;}
-    elapsed+=0.5;
-    const pct=Math.min((elapsed/total)*100,100);
+  // Progreso juosta: 15s iki 35%
+  const totalSec=15;
+  let elapsed=0;
+  const t=setInterval(()=>{
+    elapsed+=0.25;
+    const pct=Math.min((elapsed/totalSec)*35,35);
     pbar.style.width=pct+'%';
-    const left=Math.max(Math.round(total-elapsed),0);
+    const left=Math.max(Math.ceil(totalSec-elapsed),0);
     ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
-    stepTimes.forEach(st=>{if(elapsed>=st.at)document.getElementById(st.id).classList.add('done');});
-  },500);
+    if(elapsed>=totalSec) clearInterval(t);
+  },250);
+
+  // Žingsniai užsidega kas ~4s
+  // Pradžia — visi tušti
+  const steps=[
+    {dot:'ls1-dot',txt:'ls1-txt',label:'Analizuojama asmenybė ir paslėptas potencialas'},
+    {dot:'ls2-dot',txt:'ls2-txt',label:'Nuskaitomi meilės, santykių ir suderinamumo rodmenys'},
+    {dot:'ls3-dot',txt:'ls3-txt',label:'Skaičiuojama finansinės sėkmės ir karjeros trajektorija'},
+    {dot:'ls4-dot',txt:'ls4-txt',label:'Atveriama sielos misija ir planetų įtaka delne'},
+  ];
+
+  // Iš karto: 4-as žingsnis rodo „Kraunasi..."
+  const lastDot=document.getElementById('ls4-dot');
+  const lastTxt=document.getElementById('ls4-txt');
+  if(lastDot) lastDot.style.background='rgba(212,168,67,0.25)';
+
+  // Po 0s — 1-as
+  setTimeout(()=>activateStep(steps[0],true),300);
+  // Po 4s — 2-as
+  setTimeout(()=>activateStep(steps[1],true),4300);
+  // Po 8s — 3-as
+  setTimeout(()=>activateStep(steps[2],true),8300);
+  // Po 12s — 4-as (paskutinis, su spinner)
+  setTimeout(()=>activateStep(steps[3],false),12300);
+}
+
+function activateStep(step,done){
+  const dot=document.getElementById(step.dot);
+  if(!dot) return;
+  if(done){
+    dot.classList.add('done');
+    dot.style.background='';
+  }else{
+    // Spinning indicator — taškas mirksi
+    dot.style.background='var(--gold)';
+    dot.style.animation='pda 0.8s ease-in-out infinite';
+  }
 }
 
 async function callClaude(){
@@ -706,20 +768,48 @@ async function callClaude(){
 function displayResult(r){
   if(!r)return;
   const name=window.userName||'';
-  document.getElementById('res-name').textContent=(name?name+' — ':'')+'Delno Skaitymas';
-  function formatText(text){
-    if(!text)return'';
-    return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
+
+  // Personalizavimo ekranas 5-15s
+  const persMsg=document.getElementById('pers-msg');
+  if(persMsg) persMsg.innerHTML=name
+    ?`Mokėjimas gautas.<br>Personalizuojama <em style="color:var(--gold2)">${name}</em> 7 skyrių ataskaita...`
+    :'Mokėjimas gautas.<br>Personalizuojama 7 skyrių ataskaita...';
+  go('s-personalizing');
+
+  // Progreso juosta 85→100%
+  let p=85;
+  const pbar2=document.getElementById('pbar2');
+  if(pbar2){
+    pbar2.style.width='85%';
+    const pt=setInterval(()=>{
+      p=Math.min(p+1,99);
+      pbar2.style.width=p+'%';
+      if(p>=99) clearInterval(pt);
+    },300);
   }
-  document.getElementById('r-char').innerHTML=formatText(r.charakteris);
-  document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
-  document.getElementById('r-goal').innerHTML=formatText(r.gyvenimo_tikslas);
-  document.getElementById('r-gifts-text').innerHTML=formatText(r.dovanos_tekstas);
-  document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
-  document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
-  document.getElementById('r-astro').innerHTML=formatText(r.astrologija);
-  document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
-  go('s-result');
+
+  // Po 2s — rodyti rezultatą
+  setTimeout(()=>{
+    function formatText(text){
+      if(!text)return'';
+      return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
+    }
+    // Personalizuotas viršelis
+    document.getElementById('res-name').textContent=name
+      ?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`
+      :'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
+
+    document.getElementById('r-char').innerHTML=formatText(r.charakteris);
+    document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
+    document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
+    document.getElementById('r-finance').innerHTML=formatText(r.finansai||r.gyvenimo_tikslas);
+    document.getElementById('r-gifts-text').innerHTML=formatText(r.dovanos_tekstas);
+    document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
+    document.getElementById('r-astro').innerHTML=formatText(r.astrologija);
+    document.getElementById('r-challenges').innerHTML=formatText(r.issukiai||r.charakteris);
+    document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
+    go('s-result');
+  },2000);
 }
 
 function shareToTikTok(){
