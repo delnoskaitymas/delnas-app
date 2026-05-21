@@ -630,16 +630,19 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const dot3=document.getElementById('cam-dot3');
+  const hint=document.getElementById('cam-hint-txt');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
     if(dot3) dot3.classList.add('inactive');
+    if(hint&&!handVisible) hint.textContent='Nukreipkite kamerą į kairįjį delną';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
     if(dot3) dot3.classList.add('inactive');
+    if(hint&&!handVisible) hint.textContent='Nukreipkite kamerą į dešinįjį delną';
   }
 }
 
@@ -789,7 +792,9 @@ function setHandDetected(detected,shutter,hintTxt){
   }else{
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
-    if(hintTxt) hintTxt.textContent='Nukreipkite kamerą į delną';
+    if(hintTxt) hintTxt.textContent=camHand==='left'
+      ?'Nukreipkite kamerą į kairįjį delną'
+      :'Nukreipkite kamerą į dešinįjį delną';
   }
 }
 
