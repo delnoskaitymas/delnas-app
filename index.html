@@ -648,24 +648,49 @@ async function startCamera(){
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
   try{
-    // Pirma bandome gauti visus įrenginius ir rinktis tą, kuris nėra ultra-wide
+    // 1. Pirma gauname leidimą (be jo enumerateDevices negrąžina label'ų)
+    let tempStream=null;
+    try{
+      tempStream=await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}},
+        audio:false
+      });
+    }catch(e){
+      tempStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    }
+
+    // 2. Dabar enumeruojame — jau turėsime label'us
     let chosenDeviceId=null;
     try{
       const devices=await navigator.mediaDevices.enumerateDevices();
       const videoCams=devices.filter(d=>d.kind==='videoinput');
-      // Ultra-wide paprastai turi "wide" arba "0.5" pavadinime
-      const mainCam=videoCams.find(d=>
-        !d.label.toLowerCase().includes('wide')&&
-        !d.label.toLowerCase().includes('0.5')&&
-        !d.label.toLowerCase().includes('ultra')
-      );
-      if(mainCam) chosenDeviceId=mainCam.deviceId;
+      console.log('Kameros:', videoCams.map(d=>d.label));
+
+      // Pirmenybė: "back" kamera be "wide"/"ultra"/"0.5"
+      const mainCam=videoCams.find(d=>{
+        const l=d.label.toLowerCase();
+        return (l.includes('back')||l.includes('rear')||l.includes('main'))
+          &&!l.includes('wide')&&!l.includes('ultra')&&!l.includes('0.5');
+      });
+
+      // Jei neradome — ieškome bet kokios back kameros be wide
+      const backCam=mainCam||videoCams.find(d=>{
+        const l=d.label.toLowerCase();
+        return !l.includes('wide')&&!l.includes('ultra')&&!l.includes('0.5');
+      });
+
+      if(backCam) chosenDeviceId=backCam.deviceId;
     }catch(e){}
 
+    // 3. Sustabdome laikiną stream'ą
+    if(tempStream) tempStream.getTracks().forEach(t=>t.stop());
+
+    // 4. Paleidžiame su pasirinkta kamera ir aukšta rezoliucija
+    // Aukšta rezoliucija (1920x1440) priverčia telefoną naudoti pagrindinį objektyvą
     const constraints={
       video:chosenDeviceId
-        ?{deviceId:{exact:chosenDeviceId},width:{ideal:1280},height:{ideal:960}}
-        :{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+        ?{deviceId:{exact:chosenDeviceId},width:{ideal:1920},height:{ideal:1440}}
+        :{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}},
       audio:false
     };
 
@@ -680,17 +705,16 @@ async function startCamera(){
 
     video.srcObject=camStream;
 
-    // Zoom fix po užkrovimo
     video.onloadedmetadata=()=>{
       try{
         const track=camStream.getVideoTracks()[0];
+        const settings=track.getSettings&&track.getSettings();
+        console.log('Kamera:', settings);
         const caps=track.getCapabilities&&track.getCapabilities();
         if(caps&&caps.zoom){
-          // Nustatome minimalų zoom — tai yra pagrindinis objektyvas
           track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
         }
       }catch(e){}
-      // Pradedame rankos aptikimą
       startHandDetection();
     };
 
@@ -858,8 +882,8 @@ function capturePhoto(){
     // Viršutinis tekstas keičiasi
     document.getElementById('cam-title').textContent=isLeft?'Kairysis delnas paruoštas!':'Dešinysis delnas paruoštas!';
     document.getElementById('cam-sub').style.display='none';
-    scanOkText.textContent='Delnas sėkmingai užfiksuotas';
-    scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'Analizė pradedama...';
+    scanOkText.textContent='Delnas sėkmingai užfiksuotas!';
+    scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'Ruošiami duomenys...';
     scanOk.classList.add('active');
     shutterWrap.style.display='none';
   },700);
