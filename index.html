@@ -141,7 +141,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-rescan{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,rgba(100,255,120,.6) 20%,#80ff90 50%,rgba(100,255,120,.6) 80%,transparent 100%);box-shadow:0 0 16px 4px rgba(80,255,100,.7);z-index:6;pointer-events:none;display:none;top:4%}
 .cam-rescan.active{display:block;animation:rescanAnim .65s ease-in-out forwards}
 @keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
-.cam-scan-ok{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:7;background:rgba(0,0,0,.82)}
+.cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#000}
 .cam-scan-ok.active{display:flex}
 .cam-scan-ok-badge{background:rgba(20,180,60,.95);border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 0 0 14px rgba(40,220,80,.12),0 0 32px rgba(40,220,80,.5);margin-bottom:16px}
 .cam-scan-ok-text{color:#fff;font-size:15px;font-weight:600;letter-spacing:.04em;font-family:'DM Sans',sans-serif}
@@ -217,10 +217,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
-    <div class="cam-shutter" id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s">
-      <div class="cam-shutter-inner"></div>
-    </div>
-    <div class="cam-hint" id="cam-hint-txt">Nukreipkite kamerą į delną</div>
+    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s,background .2s;background:var(--gold);border:none;border-radius:14px;padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.05em;cursor:pointer;width:calc(100vw - 40px);max-width:320px">
+      <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
+    </button>
+    <div class="cam-hint" id="cam-hint-txt">Nukreipkite kamerą į kairįjį delną</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -631,17 +631,17 @@ function updateCameraUI(){
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
   const hint=document.getElementById('cam-hint-txt');
-  const progress=document.getElementById('cam-progress');
+  const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
-    if(progress) progress.style.display='flex';
+    if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI KAIRĮJĮ DELNĄ';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
-    if(progress) progress.style.display='flex';
+    if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
   if(hint&&!handVisible) hint.textContent=camHand==='left'
     ?'Nukreipkite kamerą į kairįjį delną'
