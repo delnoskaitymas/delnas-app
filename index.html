@@ -670,76 +670,30 @@ async function startCamera(){
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
   try{
-    // 1. Pirma gauname leidimą (be jo enumerateDevices negrąžina label'ų)
-    let tempStream=null;
-    try{
-      tempStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}},
-        audio:false
-      });
-    }catch(e){
-      tempStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    const attempts=[
+      {video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:960},zoom:2.0},audio:false},
+      {video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:960},zoom:1.0},audio:false},
+      {video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:960}},audio:false},
+      {video:{facingMode:{ideal:'environment'}},audio:false},
+    ];
+    let stream=null;
+    for(const c of attempts){
+      try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}
     }
-
-    // 2. Dabar enumeruojame — jau turėsime label'us
-    let chosenDeviceId=null;
-    try{
-      const devices=await navigator.mediaDevices.enumerateDevices();
-      const videoCams=devices.filter(d=>d.kind==='videoinput');
-      console.log('Kameros:', videoCams.map(d=>d.label));
-
-      // Pirmenybė: "back" kamera be "wide"/"ultra"/"0.5"
-      const mainCam=videoCams.find(d=>{
-        const l=d.label.toLowerCase();
-        return (l.includes('back')||l.includes('rear')||l.includes('main'))
-          &&!l.includes('wide')&&!l.includes('ultra')&&!l.includes('0.5');
-      });
-
-      // Jei neradome — ieškome bet kokios back kameros be wide
-      const backCam=mainCam||videoCams.find(d=>{
-        const l=d.label.toLowerCase();
-        return !l.includes('wide')&&!l.includes('ultra')&&!l.includes('0.5');
-      });
-
-      if(backCam) chosenDeviceId=backCam.deviceId;
-    }catch(e){}
-
-    // 3. Sustabdome laikiną stream'ą
-    if(tempStream) tempStream.getTracks().forEach(t=>t.stop());
-
-    // 4. Paleidžiame su pasirinkta kamera ir aukšta rezoliucija
-    // Aukšta rezoliucija (1920x1440) priverčia telefoną naudoti pagrindinį objektyvą
-    const constraints={
-      video:chosenDeviceId
-        ?{deviceId:{exact:chosenDeviceId},width:{ideal:1920},height:{ideal:1440}}
-        :{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}},
-      audio:false
-    };
-
-    try{
-      camStream=await navigator.mediaDevices.getUserMedia(constraints);
-    }catch(e){
-      camStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
-        audio:false
-      });
-    }
-
+    if(!stream) stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    camStream=stream;
     video.srcObject=camStream;
-
     video.onloadedmetadata=()=>{
       try{
         const track=camStream.getVideoTracks()[0];
-        const settings=track.getSettings&&track.getSettings();
-        console.log('Kamera:', settings);
         const caps=track.getCapabilities&&track.getCapabilities();
         if(caps&&caps.zoom){
-          track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
+          track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]});
         }
+        console.log('Kamera:', track.getSettings&&track.getSettings());
       }catch(e){}
       startHandDetection();
     };
-
   }catch(err){
     errorDiv.style.display='flex';
     console.error('Kameros klaida:',err);
