@@ -1132,12 +1132,17 @@ function animateLoading(){
   const ppct=document.getElementById('ppct');
   const loadScreen=document.getElementById('s-loading');
 
-  // Reset žingsniai
+  // Reset — 2,3,4 rodo pilką laukimo tašką
   [1,2,3,4].forEach(i=>{
     const el=document.getElementById('ls'+i);
     const st=document.getElementById('ls'+i+'-status');
     if(el) el.classList.remove('active');
-    if(st) st.textContent='·';
+    if(st){
+      st.textContent='·';
+      st.style.color='rgba(245,238,216,.25)';
+      st.style.animation='';
+      st.style.fontSize='18px';
+    }
   });
   if(pbar) pbar.style.width='0%';
 
@@ -1180,18 +1185,21 @@ function animateLoading(){
 function activateStep(n,done){
   const el=document.getElementById('ls'+n);
   const st=document.getElementById('ls'+n+'-status');
-  if(!el) return;
+  if(!el||!st) return;
   el.classList.add('active');
   if(done){
-    if(st){st.textContent='✓';st.style.color='#4cff6a';st.style.animation='';}
+    // Sustabdome sukimąsi, uždedame varnelę
+    st.style.animation='none';
+    st.textContent='✓';
+    st.style.color='#4cff6a';
+    st.style.fontSize='14px';
   }else{
-    // CSS animacija — tikras sukimasis
-    if(st){
-      st.textContent='↻';
-      st.style.color='rgba(212,168,67,.9)';
-      st.style.display='inline-block';
-      st.style.animation='spinStep .8s linear infinite';
-    }
+    // Pradedame suktis
+    st.textContent='↻';
+    st.style.color='rgba(212,168,67,.95)';
+    st.style.fontSize='16px';
+    st.style.display='inline-block';
+    st.style.animation='spinStep .8s linear infinite';
   }
 }
 
