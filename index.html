@@ -54,9 +54,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.load-wrap{padding:16px 16px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden}
-.load-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:2px}
-.load-sub{font-size:11px;color:var(--muted)}
+.load-wrap{padding:28px 16px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden}
+.load-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:.05em;margin-bottom:5px}
+.load-sub{font-size:13px;color:rgba(245,238,216,.82);font-weight:400;letter-spacing:.01em}
 .oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .oracle-ring{position:absolute;border-radius:50%;border:1.5px solid}
 .or1{inset:0;border-color:rgba(212,168,67,.18);animation:sp 20s linear infinite}
@@ -334,7 +334,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div>
-      <div class="load-title">ANALIZUOJAMAS TAVO DELNAS...</div>
+      <div class="load-title">ANALIZUOJAMI TAVO DELNAI...</div>
       <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
     </div>
 
@@ -373,7 +373,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <div style="font-size:12px;color:rgba(255,220,80,.9);font-style:italic;text-align:center;font-weight:600;letter-spacing:.01em">⚠️ Prašome neuždaryti programėlės ir neišjungti telefono.<br>Generuojama asmeninė gyvenimo ataskaita.</div>
+    <div style="font-size:12px;color:rgba(255,220,80,.92);text-align:center;font-weight:600;line-height:1.55;padding:0 8px;max-width:320px">⚠️ Prašome neuždaryti programėlės ir neišjungti telefono.<br>Generuojama asmeninė gyvenimo ataskaita.</div>
   </div>
 </div>
 
@@ -1137,14 +1137,14 @@ function animateLoading(){
     if(elapsed>=totalSec){
       clearInterval(t);
       if(ppct) ppct.textContent='98%';
-      loadScreen.style.transition='opacity .5s';
+      loadScreen.style.transition='opacity .8s ease';
       loadScreen.style.opacity='0';
       setTimeout(()=>{
         loadScreen.style.opacity='';
         loadScreen.style.transition='';
         if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
         go('s-info');
-      },500);
+      },800);
     }
   },250);
 
