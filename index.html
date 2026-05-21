@@ -789,11 +789,6 @@ function setHandDetected(detected,shutter,hintTxt){
     // Kampučiai žali
     corners.forEach(c=>c.style.borderColor='rgba(100,255,120,.85)');
     if(alignTxt){alignTxt.textContent='✓ Delnas aptiktas';alignTxt.style.color='rgba(100,255,120,.85)';}
-    // Auto-capture po 1.5 sek.
-    clearTimeout(window._autoCaptureTimer);
-    window._autoCaptureTimer=setTimeout(()=>{
-      if(handVisible) capturePhoto();
-    },1500);
   }else{
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
@@ -803,7 +798,6 @@ function setHandDetected(detected,shutter,hintTxt){
     // Kampučiai auksiniai
     corners.forEach(c=>c.style.borderColor='rgba(212,168,67,.7)');
     if(alignTxt){alignTxt.textContent='Sulyginkite delną su centru';alignTxt.style.color='rgba(212,168,67,.8)';}
-    clearTimeout(window._autoCaptureTimer);
   }
 }
 
