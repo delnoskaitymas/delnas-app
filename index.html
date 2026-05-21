@@ -346,7 +346,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct">0%</span>
-        <span id="ptime">~35 sek. liko</span>
+        <span id="ptime">~45 sek. liko</span>
       </div>
     </div>
 
@@ -373,7 +373,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <div style="font-size:11px;color:rgba(245,238,216,.5);font-style:italic;text-align:center">⚠️ Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
+    <div style="font-size:11px;color:rgba(245,238,216,.65);font-style:italic;text-align:center;font-weight:500">⚠️ Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
   </div>
 </div>
 
@@ -1124,11 +1124,10 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=35;
+  const totalSec=45;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
-    // Procentai: tolygiai nuo 0% iki 98% per visą laiką
     const pct=Math.min((elapsed/totalSec)*98,98);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';
@@ -1149,16 +1148,15 @@ function animateLoading(){
     }
   },250);
 
-  // Tikslus paskirstymas:
-  // 0s → 1 pradeda suktis
-  // 8s → 1 gauna ✓, 2 pradeda suktis
-  // 16s → 2 gauna ✓, 3 pradeda suktis
-  // 26s → 3 gauna ✓, 4 pradeda suktis
-  // 35s → fade-out (4 nespėja gauti ✓)
+  // 0s  → 1 sukasi (Asmenybė)
+  // 11s → 1 ✓, 2 sukasi (Meilė)
+  // 22s → 2 ✓, 3 sukasi (Finansai)
+  // 33s → 3 ✓, 4 sukasi (Sielos misija — nespėja gauti ✓)
+  // 45s → fade-out
   setTimeout(()=>activateStep(1,false),300);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},8000);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},16000);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},26000);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11000);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22000);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33000);
 }
 
 function activateStep(n,done){
