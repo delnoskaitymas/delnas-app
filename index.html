@@ -70,12 +70,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-track{width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:4px}
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
-.load-steps{display:grid;gap:5px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:9px;padding:7px 10px;transition:border-color .4s,background .4s}
+.load-steps{display:grid;gap:8px;width:100%;max-width:340px}
+.ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:12px;padding:11px 12px;transition:border-color .4s,background .4s}
 .ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
-.ls-icon{width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.ls-text{flex:1;text-align:left;font-size:10px;line-height:1.3;color:var(--muted)}
-.ls-status{font-size:12px;flex-shrink:0;width:16px;text-align:center}
+.ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ls-text{flex:1;text-align:left;font-size:12px;line-height:1.35;color:var(--muted);font-weight:400}
+.ls.active .ls-text{color:var(--text)}
+.ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
@@ -338,8 +339,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
     </div>
 
-    <div style="position:relative;width:150px;height:150px;flex-shrink:0">
-      <canvas id="oracle-canvas" width="150" height="150" style="display:block"></canvas>
+    <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+      <canvas id="oracle-canvas" width="120" height="120" style="display:block"></canvas>
     </div>
 
     <div class="pbar-wrap">
@@ -947,7 +948,7 @@ function startOracleCanvas(){
   if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
 
   const ctx=canvas.getContext('2d');
-  const W=150,H=150,cx=75,cy=75;
+  const W=120,H=120,cx=60,cy=60;
 
   // Dalelės
   const particles=[];
@@ -977,11 +978,11 @@ function startOracleCanvas(){
 
     // Fonas — tamsus apskritimas
     ctx.beginPath();
-    ctx.arc(cx,cy,68,0,Math.PI*2);
+    ctx.arc(cx,cy,55,0,Math.PI*2);
     ctx.fillStyle='rgba(7,4,15,0.92)';
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(cx,cy,68,0,Math.PI*2);
+    ctx.arc(cx,cy,55,0,Math.PI*2);
     ctx.strokeStyle='rgba(212,168,67,0.12)';
     ctx.lineWidth=1;
     ctx.stroke();
@@ -1018,17 +1019,17 @@ function startOracleCanvas(){
       grad.addColorStop(1,'rgba(212,168,67,0)');
 
       ctx.beginPath();
-      ctx.ellipse(0,0,58,58*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
+      ctx.ellipse(0,0,46,46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
       ctx.strokeStyle=grad;
-      ctx.lineWidth=2;
+      ctx.lineWidth=1.8;
       ctx.shadowColor='rgba(255,200,50,0.6)';
-      ctx.shadowBlur=6;
+      ctx.shadowBlur=5;
       ctx.stroke();
       ctx.shadowBlur=0;
 
       const sparkPos=ring.phase*3;
-      const sx=Math.cos(sparkPos)*58;
-      const sy=Math.sin(sparkPos)*58*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
+      const sx=Math.cos(sparkPos)*46;
+      const sy=Math.sin(sparkPos)*46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
       ctx.beginPath();
       ctx.arc(sx,sy,3,0,Math.PI*2);
       ctx.fillStyle='rgba(255,240,120,0.95)';
@@ -1041,12 +1042,12 @@ function startOracleCanvas(){
     });
 
     // Vidinis švytėjimas
-    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,38);
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,30);
     glow.addColorStop(0,'rgba(212,168,67,0.18)');
     glow.addColorStop(0.5,'rgba(212,168,67,0.08)');
     glow.addColorStop(1,'rgba(212,168,67,0)');
     ctx.beginPath();
-    ctx.arc(cx,cy,38,0,Math.PI*2);
+    ctx.arc(cx,cy,30,0,Math.PI*2);
     ctx.fillStyle=glow;
     ctx.fill();
 
@@ -1054,7 +1055,7 @@ function startOracleCanvas(){
     ctx.save();
     ctx.translate(cx,cy);
     ctx.scale(pulse,pulse);
-    ctx.font='32px serif';
+    ctx.font='26px serif';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.shadowColor='rgba(255,200,60,0.8)';
@@ -1113,10 +1114,16 @@ function animateLoading(){
     }
   },250);
 
-  setTimeout(()=>activateStep(1,true),500);
-  setTimeout(()=>activateStep(2,true),9000);
-  setTimeout(()=>activateStep(3,true),18000);
-  setTimeout(()=>activateStep(4,false),27000);
+  // Tikslus paskirstymas:
+  // 0s → 1 pradeda suktis
+  // 8s → 1 gauna ✓, 2 pradeda suktis
+  // 16s → 2 gauna ✓, 3 pradeda suktis
+  // 26s → 3 gauna ✓, 4 pradeda suktis
+  // 35s → fade-out (4 nespėja gauti ✓)
+  setTimeout(()=>activateStep(1,false),300);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},8000);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},16000);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},26000);
 }
 
 function activateStep(n,done){
