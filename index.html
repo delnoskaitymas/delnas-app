@@ -73,7 +73,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .load-steps{display:grid;gap:8px;width:100%;max-width:340px}
 .ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:12px;padding:11px 12px;transition:border-color .4s,background .4s}
 .ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
-.ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ls.active .ls-icon{background:rgba(212,168,67,.12);border-color:rgba(212,168,67,.4)}
 .ls-text{flex:1;text-align:left;font-size:12px;line-height:1.35;color:var(--muted);font-weight:400}
 .ls.active .ls-text{color:var(--text)}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
@@ -352,22 +353,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
     <div class="load-steps">
       <div class="ls" id="ls1">
-        <div class="ls-icon">🫀</div>
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/>
+          </svg>
+        </div>
         <div class="ls-text">Analizuojama asmenybė ir charakterio bruožai</div>
         <div class="ls-status" id="ls1-status">·</div>
       </div>
       <div class="ls" id="ls2">
-        <div class="ls-icon">❤️</div>
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/><path d="M12 21v-6M9 15l3-3 3 3" stroke-opacity=".5"/>
+          </svg>
+        </div>
         <div class="ls-text">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</div>
         <div class="ls-status" id="ls2-status">·</div>
       </div>
       <div class="ls" id="ls3">
-        <div class="ls-icon">💰</div>
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/>
+          </svg>
+        </div>
         <div class="ls-text">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</div>
         <div class="ls-status" id="ls3-status">·</div>
       </div>
       <div class="ls" id="ls4">
-        <div class="ls-icon">🪐</div>
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/><circle cx="12" cy="12" r="0.8" fill="#d4a843"/>
+          </svg>
+        </div>
         <div class="ls-text">Atveriama sielos misija ir planetų įtaka delne</div>
         <div class="ls-status" id="ls4-status">·</div>
       </div>
