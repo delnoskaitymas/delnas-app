@@ -75,7 +75,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
 .ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.12);border-color:rgba(212,168,67,.4)}
-.ls-text{flex:1;text-align:left;font-size:12px;line-height:1.35;color:var(--muted);font-weight:400}
+.ls-text{flex:1;text-align:left;font-size:12px;line-height:1.35;color:var(--muted);font-weight:400;text-transform:none}
 .ls.active .ls-text{color:var(--text)}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1086,11 +1086,18 @@ function animateLoading(){
   const ppct=document.getElementById('ppct');
   const loadScreen=document.getElementById('s-loading');
 
-  // Reset — 2,3,4 rodo pilką laukimo tašką
+  const stepTexts=[
+    'Analizuojama asmenybė ir charakterio bruožai',
+    'Nuskaitomi meilės, santykių ir suderinamumo rodmenys',
+    'Skaičiuojama finansinės sėkmės ir karjeros trajektorija',
+    'Atveriama sielos misija ir planetų įtaka delne'
+  ];
   [1,2,3,4].forEach(i=>{
     const el=document.getElementById('ls'+i);
     const st=document.getElementById('ls'+i+'-status');
+    const txt=el&&el.querySelector('.ls-text');
     if(el) el.classList.remove('active');
+    if(txt) txt.textContent=stepTexts[i-1];
     if(st){
       st.textContent='·';
       st.style.color='rgba(245,238,216,.25)';
