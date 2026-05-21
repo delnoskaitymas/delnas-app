@@ -201,6 +201,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0;transition:opacity .3s"></canvas>
+    <!-- Pozicionavimo rėmelis -->
+    <div id="cam-frame" style="position:absolute;inset:12%;pointer-events:none;z-index:3;transition:opacity .4s">
+      <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:2px solid rgba(212,168,67,.7);border-left:2px solid rgba(212,168,67,.7);border-radius:3px 0 0 0"></div>
+      <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:2px solid rgba(212,168,67,.7);border-right:2px solid rgba(212,168,67,.7);border-radius:0 3px 0 0"></div>
+      <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:2px solid rgba(212,168,67,.7);border-left:2px solid rgba(212,168,67,.7);border-radius:0 0 0 3px"></div>
+      <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:2px solid rgba(212,168,67,.7);border-right:2px solid rgba(212,168,67,.7);border-radius:0 0 3px 0"></div>
+      <div id="cam-align-txt" style="position:absolute;bottom:-26px;left:0;right:0;text-align:center;font-size:11px;color:rgba(212,168,67,.8);font-family:'DM Sans',sans-serif;letter-spacing:.04em;transition:opacity .4s">Sulyginkite delną su centru</div>
+    </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
     <div class="cam-frozen" id="cam-frozen"></div>
@@ -330,6 +338,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 4: ORDER (redirect placeholder — paliktas suderinamumui) -->
 <div class="screen" id="s-order" style="display:none"></div>
+
+<!-- SCREEN 4b: DUOMENŲ APDOROJIMAS (2-3 sek. prieš pagrindinę analizę) -->
+<div class="screen" id="s-processing">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:24px;padding:32px">
+    <div style="width:72px;height:72px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 1.8s ease-in-out infinite">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--gold);opacity:.8;animation:sp 1.5s linear infinite"></div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">Duomenų apdorojimas...</div>
+      <div style="font-size:13px;color:rgba(245,238,216,.6);font-style:italic">Paruošiama asmeninė analizė</div>
+    </div>
+  </div>
+</div>
 
 <!-- SCREEN 5: LOADING -->
 <div class="screen" id="s-loading">
@@ -758,16 +779,31 @@ function startSkinDetection(shutter,hintTxt){
 function setHandDetected(detected,shutter,hintTxt){
   if(detected===handVisible) return;
   handVisible=detected;
+  const frame=document.getElementById('cam-frame');
+  const corners=frame?frame.querySelectorAll('div:not(#cam-align-txt)'):[];
+  const alignTxt=document.getElementById('cam-align-txt');
   if(detected){
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
     if(hintTxt) hintTxt.textContent='Spauskite, kai ranka paruošta';
+    // Kampučiai žali
+    corners.forEach(c=>c.style.borderColor='rgba(100,255,120,.85)');
+    if(alignTxt){alignTxt.textContent='✓ Delnas aptiktas';alignTxt.style.color='rgba(100,255,120,.85)';}
+    // Auto-capture po 1.5 sek.
+    clearTimeout(window._autoCaptureTimer);
+    window._autoCaptureTimer=setTimeout(()=>{
+      if(handVisible) capturePhoto();
+    },1500);
   }else{
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
     if(hintTxt) hintTxt.textContent=camHand==='left'
       ?'Nukreipkite kamerą į kairįjį delną'
       :'Nukreipkite kamerą į dešinįjį delną';
+    // Kampučiai auksiniai
+    corners.forEach(c=>c.style.borderColor='rgba(212,168,67,.7)');
+    if(alignTxt){alignTxt.textContent='Sulyginkite delną su centru';alignTxt.style.color='rgba(212,168,67,.8)';}
+    clearTimeout(window._autoCaptureTimer);
   }
 }
 
@@ -831,6 +867,7 @@ function capturePhoto(){
   const shutter=document.getElementById('cam-shutter');
   const shutterWrap=shutter.closest('.cam-shutter-wrap');
 
+  clearTimeout(window._autoCaptureTimer);
   shutter.style.pointerEvents='none';
 
   // ── 1. FLASH + GARSAS + HAPTIC ────────────────
@@ -890,9 +927,12 @@ function capturePhoto(){
       stopCamera();
       // Iškart paleidžiame foninę analizę
       startBackgroundAnalysis();
-      // Rodome loading ekraną
-      go('s-loading');
-      animateLoading();
+      // Pirma rodome "Duomenų apdorojimas..." 2.5s
+      go('s-processing');
+      setTimeout(()=>{
+        go('s-loading');
+        animateLoading();
+      },2500);
     }
   },2900);
 }
