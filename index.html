@@ -76,6 +76,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ls-icon{width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .ls-text{flex:1;text-align:left;font-size:10px;line-height:1.3;color:var(--muted)}
 .ls-status{font-size:12px;flex-shrink:0;width:16px;text-align:center}
+@keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
 .rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
@@ -1091,7 +1092,8 @@ function animateLoading(){
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
-    const pct=Math.min((elapsed/totalSec)*35,35);
+    // Procentai: tolygiai nuo 0% iki 98% per visą laiką
+    const pct=Math.min((elapsed/totalSec)*98,98);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';
     if(ppct) ppct.textContent=pctRound+'%';
@@ -1099,7 +1101,7 @@ function animateLoading(){
     if(ptime) ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
     if(elapsed>=totalSec){
       clearInterval(t);
-      if(ppct) ppct.textContent='35%';
+      if(ppct) ppct.textContent='98%';
       loadScreen.style.transition='opacity .5s';
       loadScreen.style.opacity='0';
       setTimeout(()=>{
@@ -1123,14 +1125,14 @@ function activateStep(n,done){
   if(!el) return;
   el.classList.add('active');
   if(done){
-    if(st){st.textContent='✓';st.style.color='#4cff6a';}
+    if(st){st.textContent='✓';st.style.color='#4cff6a';st.style.animation='';}
   }else{
+    // CSS animacija — tikras sukimasis
     if(st){
-      st.style.color='rgba(212,168,67,.8)';
-      let frame=0;
-      const spin=['⟳','↻','⟲','↺'];
-      st.textContent=spin[0];
-      setInterval(()=>{frame++;st.textContent=spin[frame%spin.length];},220);
+      st.textContent='↻';
+      st.style.color='rgba(212,168,67,.9)';
+      st.style.display='inline-block';
+      st.style.animation='spinStep .8s linear infinite';
     }
   }
 }
