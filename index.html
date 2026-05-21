@@ -191,10 +191,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 2: KAMERA -->
 <div id="s-camera">
-  <div class="cam-progress">
+  <div class="cam-progress" id="cam-progress">
     <div class="cam-dot" id="cam-dot1"></div>
     <div class="cam-dot inactive" id="cam-dot2"></div>
-    <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div class="cam-sub" id="cam-sub">Lengvai išskėskite pirštus ir laikykite delną<br>tiesiai prieš kamerą.</div>
@@ -207,8 +206,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-rescan" id="cam-rescan"></div>
     <div class="cam-scan-ok" id="cam-scan-ok">
       <div class="cam-scan-ok-badge">✓</div>
-      <div class="cam-scan-ok-text" id="scan-ok-text">Nuotrauka išsaugota</div>
-      <div class="cam-scan-ok-sub" id="scan-ok-sub">Ruošiamasi kitam žingsniui...</div>
+      <div class="cam-scan-ok-text" id="scan-ok-text">Delnas sėkmingai užfiksuotas!</div>
+      <div class="cam-scan-ok-sub" id="scan-ok-sub">Ruošiami duomenys...</div>
     </div>
     <div class="cam-error" id="cam-error">
       <div class="cam-error-ico">📷</div>
@@ -620,6 +619,8 @@ function openCameraScreen(){
   camHand='left';
   photoLeft=null;
   photoRight=null;
+  const prog=document.getElementById('cam-progress');
+  if(prog) prog.style.visibility='visible';
   updateCameraUI();
   go('s-camera');
   startCamera();
@@ -629,21 +630,22 @@ function updateCameraUI(){
   const title=document.getElementById('cam-title');
   const dot1=document.getElementById('cam-dot1');
   const dot2=document.getElementById('cam-dot2');
-  const dot3=document.getElementById('cam-dot3');
   const hint=document.getElementById('cam-hint-txt');
+  const progress=document.getElementById('cam-progress');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.add('inactive');
-    if(dot3) dot3.classList.add('inactive');
-    if(hint&&!handVisible) hint.textContent='Nukreipkite kamerą į kairįjį delną';
+    if(progress) progress.style.display='flex';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
     dot1.classList.remove('inactive');
     dot2.classList.remove('inactive');
-    if(dot3) dot3.classList.add('inactive');
-    if(hint&&!handVisible) hint.textContent='Nukreipkite kamerą į dešinįjį delną';
+    if(progress) progress.style.display='flex';
   }
+  if(hint&&!handVisible) hint.textContent=camHand==='left'
+    ?'Nukreipkite kamerą į kairįjį delną'
+    :'Nukreipkite kamerą į dešinįjį delną';
 }
 
 async function startCamera(){
@@ -1103,6 +1105,10 @@ function startOracleCanvas(){
 
 function animateLoading(){
   startOracleCanvas();
+
+  // Analizės ekrane taškeliai nesirodo
+  const prog=document.getElementById('cam-progress');
+  if(prog) prog.style.visibility='hidden';
 
   const pbar=document.getElementById('pbar');
   const ptime=document.getElementById('ptime');
