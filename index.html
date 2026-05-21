@@ -1124,16 +1124,14 @@ function animateLoading(){
     }
   },250);
 
-  // Griežtas ritmas — varnelė kas lygiai 11 sek.
-  // 0s  (0%)  → 1 sukasi
-  // 11s (24%) → 1 ✓, 2 sukasi
-  // 22s (48%) → 2 ✓, 3 sukasi
-  // 33s (72%) → 3 ✓, 4 sukasi
-  // 45s (98%) → fade-out (4 nespėja gauti ✓)
+  // 25% = 45×0.25 = 11.25s → 1 ✓, 2 sukasi
+  // 50% = 45×0.50 = 22.5s  → 2 ✓, 3 sukasi
+  // 75% = 45×0.75 = 33.75s → 3 ✓, 4 sukasi
+  // 98% = 45s              → fade-out (4 nespėja gauti ✓)
   setTimeout(()=>activateStep(1,false),500);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11000);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22000);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33000);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11250);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22500);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33750);
 }
 
 function activateStep(n,done){
