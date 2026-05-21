@@ -353,7 +353,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="load-steps">
       <div class="ls" id="ls1">
         <div class="ls-icon">🫀</div>
-        <div class="ls-text">Analizuojama asmenybė ir paslėptas potencialas</div>
+        <div class="ls-text">Analizuojama asmenybė ir charakterio bruožai</div>
         <div class="ls-status" id="ls1-status">·</div>
       </div>
       <div class="ls" id="ls2">
@@ -373,7 +373,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <div style="font-size:11px;color:rgba(245,238,216,.65);font-style:italic;text-align:center;font-weight:500">⚠️ Prašome neuždaryti programėlės, nuskaitomi duomenys...</div>
+    <div style="font-size:12px;color:rgba(255,220,80,.9);font-style:italic;text-align:center;font-weight:600;letter-spacing:.01em">⚠️ Prašome neuždaryti programėlės ir neišjungti telefono.<br>Generuojama asmeninė gyvenimo ataskaita.</div>
   </div>
 </div>
 
@@ -1148,12 +1148,13 @@ function animateLoading(){
     }
   },250);
 
-  // 0s  → 1 sukasi (Asmenybė)
-  // 11s → 1 ✓, 2 sukasi (Meilė)
-  // 22s → 2 ✓, 3 sukasi (Finansai)
-  // 33s → 3 ✓, 4 sukasi (Sielos misija — nespėja gauti ✓)
-  // 45s → fade-out
-  setTimeout(()=>activateStep(1,false),300);
+  // Griežtas ritmas — varnelė kas lygiai 11 sek.
+  // 0s  (0%)  → 1 sukasi
+  // 11s (24%) → 1 ✓, 2 sukasi
+  // 22s (48%) → 2 ✓, 3 sukasi
+  // 33s (72%) → 3 ✓, 4 sukasi
+  // 45s (98%) → fade-out (4 nespėja gauti ✓)
+  setTimeout(()=>activateStep(1,false),500);
   setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11000);
   setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22000);
   setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33000);
