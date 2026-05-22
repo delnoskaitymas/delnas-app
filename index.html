@@ -205,8 +205,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Rodoma kol kamera dar neįsijungusi -->
     <div id="cam-wait" style="position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:6;pointer-events:none">
       <div style="text-align:center;padding:20px">
-        <div style="font-size:22px;margin-bottom:10px">📷</div>
-        <div style="font-size:12px;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;font-style:italic">Jungiamasi prie kameros...</div>
+        <div style="font-size:28px;margin-bottom:10px">📷</div>
+        <div id="cam-wait-txt" style="font-size:12px;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;font-style:italic">Paruoškite delną fotografavimui</div>
       </div>
     </div>
     <div class="cam-scan-line"></div>
@@ -227,7 +227,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div style="font-size:11px;color:rgba(212,168,67,.55);text-align:center;margin-bottom:10px;letter-spacing:.02em">🔒 Privatumas garantuojamas: nuotraukos naudojamos tik delnų analizei.</div>
-    <div style="font-size:10px;color:rgba(245,238,216,.35);text-align:center;margin-bottom:8px;line-height:1.5;padding:0 16px">Paspaudus, jūsų paprašysime leidimo naudoti kamerą delnų analizės procesui.</div>
+    <div style="font-size:11px;color:rgba(245,238,216,.55);text-align:center;margin-bottom:8px;line-height:1.5;padding:0 16px">Paspaudus, jūsų paprašysime leidimo naudoti kamerą delnų analizės procesui.</div>
     <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
@@ -660,6 +660,8 @@ function openCameraScreen(){
   if(prog) prog.style.visibility='visible';
   const wait=document.getElementById('cam-wait');
   if(wait) wait.style.display='flex';
+  const waitTxt=document.getElementById('cam-wait-txt');
+  if(waitTxt) waitTxt.textContent='Paruoškite delną fotografavimui';
   const video=document.getElementById('cam-video');
   if(video) video.style.opacity='0';
   updateCameraUI();
@@ -839,9 +841,9 @@ function shutterSound(){
 function capturePhoto(){
   // Jei kamera dar nepaleista — paleidžiame ją (user gesture)
   if(!camStream){
-    startCamera().then(()=>{
-      // Kamera įsijungė — mygtukas dabar fotografuos
-    });
+    const waitTxt=document.getElementById('cam-wait-txt');
+    if(waitTxt) waitTxt.textContent='Jungiamasi prie kameros...';
+    startCamera().then(()=>{});
     return;
   }
   const video=document.getElementById('cam-video');
