@@ -681,20 +681,18 @@ function updateCameraUI(){
     :'Nukreipkite kamerą į dešinįjį delną';
 }
 
-async function initCamera(){
+async function handleUserCameraRequest(){
   const video=document.getElementById('cam-video');
   const errorDiv=document.getElementById('cam-error');
   const sh=document.getElementById('cam-shutter');
   errorDiv.style.display='none';
   try{
-    // Tikriname ar leidimas jau suteiktas
     let alreadyGranted=false;
     try{
       const p=await navigator.permissions.query({name:'camera'});
       if(p.state==='granted') alreadyGranted=true;
     }catch(e){}
 
-    // getUserMedia — vienintelė vieta kur kviečiama
     camStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'}},
       audio:false
@@ -702,7 +700,6 @@ async function initCamera(){
     video.srcObject=camStream;
     video.onloadedmetadata=()=>{
       video.style.opacity='1';
-      // Jei leidimas buvo — mygtukas iškart, jei ne — po 0.8s
       setTimeout(()=>{
         if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
       },alreadyGranted?0:800);
@@ -712,9 +709,8 @@ async function initCamera(){
   }
 }
 
-async function startCamera(){
-  return initCamera();
-}
+function startCamera(){ return handleUserCameraRequest(); }
+function initCamera(){ return handleUserCameraRequest(); }
 
 let handDetector=null;
 let handDetectLoop=null;
@@ -833,9 +829,8 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  // Jei kamera dar nepaleista — paleidžiame (user gesture)
   if(!camStream){
-    initCamera();
+    handleUserCameraRequest();
     return;
   }
   const video=document.getElementById('cam-video');
