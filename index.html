@@ -885,7 +885,7 @@ function capturePhoto(){
   },700);
 
   // ── 4. PERĖJIMAS ───────────────────────────────
-  const delay=2000;
+  const delay=2500;
   setTimeout(()=>{
     scanOk.classList.remove('active');
     frozen.classList.remove('active');
@@ -911,7 +911,7 @@ function capturePhoto(){
       setTimeout(()=>{
         go('s-loading');
         animateLoading();
-      },2500);
+      },3000);
     }
   },delay);
 }
