@@ -125,14 +125,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rev-tag{font-size:10px;color:var(--gold3);margin-top:7px;letter-spacing:.06em}
 .sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
-#s-camera{background:#000;display:none;flex-direction:column;align-items:center;padding:0;min-height:100vh;overflow:hidden}
+#s-camera{background:#000;display:none;flex-direction:column;align-items:center;padding:0;height:100dvh;max-height:100dvh;overflow:hidden;justify-content:space-between;box-sizing:border-box}
 #s-camera.active{display:flex;animation:fu .3s ease}
-.cam-progress{display:flex;gap:14px;margin-top:28px;z-index:10}
-.cam-dot{width:11px;height:11px;border-radius:50%;background:var(--gold);transition:opacity .3s}
+.cam-progress{display:flex;gap:14px;margin-top:20px;z-index:10;flex-shrink:0}
+.cam-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);transition:opacity .3s}
 .cam-dot.inactive{opacity:0.28}
-.cam-title{color:#fff;font-size:17px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.02em;z-index:10}
-.cam-sub{color:#888;font-size:13px;text-align:center;margin-top:7px;padding:0 32px;line-height:1.6;z-index:10}
-.cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:340px;height:420px;border-radius:14px;overflow:hidden;background:#0a0a0a;z-index:10;border:1.5px solid transparent;background-clip:padding-box;box-shadow:0 0 0 1.5px rgba(212,168,67,.0);outline:1.5px solid;outline-color:transparent;background-image:linear-gradient(#0a0a0a,#0a0a0a),linear-gradient(135deg,#f0c96a,#d4a843,#a07828);background-origin:border-box;background-clip:padding-box,border-box}
+.cam-title{color:#fff;font-size:16px;font-weight:600;margin-top:10px;text-align:center;padding:0 24px;letter-spacing:.02em;z-index:10;flex-shrink:0}
+.cam-sub{color:#888;font-size:12px;text-align:center;margin-top:4px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0}
+.cam-viewport{position:relative;margin-top:10px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:14px;overflow:hidden;background:#0a0a0a;z-index:10;border:1.5px solid transparent;background-image:linear-gradient(#0a0a0a,#0a0a0a),linear-gradient(135deg,#f0c96a,#d4a843,#a07828);background-origin:border-box;background-clip:padding-box,border-box}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.4) 15%,#FFD700 50%,rgba(201,168,76,.4) 85%,transparent 100%);box-shadow:0 0 14px 4px rgba(201,168,76,.5);animation:camScan 2.2s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
@@ -152,7 +152,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-error-title{color:#fff;font-size:15px;font-weight:600;text-align:center;margin-bottom:8px}
 .cam-error-sub{color:#666;font-size:13px;text-align:center;line-height:1.6;margin-bottom:20px}
 .cam-retry-btn{background:var(--gold);color:#07040f;border:none;padding:12px 28px;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.cam-shutter-wrap{margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:10}
+.cam-shutter-wrap{margin-top:8px;margin-bottom:12px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:10;flex-shrink:0}
 .cam-shutter{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#FFE87C,#C9A84C);border:none;box-shadow:0 0 0 6px rgba(201,168,76,.2),0 4px 24px rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent}
 .cam-shutter:active{transform:scale(0.89);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
 .cam-shutter-inner{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF5C0,#D4A830);border:2px solid rgba(255,255,255,.3)}
@@ -228,7 +228,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-shutter-wrap">
     <div style="font-size:11px;color:rgba(212,168,67,.55);text-align:center;margin-bottom:10px;letter-spacing:.02em">🔒 Privatumas garantuojamas: nuotraukos naudojamos tik delnų analizei.</div>
     <div style="font-size:11px;color:rgba(245,238,216,.55);text-align:center;margin-bottom:8px;line-height:1.5;padding:0 16px">Paspaudus, jūsų paprašysime leidimo naudoti kamerą delnų analizės procesui.</div>
-    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
+    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div class="cam-hint" id="cam-hint-txt" style="display:none"></div>
@@ -711,7 +711,8 @@ async function startCamera(){
           const caps=track.getCapabilities&&track.getCapabilities();
           if(caps&&caps.zoom) track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]});
         }catch(e){}
-        startHandDetection();
+        const sh=document.getElementById('cam-shutter');
+        if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
         resolve();
       };
     });
@@ -798,7 +799,6 @@ function stopHandDetection(){
 }
 
 function stopCamera(){
-  stopHandDetection();
   if(camStream){
     camStream.getTracks().forEach(t=>t.stop());
     camStream=null;
@@ -839,11 +839,10 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  // Jei kamera dar nepaleista — paleidžiame ją (user gesture)
   if(!camStream){
     const waitTxt=document.getElementById('cam-wait-txt');
     if(waitTxt) waitTxt.textContent='Jungiamasi prie kameros...';
-    startCamera().then(()=>{});
+    startCamera().catch(()=>{});
     return;
   }
   const video=document.getElementById('cam-video');
@@ -903,10 +902,9 @@ function capturePhoto(){
     shutterWrap.style.display='';
     document.getElementById('cam-sub').style.display='';
     handVisible=false;
-    setHandDetected(false,
-      shutter,
-      document.getElementById('cam-hint-txt')
-    );
+    // Mygtukas aktyvus iš karto
+    shutter.style.opacity='1';
+    shutter.style.pointerEvents='auto';
 
     if(camHand==='left'){
       photoLeft=dataURL;
