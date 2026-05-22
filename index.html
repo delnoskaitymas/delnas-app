@@ -650,12 +650,11 @@ function openCameraScreen(){
   camHand='left';
   photoLeft=null;
   photoRight=null;
+  camStream=null;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
   updateCameraUI();
   go('s-camera');
-  // Kamera paleidžiama automatiškai — vienas getUserMedia kvietimas
-  handleUserCameraRequest();
 }
 
 function updateCameraUI(){
@@ -822,7 +821,10 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  if(!camStream) return;
+  if(!camStream){
+    handleUserCameraRequest();
+    return;
+  }
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
