@@ -227,7 +227,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div style="font-size:11px;color:rgba(212,168,67,.55);text-align:center;margin-bottom:10px;letter-spacing:.02em">🔒 Privatumas garantuojamas: nuotraukos naudojamos tik delnų analizei.</div>
-    <div style="font-size:11px;color:rgba(245,238,216,.55);text-align:center;margin-bottom:8px;line-height:1.5;padding:0 16px">Paspaudus, jūsų paprašysime leidimo naudoti kamerą delnų analizės procesui.</div>
     <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
@@ -664,9 +663,16 @@ function openCameraScreen(){
   if(waitTxt) waitTxt.textContent='Paruoškite delną fotografavimui';
   const video=document.getElementById('cam-video');
   if(video) video.style.opacity='0';
+  const sh=document.getElementById('cam-shutter');
+  if(sh){sh.style.opacity='.35';sh.style.pointerEvents='none';}
   updateCameraUI();
   go('s-camera');
-  // Kamera NEKRAUNAMA automatiškai — tik paspaudus mygtuką
+  // Kamera paleidžiama iš karto
+  startCamera();
+  // Mygtukas aktyvus po 1.5s
+  setTimeout(()=>{
+    if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
+  },1500);
 }
 
 function updateCameraUI(){
@@ -697,28 +703,17 @@ async function startCamera(){
   errorDiv.style.display='none';
   try{
     camStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},
+      video:{facingMode:{ideal:'environment'}},
       audio:false
     });
     video.srcObject=camStream;
-    return new Promise(resolve=>{
-      video.onloadedmetadata=()=>{
-        video.style.opacity='1';
-        const wait=document.getElementById('cam-wait');
-        if(wait) wait.style.display='none';
-        try{
-          const track=camStream.getVideoTracks()[0];
-          const caps=track.getCapabilities&&track.getCapabilities();
-          if(caps&&caps.zoom) track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]});
-        }catch(e){}
-        const sh=document.getElementById('cam-shutter');
-        if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
-        resolve();
-      };
-    });
+    video.onloadedmetadata=()=>{
+      video.style.opacity='1';
+      const wait=document.getElementById('cam-wait');
+      if(wait) wait.style.display='none';
+    };
   }catch(err){
     errorDiv.style.display='flex';
-    console.error('Kameros klaida:',err);
   }
 }
 
@@ -839,12 +834,7 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  if(!camStream){
-    const waitTxt=document.getElementById('cam-wait-txt');
-    if(waitTxt) waitTxt.textContent='Jungiamasi prie kameros...';
-    startCamera().catch(()=>{});
-    return;
-  }
+  if(!camStream) return;
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
@@ -902,9 +892,12 @@ function capturePhoto(){
     shutterWrap.style.display='';
     document.getElementById('cam-sub').style.display='';
     handVisible=false;
-    // Mygtukas aktyvus iš karto
-    shutter.style.opacity='1';
-    shutter.style.pointerEvents='auto';
+    shutter.style.pointerEvents='none';
+    shutter.style.opacity='.35';
+    setTimeout(()=>{
+      shutter.style.opacity='1';
+      shutter.style.pointerEvents='auto';
+    },1500);
 
     if(camHand==='left'){
       photoLeft=dataURL;
