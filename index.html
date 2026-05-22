@@ -39,8 +39,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pd:nth-child(4){top:36px;left:8px;animation-delay:.2s}
 @keyframes pda{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
 .btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
-.btn-gold{background:var(--gold);color:#07040f}
-.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-gold{background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);color:#07040f;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 14px rgba(212,168,67,.25)}
+.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 4px 20px rgba(212,168,67,.35)}
 .btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:6px;text-transform:uppercase}
@@ -132,7 +132,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot.inactive{opacity:0.28}
 .cam-title{color:#fff;font-size:17px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.02em;z-index:10}
 .cam-sub{color:#888;font-size:13px;text-align:center;margin-top:7px;padding:0 32px;line-height:1.6;z-index:10}
-.cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:340px;height:420px;border-radius:22px;overflow:hidden;background:#0a0a0a;z-index:10}
+.cam-viewport{position:relative;margin-top:18px;width:calc(100vw - 32px);max-width:340px;height:420px;border-radius:14px;overflow:hidden;background:#0a0a0a;z-index:10;border:1.5px solid transparent;background-clip:padding-box;box-shadow:0 0 0 1.5px rgba(212,168,67,.0);outline:1.5px solid;outline-color:transparent;background-image:linear-gradient(#0a0a0a,#0a0a0a),linear-gradient(135deg,#f0c96a,#d4a843,#a07828);background-origin:border-box;background-clip:padding-box,border-box}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.4) 15%,#FFD700 50%,rgba(201,168,76,.4) 85%,transparent 100%);box-shadow:0 0 14px 4px rgba(201,168,76,.5);animation:camScan 2.2s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
@@ -200,6 +200,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-sub" id="cam-sub">Lengvai išskėskite pirštus ir laikykite delną<br>tiesiai prieš kamerą.</div>
   <div class="cam-viewport">
     <video id="cam-video" autoplay playsinline muted></video>
+    <!-- Privatumo pranešimas kol kamera kraunasi -->
+    <div id="cam-privacy" style="position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:15;padding:24px;text-align:center;transition:opacity .5s">
+      <div style="font-size:28px;margin-bottom:14px">🔒</div>
+      <div style="font-size:13px;color:rgba(245,238,216,.9);line-height:1.7;font-family:'DM Sans',sans-serif">Saugi skaitmeninė analizė.<br>Nuotraukos akimirksniu užšifruojamos<br>ir niekur nesaugomos.</div>
+      <div style="margin-top:16px;font-size:12px;color:var(--gold);font-style:italic;font-family:'DM Sans',sans-serif">Paspauskite „Leisti" pasirodžiusiame pranešime →</div>
+    </div>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0;transition:opacity .3s"></canvas>
     <!-- Pozicionavimo užrašas pašalintas -->
     <div id="cam-frame" style="display:none"></div>
@@ -220,7 +226,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
-    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s,background .2s;background:var(--gold);border:none;border-radius:14px;padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.05em;cursor:pointer;width:calc(100vw - 40px);max-width:320px">
+    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div class="cam-hint" id="cam-hint-txt" style="display:none"></div>
@@ -335,7 +341,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 4b: DUOMENŲ APDOROJIMAS -->
 <div class="screen" id="s-processing">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:20px">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px">
     <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 1.8s ease-in-out infinite">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);opacity:.85;animation:sp 1.4s linear infinite"></div>
     </div>
@@ -650,6 +656,8 @@ function openCameraScreen(){
   photoRight=null;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
+  const p=document.getElementById('cam-privacy');
+  if(p){p.style.display='flex';p.style.opacity='1';}
   updateCameraUI();
   go('s-camera');
   startCamera();
@@ -695,7 +703,10 @@ async function startCamera(){
     if(!stream) stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
     camStream=stream;
     video.srcObject=camStream;
+    // Kai kamera įsijungia — slepiame privatumo pranešimą
     video.onloadedmetadata=()=>{
+      const p=document.getElementById('cam-privacy');
+      if(p){p.style.opacity='0';setTimeout(()=>p.style.display='none',500);}
       try{
         const track=camStream.getVideoTracks()[0];
         const caps=track.getCapabilities&&track.getCapabilities();
@@ -878,8 +889,8 @@ function capturePhoto(){
   },700);
 
   // ── 4. PERĖJIMAS ───────────────────────────────
-  // Kairė: 2.5s, Dešinė: 1s (momentinis)
-  const delay=camHand==='left'?2500:1000;
+  // Kairė: 2.5s, Dešinė: 2.5s
+  const delay=2500;
   setTimeout(()=>{
     scanOk.classList.remove('active');
     frozen.classList.remove('active');
