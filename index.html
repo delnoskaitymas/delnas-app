@@ -652,23 +652,14 @@ function openCameraScreen(){
   photoRight=null;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
-  const wait=document.getElementById('cam-wait');
-  if(wait) wait.style.display='flex';
-  const waitTxt=document.getElementById('cam-wait-txt');
-  if(waitTxt) waitTxt.textContent='Paruoškite delną fotografavimui';
-  const video=document.getElementById('cam-video');
-  if(video) video.style.opacity='0';
   const sh=document.getElementById('cam-shutter');
   if(sh){sh.style.opacity='.35';sh.style.pointerEvents='none';}
+  const video=document.getElementById('cam-video');
+  if(video) video.style.opacity='0';
   updateCameraUI();
   go('s-camera');
-  // Kamera paleidžiama po 1.5s
-  setTimeout(()=>startCamera(),1500);
-  // Mygtukas aktyvus po 2s
-  setTimeout(()=>{
-    const sh=document.getElementById('cam-shutter');
-    if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
-  },2000);
+  // Kamera paleidžiama iš karto (getUserMedia tik čia)
+  startCamera();
 }
 
 function updateCameraUI(){
@@ -698,6 +689,13 @@ async function startCamera(){
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
   try{
+    // Tikriname ar leidimas jau suteiktas
+    let permissionGranted=false;
+    try{
+      const perm=await navigator.permissions.query({name:'camera'});
+      if(perm.state==='granted') permissionGranted=true;
+    }catch(e){}
+
     camStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'}},
       audio:false
@@ -705,11 +703,17 @@ async function startCamera(){
     video.srcObject=camStream;
     video.onloadedmetadata=()=>{
       video.style.opacity='1';
-      const wait=document.getElementById('cam-wait');
-      if(wait) wait.style.display='none';
+      // Jei leidimas jau buvo suteiktas — mygtukas aktyvus iškart
+      // Jei ne — po 1.5s (laukiame kol vartotojas patvirtins)
+      const delay=permissionGranted?0:1500;
+      setTimeout(()=>{
+        const sh=document.getElementById('cam-shutter');
+        if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
+      },delay);
     };
   }catch(err){
     errorDiv.style.display='flex';
+    console.error('Leidimas nesuteiktas:',err);
   }
 }
 
