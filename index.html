@@ -652,9 +652,6 @@ function openCameraScreen(){
   photoRight=null;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
-  const video=document.getElementById('cam-video');
-  if(video) video.style.opacity='0';
-  updateCameraUI();
   go('s-camera');
   // Kamera NEKRAUNAMA — tik mygtuko paspaudimu
 }
@@ -686,13 +683,9 @@ async function handleUserCameraRequest(){
   const errorDiv=document.getElementById('cam-error');
   const sh=document.getElementById('cam-shutter');
   errorDiv.style.display='none';
+  // Užblokuojame pakartotinį kvietimą
+  if(camStream) return;
   try{
-    let alreadyGranted=false;
-    try{
-      const p=await navigator.permissions.query({name:'camera'});
-      if(p.state==='granted') alreadyGranted=true;
-    }catch(e){}
-
     camStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'}},
       audio:false
@@ -700,9 +693,7 @@ async function handleUserCameraRequest(){
     video.srcObject=camStream;
     video.onloadedmetadata=()=>{
       video.style.opacity='1';
-      setTimeout(()=>{
-        if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
-      },alreadyGranted?0:800);
+      if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
     };
   }catch(err){
     errorDiv.style.display='flex';
