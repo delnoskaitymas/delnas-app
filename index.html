@@ -222,7 +222,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div style="font-size:11px;color:rgba(212,168,67,.55);text-align:center;margin-bottom:10px;letter-spacing:.02em">🔒 Privatumas garantuojamas: nuotraukos naudojamos tik delnų analizei.</div>
-    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:.35;pointer-events:none;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
+    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:1;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div class="cam-hint" id="cam-hint-txt" style="display:none"></div>
@@ -652,14 +652,11 @@ function openCameraScreen(){
   photoRight=null;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
-  const sh=document.getElementById('cam-shutter');
-  if(sh){sh.style.opacity='.35';sh.style.pointerEvents='none';}
   const video=document.getElementById('cam-video');
   if(video) video.style.opacity='0';
   updateCameraUI();
   go('s-camera');
-  // Kamera paleidžiama iš karto (getUserMedia tik čia)
-  startCamera();
+  // Kamera NEKRAUNAMA — tik mygtuko paspaudimu
 }
 
 function updateCameraUI(){
@@ -684,18 +681,20 @@ function updateCameraUI(){
     :'Nukreipkite kamerą į dešinįjį delną';
 }
 
-async function startCamera(){
+async function initCamera(){
   const video=document.getElementById('cam-video');
   const errorDiv=document.getElementById('cam-error');
+  const sh=document.getElementById('cam-shutter');
   errorDiv.style.display='none';
   try{
     // Tikriname ar leidimas jau suteiktas
-    let permissionGranted=false;
+    let alreadyGranted=false;
     try{
-      const perm=await navigator.permissions.query({name:'camera'});
-      if(perm.state==='granted') permissionGranted=true;
+      const p=await navigator.permissions.query({name:'camera'});
+      if(p.state==='granted') alreadyGranted=true;
     }catch(e){}
 
+    // getUserMedia — vienintelė vieta kur kviečiama
     camStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'}},
       audio:false
@@ -703,18 +702,18 @@ async function startCamera(){
     video.srcObject=camStream;
     video.onloadedmetadata=()=>{
       video.style.opacity='1';
-      // Jei leidimas jau buvo suteiktas — mygtukas aktyvus iškart
-      // Jei ne — po 1.5s (laukiame kol vartotojas patvirtins)
-      const delay=permissionGranted?0:1500;
+      // Jei leidimas buvo — mygtukas iškart, jei ne — po 0.8s
       setTimeout(()=>{
-        const sh=document.getElementById('cam-shutter');
         if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
-      },delay);
+      },alreadyGranted?0:800);
     };
   }catch(err){
     errorDiv.style.display='flex';
-    console.error('Leidimas nesuteiktas:',err);
   }
+}
+
+async function startCamera(){
+  return initCamera();
 }
 
 let handDetector=null;
@@ -834,7 +833,11 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  if(!camStream) return;
+  // Jei kamera dar nepaleista — paleidžiame (user gesture)
+  if(!camStream){
+    initCamera();
+    return;
+  }
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
