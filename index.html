@@ -651,6 +651,7 @@ function openCameraScreen(){
   photoLeft=null;
   photoRight=null;
   camStream=null;
+  cameraReady=false;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
   updateCameraUI();
@@ -679,6 +680,8 @@ function updateCameraUI(){
     :'Nukreipkite kamerą į dešinįjį delną';
 }
 
+let cameraReady=false;
+
 async function handleUserCameraRequest(){
   const video=document.getElementById('cam-video');
   const errorDiv=document.getElementById('cam-error');
@@ -693,8 +696,7 @@ async function handleUserCameraRequest(){
     video.onloadedmetadata=()=>{
       video.play();
       video.style.opacity='1';
-      const loading=document.getElementById('cam-loading');
-      if(loading) loading.style.display='none';
+      cameraReady=true;
     };
   }catch(err){
     errorDiv.style.display='flex';
@@ -821,7 +823,7 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  if(!camStream){
+  if(!cameraReady){
     handleUserCameraRequest();
     return;
   }
