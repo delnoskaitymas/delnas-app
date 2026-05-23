@@ -652,10 +652,31 @@ function openCameraScreen(){
   photoRight=null;
   camStream=null;
   cameraReady=false;
+  cameraLoading=false;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
   updateCameraUI();
   go('s-camera');
+  startCamera();
+}
+
+async function startCamera(){
+  const video=document.getElementById('cam-video');
+  const errorDiv=document.getElementById('cam-error');
+  errorDiv.style.display='none';
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'}},
+      audio:false
+    });
+    video.srcObject=camStream;
+    video.onloadedmetadata=()=>{
+      video.play();
+      cameraReady=true;
+    };
+  }catch(err){
+    errorDiv.style.display='flex';
+  }
 }
 
 function updateCameraUI(){
@@ -681,12 +702,14 @@ function updateCameraUI(){
 }
 
 let cameraReady=false;
+let cameraLoading=false;
 
 async function handleUserCameraRequest(){
   const video=document.getElementById('cam-video');
   const errorDiv=document.getElementById('cam-error');
   errorDiv.style.display='none';
-  if(camStream) return;
+  if(camStream||cameraLoading) return;
+  cameraLoading=true;
   try{
     camStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'}},
@@ -697,8 +720,10 @@ async function handleUserCameraRequest(){
       video.play();
       video.style.opacity='1';
       cameraReady=true;
+      cameraLoading=false;
     };
   }catch(err){
+    cameraLoading=false;
     errorDiv.style.display='flex';
   }
 }
@@ -823,10 +848,7 @@ function shutterSound(){
 }
 
 function capturePhoto(){
-  if(!cameraReady){
-    handleUserCameraRequest();
-    return;
-  }
+  if(!camStream) return;
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
