@@ -682,9 +682,7 @@ function updateCameraUI(){
 async function handleUserCameraRequest(){
   const video=document.getElementById('cam-video');
   const errorDiv=document.getElementById('cam-error');
-  const sh=document.getElementById('cam-shutter');
   errorDiv.style.display='none';
-  // Užblokuojame pakartotinį kvietimą
   if(camStream) return;
   try{
     camStream=await navigator.mediaDevices.getUserMedia({
@@ -694,7 +692,6 @@ async function handleUserCameraRequest(){
     video.srcObject=camStream;
     video.onloadedmetadata=()=>{
       video.style.opacity='1';
-      if(sh){sh.style.opacity='1';sh.style.pointerEvents='auto';}
     };
   }catch(err){
     errorDiv.style.display='flex';
