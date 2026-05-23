@@ -255,17 +255,59 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <p id="pay-personal-txt" style="font-size:12px;color:rgba(245,238,216,.7);line-height:1.6;margin:0;font-style:italic">Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.</p>
     </div>
 
-    <!-- SKYRIŲ SĄRAŠAS -->
     <div style="background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:12px;padding:10px 14px;margin-bottom:12px">
-      <div style="font-size:10px;font-weight:600;color:var(--gold2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Atrakink 7 skyrių analizę:</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px">
-        <div style="font-size:11px;color:var(--text)">🌟 Charakteris</div>
-        <div style="font-size:11px;color:var(--text)">✨ Sielos misija</div>
-        <div style="font-size:11px;color:var(--text)">❤️ Meilė</div>
-        <div style="font-size:11px;color:var(--text)">💰 Finansai</div>
-        <div style="font-size:11px;color:var(--text)">💎 Dovanos</div>
-        <div style="font-size:11px;color:var(--text)">🪐 Planetų kalnai</div>
-        <div style="font-size:11px;color:var(--text)">⚠️ Iššūkiai</div>
+      <div style="font-size:10px;font-weight:600;color:var(--gold2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Atrakink 7 skyrių analizę:</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Charakteris ir paslėptas potencialas</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><path d="M12 3c-1.5 3-5 4-5 8a5 5 0 0 0 10 0c0-4-3.5-5-5-8z"/><line x1="12" y1="16" x2="12" y2="21"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Sielos misija ir karminis kelias</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Meilė, santykiai ir suderinamumas</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Finansinė sėkmė ir karjeros trajektorija</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><path d="M12 2l2.5 7h7l-5.5 4 2 7L12 16l-6 4 2-7L2 9h7z"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Prigimtinės dovanos ir paslėpti talentai</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Planetų kalnai delne</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px rgba(212,168,67,.5))"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <span style="font-size:11px;color:var(--text)">Didžiausi iššūkiai ir stiprybės</span>
+        </div>
+
       </div>
     </div>
 
@@ -322,7 +364,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 
   <!-- STICKY CTA -->
-  <div style="position:fixed;bottom:0;left:0;right:0;padding:10px 16px 18px;background:linear-gradient(transparent,#07040f 25%);z-index:50">
+  <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:10px 16px 18px;background:linear-gradient(transparent,#07040f 25%);z-index:50;display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:10px;color:rgba(245,238,216,.4)">🔒 256-bit šifravimas · Stripe</div>
       <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2)">5,59 €</div>
@@ -472,6 +514,8 @@ function go(id){
     if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';
   }
   window.scrollTo(0,0);
+  const cta=document.getElementById('sticky-cta');
+  if(cta) cta.style.display=id==='s-info'?'block':'none';
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
