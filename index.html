@@ -25,15 +25,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .wrap{padding:32px 20px 24px}
 .center{text-align:center}
 .back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-style:italic;font-family:'DM Sans',sans-serif;padding:0;margin-bottom:20px;display:block}
-.orb{width:160px;height:160px;margin:0 auto 22px;position:relative;display:flex;align-items:center;justify-content:center}
-.ring{position:absolute;border-radius:50%;border:1px solid}
+.orb{width:160px;height:160px;margin:0 auto 22px;position:relative;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:none}
+.ring{position:absolute;border-radius:50%;border:1px solid;pointer-events:none}
 .r1{inset:0;border-color:rgba(212,168,67,.1);animation:sp 22s linear infinite}
 .r2{inset:14px;border-color:rgba(212,168,67,.18);animation:sp 15s linear infinite reverse}
 .r3{inset:26px;border-color:rgba(212,168,67,.28);animation:sp 9s linear infinite}
 @keyframes sp{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.core{width:86px;height:86px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;animation:bob 4s ease-in-out infinite}
+.core{width:86px;height:86px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;animation:bob 4s ease-in-out infinite;pointer-events:none}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.pd{position:absolute;width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pda 2.2s ease-in-out infinite}
+.pd{position:absolute;width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pda 2.2s ease-in-out infinite;pointer-events:none}
 .pd:nth-child(2){top:10px;left:50%;animation-delay:.6s}
 .pd:nth-child(3){bottom:14px;right:18px;animation-delay:1.3s}
 .pd:nth-child(4){top:36px;left:8px;animation-delay:.2s}
