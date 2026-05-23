@@ -234,10 +234,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-info">
   <div style="padding:20px 16px 100px">
 
-    <!-- ANTRAŠTĖ -->
-    <div style="text-align:center;margin-bottom:12px">
-      <h2 style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:4px">Tavo analizė paruošta! 🔒</h2>
-      <p style="font-size:12px;color:var(--muted)">Sėkmingai išanalizavome abu delnus.</p>
+    <!-- PROGRESIJOS JUOSTA -->
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);margin-bottom:4px">
+        <span>Analizė vyksta fone...</span>
+        <span id="pay-pct">35%</span>
+      </div>
+      <div style="height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:35%;transition:width .6s linear"></div>
+      </div>
+    </div>
+
+    <!-- FONO PRANEŠIMAS -->
+    <div style="background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.15);border-radius:10px;padding:10px 12px;margin-bottom:12px">
+      <p style="font-size:12px;color:rgba(245,238,216,.7);line-height:1.6;margin:0;font-style:italic">⚡ Analizė vyksta fone. Pabaikite mokėjimą, kad iškart gautumėte ataskaitą.</p>
+    </div>
+
+    <!-- DINAMINIS TEKSTAS -->
+    <div style="background:rgba(212,168,67,.03);border:.5px solid rgba(212,168,67,.1);border-radius:10px;padding:10px 12px;margin-bottom:12px">
+      <p id="pay-personal-txt" style="font-size:12px;color:rgba(245,238,216,.7);line-height:1.6;margin:0;font-style:italic">Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.</p>
     </div>
 
     <!-- SKYRIŲ SĄRAŠAS -->
@@ -273,7 +288,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px">
       <!-- Vardas floating -->
       <div style="position:relative;border-bottom:.5px solid var(--border)">
-        <input type="text" id="i-name" name="name" placeholder=" " autocomplete="name" oninput="validatePayForm();updatePayBtn()" style="width:100%;background:transparent;border:none;padding:18px 14px 6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none">
+        <input type="text" id="i-name" name="name" placeholder=" " autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="width:100%;background:transparent;border:none;padding:18px 14px 6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none">
         <label style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none;transition:.2s;font-family:'DM Sans',sans-serif" onclick="this.previousElementSibling.focus()">Vardas</label>
       </div>
       <!-- El. paštas floating -->
@@ -396,14 +411,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-personalizing">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:18px;letter-spacing:.04em;font-weight:700;margin-bottom:10px;text-align:center;line-height:1.4" id="pers-msg">Mokėjimas gautas.<br>Personalizuojama analizė...</div>
+    <div class="serif gold" style="font-size:20px;letter-spacing:.04em;font-weight:700;margin-bottom:8px;text-align:center;line-height:1.4">Atrakinama...</div>
+    <div id="unlock-msg" style="font-size:13px;color:rgba(245,238,216,.6);text-align:center;font-style:italic;min-height:20px;transition:opacity .4s">Tikrinami delnų duomenys...</div>
     <div style="width:100%;max-width:300px;margin:16px 0 8px">
       <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
-        <div id="pbar2" style="height:100%;background:var(--gold);border-radius:50px;width:85%;transition:width 1s linear"></div>
+        <div id="pbar2" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width 1s linear"></div>
       </div>
-      <div style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic">Beveik baigta...</div>
+      <div style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic" id="unlock-pct">0%</div>
     </div>
-    <div style="font-size:12px;color:rgba(245,238,216,.35);margin-top:12px;font-style:italic;text-align:center">Įterpiamas vardas ir personalizuojami tekstai...</div>
   </div>
 </div>
 
@@ -483,11 +498,20 @@ async function verifyAndProceed(sessionId){
       sessionStorage.removeItem('photoRight');
       sessionStorage.removeItem('bgSessionId');
 
-      // Rodyti personalizavimo ekraną ir laukti analizės
-      go('s-loading');
-      animateLoadingWait();
+      // Patikriname ar analizė jau baigta (cache)
+      go('s-personalizing');
+      startUnlockScreen();
+      if(window._payPbarInterval) clearInterval(window._payPbarInterval);
       waitForAnalysis().then(result=>{
-        displayResult(result);
+        // Analizė baigta — 100% ir iškart rodome rezultatą
+        if(window._unlockInterval) clearInterval(window._unlockInterval);
+        const pbar=document.getElementById('pbar2');
+        const pct=document.getElementById('unlock-pct');
+        const msgEl=document.getElementById('unlock-msg');
+        if(pbar) pbar.style.width='100%';
+        if(pct) pct.textContent='100%';
+        if(msgEl) msgEl.textContent='Ataskaita paruošta!';
+        setTimeout(()=>displayResult(result),600);
       }).catch(e=>{
         const err=document.getElementById('order-err');
         err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
@@ -554,6 +578,73 @@ function animateLoadingWait(){
     if(pbar) pbar.style.width=p+'%';
     if(p>=99) clearInterval(t);
   },300);
+}
+
+function startPayPbar(){
+  const pbar=document.getElementById('pay-pbar');
+  const ppct=document.getElementById('pay-pct');
+  if(!pbar) return;
+  let pct=35;
+  const t=setInterval(()=>{
+    const inc=pct<70?0.8:pct<90?0.3:0.05;
+    pct=Math.min(pct+inc,98);
+    pbar.style.width=pct+'%';
+    if(ppct) ppct.textContent=Math.round(pct)+'%';
+    if(pct>=98) clearInterval(t);
+  },1000);
+  window._payPbarInterval=t;
+}
+
+function startUnlockScreen(){
+  const msgs=[
+    'Tikrinami delnų duomenys...',
+    'Skaičiuojami rodikliai...',
+    'Analizuojamos gyvenimo linijos...',
+    'Ruošiama santykių įžvalga...',
+    'Skaičiuojama gyvenimo trukmės linija...',
+    'Ruošiama galutinė ataskaita...'
+  ];
+  const msgEl=document.getElementById('unlock-msg');
+  const pbar=document.getElementById('pbar2');
+  const pct=document.getElementById('unlock-pct');
+  let i=0;
+  let p=0;
+  if(pbar) pbar.style.width='0%';
+
+  const iv=setInterval(()=>{
+    i=(i+1)%msgs.length;
+    p=Math.min(p+15,95);
+    if(msgEl){
+      msgEl.style.opacity='0';
+      setTimeout(()=>{msgEl.textContent=msgs[i];msgEl.style.opacity='1';},300);
+    }
+    if(pbar) pbar.style.width=p+'%';
+    if(pct) pct.textContent=p+'%';
+  },10000);
+
+  window._unlockInterval=iv;
+}
+
+
+  const name=document.getElementById('i-name').value.trim();
+  const el=document.getElementById('pay-personal-txt');
+  if(!el) return;
+  el.textContent=name
+    ?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`
+    :'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
+}
+
+function startPayPbar(){
+  const pbar=document.getElementById('pay-pbar');
+  const ppct=document.getElementById('pay-pct');
+  if(!pbar) return;
+  let pct=35;
+  const t=setInterval(()=>{
+    pct=Math.min(pct+0.5,98);
+    pbar.style.width=pct+'%';
+    if(ppct) ppct.textContent=Math.round(pct)+'%';
+    if(pct>=98) clearInterval(t);
+  },1000);
 }
 
 function updatePayBtn(){
@@ -1114,6 +1205,7 @@ function animateLoading(){
         loadScreen.style.transition='';
         if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
         go('s-info');
+        startPayPbar();
       },800);
     }
   },250);
