@@ -176,7 +176,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
       Pradėk savo delnų analizę dabar.<br>Sužinok, ką slepia tavo gyvenimo linijos.
     </p>
-    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="openCameraScreen()">Skenuoti delnus →</button>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()">Skenuoti delnus →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
       Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
     </div>
@@ -646,18 +646,33 @@ let camHand='left';
 let photoLeft=null;
 let photoRight=null;
 
-function openCameraScreen(){
-  camHand='left';
-  photoLeft=null;
-  photoRight=null;
-  camStream=null;
-  cameraReady=false;
-  cameraLoading=false;
-  const prog=document.getElementById('cam-progress');
-  if(prog) prog.style.visibility='visible';
-  updateCameraUI();
-  go('s-camera');
-  startCamera();
+function startApp(){
+  // Iš karto prašome kameros leidimo — vienas kvietimas, susietas su mygtuko paspaudimu
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
+  .then(stream=>{
+    camStream=stream;
+    camHand='left';
+    photoLeft=null;
+    photoRight=null;
+    cameraReady=false;
+    cameraLoading=false;
+    const prog=document.getElementById('cam-progress');
+    if(prog) prog.style.visibility='visible';
+    updateCameraUI();
+    const video=document.getElementById('cam-video');
+    video.srcObject=stream;
+    video.onloadedmetadata=()=>{video.play();cameraReady=true;};
+    go('s-camera');
+  })
+  .catch(()=>{
+    camHand='left';
+    photoLeft=null;
+    photoRight=null;
+    updateCameraUI();
+    go('s-camera');
+    const errorDiv=document.getElementById('cam-error');
+    if(errorDiv) errorDiv.style.display='flex';
+  });
 }
 
 async function startCamera(){
@@ -701,35 +716,7 @@ function updateCameraUI(){
     :'Nukreipkite kamerą į dešinįjį delną';
 }
 
-let cameraReady=false;
-let cameraLoading=false;
 
-async function handleUserCameraRequest(){
-  const video=document.getElementById('cam-video');
-  const errorDiv=document.getElementById('cam-error');
-  errorDiv.style.display='none';
-  if(camStream||cameraLoading) return;
-  cameraLoading=true;
-  try{
-    camStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'}},
-      audio:false
-    });
-    video.srcObject=camStream;
-    video.onloadedmetadata=()=>{
-      video.play();
-      video.style.opacity='1';
-      cameraReady=true;
-      cameraLoading=false;
-    };
-  }catch(err){
-    cameraLoading=false;
-    errorDiv.style.display='flex';
-  }
-}
-
-function startCamera(){ return handleUserCameraRequest(); }
-function initCamera(){ return handleUserCameraRequest(); }
 
 let handDetector=null;
 let handDetectLoop=null;
