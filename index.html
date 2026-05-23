@@ -217,7 +217,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="cam-error-ico">📷</div>
       <div class="cam-error-title">Kamera nepasiekiama</div>
       <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
-      <button class="cam-retry-btn" onclick="startCamera()">Bandyti dar kartą</button>
+      <button class="cam-retry-btn" onclick="startApp()">Bandyti dar kartą</button>
     </div>
   </div>
   <div class="cam-shutter-wrap">
@@ -675,24 +675,7 @@ function startApp(){
   });
 }
 
-async function startCamera(){
-  const video=document.getElementById('cam-video');
-  const errorDiv=document.getElementById('cam-error');
-  errorDiv.style.display='none';
-  try{
-    camStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'}},
-      audio:false
-    });
-    video.srcObject=camStream;
-    video.onloadedmetadata=()=>{
-      video.play();
-      cameraReady=true;
-    };
-  }catch(err){
-    errorDiv.style.display='flex';
-  }
-}
+function openCameraScreen(){ startApp(); }
 
 function updateCameraUI(){
   const title=document.getElementById('cam-title');
