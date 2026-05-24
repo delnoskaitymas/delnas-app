@@ -254,20 +254,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Charakteris ir paslėptas potencialas</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/></svg>Sielos misija ir karminis kelias</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Meilė, santykiai ir suderinamumas</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Finansinė sėkmė ir karjeros trajektorija</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Prigimtinės dovanos ir paslėpti talentai</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/></svg>Sielos misija ir karminis kelias</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg>Planetų kalnai delne</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Didžiausi iššūkiai ir stiprybės</div>
       </div>
     </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.5);font-style:italic;margin-bottom:14px;line-height:1.5">Sistema atlieka 4 gilius skaičiavimus, kad sugeneruotų Jums 7 skyrių įžvalgų ataskaitą.</div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);font-style:italic;margin-bottom:14px;line-height:1.5">Atliekame 4 gilius delnų analizės etapus, kad sugeneruotume Jums asmeninę 7 skyrių ataskaitą.</div>
 
     <!-- EL. PAŠTAS + VARDAS šalia vienas kito -->
     <div id="info-err" class="err"></div>
@@ -285,10 +285,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.45;margin-bottom:10px" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
 
-    <!-- MOKĖTI KORTELE accordion -->
-    <details id="card-accordion" style="margin-bottom:8px">
+    <!-- MOKĖTI KORTELE — iškart atidarytas -->
+    <details id="card-accordion" open style="margin-bottom:8px">
       <summary style="font-size:11px;color:var(--muted);cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
       <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-top:6px">
+        <input type="text" id="card-holder" placeholder="Vardas Pavardė" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;box-sizing:border-box">
         <div id="stripe-card-element" style="padding:4px 0"></div>
         <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
       </div>
@@ -306,7 +307,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:15px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:6px">ATRAKINTI ANALIZĘ →</button>
   <div style="display:flex;align-items:center;justify-content:space-between;font-size:10px;color:rgba(245,238,216,.35)">
-    <span>🔒 Saugus 256-bit mokėjimas per Stripe</span>
+    <span>🔒 Saugus mokėjimas per Stripe</span>
     <span style="color:#7b61ff;font-weight:700;font-size:11px">Revolut</span>
   </div>
 </div>
@@ -628,16 +629,11 @@ function animateLoadingWait(){
 function startPayPbar(){
   const pbar=document.getElementById('pay-pbar');
   const ppct=document.getElementById('pay-pct');
-  const ptxt=document.getElementById('pay-status-txt');
   if(!pbar) return;
-  // Pradedame nuo 85% — tęsiame nuo analizės ekrano
-  window._currentProgress=window._currentProgress||85;
-  pbar.style.width=window._currentProgress+'%';
-  if(ppct) ppct.textContent=Math.round(window._currentProgress)+'%';
-  if(window._currentProgress>=98){
-    if(ptxt) ptxt.style.display='block';
-    return;
-  }
+  // Visada pradedame nuo 85%
+  window._currentProgress=85;
+  pbar.style.width='85%';
+  if(ppct) ppct.textContent='85%';
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
   const t=setInterval(()=>{
     const inc=window._currentProgress<93?0.3:0.05;
@@ -691,19 +687,6 @@ function updatePersonalTxt(){
   el.textContent=name
     ?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`
     :'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
-}
-
-function startPayPbar(){
-  const pbar=document.getElementById('pay-pbar');
-  const ppct=document.getElementById('pay-pct');
-  if(!pbar) return;
-  let pct=35;
-  const t=setInterval(()=>{
-    pct=Math.min(pct+0.5,98);
-    pbar.style.width=pct+'%';
-    if(ppct) ppct.textContent=Math.round(pct)+'%';
-    if(pct>=98) clearInterval(t);
-  },1000);
 }
 
 function updatePayBtn(){
@@ -771,7 +754,12 @@ let stripeInstance=null;
 let stripeCardElement=null;
 
 function initStripeElements(){
-  if(!window._stripeKey||stripeInstance) return;
+  if(stripeInstance) return;
+  if(!window._stripeKey){
+    // Laukiame kol key bus gautas
+    setTimeout(initStripeElements, 200);
+    return;
+  }
   stripeInstance=Stripe(window._stripeKey);
   const elements=stripeInstance.elements({
     appearance:{
@@ -825,12 +813,13 @@ async function initiatePayment(){
     window._paymentIntentId=data.paymentIntentId;
 
     // 2. Patvirtinamas mokėjimas su Stripe Elements
-    if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
+    const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
 
+    if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
     const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{
       payment_method:{
         card:stripeCardElement,
-        billing_details:{name,email}
+        billing_details:{name:cardHolder,email}
       }
     });
 
@@ -869,9 +858,24 @@ async function onPaymentSuccess(name,email){
   if(photoRight) sessionStorage.setItem('photoRight',photoRight);
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
 
-  // Rodome sėkmės ekraną
-  go('s-personalizing');
-  startUnlockScreen();
+  // Švelniai išblukina mokėjimo ekraną, tada rodo sėkmės ekraną
+  const infoScreen=document.getElementById('s-info');
+  const stickyEl=document.getElementById('sticky-cta');
+  if(infoScreen){
+    infoScreen.style.transition='opacity .5s ease';
+    infoScreen.style.opacity='0';
+    if(stickyEl){stickyEl.style.transition='opacity .5s ease';stickyEl.style.opacity='0';}
+    setTimeout(()=>{
+      infoScreen.style.opacity='';
+      infoScreen.style.transition='';
+      if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}
+      go('s-personalizing');
+      startUnlockScreen();
+    },500);
+  }else{
+    go('s-personalizing');
+    startUnlockScreen();
+  }
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
 
   waitForAnalysis().then(result=>{
