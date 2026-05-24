@@ -234,15 +234,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-info">
   <div style="padding:16px 16px 120px">
 
-    <!-- PROGRESIJOS JUOSTA su tekstu dešinėje -->
+    <!-- PROGRESIJOS JUOSTA -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:rgba(212,168,67,.08);border-radius:8px;padding:8px 12px">
-      <div style="display:flex;align-items:center;gap:8px;flex:1">
-        <div style="height:8px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;width:80px;flex-shrink:0">
-          <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;box-shadow:0 0 8px rgba(240,201,106,.6);animation:payGlow 1.8s ease-in-out infinite"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="height:8px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;width:70px">
+          <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
         </div>
         <span id="pay-pct" style="font-size:13px;font-weight:700;color:var(--gold2)">85%</span>
       </div>
-      <div id="pay-status-txt" style="font-size:10px;color:rgba(245,238,216,.7);letter-spacing:.03em;text-align:right">ANALIZĖ UŽFIKSUOTA – Laukia apmokėjimo</div>
+      <div id="pay-status-txt" style="font-size:11px;color:rgba(245,238,216,.7);flex:1;text-align:right">Asmeninė ataskaita ruošiama...</div>
     </div>
 
     <!-- 7 SKYRIŲ SĄRAŠAS — visada matomas -->
@@ -265,12 +265,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Didžiausi iššūkiai ir stiprybės</div>
       </div>
     </div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);font-style:italic;margin-bottom:14px;line-height:1.5">Sistema atlieka 4 gilius skaičiavimus, kad sugeneruotų Jums 7 skyrių įžvalgų ataskaitą.</div>
 
-    <!-- VARDAS + EL. PAŠTAS šalia vienas kito -->
+    <!-- EL. PAŠTAS + VARDAS šalia vienas kito -->
     <div id="info-err" class="err"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
-      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
       <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Analizę išsiųsime šiuo el. paštu.</div>
 
@@ -630,7 +631,8 @@ function startPayPbar(){
     if(ppct) ppct.textContent=Math.round(window._currentProgress)+'%';
     if(window._currentProgress>=98){
       clearInterval(t);
-      if(ptxt) ptxt.style.display='block';
+      const ptxtEl=document.getElementById('pay-status-txt');
+      if(ptxtEl) ptxtEl.textContent='Ataskaita paruošta. Laukia apmokėjimo.';
     }
   },1000);
   window._payPbarInterval=t;
