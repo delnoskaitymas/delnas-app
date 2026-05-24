@@ -236,14 +236,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="padding:16px 16px 120px">
 
     <!-- PROGRESIJOS JUOSTA -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:rgba(212,168,67,.08);border-radius:8px;padding:8px 12px">
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <div style="height:8px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;width:70px">
-          <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
-        </div>
+    <div style="margin-bottom:14px;background:rgba(212,168,67,.08);border-radius:8px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span id="pay-pct" style="font-size:13px;font-weight:700;color:var(--gold2)">85%</span>
+        <span id="pay-status-txt" style="font-size:10px;color:rgba(245,238,216,.6)">Asmeninė ataskaita ruošiama...</span>
+        <span style="font-size:13px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
-      <div id="pay-status-txt" style="font-size:11px;color:rgba(245,238,216,.7);flex:1;text-align:right">Asmeninė ataskaita ruošiama...</div>
+      <div style="height:6px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden;position:relative">
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
+      </div>
     </div>
 
     <!-- 7 SKYRIŲ SĄRAŠAS — visada matomas -->
