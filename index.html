@@ -233,65 +233,54 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 3: MOKĖJIMAS -->
 <div class="screen" id="s-info">
-  <div style="padding:16px 16px 120px">
+  <div style="padding:10px 14px 120px">
 
     <!-- PROGRESIJOS JUOSTA -->
-    <div style="margin-bottom:14px;background:rgba(212,168,67,.08);border-radius:8px;padding:10px 12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span id="pay-pct" style="font-size:13px;font-weight:700;color:var(--gold2)">85%</span>
-        <span id="pay-status-txt" style="font-size:10px;color:rgba(245,238,216,.6)">Asmeninė ataskaita ruošiama...</span>
-        <span style="font-size:13px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
+    <div style="margin-bottom:8px;background:rgba(212,168,67,.08);border-radius:8px;padding:7px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">85%</span>
+        <span id="pay-status-txt" style="font-size:9px;color:rgba(245,238,216,.6)">Asmeninė ataskaita ruošiama...</span>
+        <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
-      <div style="height:6px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden;position:relative">
+      <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
         <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
       </div>
     </div>
 
-    <!-- 7 SKYRIŲ SĄRAŠAS — visada matomas -->
-    <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Atrakink 7 skyrių analizę:</div>
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Charakteris ir paslėptas potencialas</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Meilė, santykiai ir suderinamumas</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Prigimtinės dovanos ir paslėpti talentai</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Finansinė sėkmė ir karjeros trajektorija</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/></svg>Sielos misija ir karminis kelias</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg>Planetų kalnai delne</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Didžiausi iššūkiai ir stiprybės</div>
+    <!-- 7 SKYRIŲ SĄRAŠAS — kompaktiškas 2 kolonų -->
+    <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:8px 10px;margin-bottom:6px">
+      <div style="font-size:9px;font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Atrakink 7 skyrių analizę:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Charakteris</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Meilė</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Dovanos</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>Finansai</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/></svg>Sielos misija</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg>Planetų kalnai</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text);grid-column:1/-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Didžiausi iššūkiai ir stiprybės</div>
       </div>
     </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.5);font-style:italic;margin-bottom:14px;line-height:1.5">Atliekame 4 gilius delnų analizės etapus, kad sugeneruotume Jums asmeninę 7 skyrių ataskaitą.</div>
 
-    <!-- EL. PAŠTAS + VARDAS šalia vienas kito -->
+    <div style="font-size:10px;color:rgba(245,238,216,.4);font-style:italic;margin-bottom:8px">Atliekame 4 gilius delnų analizės etapus, kad sugeneruotume Jums asmeninę 7 skyrių ataskaitą.</div>
+
+    <!-- EL. PAŠTAS + VARDAS -->
     <div id="info-err" class="err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
-      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
+      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;box-sizing:border-box">
+      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;box-sizing:border-box">
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Analizę išsiųsime šiuo el. paštu.</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Analizę išsiųsime šiuo el. paštu.</div>
 
     <!-- EXPRESS CHECKOUT -->
-    <div style="font-size:12px;font-weight:600;color:#f0c96a;margin-bottom:8px;letter-spacing:.04em">Express Checkout</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button id="btn-apple" style="background:#000;border:1px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('apple')" disabled> Apple Pay</button>
-      <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
-    </div>
-    <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.45;margin-bottom:10px" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
+    <div id="quick-pay-wrap" style="margin-bottom:6px"></div>
 
     <!-- MOKĖTI KORTELE — iškart atidarytas -->
-    <details id="card-accordion" open style="margin-bottom:8px">
-      <summary style="font-size:11px;color:var(--muted);cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
-      <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-top:6px">
-        <input type="text" id="card-holder" placeholder="Vardas Pavardė" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;box-sizing:border-box">
-        <div id="stripe-card-element" style="padding:4px 0"></div>
-        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
+    <details id="card-accordion" open style="margin-bottom:6px">
+      <summary style="font-size:10px;color:var(--muted);cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px">💳 MOKĖTI KORTELE</summary>
+      <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:9px;padding:10px;margin-top:4px">
+        <input type="text" id="card-holder" placeholder="Vardas Pavardė" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:7px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:8px;box-sizing:border-box">
+        <div id="stripe-card-element" style="padding:2px 0"></div>
+        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:10px;margin-top:4px"></div>
       </div>
     </details>
 
@@ -710,20 +699,18 @@ function initQuickPay(){
   if(!wrap) return;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const isAndroid=/Android/.test(navigator.userAgent);
+  const s='border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;opacity:.45';
   if(isIOS){
-    wrap.innerHTML=`<button id="btn-apple" style="width:100%;background:#000;border:1px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif;opacity:.45;margin-bottom:8px" onclick="quickPay('apple')" disabled> Apple Pay</button>`;
+    wrap.innerHTML=`<button id="btn-apple" style="width:100%;background:#000;border:1px solid #333;${s};color:#fff;margin-bottom:6px" onclick="quickPay('apple')" disabled> Apple Pay</button>`;
   }else if(isAndroid){
-    wrap.innerHTML=`<button id="btn-google" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:'DM Sans',sans-serif;opacity:.45;margin-bottom:8px" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>`;
+    wrap.innerHTML=`<button id="btn-google" style="width:100%;background:#1a1a2e;border:1px solid #333;${s};margin-bottom:6px" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>`;
   }else{
     wrap.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button id="btn-apple" style="background:#000;border:1px solid #333;border-radius:10px;padding:11px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('apple')" disabled> Apple Pay</button>
-      <button id="btn-google" style="background:#fff;border:1px solid #ddd;border-radius:10px;padding:11px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
+      <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;border-radius:10px;padding:11px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('revolut')" disabled>Revolut</button>
-      <button id="btn-klarna" style="background:#FFB3C7;border:none;border-radius:10px;padding:11px;color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.45" onclick="quickPay('klarna')" disabled>klarna</button>
-    </div>`;
+    <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;${s};color:#fff;margin-bottom:6px" onclick="quickPay('revolut')" disabled>Revolut Pay</button>`;
   }
 }
 
