@@ -426,9 +426,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Išsaugok — ir grįžk kai prireiks atsakymų.</div>
     </div>
-    <div class="share-row">
-      <button class="share-btn-tt" onclick="shareToTikTok()">🎵 Dalintis TikTok</button>
-      <button class="share-btn-sv" onclick="window.print()">💾 Išsaugoti</button>
+    <div style="margin-top:8px">
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">Dalintis rezultatais</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button onclick="shareTo('whatsapp')" style="background:#25D366;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">💬 WhatsApp</button>
+        <button onclick="shareTo('facebook')" style="background:#1877F2;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📘 Facebook</button>
+        <button onclick="shareTo('instagram')" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📸 Instagram</button>
+        <button onclick="shareTo('tiktok')" style="background:#010101;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">🎵 TikTok</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📤 Dalintis</button>
+        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">📋 Kopijuoti</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1514,14 +1523,45 @@ function displayResult(r){
   },2000);
 }
 
-function shareToTikTok(){
+function shareTo(platform){
   const name=window.userName||'Mano';
-  const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati delnaskaitymas.lt #delnaskaitymas #chiromantija #tiktoklietuva`;
-  if(navigator.share){
-    navigator.share({title:'Mano delno skaitymas',text:text,url:window.location.href});
-  }else{
-    navigator.clipboard.writeText(text+'\n'+window.location.href);
-    alert('Tekstas nukopijuotas! Įkelk į TikTok.');
+  const url=window.location.href;
+  const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`;
+  const encodedText=encodeURIComponent(text);
+  const encodedUrl=encodeURIComponent(url);
+
+  switch(platform){
+    case 'whatsapp':
+      window.open(`https://wa.me/?text=${encodedText}%20${encodedUrl}`,'_blank');
+      break;
+    case 'facebook':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,'_blank');
+      break;
+    case 'instagram':
+      // Instagram neturi tiesioginio share URL — kopijuojame tekstą
+      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
+        alert('Tekstas nukopijuotas! Atidaryk Instagram ir įkelk į Stories ar Bio.');
+      });
+      break;
+    case 'tiktok':
+      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
+        alert('Tekstas nukopijuotas! Įkelk į TikTok aprašymą.');
+      });
+      break;
+    case 'native':
+      if(navigator.share){
+        navigator.share({title:'Mano delno skaitymas',text,url});
+      }else{
+        navigator.clipboard.writeText(text+'\n'+url);
+        alert('Nuoroda nukopijuota!');
+      }
+      break;
+    case 'copy':
+      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
+        const btn=document.getElementById('copy-btn');
+        if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='📋 Kopijuoti',2000);}
+      });
+      break;
   }
 }
 </script>
