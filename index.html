@@ -79,6 +79,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ls.active .ls-text{color:var(--text)}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 6px rgba(240,201,106,.4)}50%{box-shadow:0 0 14px rgba(240,201,106,.9),0 0 24px rgba(240,201,106,.3)}}
+@keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
 .rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
@@ -704,19 +705,26 @@ function initQuickPay(){
   const wrap=document.getElementById('quick-pay-wrap');
   if(!wrap) return;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
-  const isAndroid=/Android/.test(navigator.userAgent);
   const s='border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;opacity:.45';
   if(isIOS){
-    wrap.innerHTML=`<button id="btn-apple" style="width:100%;background:#000;border:1px solid #333;${s};color:#fff;margin-bottom:6px" onclick="quickPay('apple')" disabled> Apple Pay</button>`;
-  }else if(isAndroid){
-    wrap.innerHTML=`<button id="btn-google" style="width:100%;background:#1a1a2e;border:1px solid #333;${s};margin-bottom:6px" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>`;
+    wrap.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+        <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
+        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
+      </div>`;
+  }else if(/Android/.test(navigator.userAgent)){
+    wrap.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+        <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
+        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
+      </div>`;
   }else{
     wrap.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-      <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
-      <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
-    </div>
-    <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;${s};color:#fff;margin-bottom:6px" onclick="quickPay('revolut')" disabled>Revolut Pay</button>`;
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
+        <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
+        <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
+        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
+      </div>`;
   }
 }
 
@@ -1392,7 +1400,7 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=45;
+  const totalSec=60;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
@@ -1422,14 +1430,14 @@ function animateLoading(){
     }
   },250);
 
-  // 25% = 45×0.25 = 11.25s → 1 ✓, 2 sukasi
-  // 50% = 45×0.50 = 22.5s  → 2 ✓, 3 sukasi
-  // 75% = 45×0.75 = 33.75s → 3 ✓, 4 sukasi
-  // 98% = 45s              → fade-out (4 nespėja gauti ✓)
+  // 60s proporcingai kaip buvo su 45s
+  // 25% = 60×0.25 = 15s → 1 ✓, 2 sukasi
+  // 50% = 60×0.50 = 30s → 2 ✓, 3 sukasi
+  // 75% = 60×0.75 = 45s → 3 ✓, 4 sukasi
   setTimeout(()=>activateStep(1,false),500);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11250);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22500);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33750);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},15000);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},30000);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},45000);
 }
 
 function activateStep(n,done){
@@ -1438,18 +1446,27 @@ function activateStep(n,done){
   if(!el||!st) return;
   el.classList.add('active');
   if(done){
-    // Sustabdome sukimąsi, uždedame varnelę
     st.style.animation='none';
+    st.style.border='none';
+    st.style.width='18px';
+    st.style.height='18px';
     st.textContent='✓';
     st.style.color='#4cff6a';
-    st.style.fontSize='14px';
+    st.style.fontSize='15px';
+    st.style.display='inline-flex';
+    st.style.alignItems='center';
+    st.style.justifyContent='center';
   }else{
-    // Pradedame suktis
-    st.textContent='↻';
-    st.style.color='rgba(212,168,67,.95)';
-    st.style.fontSize='16px';
+    st.textContent='';
     st.style.display='inline-block';
-    st.style.animation='spinStep .8s linear infinite';
+    st.style.width='16px';
+    st.style.height='16px';
+    st.style.border='2px solid rgba(212,168,67,.25)';
+    st.style.borderTopColor='#d4a843';
+    st.style.borderRadius='50%';
+    st.style.animation='spinStep .7s linear infinite';
+    st.style.fontSize='0';
+    st.style.flexShrink='0';
   }
 }
 
