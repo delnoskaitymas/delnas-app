@@ -158,6 +158,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-shutter-inner{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF5C0,#D4A830);border:2px solid rgba(255,255,255,.3)}
 .cam-hint{color:rgba(212,168,67,.6);font-size:11px;letter-spacing:.04em}
 </style>
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 <div id="stars"></div>
@@ -284,16 +285,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <button id="btn-revolut" style="width:100%;background:#191C1F;border:1px solid #2a2d31;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.45;margin-bottom:10px" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
 
     <!-- MOKĖTI KORTELE accordion -->
-    <details style="margin-bottom:8px">
+    <details id="card-accordion" style="margin-bottom:8px">
       <summary style="font-size:11px;color:var(--muted);cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
-      <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:12px;margin-top:6px">
-        <div class="field" style="margin-bottom:8px">
-          <input type="text" id="card-number" name="cardnumber" placeholder="Card Number" maxlength="19" oninput="formatCard(this);validatePayForm()" autocomplete="cc-number" inputmode="numeric" style="width:100%;box-sizing:border-box">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input type="text" id="card-exp" name="cc-exp" placeholder="MM/YY" maxlength="5" oninput="formatExp(this);validatePayForm()" autocomplete="cc-exp" inputmode="numeric" style="background:var(--surf2);border:.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
-          <input type="text" id="card-cvc" name="cvc" placeholder="CVC" maxlength="3" oninput="validatePayForm()" autocomplete="cc-csc" inputmode="numeric" style="background:var(--surf2);border:.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
-        </div>
+      <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-top:6px">
+        <div id="stripe-card-element" style="padding:4px 0"></div>
+        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
       </div>
     </details>
 
@@ -391,7 +387,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS (po mokėjimo, prieš rezultatą) -->
-<div class="screen" id="s-personalizing">
+<div class="screen" id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
     <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
     <div class="serif gold" style="font-size:20px;letter-spacing:.04em;font-weight:700;margin-bottom:8px;text-align:center;line-height:1.4">Atrakinama...</div>
@@ -495,6 +491,9 @@ function go(id){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
+  // Gauname Stripe publishable key
+  fetch('/stripe-key').then(r=>r.json()).then(d=>{window._stripeKey=d.key;}).catch(()=>{});
+
   const params=new URLSearchParams(window.location.search);
   const sessionId=params.get('session_id');
   if(sessionId) verifyAndProceed(sessionId);
@@ -530,18 +529,33 @@ async function verifyAndProceed(sessionId){
         const msgEl=document.getElementById('unlock-msg');
         if(pbar) pbar.style.width='100%';
         if(pct) pct.textContent='100%';
-        // Sėkmės animacija 1.5s
+        // Sėkmės animacija
         if(msgEl){
+          const userName=window.userName||(document.getElementById('i-name')?document.getElementById('i-name').value.trim():'');
           msgEl.style.transition='opacity .3s';
           msgEl.style.opacity='0';
           setTimeout(()=>{
             msgEl.style.textAlign='center';
             msgEl.style.lineHeight='1.8';
-            msgEl.innerHTML='<div style="font-size:42px;margin-bottom:8px">✅</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:\'Playfair Display\',serif">Mokėjimas sėkmingas!</div><div style="font-size:13px;color:rgba(245,238,216,.6);margin-top:4px">Analizė paruošta. Kraunama ataskaita...</div>';
+            msgEl.innerHTML=`<div style="font-size:42px;margin-bottom:8px">✅</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:'Playfair Display',serif">Mokėjimas sėkmingas!</div><div style="font-size:13px;color:rgba(212,168,67,.9);margin-top:6px;font-weight:500">Ačiū${userName?', '+userName:''}! Jūsų analizė jau atidaryta.</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:4px">Analizė paruošta. Kraunama ataskaita...</div>`;
             msgEl.style.opacity='1';
           },300);
         }
-        setTimeout(()=>displayResult(result),1800);
+        // Fade-out prieš rodant rezultatą
+        setTimeout(()=>{
+          const screen=document.getElementById('s-personalizing');
+          if(screen){
+            screen.style.transition='opacity .6s ease';
+            screen.style.opacity='0';
+            setTimeout(()=>{
+              screen.style.opacity='';
+              screen.style.transition='';
+              displayResult(result);
+            },600);
+          }else{
+            displayResult(result);
+          }
+        },1800);
       }).catch(e=>{
         const err=document.getElementById('order-err');
         err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
@@ -752,24 +766,81 @@ function quickPay(method){
   initiatePayment();
 }
 
+let stripeInstance=null;
+let stripeCardElement=null;
+
+function initStripeElements(){
+  if(!window._stripeKey||stripeInstance) return;
+  stripeInstance=Stripe(window._stripeKey);
+  const elements=stripeInstance.elements({
+    appearance:{
+      theme:'night',
+      variables:{
+        colorPrimary:'#d4a843',
+        colorBackground:'#1a1625',
+        colorText:'#f5eed8',
+        colorDanger:'#ff6b6b',
+        fontFamily:'DM Sans, sans-serif',
+        borderRadius:'8px'
+      }
+    }
+  });
+  stripeCardElement=elements.create('card',{
+    style:{
+      base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},
+      invalid:{color:'#ff6b6b'}
+    },
+    hidePostalCode:true
+  });
+  stripeCardElement.mount('#stripe-card-element');
+  stripeCardElement.on('change',e=>{
+    const errEl=document.getElementById('stripe-card-errors');
+    if(errEl) errEl.textContent=e.error?e.error.message:'';
+  });
+}
+
 async function initiatePayment(){
   const email=document.getElementById('i-email').value.trim();
+  const name=document.getElementById('i-name').value.trim();
   const err=document.getElementById('order-err');
   if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';return;}
   err.style.display='none';
-  window.userName='';
+  window.userName=name;
   window.userEmail=email;
   const btn=document.getElementById('pay-btn');
   btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span>Jungiamasi...';
+  btn.innerHTML='<span class="spinner"></span>Apdorojama...';
+  btn.style.opacity='1';
+
   try{
-    if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
-    if(photoRight) sessionStorage.setItem('photoRight',photoRight);
-    if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
-    const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'',email})});
+    // 1. Gauname PaymentIntent clientSecret
+    const res=await fetch('/create-payment',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,email})
+    });
     const data=await res.json();
-    if(data.url){window.location.href=data.url;}
-    else throw new Error(data.error||'Klaida');
+    if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
+    window._paymentIntentId=data.paymentIntentId;
+
+    // 2. Patvirtinamas mokėjimas su Stripe Elements
+    if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
+
+    const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{
+      payment_method:{
+        card:stripeCardElement,
+        billing_details:{name,email}
+      }
+    });
+
+    if(error) throw new Error(error.message);
+    if(paymentIntent.status==='succeeded'){
+      window._paymentIntentId=paymentIntent.id;
+      await onPaymentSuccess(name,email);
+    }else{
+      throw new Error('Mokėjimas nepavyko: '+paymentIntent.status);
+    }
+
   }catch(e){
     btn.disabled=false;
     btn.innerHTML='ATRAKINTI ANALIZĘ →';
@@ -777,6 +848,68 @@ async function initiatePayment(){
     err.textContent='Klaida: '+e.message;
     err.style.display='block';
   }
+}
+
+async function onPaymentSuccess(name,email){
+  // Verify mokėjimą serveryje
+  const vRes=await fetch('/verify-payment-intent',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({paymentIntentId:window._paymentIntentId,name,email})
+  });
+  const vData=await vRes.json();
+  if(!vData.paid) throw new Error('Mokėjimas nepatvirtintas');
+
+  window.palmToken=vData.token;
+  window.userName=vData.name||name;
+
+  // Saugome nuotraukas
+  if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
+  if(photoRight) sessionStorage.setItem('photoRight',photoRight);
+  if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
+
+  // Rodome sėkmės ekraną
+  go('s-personalizing');
+  startUnlockScreen();
+  if(window._payPbarInterval) clearInterval(window._payPbarInterval);
+
+  waitForAnalysis().then(result=>{
+    if(window._unlockInterval) clearInterval(window._unlockInterval);
+    const pbar=document.getElementById('pbar2');
+    const pct=document.getElementById('unlock-pct');
+    const msgEl=document.getElementById('unlock-msg');
+    if(pbar) pbar.style.width='100%';
+    if(pct) pct.textContent='100%';
+    if(msgEl){
+      const uName=window.userName||name;
+      msgEl.style.transition='opacity .3s';
+      msgEl.style.opacity='0';
+      setTimeout(()=>{
+        msgEl.style.textAlign='center';
+        msgEl.style.lineHeight='1.8';
+        msgEl.innerHTML=`<div style="font-size:42px;margin-bottom:8px">✅</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:'Playfair Display',serif">Mokėjimas sėkmingas!</div><div style="font-size:13px;color:rgba(212,168,67,.9);margin-top:6px;font-weight:500">Ačiū${uName?', '+uName:''}! Jūsų analizė jau atidaryta.</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:4px">Analizė paruošta. Kraunama ataskaita...</div>`;
+        msgEl.style.opacity='1';
+      },300);
+    }
+    setTimeout(()=>{
+      const screen=document.getElementById('s-personalizing');
+      if(screen){
+        screen.style.transition='opacity .6s ease';
+        screen.style.opacity='0';
+        setTimeout(()=>{
+          screen.style.opacity='';
+          screen.style.transition='';
+          displayResult(result);
+        },600);
+      }else{
+        displayResult(result);
+      }
+    },1800);
+  }).catch(e=>{
+    document.getElementById('order-err').textContent='Klaida: '+e.message;
+    document.getElementById('order-err').style.display='block';
+    go('s-info');
+  });
 }
 
 function submitInfo(){
@@ -1275,6 +1408,7 @@ function animateLoading(){
         if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
         go('s-info');
         initQuickPay();
+        initStripeElements();
         requestWakeLock();
         startPayPbar();
       },800);
