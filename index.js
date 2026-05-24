@@ -267,38 +267,44 @@ function pills(arr) {
 app.post('/create-payment', async (req, res) => {
   try {
     const { name, email } = req.body;
-    if (!name || !email) return res.status(400).json({ error: 'Trūksta duomenų' });
-    const session = await stripe.checkout.sessions.create({
-      line_items: [{ price_data: { currency: 'eur', product_data: { name: 'Delno skaitymas', description: 'Pilnas asmeninis skaitymas' }, unit_amount: 559 }, quantity: 1 }],
-      mode: 'payment',
-      customer_email: email,
-      metadata: { name, email },
-      success_url: `${process.env.APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.APP_URL}/?cancelled=true`,
-      locale: 'lt'
+    if (!email) return res.status(400).json({ error: 'Trūksta el. pašto' });
+
+    // Payment Intent vietoj Checkout Session — mokėjimas mūsų puslapyje
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 559,
+      currency: 'eur',
+      metadata: { name: name || '', email },
+      receipt_email: email,
+      automatic_payment_methods: { enabled: true }
     });
-    res.json({ url: session.url });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get('/verify-payment', async (req, res) => {
+app.post('/verify-payment-intent', async (req, res) => {
   try {
-    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    if (session.payment_status === 'paid') {
-      const sessionAge = Date.now() - (session.created * 1000);
-      if (sessionAge > 2 * 60 * 60 * 1000) {
-        return res.json({ paid: false, error: 'Sesija pasibaigė' });
-      }
-      const token = createToken(session.metadata.name, session.metadata.email);
-      res.json({ paid: true, name: session.metadata.name, email: session.metadata.email, token });
+    const { paymentIntentId, name, email } = req.body;
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (pi.status === 'succeeded') {
+      const token = createToken(name || pi.metadata.name || '', email || pi.metadata.email || '');
+      res.json({ paid: true, token, name: name || pi.metadata.name || '', email: email || pi.metadata.email || '' });
     } else {
-      res.json({ paid: false });
+      res.json({ paid: false, status: pi.status });
     }
   } catch (err) {
-    res.status(500).json({ paid: false });
+    res.status(500).json({ paid: false, error: err.message });
   }
+});
+
+app.get('/stripe-key', (req, res) => {
+  res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
 app.get('*', (req, res) => {
