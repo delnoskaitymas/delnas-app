@@ -733,12 +733,13 @@ function initQuickPay(){
 
 function quickPay(method){
   const email=document.getElementById('i-email').value.trim();
+  const err=document.getElementById('info-err');
   if(!email||!email.includes('@')){
-    const err=document.getElementById('info-err');
     if(err){err.textContent='Pirmiausia įvesk el. paštą';err.style.display='block';}
     document.getElementById('i-email').focus();
     return;
   }
+  if(err){err.style.display='none';err.textContent='';}
   initiatePayment();
 }
 
@@ -748,6 +749,10 @@ function validatePayForm(){
   const btn=document.getElementById('pay-btn');
   btn.disabled=!valid;
   btn.style.opacity=valid?'1':'0.45';
+  if(valid){
+    const err=document.getElementById('info-err');
+    if(err){err.style.display='none';err.textContent='';}
+  }
   updatePayBtn();
 }
 
