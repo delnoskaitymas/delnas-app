@@ -1462,14 +1462,13 @@ function animateLoading(){
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
-    // Progresija 85% pasiekiama ties 45s, po to sustoja
-    const pct=Math.min((elapsed/45)*85,85);
+    const pct=Math.min((elapsed/totalSec)*85,85);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';
     if(ppct) ppct.textContent=pctRound+'%';
-    const left=Math.max(Math.ceil(45-elapsed),0);
+    const left=Math.max(Math.ceil(totalSec-elapsed),0);
     if(ptime) ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
-    if(elapsed>=45){
+    if(elapsed>=totalSec){
       clearInterval(t);
       if(ppct) ppct.textContent='85%';
       window._currentProgress=85;
@@ -1488,11 +1487,11 @@ function animateLoading(){
     }
   },250);
 
-  // 45s tolygiai per 4 punktus = kas 11.25s
+  // 60s tolygiai per 4 punktus = kas 15s
   setTimeout(()=>activateStep(1,false),500);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11250);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22500);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},33750);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},15000);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},30000);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},45000);
 }
 
 function activateStep(n,done){
