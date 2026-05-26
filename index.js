@@ -52,7 +52,7 @@ async function runPalmAnalysis(photos, name) {
 
   content.push({
     type: 'text',
-    text: `Vardas: ${name}. Tu esi profesionalus chiromantijos ir žmogaus charakterio analitikas. Pažvelk į šias dvi delno nuotraukas ir pateik tikslią, profesionalią analizę lietuvių kalba.
+    text: `Tu esi profesionalus chiromantijos ir žmogaus charakterio analitikas. Pažvelk į šias dvi delno nuotraukas ir pateik tikslią, profesionalią analizę lietuvių kalba.
 
 SVARBU — ANALIZĖS PRINCIPAI:
 - Rašyk tik konkrečius faktus ir teiginius apie šį žmogų
@@ -221,6 +221,11 @@ app.post('/analyze-palm', async (req, res) => {
     // Tokenas sunaudojamas TIK po sėkmingos analizės
     tokenEntry.used = true;
     console.log('Analizė sėkminga:', userName);
+
+    // Įterpiame vardą į rezultatą jei yra
+    if (userName) {
+      result.userName = userName;
+    }
 
     // Siunčiame el. laišką
     try {
