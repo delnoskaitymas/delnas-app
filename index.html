@@ -702,30 +702,33 @@ function initQuickPay(){
   if(!wrap) return;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const isAndroid=/Android/.test(navigator.userAgent);
-  const btn='border-radius:10px;padding:10px 8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;width:100%';
+  const btn='border-radius:12px;padding:15px 8px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:\'DM Sans\',sans-serif;width:100%';
 
   if(isIOS){
     wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:6px">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:600;color:#f0c96a;margin-bottom:10px;letter-spacing:.04em">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut Pay</button>
-      </div>`;
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut Pay</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:10px">klarna · Mokėk dalimis</button>`;
   }else if(isAndroid){
     wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:6px">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut Pay</button>
-      </div>`;
+      <div style="font-size:13px;font-weight:600;color:#f0c96a;margin-bottom:10px;letter-spacing:.04em">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4;font-size:16px">G</span><span style="color:#EA4335;font-size:16px">o</span><span style="color:#FBBC05;font-size:16px">o</span><span style="color:#34A853;font-size:16px">g</span><span style="color:#EA4335;font-size:16px">l</span><span style="color:#4285F4;font-size:16px">e</span>&nbsp;Pay</button>
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut Pay</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:10px">klarna · Mokėk dalimis</button>`;
   }else{
     wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:6px">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:600;color:#f0c96a;margin-bottom:10px;letter-spacing:.04em">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
         <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button>
         <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut</button>
-      </div>`;
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:10px">klarna · Mokėk dalimis</button>`;
   }
 }
 
