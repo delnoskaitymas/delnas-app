@@ -368,11 +368,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="ls" id="ls4">
         <div class="ls-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/><circle cx="12" cy="12" r="0.8" fill="#d4a843"/>
+            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/>
           </svg>
         </div>
         <div class="ls-text">Atveriama sielos misija ir planetų įtaka delne</div>
         <div class="ls-status" id="ls4-status">·</div>
+      </div>
+      <div class="ls" id="ls5">
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/>
+          </svg>
+        </div>
+        <div class="ls-text">Nustatomi prigimtiniai talentai ir dovanos</div>
+        <div class="ls-status" id="ls5-status">·</div>
+      </div>
+      <div class="ls" id="ls6">
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <div class="ls-text">Analizuojama karminė sielos kelionė</div>
+        <div class="ls-status" id="ls6-status">·</div>
+      </div>
+      <div class="ls" id="ls7">
+        <div class="ls-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="ls-text">Rengiama galutinė asmeninė ataskaita</div>
+        <div class="ls-status" id="ls7-status">·</div>
       </div>
     </div>
 
@@ -688,6 +715,9 @@ function updatePersonalTxt(){
   el.textContent=name
     ?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`
     :'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
+
+  // Atnaujiname vardą foninei analizei
+  if(name) window.userName=name;
 }
 
 function updatePayBtn(){
@@ -1465,7 +1495,7 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=60;
+  const totalSec=90;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
@@ -1494,11 +1524,14 @@ function animateLoading(){
     }
   },250);
 
-  // 60s tolygiai per 4 punktus = kas 15s
+  // 90s / 7 žingsnių = kas ~12.5s
   setTimeout(()=>activateStep(1,false),500);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},15000);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},30000);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},45000);
+  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},12500);
+  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},25000);
+  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},37500);
+  setTimeout(()=>{activateStep(4,true);activateStep(5,false);},50000);
+  setTimeout(()=>{activateStep(5,true);activateStep(6,false);},62500);
+  setTimeout(()=>{activateStep(6,true);activateStep(7,false);},75000);
 }
 
 function activateStep(n,done){
