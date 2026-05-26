@@ -70,12 +70,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-track{width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:4px}
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
-.load-steps{display:grid;gap:8px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:12px;padding:11px 12px;transition:border-color .4s,background .4s}
+.load-steps{display:grid;gap:5px;width:100%;max-width:340px}
+.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:10px;padding:7px 10px;transition:border-color .4s,background .4s}
 .ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
-.ls-icon{width:32px;height:32px;border-radius:8px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.12);border-color:rgba(212,168,67,.4)}
-.ls-text{flex:1;text-align:left;font-size:12px;line-height:1.35;color:var(--muted);font-weight:400;text-transform:none}
+.ls-text{flex:1;text-align:left;font-size:11px;line-height:1.3;color:var(--muted);font-weight:400;text-transform:none}
 .ls.active .ls-text{color:var(--text)}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 6px rgba(240,201,106,.4)}50%{box-shadow:0 0 14px rgba(240,201,106,.9),0 0 24px rgba(240,201,106,.3)}}
@@ -335,7 +335,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="load-steps">
       <div class="ls" id="ls1">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
             <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/>
           </svg>
         </div>
@@ -344,8 +344,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       <div class="ls" id="ls2">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/><path d="M12 21v-6M9 15l3-3 3 3" stroke-opacity=".5"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/>
           </svg>
         </div>
         <div class="ls-text">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</div>
@@ -353,47 +353,47 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       <div class="ls" id="ls3">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/>
           </svg>
         </div>
-        <div class="ls-text">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</div>
+        <div class="ls-text">Nustatomi prigimtiniai talentai ir dovanos</div>
         <div class="ls-status" id="ls3-status">·</div>
       </div>
       <div class="ls" id="ls4">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/>
           </svg>
         </div>
-        <div class="ls-text">Atveriama sielos misija ir planetų įtaka delne</div>
+        <div class="ls-text">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</div>
         <div class="ls-status" id="ls4-status">·</div>
       </div>
       <div class="ls" id="ls5">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M12 2l1 5h5l-4 3 1.5 5L12 12l-3.5 3L10 10 6 7h5z"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </div>
-        <div class="ls-text">Nustatomi prigimtiniai talentai ir dovanos</div>
+        <div class="ls-text">Atveriama sielos misija ir karminis kelias</div>
         <div class="ls-status" id="ls5-status">·</div>
       </div>
       <div class="ls" id="ls6">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/>
           </svg>
         </div>
-        <div class="ls-text">Analizuojama karminė sielos kelionė</div>
+        <div class="ls-text">Nuskaitomi planetų kalnai delne</div>
         <div class="ls-status" id="ls6-status">·</div>
       </div>
       <div class="ls" id="ls7">
         <div class="ls-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
         </div>
-        <div class="ls-text">Rengiama galutinė asmeninė ataskaita</div>
+        <div class="ls-text">Didžiausi iššūkiai ir stiprybės</div>
         <div class="ls-status" id="ls7-status">·</div>
       </div>
     </div>
@@ -405,15 +405,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS (po mokėjimo, prieš rezultatą) -->
 <div class="screen" id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
-    <div class="oracle"><div class="o-outer"><div class="o-inner"></div></div></div>
-    <div class="serif gold" style="font-size:20px;letter-spacing:.04em;font-weight:700;margin-bottom:8px;text-align:center;line-height:1.4">Kraunama analizė...</div>
-    <div id="unlock-msg" style="font-size:13px;color:rgba(245,238,216,.6);text-align:center;font-style:italic;min-height:20px;transition:opacity .4s">Tikrinami delnų duomenys...</div>
-    <div style="width:100%;max-width:300px;margin:16px 0 8px">
-      <div style="width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden">
-        <div id="pbar2" style="height:100%;background:var(--gold);border-radius:50px;width:0%;transition:width 1s linear"></div>
-      </div>
-      <div style="font-size:11px;color:rgba(212,168,67,.6);text-align:right;margin-top:5px;font-style:italic" id="unlock-pct">0%</div>
-    </div>
+    <div class="serif gold" style="font-size:24px;letter-spacing:.04em;font-weight:700;text-align:center;line-height:1.4">Kraunama analizė...</div>
   </div>
 </div>
 
@@ -969,52 +961,48 @@ async function onPaymentSuccess(name,email){
       infoScreen.style.opacity='';
       infoScreen.style.transition='';
       if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}
-      go('s-personalizing');
-      startUnlockScreen();
     },500);
-  }else{
-    go('s-personalizing');
-    startUnlockScreen();
   }
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
 
-  waitForAnalysis().then(result=>{
-    if(window._unlockInterval) clearInterval(window._unlockInterval);
-    const pbar=document.getElementById('pbar2');
-    const pct=document.getElementById('unlock-pct');
-    const msgEl=document.getElementById('unlock-msg');
-    if(pbar) pbar.style.width='100%';
-    if(pct) pct.textContent='100%';
-    if(msgEl){
-      const uName=window.userName||name;
-      msgEl.style.transition='opacity .3s';
-      msgEl.style.opacity='0';
-      setTimeout(()=>{
-        msgEl.style.textAlign='center';
-        msgEl.style.lineHeight='1.8';
-        msgEl.innerHTML=`<div style="font-size:42px;margin-bottom:8px">✅</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:'Playfair Display',serif">Mokėjimas sėkmingas!</div><div style="font-size:13px;color:rgba(212,168,67,.9);margin-top:6px;font-weight:500">Ačiū${uName?', '+uName:''}!</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:4px">Analizė paruošta. Kraunama ataskaita...</div>`;
-        msgEl.style.opacity='1';
-      },300);
-    }
+  // Jei analizė jau baigta — nerodyti laukimo ekrano
+  const showSuccess=(result)=>{
+    const uName=window.userName||name;
+    // Sukuriame sėkmės ekraną tiesiai
+    const successDiv=document.createElement('div');
+    successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
+    successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:6px">Analizė paruošta. Kraunama ataskaita...</div></div>`;
+    document.body.appendChild(successDiv);
+    setTimeout(()=>successDiv.style.opacity='1',50);
     setTimeout(()=>{
-      const screen=document.getElementById('s-personalizing');
-      if(screen){
-        screen.style.transition='opacity .6s ease';
-        screen.style.opacity='0';
-        setTimeout(()=>{
-          screen.style.opacity='';
-          screen.style.transition='';
-          displayResult(result);
-        },600);
-      }else{
-        displayResult(result);
-      }
+      successDiv.style.opacity='0';
+      setTimeout(()=>{successDiv.remove();displayResult(result);},600);
     },1800);
-  }).catch(e=>{
-    document.getElementById('order-err').textContent='Klaida: '+e.message;
-    document.getElementById('order-err').style.display='block';
-    go('s-info');
-  });
+  };
+
+  if(window.bgAnalysisDone){
+    // Analizė jau baigta — iš karto sėkmės ekranas
+    waitForAnalysis().then(result=>{
+      showSuccess(result);
+    }).catch(e=>{
+      document.getElementById('order-err').textContent='Klaida: '+e.message;
+      document.getElementById('order-err').style.display='block';
+      go('s-info');
+    });
+  }else{
+    // Analizė dar vyksta — rodome laukimo ekraną
+    const infoEl=document.getElementById('s-info');
+    if(infoEl){infoEl.style.opacity='';infoEl.style.transition='';}
+    if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}
+    go('s-personalizing');
+    waitForAnalysis().then(result=>{
+      showSuccess(result);
+    }).catch(e=>{
+      document.getElementById('order-err').textContent='Klaida: '+e.message;
+      document.getElementById('order-err').style.display='block';
+      go('s-info');
+    });
+  }
 }
 
 function submitInfo(){
@@ -1576,6 +1564,7 @@ async function callClaude(){
 }
 
 function displayResult(r){
+  if(r.userName) window.userName=r.userName;
   if(!r)return;
   const name=window.userName||'';
 
