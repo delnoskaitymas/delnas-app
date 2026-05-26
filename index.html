@@ -278,7 +278,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Analizę išsiųsime šiuo el. paštu.</div>
 
-    <!-- EXPRESS CHECKOUT -->
+    <!-- QUICK PAY -->
+    <div id="pr-button-wrap" style="display:none;margin-bottom:8px">
+      <div id="pr-button-mount"></div>
+    </div>
     <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
 
     <!-- MOKĖTI KORTELE — uždaras, auto-scroll kai atidaro -->
@@ -705,40 +708,54 @@ function initQuickPay(){
   const wrap=document.getElementById('quick-pay-wrap');
   if(!wrap) return;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
-  const s='border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;opacity:.45';
+  const isAndroid=/Android/.test(navigator.userAgent);
+  const btn='border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;width:100%';
+
   if(isIOS){
     wrap.innerHTML=`
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-        <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
-        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
-      </div>`;
-  }else if(/Android/.test(navigator.userAgent)){
+      <div style="font-size:12px;font-weight:600;color:#f0c96a;margin-bottom:8px">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button>
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut Pay</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:8px">klarna · Mokėk dalimis</button>`;
+  }else if(isAndroid){
     wrap.innerHTML=`
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-        <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
-        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
-      </div>`;
+      <div style="font-size:12px;font-weight:600;color:#f0c96a;margin-bottom:8px">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut Pay</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:8px">klarna · Mokėk dalimis</button>`;
   }else{
     wrap.innerHTML=`
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-        <button id="btn-apple" style="background:#000;border:1px solid #333;${s};color:#fff" onclick="quickPay('apple')" disabled> Apple Pay</button>
-        <button id="btn-google" style="background:#1a1a2e;border:1px solid #333;${s}" onclick="quickPay('google')" disabled><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span><span style="color:#fff">&nbsp;Pay</span></button>
-        <button id="btn-revolut" style="background:#191C1F;border:1px solid #2a2d31;${s};color:#fff" onclick="quickPay('revolut')" disabled>Revolut Pay</button>
-      </div>`;
+      <div style="font-size:12px;font-weight:600;color:#f0c96a;margin-bottom:8px">Greitas mokėjimas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button>
+        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span>&nbsp;Pay</button>
+        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #333;${btn}">Revolut</button>
+      </div>
+      <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn};margin-bottom:8px">klarna · Mokėk dalimis</button>`;
   }
+}
+
+function quickPay(method){
+  const email=document.getElementById('i-email').value.trim();
+  if(!email||!email.includes('@')){
+    const err=document.getElementById('info-err');
+    if(err){err.textContent='Pirmiausia įvesk el. paštą';err.style.display='block';}
+    document.getElementById('i-email').focus();
+    return;
+  }
+  initiatePayment();
 }
 
 function validatePayForm(){
   const email=document.getElementById('i-email').value.trim();
   const valid=email.includes('@')&&email.includes('.');
   const btn=document.getElementById('pay-btn');
-  const ids=['btn-apple','btn-google','btn-revolut','btn-klarna'];
   btn.disabled=!valid;
   btn.style.opacity=valid?'1':'0.45';
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.disabled=!valid;el.style.opacity=valid?'1':'0.45';}
-  });
   updatePayBtn();
 }
 
@@ -751,13 +768,6 @@ function formatExp(el){
   let v=el.value.replace(/\D/g,'');
   if(v.length>=2) v=v.substring(0,2)+'/'+v.substring(2,4);
   el.value=v;
-}
-
-function quickPay(method){
-  const name=document.getElementById('i-name').value.trim();
-  const email=document.getElementById('i-email').value.trim();
-  if(!name||!email.includes('@')) return;
-  initiatePayment();
 }
 
 let stripeInstance=null;
@@ -795,6 +805,64 @@ function initStripeElements(){
   stripeCardElement.on('change',e=>{
     const errEl=document.getElementById('stripe-card-errors');
     if(errEl) errEl.textContent=e.error?e.error.message:'';
+  });
+
+  // Payment Request — tikras Apple Pay / Google Pay
+  const pr=stripeInstance.paymentRequest({
+    country:'LT',
+    currency:'eur',
+    total:{label:'Delnų analizė',amount:559},
+    requestPayerName:true,
+    requestPayerEmail:true,
+  });
+  window._stripePaymentRequest=pr;
+
+  pr.canMakePayment().then(result=>{
+    const prWrap=document.getElementById('pr-button-wrap');
+    if(!prWrap) return;
+    if(result){
+      const prElements=stripeInstance.elements();
+      const prButton=prElements.create('paymentRequestButton',{
+        paymentRequest:pr,
+        style:{paymentRequestButton:{type:'default',theme:'dark',height:'44px'}}
+      });
+      prButton.mount('#pr-button-mount');
+      prWrap.style.display='block';
+
+      pr.on('paymentmethod',async(ev)=>{
+        // Automatiškai gauname vardą ir el. paštą iš Apple/Google Pay
+        const autoName=ev.payerName||'';
+        const autoEmail=ev.payerEmail||'';
+        window.userName=autoName;
+        window.userEmail=autoEmail;
+        // Užpildome laukelius automatiškai
+        const nameEl=document.getElementById('i-name');
+        const emailEl=document.getElementById('i-email');
+        if(nameEl&&autoName) nameEl.value=autoName;
+        if(emailEl&&autoEmail) emailEl.value=autoEmail;
+
+        try{
+          const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:autoName,email:autoEmail})});
+          const data=await res.json();
+          if(!data.clientSecret){ev.complete('fail');return;}
+          window._paymentIntentId=data.paymentIntentId;
+
+          const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
+          if(error){ev.complete('fail');return;}
+          ev.complete('success');
+          if(paymentIntent.status==='requires_action'){
+            await stripeInstance.confirmCardPayment(data.clientSecret);
+          }
+          await onPaymentSuccess(autoName,autoEmail);
+        }catch(e){
+          ev.complete('fail');
+          const err=document.getElementById('order-err');
+          if(err){err.textContent='Klaida: '+e.message;err.style.display='block';}
+        }
+      });
+    }else{
+      if(prWrap) prWrap.style.display='none';
+    }
   });
 }
 
@@ -1400,11 +1468,12 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=45;
+  const totalSec=60;
   let elapsed=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
-    const pct=Math.min((elapsed/totalSec)*85,85);
+    // Progresija 85% pasiekiama ties 45s, po to sustoja
+    const pct=Math.min((elapsed/45)*85,85);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';
     if(ppct) ppct.textContent=pctRound+'%';
@@ -1429,7 +1498,7 @@ function animateLoading(){
     }
   },250);
 
-  // 45s proporcingai — 4-as punktas sukasi iki pabaigos be varnelės
+  // 45s tolygiai per 4 punktus = kas 11.25s
   setTimeout(()=>activateStep(1,false),500);
   setTimeout(()=>{activateStep(1,true);activateStep(2,false);},11250);
   setTimeout(()=>{activateStep(2,true);activateStep(3,false);},22500);
