@@ -375,7 +375,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </div>
-        <div class="ls-text">Atveriama sielos misija ir karminis kelias</div>
+        <div class="ls-text">Nuskaitoma sielos misija ir karminis kelias</div>
         <div class="ls-status" id="ls5-status">·</div>
       </div>
       <div class="ls" id="ls6">
@@ -577,9 +577,21 @@ function waitForAnalysis(){
       }).then(resolve).catch(reject);
     }
 
-    // Jei foninė analizė jau baigta — kviečiam iš karto
-    // Jei ne — vis tiek kviečiam, serveris lauks cache arba paleis iš naujo
-    tryFetch();
+    // Jei analizė jau baigta — kviečiam iš karto
+    if(window.bgAnalysisDone){
+      tryFetch();
+      return;
+    }
+
+    // Laukiame kol analizė baigs (max 120s), tada kviečiame
+    let waited=0;
+    const iv=setInterval(()=>{
+      waited+=1;
+      if(window.bgAnalysisDone||waited>=120){
+        clearInterval(iv);
+        tryFetch();
+      }
+    },1000);
   });
 }
 
@@ -930,10 +942,17 @@ async function onPaymentSuccess(name,email){
       waitForAnalysis().then(result=>{
         displayResult(result);
       }).catch(e=>{
-        // Klaida — grąžiname į mokėjimo ekraną
-        const errEl=document.getElementById('order-err');
-        if(errEl){errEl.textContent='Klaida: '+e.message;errEl.style.display='block';}
-        go('s-info');
+        console.error('Analizės klaida:', e.message);
+        // Bandome dar kartą po 3s
+        setTimeout(()=>{
+          waitForAnalysis().then(result=>{
+            displayResult(result);
+          }).catch(()=>{
+            const errEl=document.getElementById('order-err');
+            if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
+            go('s-info');
+          });
+        },3000);
       });
     },600);
   },1800);
