@@ -249,9 +249,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- 7 SKYRIŲ SĄRAŠAS -->
-    <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:11px 13px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;line-height:1.5">Atrakink 7 skyrių analizę:</div>
-      <div style="display:flex;flex-direction:column;gap:9px">
+    <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Atrakink 7 skyrių analizę:</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg>Charakteris ir paslėptas potencialas</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Meilė, santykiai ir suderinamumas</div>
         <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>Prigimtinės dovanos ir paslėpti talentai</div>
@@ -263,18 +263,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <!-- EL. PAŠTAS + VARDAS -->
     <div id="info-err" class="err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:5px">
-      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:15px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
+      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:15px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">Analizę išsiųsime šiuo el. paštu.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Analizę išsiųsime šiuo el. paštu.</div>
 
     <!-- QUICK PAY -->
-    <div id="quick-pay-wrap" style="margin-bottom:6px"></div>
+    <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
 
     <!-- MOKĖTI KORTELE — uždaras, auto-scroll kai atidaro -->
     <details id="card-accordion" style="margin-bottom:8px" ontoggle="if(this.open){setTimeout(()=>this.scrollIntoView({behavior:'smooth',block:'start'}),100)}">
-      <summary style="font-size:11px;color:var(--muted);cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
+      <summary style="font-size:13px;color:var(--muted);cursor:pointer;padding:8px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
       <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-top:6px">
         <input type="text" id="card-holder" placeholder="Vardas Pavardė" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;box-sizing:border-box">
         <div id="stripe-card-element" style="padding:4px 0"></div>
@@ -534,56 +534,23 @@ async function verifyAndProceed(sessionId){
       sessionStorage.removeItem('photoRight');
       sessionStorage.removeItem('bgSessionId');
 
-      // Patikriname ar analizė jau baigta (cache)
-      go('s-personalizing');
-      startUnlockScreen();
-      if(window._payPbarInterval) clearInterval(window._payPbarInterval);
-      waitForAnalysis().then(result=>{
-        if(window._unlockInterval) clearInterval(window._unlockInterval);
-        // 100% progresija
-        const pbar=document.getElementById('pbar2');
-        const pct=document.getElementById('unlock-pct');
-        const msgEl=document.getElementById('unlock-msg');
-        if(pbar) pbar.style.width='100%';
-        if(pct) pct.textContent='100%';
-        // Sėkmės animacija
-        if(msgEl){
-          const userName=window.userName||(document.getElementById('i-name')?document.getElementById('i-name').value.trim():'');
-          msgEl.style.transition='opacity .3s';
-          msgEl.style.opacity='0';
-          setTimeout(()=>{
-            msgEl.style.textAlign='center';
-            msgEl.style.lineHeight='1.8';
-            msgEl.innerHTML=`<div style="font-size:42px;margin-bottom:8px">✅</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:'Playfair Display',serif">Mokėjimas sėkmingas!</div><div style="font-size:13px;color:rgba(212,168,67,.9);margin-top:6px;font-weight:500">Ačiū${userName?', '+userName:''}! Jūsų analizė jau atidaryta.</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:4px">Analizė paruošta. Kraunama ataskaita...</div>`;
-            msgEl.style.opacity='1';
-          },300);
-        }
-        // Fade-out prieš rodant rezultatą
+      const uName=window.userName||'';
+      const successDiv=document.createElement('div');
+      successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
+      successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div></div>`;
+      document.body.appendChild(successDiv);
+      setTimeout(()=>successDiv.style.opacity='1',50);
+      setTimeout(()=>{
+        successDiv.style.opacity='0';
         setTimeout(()=>{
-          const screen=document.getElementById('s-personalizing');
-          if(screen){
-            screen.style.transition='opacity .6s ease';
-            screen.style.opacity='0';
-            setTimeout(()=>{
-              screen.style.opacity='';
-              screen.style.transition='';
-              displayResult(result);
-            },600);
-          }else{
+          successDiv.remove();
+          waitForAnalysis().then(result=>{
             displayResult(result);
-          }
-        },1800);
-      }).catch(e=>{
-        const err=document.getElementById('order-err');
-        err.textContent='Klaida: '+e.message+'. Bandyk dar kartą.';
-        err.style.display='block';
-        go('s-info');
-      });
+          }).catch(()=>go('s-info'));
+        },600);
+      },1800);
     }else{
       go('s-info');
-      const err=document.getElementById('order-err');
-      err.textContent='Mokėjimas nepatvirtintas. Bandyk dar kartą.';
-      err.style.display='block';
     }
   }catch(e){go('s-info');}
 }
@@ -611,19 +578,8 @@ function waitForAnalysis(){
     }
 
     // Jei foninė analizė jau baigta — kviečiam iš karto
-    if(window.bgAnalysisDone){
-      tryFetch();
-    }else{
-      // Laukiame kol baigs arba max 90s
-      let waited=0;
-      const iv=setInterval(()=>{
-        waited+=2;
-        if(window.bgAnalysisDone||waited>=90){
-          clearInterval(iv);
-          tryFetch();
-        }
-      },2000);
-    }
+    // Jei ne — vis tiek kviečiam, serveris lauks cache arba paleis iš naujo
+    tryFetch();
   });
 }
 
@@ -890,11 +846,9 @@ async function initiatePayment(){
   window.userEmail=email;
   const btn=document.getElementById('pay-btn');
   btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span>Apdorojama...';
-  btn.style.opacity='1';
+  btn.style.opacity='.6';
 
   try{
-    // 1. Gauname PaymentIntent clientSecret
     const res=await fetch('/create-payment',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -904,15 +858,10 @@ async function initiatePayment(){
     if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
     window._paymentIntentId=data.paymentIntentId;
 
-    // 2. Patvirtinamas mokėjimas su Stripe Elements
     const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
-
     if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
     const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{
-      payment_method:{
-        card:stripeCardElement,
-        billing_details:{name:cardHolder,email}
-      }
+      payment_method:{card:stripeCardElement,billing_details:{name:cardHolder,email}}
     });
 
     if(error) throw new Error(error.message);
@@ -925,7 +874,6 @@ async function initiatePayment(){
 
   }catch(e){
     btn.disabled=false;
-    btn.innerHTML='ATRAKINTI ANALIZĘ →';
     btn.style.opacity='1';
     err.textContent='Klaida: '+e.message;
     err.style.display='block';
@@ -965,44 +913,30 @@ async function onPaymentSuccess(name,email){
   }
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
 
-  // Jei analizė jau baigta — nerodyti laukimo ekrano
-  const showSuccess=(result)=>{
-    const uName=window.userName||name;
-    // Sukuriame sėkmės ekraną tiesiai
-    const successDiv=document.createElement('div');
-    successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
-    successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div><div style="font-size:12px;color:rgba(245,238,216,.4);margin-top:6px">Analizė paruošta. Kraunama ataskaita...</div></div>`;
-    document.body.appendChild(successDiv);
-    setTimeout(()=>successDiv.style.opacity='1',50);
-    setTimeout(()=>{
-      successDiv.style.opacity='0';
-      setTimeout(()=>{successDiv.remove();displayResult(result);},600);
-    },1800);
-  };
+  const uName=window.userName||name;
 
-  if(window.bgAnalysisDone){
-    // Analizė jau baigta — iš karto sėkmės ekranas
-    waitForAnalysis().then(result=>{
-      showSuccess(result);
-    }).catch(e=>{
-      document.getElementById('order-err').textContent='Klaida: '+e.message;
-      document.getElementById('order-err').style.display='block';
-      go('s-info');
-    });
-  }else{
-    // Analizė dar vyksta — rodome laukimo ekraną
-    const infoEl=document.getElementById('s-info');
-    if(infoEl){infoEl.style.opacity='';infoEl.style.transition='';}
-    if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}
-    go('s-personalizing');
-    waitForAnalysis().then(result=>{
-      showSuccess(result);
-    }).catch(e=>{
-      document.getElementById('order-err').textContent='Klaida: '+e.message;
-      document.getElementById('order-err').style.display='block';
-      go('s-info');
-    });
-  }
+  // 1. Iš karto rodome sėkmės ekraną
+  const successDiv=document.createElement('div');
+  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
+  successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div></div>`;
+  document.body.appendChild(successDiv);
+  setTimeout(()=>successDiv.style.opacity='1',50);
+
+  // 2. Po 1.8s — jei analizė baigta iš karto rezultatai, jei ne — „Kraunama..."
+  setTimeout(()=>{
+    successDiv.style.opacity='0';
+    setTimeout(()=>{
+      successDiv.remove();
+      waitForAnalysis().then(result=>{
+        displayResult(result);
+      }).catch(e=>{
+        // Klaida — grąžiname į mokėjimo ekraną
+        const errEl=document.getElementById('order-err');
+        if(errEl){errEl.textContent='Klaida: '+e.message;errEl.style.display='block';}
+        go('s-info');
+      });
+    },600);
+  },1800);
 }
 
 function submitInfo(){
@@ -1554,7 +1488,7 @@ async function callClaude(){
   const res=await fetch('/analyze-palm',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||''})
+    body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
   });
   if(!res.ok){
     const err=await res.json();
@@ -1568,47 +1502,26 @@ function displayResult(r){
   if(!r)return;
   const name=window.userName||'';
 
-  // Personalizavimo ekranas 5-15s
-  const persMsg=document.getElementById('pers-msg');
-  if(persMsg) persMsg.innerHTML=name
-    ?`Mokėjimas gautas.<br>Personalizuojama <em style="color:var(--gold2)">${name}</em> 7 skyrių ataskaita...`
-    :'Mokėjimas gautas.<br>Personalizuojama 7 skyrių ataskaita...';
-  go('s-personalizing');
-
-  // Progreso juosta 85→100%
-  let p=85;
-  const pbar2=document.getElementById('pbar2');
-  if(pbar2){
-    pbar2.style.width='85%';
-    const pt=setInterval(()=>{
-      p=Math.min(p+1,99);
-      pbar2.style.width=p+'%';
-      if(p>=99) clearInterval(pt);
-    },300);
+  function formatText(text){
+    if(!text)return'';
+    return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
   }
 
-  // Po 2s — rodyti rezultatą
-  setTimeout(()=>{
-    function formatText(text){
-      if(!text)return'';
-      return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
-    }
-    // Personalizuotas viršelis
-    document.getElementById('res-name').textContent=name
-      ?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`
-      :'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
+  // Personalizuotas viršelis
+  document.getElementById('res-name').textContent=name
+    ?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`
+    :'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
 
-    document.getElementById('r-char').innerHTML=formatText(r.charakteris);
-    document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
-    document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
-    document.getElementById('r-finance').innerHTML=formatText(r.finansai||r.gyvenimo_tikslas);
-    document.getElementById('r-gifts-text').innerHTML=formatText(r.dovanos_tekstas);
-    document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
-    document.getElementById('r-astro').innerHTML=formatText(r.astrologija);
-    document.getElementById('r-challenges').innerHTML=formatText(r.issukiai||r.charakteris);
-    document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
-    go('s-result');
-  },2000);
+  document.getElementById('r-char').innerHTML=formatText(r.charakteris);
+  document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
+  document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
+  document.getElementById('r-finance').innerHTML=formatText(r.finansai||r.gyvenimo_tikslas);
+  document.getElementById('r-gifts-text').innerHTML=formatText(r.dovanos_tekstas);
+  document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
+  document.getElementById('r-astro').innerHTML=formatText(r.astrologija);
+  document.getElementById('r-challenges').innerHTML=formatText(r.issukiai||r.charakteris);
+  document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
+  go('s-result');
 }
 
 function shareTo(platform){
