@@ -196,6 +196,25 @@ app.post('/analyze-palm', async (req, res) => {
 
     const userName = name || tokenEntry.name || '';
 
+    // Jei foninė analizė dar vyksta — laukiame iki 90s
+    if (sessionId && analysisCache.has(sessionId)) {
+      const cached = analysisCache.get(sessionId);
+      if (cached.status === 'pending') {
+        // Laukiame kol baigs
+        await new Promise((resolve) => {
+          let waited = 0;
+          const iv = setInterval(() => {
+            waited += 1;
+            const entry = analysisCache.get(sessionId);
+            if (!entry || entry.status !== 'pending' || waited >= 90) {
+              clearInterval(iv);
+              resolve();
+            }
+          }, 1000);
+        });
+      }
+    }
+
     // Jei foninė analizė jau baigta — naudojame ją
     let result = null;
     if (sessionId && analysisCache.has(sessionId)) {
@@ -305,6 +324,20 @@ app.post('/verify-payment-intent', async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ paid: false, error: err.message });
+  }
+});
+
+app.get('/verify-payment', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    if (session.payment_status === 'paid') {
+      const token = createToken(session.metadata?.name || '', session.metadata?.email || '');
+      res.json({ paid: true, name: session.metadata?.name || '', email: session.metadata?.email || '', token });
+    } else {
+      res.json({ paid: false });
+    }
+  } catch (err) {
+    res.json({ paid: false });
   }
 });
 
