@@ -189,40 +189,47 @@ app.post('/analyze-palm', async (req, res) => {
 
     const userName = name || tokenEntry.name || '';
 
-    if (sessionId && analysisCache.has(sessionId)) {
-      const cached = analysisCache.get(sessionId);
-      if (cached.status === 'pending') {
-        await new Promise((resolve) => {
-          let waited = 0;
-          const iv = setInterval(() => {
-            waited += 1;
-            const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 90) {
-              clearInterval(iv);
-              resolve();
-            }
-          }, 1000);
-        });
-      }
-    }
-
+    // Jei cache jau done — grąžiname iš karto
     let result = null;
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
       if (cached.status === 'done' && cached.result) {
         result = cached.result;
-        console.log('Naudojamas cache:', sessionId);
+        console.log('Cache done, grąžinama iš karto:', sessionId);
         analysisCache.delete(sessionId);
-      } else if (cached.status === 'error') {
-        console.log('Cache klaida, paleidžiame iš naujo:', cached.error);
+      } else if (cached.status === 'pending') {
+        // Laukiame max 8s — analizė turėjo baigti per 110s ekraną
+        console.log('Cache pending, laukiame max 8s:', sessionId);
+        await new Promise((resolve) => {
+          let waited = 0;
+          const iv = setInterval(() => {
+            waited += 1;
+            const entry = analysisCache.get(sessionId);
+            if (!entry || entry.status !== 'pending' || waited >= 8) {
+              clearInterval(iv);
+              resolve();
+            }
+          }, 1000);
+        });
+        const entry = analysisCache.get(sessionId);
+        if (entry && entry.status === 'done' && entry.result) {
+          result = entry.result;
+          analysisCache.delete(sessionId);
+        } else {
+          analysisCache.delete(sessionId);
+        }
+      } else {
+        // error arba notfound
         analysisCache.delete(sessionId);
       }
     }
 
+    // Jei cache nebuvo arba nepavyko — paleisti naują analizę su nuotraukomis
     if (!result) {
       if (!photos || photos.length === 0) {
-        return res.status(400).json({ error: 'Nėra nuotraukų' });
+        return res.status(400).json({ error: 'Analizė dar nevykdyta. Bandykite dar kartą.' });
       }
+      console.log('Cache nerastas, paleidžiame naują analizę:', sessionId);
       result = await runPalmAnalysis(photos, userName);
     }
 
@@ -233,16 +240,13 @@ app.post('/analyze-palm', async (req, res) => {
       result.userName = userName;
     }
 
-    try {
-      await mailer.sendMail({
-        from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
-        to: tokenEntry.email,
-        subject: `${userName ? userName + ' — ' : ''}Tavo delno skaitymas ✦`,
-        html: buildEmailHtml(userName, result)
-      });
-    } catch (mailErr) {
-      console.error('Laiško klaida (nesvarbi):', mailErr.message);
-    }
+    // El. laiškas siunčiamas fone — negrąžina klientui laukimo
+    mailer.sendMail({
+      from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
+      to: tokenEntry.email,
+      subject: `${userName ? userName + ' — ' : ''}Tavo delno skaitymas ✦`,
+      html: buildEmailHtml(userName, result)
+    }).catch(mailErr => console.error('Laiško klaida (nesvarbi):', mailErr.message));
 
     res.json(result);
 
