@@ -70,13 +70,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-track{width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:4px}
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
-.load-steps{display:grid;gap:5px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.18);border-radius:10px;padding:7px 10px;transition:border-color .4s,background .4s}
-.ls.active{border-color:rgba(212,168,67,.45);background:rgba(212,168,67,.07)}
-.ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ls.active .ls-icon{background:rgba(212,168,67,.12);border-color:rgba(212,168,67,.4)}
-.ls-text{flex:1;text-align:left;font-size:11px;line-height:1.3;color:var(--muted);font-weight:400;text-transform:none}
-.ls.active .ls-text{color:var(--text)}
+.load-steps{display:grid;gap:6px;width:100%;max-width:340px}
+.ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border-left:2px solid rgba(212,168,67,.15);border-top:.5px solid rgba(212,168,67,.08);border-right:.5px solid rgba(212,168,67,.08);border-bottom:.5px solid rgba(212,168,67,.08);border-radius:0 9px 9px 0;padding:8px 10px;transition:all .5s ease;opacity:.45;transform:translateX(-4px)}
+.ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 12px rgba(212,168,67,.08)}
+.ls-icon{width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ls.active .ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
+.ls-text{flex:1;text-align:left;font-size:11px;line-height:1.35;color:rgba(245,238,216,.4);font-weight:400;font-style:italic}
+.ls.active .ls-text{color:var(--gold2);font-weight:500;font-style:normal}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 6px rgba(240,201,106,.4)}50%{box-shadow:0 0 14px rgba(240,201,106,.9),0 0 24px rgba(240,201,106,.3)}}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -802,15 +802,14 @@ async function onPaymentSuccess(name,email){
   if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
   if(photoRight) sessionStorage.setItem('photoRight',photoRight);
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
-  const infoScreen=document.getElementById('s-info');
-  const stickyEl=document.getElementById('sticky-cta');
-  if(infoScreen){
-    infoScreen.style.transition='opacity .5s ease';infoScreen.style.opacity='0';
-    if(stickyEl){stickyEl.style.transition='opacity .5s ease';stickyEl.style.opacity='0';}
-    setTimeout(()=>{infoScreen.style.opacity='';infoScreen.style.transition='';if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}},500);
-  }
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
   const uName=window.userName||name;
+
+  // Iš karto paslėpti mokėjimo ekraną — nebeturi rodyti
+  const infoScreen=document.getElementById('s-info');
+  const stickyEl=document.getElementById('sticky-cta');
+  if(infoScreen) infoScreen.style.display='none';
+  if(stickyEl) stickyEl.style.display='none';
 
   // Vienas minimalus ekranas: pulsas + tekstas
   const successDiv=document.createElement('div');
