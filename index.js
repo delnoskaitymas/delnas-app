@@ -59,6 +59,7 @@ SVARBU — ANALIZĖS PRINCIPAI:
 - Trumpi, tiesūs sakiniai — kaip gydytojo diagnozė
 - Kiekvienas skyrius kalba TIKTAI apie savo temą — jokio kartojimo
 - Kalba: taisyklinga lietuvių kalba, kreipkis "tu"
+- DRAUDŽIAMA minėti bet kokias laiko ar amžiaus nuorodas: "artimiausi metai", "artimiausiu metu", "po X metų", "X-Y metų amžiuje", "šiais metais" ir pan. Vietoj to kalbėk apie charakterio savybes ir tendencijas be laiko rėmų.
 
 SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
 
