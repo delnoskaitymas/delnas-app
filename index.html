@@ -527,17 +527,33 @@ async function verifyAndProceed(sessionId){
       sessionStorage.removeItem('bgSessionId');
       const uName=window.userName||'';
       const successDiv=document.createElement('div');
-      successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
-      successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div></div>`;
+      successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease;gap:24px';
+      successDiv.innerHTML=`
+        <div style="width:72px;height:72px;border-radius:50%;border:2px solid #d4a843;display:flex;align-items:center;justify-content:center;animation:pulse3 1.6s ease-in-out infinite">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);animation:pulse3 1.6s ease-in-out infinite reverse"></div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
+          <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Jūsų ataskaita...</div>
+        </div>`;
       document.body.appendChild(successDiv);
       setTimeout(()=>successDiv.style.opacity='1',50);
       setTimeout(()=>{
         successDiv.style.opacity='0';
         setTimeout(()=>{
           successDiv.remove();
-          waitForAnalysis().then(result=>{displayResult(result);}).catch(()=>go('s-info'));
-        },600);
-      },1800);
+          const photoData=[];
+          if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+          if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+          fetch('/analyze-palm',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
+          }).then(r=>r.json()).then(result=>{
+            displayResult(result);
+          }).catch(()=>go('s-result'));
+        },500);
+      },2000);
     }else{
       go('s-info');
     }
