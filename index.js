@@ -59,7 +59,6 @@ SVARBU — ANALIZĖS PRINCIPAI:
 - Trumpi, tiesūs sakiniai — kaip gydytojo diagnozė
 - Kiekvienas skyrius kalba TIKTAI apie savo temą — jokio kartojimo
 - Kalba: taisyklinga lietuvių kalba, kreipkis "tu"
-- DRAUDŽIAMA: niekada neminėk konkretaus amžiaus, metų, laikotarpių ar laiko nuorodų (pvz. "30-35 metų", "iki 40-ies", "po 5 metų", "brandos laikotarpiu", "gyvenimo viduryje", "artimiausiais metais"). Kalbėk tik apie charakterio savybes, tendencijas ir polinkius — ne apie tai KAI kas nors įvyks, o apie TAI KAIP žmogus veikia ir ko galima tikėtis iš jo prigimties.
 
 SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
 
