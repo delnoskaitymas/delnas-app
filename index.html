@@ -82,20 +82,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
-.rs{border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
-.rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
-.rs-std{background:rgba(255,255,255,0.03);border:.5px solid rgba(212,168,67,0.18)}
-.rs-feat{background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.38)}
-.rs-feat::before{opacity:.9}
-.rs-label{font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.rs-feat .rs-label{color:var(--gold2);font-size:11px}
-.rs-label::after{content:'';flex:1;height:.5px;background:var(--border)}
-.rs-icon{font-size:18px;margin-bottom:10px;display:block}
-.rs-body{font-size:14px;color:var(--text);line-height:1.85;font-style:italic}
-.rs-body p{margin-bottom:12px}
+.rs{border-radius:14px;padding:18px 16px;margin-bottom:10px;position:relative;overflow:hidden}
+.rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5}
+.rs-std{background:rgba(255,255,255,0.03);border:.5px solid rgba(212,168,67,0.15)}
+.rs-feat{background:linear-gradient(135deg,rgba(212,168,67,.07) 0%,rgba(255,255,255,.02) 100%);border:.5px solid rgba(212,168,67,0.32)}
+.rs-feat::before{opacity:1}
+.rs-label{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
+.rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
+.rs-icon{display:none}
+.rs-body{font-size:14px;color:rgba(245,238,216,.9);line-height:1.85;font-style:italic;font-family:'Playfair Display',serif}
+.rs-body p{margin-bottom:10px}
 .rs-body p:last-child{margin-bottom:0}
-.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.pill{background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:50px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 12px;font-size:11px;color:var(--gold2);letter-spacing:.05em;font-family:'DM Sans',sans-serif}
 .result-hero{text-align:center;padding:40px 20px 28px}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
 .rh1{inset:0;border-color:rgba(212,168,67,.25);animation:sp 18s linear infinite}
@@ -247,18 +246,74 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- 7 SKYRIŲ SĄRAŠAS — smalsumo magnetai -->
-    <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">ATRAKINK 7 ATSAKYMUS DABAR:</div>
-      <div style="display:flex;flex-direction:column;gap:9px">
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg>Atskleista Jūsų unikali prigimtinė galia ir potencialas.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Tikrojo Jūsų gyvenimo pašaukimo ir misijos nustatymas.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>Asmeninio gyvenimo ir santykių dėsningumų analizė.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg>Finansinės laisvės bei materialinės sėkmės prognozė.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Jūsų charakterio stiprybių ir sėkmės žymų dekodavimas.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg>Artimiausio gyvenimo etapo posūkių ir galimybių apžvalga.</div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0;margin-top:2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Tikrosios priežastys ir kliūtys, stabdančios Jūsų progresą.</div>
+    <!-- SĄRAŠAS — smalsumo magnetai -->
+    <div style="background:linear-gradient(135deg,rgba(212,168,67,.06) 0%,rgba(255,255,255,.02) 100%);border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:14px 14px 10px;margin-bottom:12px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.5),transparent)"></div>
+      <div style="font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span style="display:inline-block;width:18px;height:1px;background:var(--gold);opacity:.5"></span>
+        ATRAKINK ATSAKYMUS DABAR:
+        <span style="display:inline-block;width:18px;height:1px;background:var(--gold);opacity:.5"></span>
       </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Atskleista Jūsų unikali prigimtinė galia ir potencialas.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Tikrojo Jūsų gyvenimo pašaukimo ir misijos nustatymas.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Asmeninio gyvenimo ir santykių dėsningumų analizė.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Finansinės laisvės bei materialinės sėkmės prognozė.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Jūsų charakterio stiprybių ir sėkmės žymų dekodavimas.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Artimiausio gyvenimo etapo posūkių ir galimybių apžvalga.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <span style="font-size:12.5px;line-height:1.4;color:var(--text);font-weight:500">Tikrosios priežastys ir kliūtys, stabdančios Jūsų progresą.</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒 UŽRAKINTA</span>
+        </div>
+
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent)"></div>
     </div>
 
     <!-- EL. PAŠTAS + VARDAS -->
@@ -416,20 +471,53 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="result-subtitle">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div class="result-divider"></div>
   </div>
-  <div style="padding:0 20px 32px">
-    <div class="rs rs-feat"><span class="rs-icon">🌟</span><div class="rs-label">Charakteris ir paslėptas potencialas</div><div class="rs-body" id="r-char"></div></div>
-    <div class="rs rs-feat"><span class="rs-icon">✨</span><div class="rs-label">Sielos misija ir karminis kelias</div><div class="rs-body" id="r-mission"></div></div>
-    <div class="rs rs-feat"><span class="rs-icon">❤️</span><div class="rs-label">Meilė, santykiai ir suderinamumas</div><div class="rs-body" id="r-love"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">💰</span><div class="rs-label">Finansinė sėkmė ir karjeros trajektorija</div><div class="rs-body" id="r-finance"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">💎</span><div class="rs-label">Prigimtinės dovanos ir paslėpti talentai</div><div class="rs-body" id="r-gifts-text"></div><div class="pills" id="r-gifts-pills"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">🪐</span><div class="rs-label">Planetų kalnai delne (Astrologinė įtaka)</div><div class="rs-body" id="r-astro"></div></div>
-    <div class="rs rs-std"><span class="rs-icon">⚠️</span><div class="rs-label">Didžiausi iššūkiai ir tavo stiprybės</div><div class="rs-body" id="r-challenges"></div><div class="pills" id="r-strengths"></div></div>
+
+  <div style="padding:0 16px 40px">
+
+    <div class="rs rs-feat">
+      <div class="rs-label">I · Prigimtinė galia ir potencialas</div>
+      <div class="rs-body" id="r-char"></div>
+    </div>
+
+    <div class="rs rs-feat">
+      <div class="rs-label">II · Gyvenimo pašaukimas ir misija</div>
+      <div class="rs-body" id="r-mission"></div>
+    </div>
+
+    <div class="rs rs-feat">
+      <div class="rs-label">III · Santykiai ir dėsningumai</div>
+      <div class="rs-body" id="r-love"></div>
+    </div>
+
+    <div class="rs rs-std">
+      <div class="rs-label">IV · Finansinė sėkmė ir prognozė</div>
+      <div class="rs-body" id="r-finance"></div>
+    </div>
+
+    <div class="rs rs-std">
+      <div class="rs-label">V · Charakterio stiprybių dekodavimas</div>
+      <div class="rs-body" id="r-gifts-text"></div>
+      <div class="pills" id="r-gifts-pills"></div>
+    </div>
+
+    <div class="rs rs-std">
+      <div class="rs-label">VI · Gyvenimo posūkiai ir galimybės</div>
+      <div class="rs-body" id="r-astro"></div>
+    </div>
+
+    <div class="rs rs-std">
+      <div class="rs-label">VII · Kliūtys ir tikrosios priežastys</div>
+      <div class="rs-body" id="r-challenges"></div>
+      <div class="pills" id="r-strengths"></div>
+    </div>
+
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Išsaugok — ir grįžk kai prireiks atsakymų.</div>
     </div>
+
     <div style="margin-top:8px">
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">Dalintis rezultatais</div>
+      <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:.1em;text-transform:uppercase">Dalintis rezultatais</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <button onclick="shareTo('whatsapp')" style="background:#25D366;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">💬 WhatsApp</button>
         <button onclick="shareTo('facebook')" style="background:#1877F2;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📘 Facebook</button>
@@ -437,10 +525,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <button onclick="shareTo('tiktok')" style="background:#010101;border:none;border-radius:12px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">🎵 TikTok</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📤 Dalintis</button>
-        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">📋 Kopijuoti</button>
+        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📤 Dalintis</button>
+        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">📋 Kopijuoti</button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -1160,16 +1249,16 @@ function displayResult(r){
   if(r.userName) window.userName=r.userName;if(!r)return;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
-  document.getElementById('res-name').textContent=name?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`:'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
-  document.getElementById('r-char').innerHTML=formatText(r.charakteris);
-  document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
-  document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
-  document.getElementById('r-finance').innerHTML=formatText(r.finansai||r.gyvenimo_tikslas);
-  document.getElementById('r-gifts-text').innerHTML=formatText(r.dovanos_tekstas);
-  document.getElementById('r-gifts-pills').innerHTML=(r.dovanos_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
-  document.getElementById('r-astro').innerHTML=formatText(r.astrologija);
-  document.getElementById('r-challenges').innerHTML=formatText(r.issukiai||r.charakteris);
-  document.getElementById('r-strengths').innerHTML=(r.stiprybes||[]).map(s=>`<span class="pill">${s}</span>`).join('');
+  document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninė delnų analizė`:'✦ Tavo asmeninė delnų analizė';
+  document.getElementById('r-char').innerHTML=formatText(r.prigimtine_galia);
+  document.getElementById('r-mission').innerHTML=formatText(r.gyvenimo_pasaukimas);
+  document.getElementById('r-love').innerHTML=formatText(r.santykiai);
+  document.getElementById('r-finance').innerHTML=formatText(r.finansai);
+  document.getElementById('r-gifts-text').innerHTML=formatText(r.stiprybes_dekoduotos);
+  document.getElementById('r-gifts-pills').innerHTML=(r.stiprybes_sarasas||[]).map(d=>`<span class="pill">${d}</span>`).join('');
+  document.getElementById('r-astro').innerHTML=formatText(r.gyvenimo_posukiai);
+  document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
+  document.getElementById('r-strengths').innerHTML='';
   go('s-result');
 }
 
