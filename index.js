@@ -62,19 +62,19 @@ SVARBU — ANALIZĖS PRINCIPAI:
 
 SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
 
-charakteris — tik apie asmenybės bruožus: kaip mąsto, kaip priima sprendimus, kaip elgiasi su kitais
-sielos_misija — tik apie tai ko šis žmogus viduje ieško gyvenime ir kas jam suteikia prasmę
-finansai — tik apie finansinę sėkmę, karjerą, pinigų santykį ir profesinę trajektoriją
-dovanos_tekstas — tik apie talentus ir natūralius gebėjimus
-meile_santykiai — tik apie meilę: kaip myli, ko ieško partnerijoje, kokie santykių modeliai
-astrologija — tik apie delno planetų kalnus ir ką jie atskleidžia apie temperamentą
-issukiai — tik apie didžiausius gyvenimo iššūkius ir kaip juos įveikti
+prigimtine_galia — unikali prigimtinė galia ir potencialas: kokie unikalūs gebėjimai, stiprybės ir galimybės glūdi šio žmogaus prigimtyje
+gyvenimo_pasaukimas — tikrasis gyvenimo pašaukimas ir misija: ko šis žmogus ieško, koks jo tikrasis kelias ir gyvenimo tikslas
+santykiai — asmeninio gyvenimo ir santykių dėsningumai: kaip myli, ko ieško partnerijoje, kokie santykių modeliai ir dėsningumai
+finansai — finansinės laisvės ir materialinės sėkmės prognozė: finansinė trajektorija, karjeros galimybės, pinigų santykis
+stiprybes_dekoduotos — charakterio stiprybių ir sėkmės žymų dekodavimas: kokie charakterio bruožai veda į sėkmę, ką delno linijos atskleidžia
+gyvenimo_posukiai — artimiausio gyvenimo etapo posūkiai ir galimybės: kokie pokyčiai, galimybės ir svarbūs momentai laukia artimiausiu metu
+klutys — tikrosios priežastys ir kliūtys, stabdančios progresą: kas iki šiol stabdė, kokie vidiniai ar išoriniai barjerai
 
 KIEKVIENAS skyrius: 5-6 trumpi, konkretūs sakiniai. Tik faktai. Be įžangų ir išvadų.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
-{"charakteris":"5-6 sakiniai","sielos_misija":"5-6 sakiniai","finansai":"5-6 sakiniai","dovanos_tekstas":"5-6 sakiniai","dovanos_sarasas":["Dovana 1","Dovana 2","Dovana 3","Dovana 4","Dovana 5"],"meile_santykiai":"5-6 sakiniai","astrologija":"5-6 sakiniai","issukiai":"5-6 sakiniai","stiprybes":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"]}`
+{"prigimtine_galia":"5-6 sakiniai","gyvenimo_pasaukimas":"5-6 sakiniai","santykiai":"5-6 sakiniai","finansai":"5-6 sakiniai","stiprybes_dekoduotos":"5-6 sakiniai","stiprybes_sarasas":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"],"gyvenimo_posukiai":"5-6 sakiniai","klutys":"5-6 sakiniai"}`
   });
 
   let data;
@@ -113,7 +113,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
   if (!jsonMatch) throw new Error('JSON nerastas');
 
   const result = JSON.parse(jsonMatch[0]);
-  if (!result || !result.charakteris) throw new Error('Netinkamas rezultatas');
+  if (!result || !result.prigimtine_galia) throw new Error('Netinkamas rezultatas');
 
   return result;
 }
@@ -258,15 +258,14 @@ app.post('/analyze-palm', async (req, res) => {
 
 function buildEmailHtml(userName, result) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#07040f;font-family:Georgia,serif"><div style="max-width:600px;margin:0 auto;padding:40px 24px"><div style="text-align:center;margin-bottom:32px"><div style="font-size:32px;margin-bottom:12px">✦</div><h1 style="color:#d4a843;font-size:24px;margin:0 0 6px">${userName ? userName + ' —' : ''} Tavo Delno Skaitymas</h1><p style="color:rgba(245,238,216,0.5);font-size:13px;margin:0;font-style:italic">Delno planetų kalnai · Chiromantija · Sielos žemėlapis</p></div>
-  ${section('Charakteris ir paslėptas potencialas', result.charakteris)}
-  ${section('Sielos misija ir karminis kelias', result.sielos_misija)}
-  ${section('Finansinė sėkmė ir karjeros trajektorija', result.finansai)}
-  ${section('Prigimtinės dovanos ir paslėpti talentai', result.dovanos_tekstas)}
-  ${pills(result.dovanos_sarasas)}
-  ${section('Meilė, santykiai ir suderinamumas', result.meile_santykiai)}
-  ${section('Planetų kalnai delne (Astrologinė įtaka)', result.astrologija)}
-  ${section('Didžiausi iššūkiai ir tavo stiprybės', result.issukiai)}
-  ${pills(result.stiprybes)}
+  ${section('Atskleista Jūsų unikali prigimtinė galia ir potencialas', result.prigimtine_galia)}
+  ${section('Tikrojo Jūsų gyvenimo pašaukimo ir misijos nustatymas', result.gyvenimo_pasaukimas)}
+  ${section('Asmeninio gyvenimo ir santykių dėsningumų analizė', result.santykiai)}
+  ${section('Finansinės laisvės bei materialinės sėkmės prognozė', result.finansai)}
+  ${section('Jūsų charakterio stiprybių ir sėkmės žymų dekodavimas', result.stiprybes_dekoduotos)}
+  ${pills(result.stiprybes_sarasas)}
+  ${section('Artimiausio gyvenimo etapo posūkių ir galimybių apžvalga', result.gyvenimo_posukiai)}
+  ${section('Tikrosios priežastys ir kliūtys, stabdančios Jūsų progresą', result.klutys)}
   <div style="text-align:center;padding-top:24px;border-top:0.5px solid rgba(212,168,67,0.15)"><p style="color:rgba(245,238,216,0.35);font-size:12px;line-height:1.7;margin:0;font-style:italic">Šis skaitymas sukurtas tik tau ✦<br>Išsaugok jį — galėsi grįžti ir perskaityti dar kartą</p></div></div></body></html>`;
 }
 
