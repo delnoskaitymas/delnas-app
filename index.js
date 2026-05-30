@@ -24,10 +24,8 @@ function createToken(name, email) {
 }
 
 // --- Foninės analizės cache ---
-// sessionId -> { status: 'pending'|'done'|'error', result, error, createdAt }
 const analysisCache = new Map();
 
-// Valymas kas valandą
 setInterval(() => {
   const now = Date.now();
   for (const [id, entry] of analysisCache.entries()) {
@@ -120,19 +118,17 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
   return result;
 }
 
-// --- ENDPOINT: Paleisti foninę analizę (BE token, prieš mokėjimą) ---
+// --- ENDPOINT: Paleisti foninę analizę ---
 app.post('/start-analysis', async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
     if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
     if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
 
-    // Jei jau vyksta arba baigta — grąžiname tą patį
     if (analysisCache.has(sessionId)) {
       return res.json({ started: true, sessionId });
     }
 
-    // Įrašome į cache kaip 'pending'
     analysisCache.set(sessionId, {
       status: 'pending',
       result: null,
@@ -142,10 +138,8 @@ app.post('/start-analysis', async (req, res) => {
       createdAt: Date.now()
     });
 
-    // Paleidžiame fone — negrąžiname rezultato čia
     res.json({ started: true, sessionId });
 
-    // Analizė vyksta asinchroniškai
     runPalmAnalysis(photos, req.body.name || '')
       .then(result => {
         const entry = analysisCache.get(sessionId);
@@ -169,7 +163,7 @@ app.post('/start-analysis', async (req, res) => {
   }
 });
 
-// --- ENDPOINT: Patikrinti analizės statusą (po mokėjimo) ---
+// --- ENDPOINT: Patikrinti analizės statusą ---
 app.get('/analysis-status', async (req, res) => {
   const { sessionId } = req.query;
   if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
@@ -180,12 +174,11 @@ app.get('/analysis-status', async (req, res) => {
   res.json({ status: entry.status });
 });
 
-// --- ENDPOINT: Gauti analizės rezultatą (su token po mokėjimo) ---
+// --- ENDPOINT: Gauti analizės rezultatą ---
 app.post('/analyze-palm', async (req, res) => {
   try {
     const { photos, name, token, sessionId } = req.body;
 
-    // Tikrinamas token
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) {
       return res.status(403).json({ error: 'Mokėjimas nepatvirtintas. Norėdami skaitymo — sumokėkite.' });
@@ -196,11 +189,9 @@ app.post('/analyze-palm', async (req, res) => {
 
     const userName = name || tokenEntry.name || '';
 
-    // Jei foninė analizė dar vyksta — laukiame iki 90s
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
       if (cached.status === 'pending') {
-        // Laukiame kol baigs
         await new Promise((resolve) => {
           let waited = 0;
           const iv = setInterval(() => {
@@ -215,21 +206,19 @@ app.post('/analyze-palm', async (req, res) => {
       }
     }
 
-    // Jei foninė analizė jau baigta — naudojame ją
     let result = null;
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
       if (cached.status === 'done' && cached.result) {
         result = cached.result;
         console.log('Naudojamas cache:', sessionId);
-        analysisCache.delete(sessionId); // Išvalom
+        analysisCache.delete(sessionId);
       } else if (cached.status === 'error') {
         console.log('Cache klaida, paleidžiame iš naujo:', cached.error);
         analysisCache.delete(sessionId);
       }
     }
 
-    // Jei cache nebuvo arba klaida — paleidžiame naują analizę
     if (!result) {
       if (!photos || photos.length === 0) {
         return res.status(400).json({ error: 'Nėra nuotraukų' });
@@ -237,16 +226,13 @@ app.post('/analyze-palm', async (req, res) => {
       result = await runPalmAnalysis(photos, userName);
     }
 
-    // Tokenas sunaudojamas TIK po sėkmingos analizės
     tokenEntry.used = true;
     console.log('Analizė sėkminga:', userName);
 
-    // Įterpiame vardą į rezultatą jei yra
     if (userName) {
       result.userName = userName;
     }
 
-    // Siunčiame el. laišką
     try {
       await mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -293,9 +279,8 @@ app.post('/create-payment', async (req, res) => {
     const { name, email } = req.body;
     if (!email) return res.status(400).json({ error: 'Trūksta el. pašto' });
 
-    // Payment Intent vietoj Checkout Session — mokėjimas mūsų puslapyje
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 559,
+      amount: 599,
       currency: 'eur',
       metadata: { name: name || '', email },
       receipt_email: email,
