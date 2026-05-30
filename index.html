@@ -90,7 +90,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-label{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
-.rs-body{font-size:14px;color:rgba(245,238,216,.9);line-height:1.8;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;letter-spacing:.01em}
+.rs-body{font-size:13.5px;color:rgba(245,238,216,.9);line-height:1.75;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;letter-spacing:.01em}
 .rs-body p{margin-bottom:10px}
 .rs-body p:last-child{margin-bottom:0}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -346,6 +346,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <span style="font-size:11px;color:var(--gold2);font-weight:500">✓ Analizę gausite iškart po apmokėjimo.</span>
     <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2)">5,99 €</span>
   </div>
+  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau 3 241 žmogus sužinojo savo atsakymus</span></div>
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:14px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI MANO ANALIZĘ →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu · Nereikia registruotis</div>
 </div>
@@ -478,6 +479,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="rs-label">I · Tavo prigimtinė galia ir potencialas</div>
       <div class="rs-body" id="r-char"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Ši galia visada buvo Tavyje — dabar žinai, kur ieškoti.</div>
+      <button onclick="shareTo('native')" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
     </div>
 
     <div class="rs rs-feat">
@@ -530,22 +532,22 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Tavo draugai nusipelnė žinoti</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Dauguma žmonių visą gyvenimą ieško šių atsakymų.<br>Padėk jiems rasti — pasidalink savo rezultatu.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button onclick="shareTo('whatsapp')" style="background:#25D366;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">💬 WhatsApp</button>
-        <button onclick="shareTo('facebook')" style="background:#1877F2;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📘 Facebook</button>
-        <button onclick="shareTo('instagram')" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📸 Instagram</button>
-        <button onclick="shareTo('tiktok')" style="background:#010101;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">🎵 TikTok</button>
+        <button onclick="shareTo('whatsapp')" style="background:#25D366;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">WhatsApp</button>
+        <button onclick="shareTo('facebook')" style="background:#1877F2;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Facebook</button>
+        <button onclick="shareTo('instagram')" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Instagram</button>
+        <button onclick="shareTo('tiktok')" style="background:#010101;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">TikTok</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">📤 Dalintis</button>
-        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">📋 Kopijuoti</button>
+        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Dalintis</button>
+        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">Kopijuoti</button>
       </div>
     </div>
 
     <!-- Upsell -->
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
       <div style="font-size:10px;letter-spacing:.14em;color:var(--gold3);text-transform:uppercase;margin-bottom:8px">Nori daugiau?</div>
-      <div style="font-size:14px;font-weight:600;color:var(--text);font-family:'Playfair Display',serif;margin-bottom:6px">Pakartok analizę po 3 mėnesių</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">Delno linijos keičiasi. Po 3 mėnesių nauja analizė parodys, ar gyvenimas juda tinkama kryptimi.</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);font-family:'Playfair Display',serif;margin-bottom:6px">Tavo delnas po 3 mėnesių bus kitoks</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">Ar norėsi žinoti, kas pasikeitė? Delno linijos keičiasi kartu su Tavimi — nauja analizė atskleis naujus atsakymus.</div>
       <button onclick="startApp()" style="background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:10px;padding:12px 24px;color:#07040f;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.06em;font-family:'DM Sans',sans-serif;width:100%">ATLIKTI NAUJĄ ANALIZĘ →</button>
     </div>
 
@@ -1137,7 +1139,7 @@ function startOracleCanvas(){
     const angle=Math.random()*Math.PI*2;const r=20+Math.random()*28;
     particles.push({angle,r,speed:(Math.random()-0.5)*0.012,alpha:Math.random(),size:Math.random()*1.6+0.3,drift:Math.random()*0.4-0.2});
   }
-  const rings=[{tilt:0.3,speed:0.008,phase:0},{tilt:-0.5,speed:-0.006,phase:1.2},{tilt:0.8,speed:0.005,phase:2.4}];
+  const rings=[{tilt:0.4,speed:0.008,phase:0},{tilt:-0.4,speed:-0.007,phase:2.1},{tilt:0,speed:0.005,phase:4.2}];
   let t=0;
   function draw(){
     ctx.clearRect(0,0,W,H);
@@ -1324,7 +1326,7 @@ function shareTo(platform){
     case 'instagram':navigator.clipboard.writeText(text+'\n'+url).then(()=>{alert('Tekstas nukopijuotas! Atidaryk Instagram ir įkelk į Stories ar Bio.');});break;
     case 'tiktok':navigator.clipboard.writeText(text+'\n'+url).then(()=>{alert('Tekstas nukopijuotas! Įkelk į TikTok aprašymą.');});break;
     case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url});}else{navigator.clipboard.writeText(text+'\n'+url);alert('Nuoroda nukopijuota!');}break;
-    case 'copy':navigator.clipboard.writeText(text+'\n'+url).then(()=>{const btn=document.getElementById('copy-btn');if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='📋 Kopijuoti',2000);}});break;
+    case 'copy':navigator.clipboard.writeText(text+'\n'+url).then(()=>{const btn=document.getElementById('copy-btn');if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='Kopijuoti',2000);}});break;
   }
 }
 </script>
