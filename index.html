@@ -204,6 +204,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
+    <!-- Delno vietos gidas — rodomas kol kamera nepasiruošusi -->
+    <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none">
+      <svg width="120" height="140" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.18">
+        <rect x="40" y="2" width="14" height="60" rx="7" fill="#d4a843"/>
+        <rect x="58" y="2" width="14" height="68" rx="7" fill="#d4a843"/>
+        <rect x="76" y="6" width="14" height="64" rx="7" fill="#d4a843"/>
+        <rect x="22" y="14" width="14" height="54" rx="7" fill="#d4a843"/>
+        <rect x="22" y="56" width="82" height="72" rx="14" fill="#d4a843"/>
+        <rect x="4" y="52" width="20" height="40" rx="10" fill="#d4a843"/>
+      </svg>
+      <div style="font-size:11px;color:rgba(212,168,67,.5);letter-spacing:.06em;margin-top:8px;text-align:center">Laikykite delną čia</div>
+    </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
     <div class="cam-frozen" id="cam-frozen"></div>
@@ -222,7 +234,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div style="font-size:11px;color:rgba(212,168,67,.55);text-align:center;margin-bottom:10px;letter-spacing:.02em">🔒 Privatumas garantuojamas: nuotraukos naudojamos tik delnų analizei.</div>
-    <button id="cam-shutter" onclick="capturePhoto()" style="opacity:1;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
+    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .3s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.08em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 12px rgba(212,168,67,.25)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div class="cam-hint" id="cam-hint-txt" style="display:none"></div>
@@ -637,17 +649,21 @@ async function verifyAndProceed(sessionId){
       sessionStorage.removeItem('bgSessionId');
       const uName=window.userName||'';
       const successDiv=document.createElement('div');
-      successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease;gap:24px';
+      successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .4s ease;gap:28px';
       successDiv.innerHTML=`
-        <div style="width:72px;height:72px;border-radius:50%;border:2px solid #d4a843;display:flex;align-items:center;justify-content:center;animation:pulse3 1.6s ease-in-out infinite">
-          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);animation:pulse3 1.6s ease-in-out infinite reverse"></div>
+        <div style="position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,168,67,.3);animation:pulse3 2s ease-in-out infinite"></div>
+          <div style="position:absolute;inset:8px;border-radius:50%;border:1.5px solid rgba(212,168,67,.6);animation:pulse3 2s ease-in-out infinite .4s"></div>
+          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(212,168,67,.5)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#07040f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
         </div>
         <div style="text-align:center">
-          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
-          <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Jūsų ataskaita...</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:.02em">Mokėjimas sėkmingas.</div>
+          <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic;letter-spacing:.04em">Kraunama Tavo ataskaita...</div>
         </div>`;
       document.body.appendChild(successDiv);
-      setTimeout(()=>successDiv.style.opacity='1',50);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>successDiv.style.opacity='1'));
       setTimeout(()=>{
         successDiv.style.opacity='0';
         setTimeout(()=>{
@@ -980,7 +996,14 @@ function startApp(){
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
     camStream=stream;const video=document.getElementById('cam-video');
-    video.srcObject=stream;video.onloadedmetadata=()=>{video.play();cameraReady=true;};
+    video.srcObject=stream;video.onloadedmetadata=()=>{
+      video.play();cameraReady=true;
+      const shutter=document.getElementById('cam-shutter');
+      const guide=document.getElementById('cam-guide');
+      if(shutter){shutter.disabled=false;shutter.style.opacity='1';}
+      if(guide) guide.style.opacity='0';
+      setTimeout(()=>{if(guide) guide.style.display='none';},400);
+    };
   })
   .catch(()=>{document.getElementById('cam-error').style.display='flex';});
 }
