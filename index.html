@@ -204,7 +204,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <video id="cam-video" autoplay playsinline muted></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
-    <!-- Rodoma kol kamera dar neįsijungusi -->
     <div id="cam-wait" style="display:none"></div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
@@ -248,19 +247,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- 7 SKYRIŲ SĄRAŠAS -->
+    <!-- 7 SKYRIŲ SĄRAŠAS — smalsumo magnetai -->
     <div style="background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px">
       <div style="font-size:12px;font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Atrakink 7 skyrių analizę:</div>
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg>Charakteris ir paslėptas potencialas</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Meilė, santykiai ir suderinamumas</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>Prigimtinės dovanos ir paslėpti talentai</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg>Finansinė sėkmė ir karjeros trajektorija</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Sielos misija ir karminis kelias</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg>Planetų kalnai delne</div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Didžiausi iššūkiai ir stiprybės</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg>Jūsų „paslėptas" genijus: apie ką nutyli aplinkiniai?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>Kokia Jūsų tikroji gyvenimo misija?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>Kodėl Jums vis dar nepavyksta rasti „to vienintelio"?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg>Kada Jūsų finansinė „prabanga" taps realybe?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Kokią unikalią galią Jūs atsinešėte gimdami?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg>Ką delno linijos sako apie Jūsų ateities posūkį?</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.4;color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6));flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Koks vienintelis stabdis neleidžia Jums tapti turtingu?</div>
       </div>
     </div>
+
     <!-- EL. PAŠTAS + VARDAS -->
     <div id="info-err" class="err"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
@@ -269,10 +269,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Analizę išsiųsime šiuo el. paštu.</div>
 
-    <!-- QUICK PAY -->
+    <!-- QUICK PAY — pirmas po laukelių -->
     <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
 
-    <!-- MOKĖTI KORTELE — uždaras, auto-scroll kai atidaro -->
+    <!-- MOKĖTI KORTELE -->
     <details id="card-accordion" style="margin-bottom:8px" ontoggle="if(this.open){setTimeout(()=>this.scrollIntoView({behavior:'smooth',block:'start'}),100)}">
       <summary style="font-size:13px;color:var(--muted);cursor:pointer;padding:8px 0;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</summary>
       <div style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-top:6px">
@@ -293,13 +293,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">5,59 €</span>
   </div>
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:15px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:6px">ATRAKINTI ANALIZĘ →</button>
-  <div style="display:flex;align-items:center;justify-content:space-between;font-size:10px;color:rgba(245,238,216,.35)">
+  <div style="display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(245,238,216,.3)">
     <span>🔒 Saugus mokėjimas per Stripe</span>
-    <span style="color:#7b61ff;font-weight:700;font-size:11px">Revolut</span>
   </div>
 </div>
 
-<!-- SCREEN 4: ORDER (redirect placeholder — paliktas suderinamumui) -->
+<!-- SCREEN 4: ORDER (redirect placeholder) -->
 <div class="screen" id="s-order" style="display:none"></div>
 
 <!-- SCREEN 4b: DUOMENŲ APDOROJIMAS -->
@@ -312,7 +311,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 5: LOADING -->
+<!-- SCREEN 5: LOADING — smalsumo magnetai -->
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div>
@@ -339,7 +338,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/>
           </svg>
         </div>
-        <div class="ls-text">Analizuojama asmenybė ir charakterio bruožai</div>
+        <div class="ls-text">Jūsų „paslėptas" genijus: apie ką nutyli aplinkiniai?</div>
         <div class="ls-status" id="ls1-status">·</div>
       </div>
       <div class="ls" id="ls2">
@@ -348,7 +347,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/>
           </svg>
         </div>
-        <div class="ls-text">Nuskaitomi meilės, santykių ir suderinamumo rodmenys</div>
+        <div class="ls-text">Kokia Jūsų tikroji gyvenimo misija?</div>
         <div class="ls-status" id="ls2-status">·</div>
       </div>
       <div class="ls" id="ls3">
@@ -357,7 +356,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/>
           </svg>
         </div>
-        <div class="ls-text">Nustatomi prigimtiniai talentai ir dovanos</div>
+        <div class="ls-text">Kodėl Jums vis dar nepavyksta rasti „to vienintelio"?</div>
         <div class="ls-status" id="ls3-status">·</div>
       </div>
       <div class="ls" id="ls4">
@@ -366,7 +365,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/>
           </svg>
         </div>
-        <div class="ls-text">Skaičiuojama finansinės sėkmės ir karjeros trajektorija</div>
+        <div class="ls-text">Kada Jūsų finansinė „prabanga" taps realybe?</div>
         <div class="ls-status" id="ls4-status">·</div>
       </div>
       <div class="ls" id="ls5">
@@ -375,7 +374,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </div>
-        <div class="ls-text">Nuskaitoma sielos misija ir karminis kelias</div>
+        <div class="ls-text">Kokią unikalią galią Jūs atsinešėte gimdami?</div>
         <div class="ls-status" id="ls5-status">·</div>
       </div>
       <div class="ls" id="ls6">
@@ -384,7 +383,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/>
           </svg>
         </div>
-        <div class="ls-text">Nuskaitomi planetų kalnai delne</div>
+        <div class="ls-text">Ką delno linijos sako apie Jūsų ateities posūkį?</div>
         <div class="ls-status" id="ls6-status">·</div>
       </div>
       <div class="ls" id="ls7">
@@ -393,16 +392,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
         </div>
-        <div class="ls-text">Didžiausi iššūkiai ir stiprybės</div>
+        <div class="ls-text">Koks vienintelis stabdis neleidžia Jums tapti turtingu?</div>
         <div class="ls-status" id="ls7-status">·</div>
       </div>
     </div>
 
-    <div style="font-size:12px;color:rgba(255,220,80,.92);text-align:center;font-weight:600;line-height:1.55;padding:0 8px;max-width:320px">⚠️ Prašome neuždaryti programėlės ir neišjungti telefono.<br>Generuojama asmeninė gyvenimo ataskaita.</div>
+    <!-- FOOTER: tik viena žinutė -->
+    <div style="font-size:12px;color:rgba(255,220,80,.92);text-align:center;font-weight:600;line-height:1.55;padding:0 8px;max-width:320px">Generuojama asmeninė gyvenimo ataskaita...</div>
   </div>
 </div>
 
-<!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS (po mokėjimo, prieš rezultatą) -->
+<!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS -->
 <div class="screen" id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
     <div class="serif gold" style="font-size:24px;letter-spacing:.04em;font-weight:700;text-align:center;line-height:1.4">Kraunama analizė...</div>
@@ -453,7 +453,6 @@ const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7};pointer-events:none`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
 
-// Wake Lock — neleidžia ekranui užgesti
 let wakeLock=null;
 let _noSleepVideo=null;
 
@@ -463,14 +462,12 @@ async function requestWakeLock(){
       wakeLock=await navigator.wakeLock.request('screen');
     }
   }catch(e){}
-  // Fallback: tiny video loop trick (veikia Android Chrome)
   if(!_noSleepVideo){
     _noSleepVideo=document.createElement('video');
     _noSleepVideo.setAttribute('loop','');
     _noSleepVideo.setAttribute('playsinline','');
     _noSleepVideo.setAttribute('muted','');
     _noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0;pointer-events:none';
-    // 1x1 mp4 blank video as data URI
     _noSleepVideo.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA';
     document.body.appendChild(_noSleepVideo);
     _noSleepVideo.play().catch(()=>{});
@@ -488,6 +485,7 @@ document.addEventListener('visibilitychange',()=>{
     if(_noSleepVideo) _noSleepVideo.play().catch(()=>{});
   }
 });
+
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const cam=document.getElementById('s-camera');
@@ -508,9 +506,7 @@ function go(id){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  // Gauname Stripe publishable key
   fetch('/stripe-key').then(r=>r.json()).then(d=>{window._stripeKey=d.key;}).catch(()=>{});
-
   const params=new URLSearchParams(window.location.search);
   const sessionId=params.get('session_id');
   if(sessionId) verifyAndProceed(sessionId);
@@ -533,7 +529,6 @@ async function verifyAndProceed(sessionId){
       sessionStorage.removeItem('photoLeft');
       sessionStorage.removeItem('photoRight');
       sessionStorage.removeItem('bgSessionId');
-
       const uName=window.userName||'';
       const successDiv=document.createElement('div');
       successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
@@ -544,9 +539,7 @@ async function verifyAndProceed(sessionId){
         successDiv.style.opacity='0';
         setTimeout(()=>{
           successDiv.remove();
-          waitForAnalysis().then(result=>{
-            displayResult(result);
-          }).catch(()=>go('s-info'));
+          waitForAnalysis().then(result=>{displayResult(result);}).catch(()=>go('s-info'));
         },600);
       },1800);
     }else{
@@ -560,42 +553,25 @@ function waitForAnalysis(){
     const photoData=[];
     if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
     if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-
     function tryFetch(){
       fetch('/analyze-palm',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          photos:photoData,
-          name:window.userName||'',
-          token:window.palmToken||'',
-          sessionId:window.bgSessionId||''
-        })
+        body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
       }).then(r=>{
         if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});
         return r.json();
       }).then(resolve).catch(reject);
     }
-
-    // Jei analizė jau baigta — kviečiam iš karto
-    if(window.bgAnalysisDone){
-      tryFetch();
-      return;
-    }
-
-    // Laukiame kol analizė baigs (max 120s), tada kviečiame
+    if(window.bgAnalysisDone){tryFetch();return;}
     let waited=0;
     const iv=setInterval(()=>{
       waited+=1;
-      if(window.bgAnalysisDone||waited>=120){
-        clearInterval(iv);
-        tryFetch();
-      }
+      if(window.bgAnalysisDone||waited>=120){clearInterval(iv);tryFetch();}
     },1000);
   });
 }
 
-// Loading animacija kol laukiame rezultato po mokėjimo (85%→99%)
 function animateLoadingWait(){
   const pbar=document.getElementById('pbar');
   const ptime=document.getElementById('ptime');
@@ -613,7 +589,6 @@ function startPayPbar(){
   const pbar=document.getElementById('pay-pbar');
   const ppct=document.getElementById('pay-pct');
   if(!pbar) return;
-  // Visada pradedame nuo 85%
   window._currentProgress=85;
   pbar.style.width='85%';
   if(ppct) ppct.textContent='85%';
@@ -633,35 +608,20 @@ function startPayPbar(){
 }
 
 function startUnlockScreen(){
-  const msgs=[
-    'Tikrinami delnų duomenys...',
-    'Skaičiuojami rodikliai...',
-    'Analizuojamos gyvenimo linijos...',
-    'Ruošiama santykių įžvalga...',
-    'Skaičiuojama gyvenimo trukmės linija...',
-    'Ruošiama galutinė ataskaita...'
-  ];
+  const msgs=['Tikrinami delnų duomenys...','Skaičiuojami rodikliai...','Analizuojamos gyvenimo linijos...','Ruošiama santykių įžvalga...','Skaičiuojama gyvenimo trukmės linija...','Ruošiama galutinė ataskaita...'];
   const msgEl=document.getElementById('unlock-msg');
   const pbar=document.getElementById('pbar2');
   const pct=document.getElementById('unlock-pct');
-  let i=0;
-  let p=0;
+  let i=0;let p=0;
   if(pbar) pbar.style.width='0%';
-
   const iv=setInterval(()=>{
-    i=(i+1)%msgs.length;
-    p=Math.min(p+15,95);
-    if(msgEl){
-      msgEl.style.opacity='0';
-      setTimeout(()=>{msgEl.textContent=msgs[i];msgEl.style.opacity='1';},300);
-    }
+    i=(i+1)%msgs.length;p=Math.min(p+15,95);
+    if(msgEl){msgEl.style.opacity='0';setTimeout(()=>{msgEl.textContent=msgs[i];msgEl.style.opacity='1';},300);}
     if(pbar) pbar.style.width=p+'%';
     if(pct) pct.textContent=p+'%';
   },10000);
-
   window._unlockInterval=iv;
 }
-
 
 function updatePersonalTxt(){
   const name=document.getElementById('i-name').value.trim();
@@ -670,8 +630,6 @@ function updatePersonalTxt(){
   el.textContent=name
     ?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`
     :'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
-
-  // Atnaujiname vardą foninei analizei
   if(name) window.userName=name;
 }
 
@@ -688,31 +646,12 @@ function initQuickPay(){
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const isAndroid=/Android/.test(navigator.userAgent);
   const btn='border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:\'DM Sans\',sans-serif;width:100%';
-
   if(isIOS){
-    wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px">
-        <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button>
-        <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button>
-      </div>`;
+    wrap.innerHTML=`<div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;
   }else if(isAndroid){
-    wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px">
-        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button>
-        <button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button>
-      </div>`;
+    wrap.innerHTML=`<div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;
   }else{
-    wrap.innerHTML=`
-      <div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px">
-        <button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple</button>
-        <button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button>
-        <button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button>
-      </div>`;
+    wrap.innerHTML=`<div style="font-size:11px;font-weight:600;color:#f0c96a;margin-bottom:7px;letter-spacing:.04em">Greitas mokėjimas</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple</button><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button></div>`;
   }
 }
 
@@ -734,53 +673,25 @@ function validatePayForm(){
   const btn=document.getElementById('pay-btn');
   btn.disabled=!valid;
   btn.style.opacity=valid?'1':'0.45';
-  if(valid){
-    const err=document.getElementById('info-err');
-    if(err){err.style.display='none';err.textContent='';}
-  }
+  if(valid){const err=document.getElementById('info-err');if(err){err.style.display='none';err.textContent='';}}
   updatePayBtn();
 }
 
-function formatCard(el){
-  let v=el.value.replace(/\D/g,'').substring(0,16);
-  el.value=v.replace(/(.{4})/g,'$1 ').trim();
-}
-
-function formatExp(el){
-  let v=el.value.replace(/\D/g,'');
-  if(v.length>=2) v=v.substring(0,2)+'/'+v.substring(2,4);
-  el.value=v;
-}
+function formatCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
+function formatExp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2) v=v.substring(0,2)+'/'+v.substring(2,4);el.value=v;}
 
 let stripeInstance=null;
 let stripeCardElement=null;
 
 function initStripeElements(){
   if(stripeInstance) return;
-  if(!window._stripeKey){
-    // Laukiame kol key bus gautas
-    setTimeout(initStripeElements, 200);
-    return;
-  }
+  if(!window._stripeKey){setTimeout(initStripeElements,200);return;}
   stripeInstance=Stripe(window._stripeKey);
   const elements=stripeInstance.elements({
-    appearance:{
-      theme:'night',
-      variables:{
-        colorPrimary:'#d4a843',
-        colorBackground:'#1a1625',
-        colorText:'#f5eed8',
-        colorDanger:'#ff6b6b',
-        fontFamily:'DM Sans, sans-serif',
-        borderRadius:'8px'
-      }
-    }
+    appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',colorDanger:'#ff6b6b',fontFamily:'DM Sans, sans-serif',borderRadius:'8px'}}
   });
   stripeCardElement=elements.create('card',{
-    style:{
-      base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},
-      invalid:{color:'#ff6b6b'}
-    },
+    style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},invalid:{color:'#ff6b6b'}},
     hidePostalCode:true
   });
   stripeCardElement.mount('#stripe-card-element');
@@ -788,53 +699,32 @@ function initStripeElements(){
     const errEl=document.getElementById('stripe-card-errors');
     if(errEl) errEl.textContent=e.error?e.error.message:'';
   });
-
-  // Payment Request — tikras Apple Pay / Google Pay
-  const pr=stripeInstance.paymentRequest({
-    country:'LT',
-    currency:'eur',
-    total:{label:'Delnų analizė',amount:559},
-    requestPayerName:true,
-    requestPayerEmail:true,
-  });
+  const pr=stripeInstance.paymentRequest({country:'LT',currency:'eur',total:{label:'Delnų analizė',amount:559},requestPayerName:true,requestPayerEmail:true});
   window._stripePaymentRequest=pr;
-
   pr.canMakePayment().then(result=>{
     const prWrap=document.getElementById('pr-button-wrap');
     if(!prWrap) return;
     if(result){
       const prElements=stripeInstance.elements();
-      const prButton=prElements.create('paymentRequestButton',{
-        paymentRequest:pr,
-        style:{paymentRequestButton:{type:'default',theme:'dark',height:'44px'}}
-      });
+      const prButton=prElements.create('paymentRequestButton',{paymentRequest:pr,style:{paymentRequestButton:{type:'default',theme:'dark',height:'44px'}}});
       prButton.mount('#pr-button-mount');
       prWrap.style.display='block';
-
       pr.on('paymentmethod',async(ev)=>{
-        // Automatiškai gauname vardą ir el. paštą iš Apple/Google Pay
         const autoName=ev.payerName||'';
         const autoEmail=ev.payerEmail||'';
-        window.userName=autoName;
-        window.userEmail=autoEmail;
-        // Užpildome laukelius automatiškai
-        const nameEl=document.getElementById('i-name');
-        const emailEl=document.getElementById('i-email');
+        window.userName=autoName;window.userEmail=autoEmail;
+        const nameEl=document.getElementById('i-name');const emailEl=document.getElementById('i-email');
         if(nameEl&&autoName) nameEl.value=autoName;
         if(emailEl&&autoEmail) emailEl.value=autoEmail;
-
         try{
           const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:autoName,email:autoEmail})});
           const data=await res.json();
           if(!data.clientSecret){ev.complete('fail');return;}
           window._paymentIntentId=data.paymentIntentId;
-
           const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
           if(error){ev.complete('fail');return;}
           ev.complete('success');
-          if(paymentIntent.status==='requires_action'){
-            await stripeInstance.confirmCardPayment(data.clientSecret);
-          }
+          if(paymentIntent.status==='requires_action'){await stripeInstance.confirmCardPayment(data.clientSecret);}
           await onPaymentSuccess(autoName,autoEmail);
         }catch(e){
           ev.complete('fail');
@@ -842,9 +732,7 @@ function initStripeElements(){
           if(err){err.textContent='Klaida: '+e.message;err.style.display='block';}
         }
       });
-    }else{
-      if(prWrap) prWrap.style.display='none';
-    }
+    }else{if(prWrap) prWrap.style.display='none';}
   });
 }
 
@@ -854,100 +742,58 @@ async function initiatePayment(){
   const err=document.getElementById('order-err');
   if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';return;}
   err.style.display='none';
-  window.userName=name;
-  window.userEmail=email;
+  window.userName=name;window.userEmail=email;
   const btn=document.getElementById('pay-btn');
-  btn.disabled=true;
-  btn.style.opacity='.6';
-
+  btn.disabled=true;btn.style.opacity='.6';
   try{
-    const res=await fetch('/create-payment',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email})
-    });
+    const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
     const data=await res.json();
     if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
     window._paymentIntentId=data.paymentIntentId;
-
     const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
     if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
-    const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{
-      payment_method:{card:stripeCardElement,billing_details:{name:cardHolder,email}}
-    });
-
+    const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:{card:stripeCardElement,billing_details:{name:cardHolder,email}}});
     if(error) throw new Error(error.message);
     if(paymentIntent.status==='succeeded'){
       window._paymentIntentId=paymentIntent.id;
       await onPaymentSuccess(name,email);
-    }else{
-      throw new Error('Mokėjimas nepavyko: '+paymentIntent.status);
-    }
-
+    }else{throw new Error('Mokėjimas nepavyko: '+paymentIntent.status);}
   }catch(e){
-    btn.disabled=false;
-    btn.style.opacity='1';
-    err.textContent='Klaida: '+e.message;
-    err.style.display='block';
+    btn.disabled=false;btn.style.opacity='1';
+    err.textContent='Klaida: '+e.message;err.style.display='block';
   }
 }
 
 async function onPaymentSuccess(name,email){
-  // Verify mokėjimą serveryje
-  const vRes=await fetch('/verify-payment-intent',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({paymentIntentId:window._paymentIntentId,name,email})
-  });
+  const vRes=await fetch('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:window._paymentIntentId,name,email})});
   const vData=await vRes.json();
   if(!vData.paid) throw new Error('Mokėjimas nepatvirtintas');
-
-  window.palmToken=vData.token;
-  window.userName=vData.name||name;
-
-  // Saugome nuotraukas
+  window.palmToken=vData.token;window.userName=vData.name||name;
   if(photoLeft) sessionStorage.setItem('photoLeft',photoLeft);
   if(photoRight) sessionStorage.setItem('photoRight',photoRight);
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
-
-  // Švelniai išblukina mokėjimo ekraną, tada rodo sėkmės ekraną
   const infoScreen=document.getElementById('s-info');
   const stickyEl=document.getElementById('sticky-cta');
   if(infoScreen){
-    infoScreen.style.transition='opacity .5s ease';
-    infoScreen.style.opacity='0';
+    infoScreen.style.transition='opacity .5s ease';infoScreen.style.opacity='0';
     if(stickyEl){stickyEl.style.transition='opacity .5s ease';stickyEl.style.opacity='0';}
-    setTimeout(()=>{
-      infoScreen.style.opacity='';
-      infoScreen.style.transition='';
-      if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}
-    },500);
+    setTimeout(()=>{infoScreen.style.opacity='';infoScreen.style.transition='';if(stickyEl){stickyEl.style.opacity='';stickyEl.style.transition='';}},500);
   }
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
-
   const uName=window.userName||name;
-
-  // 1. Iš karto rodome sėkmės ekraną
   const successDiv=document.createElement('div');
   successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease';
   successDiv.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:56px;margin-bottom:16px">✅</div><div style="font-size:22px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin-bottom:8px">Mokėjimas sėkmingas!</div><div style="font-size:14px;color:rgba(212,168,67,.9);font-weight:500">Ačiū${uName?', '+uName:''}!</div></div>`;
   document.body.appendChild(successDiv);
   setTimeout(()=>successDiv.style.opacity='1',50);
-
-  // 2. Po 1.8s — jei analizė baigta iš karto rezultatai, jei ne — „Kraunama..."
   setTimeout(()=>{
     successDiv.style.opacity='0';
     setTimeout(()=>{
       successDiv.remove();
-      waitForAnalysis().then(result=>{
-        displayResult(result);
-      }).catch(e=>{
-        console.error('Analizės klaida:', e.message);
-        // Bandome dar kartą po 3s
+      waitForAnalysis().then(result=>{displayResult(result);}).catch(e=>{
+        console.error('Analizės klaida:',e.message);
         setTimeout(()=>{
-          waitForAnalysis().then(result=>{
-            displayResult(result);
-          }).catch(()=>{
+          waitForAnalysis().then(result=>{displayResult(result);}).catch(()=>{
             const errEl=document.getElementById('order-err');
             if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
             go('s-info');
@@ -958,13 +804,8 @@ async function onPaymentSuccess(name,email){
   },1800);
 }
 
-function submitInfo(){
-  // Suderinamumas — dabar tiesiog paleidžiame mokėjimą
-  initiatePayment();
-}
-
+function submitInfo(){initiatePayment();}
 function selPay(){}
-
 
 let camStream=null;
 let camHand='left';
@@ -972,122 +813,75 @@ let photoLeft=null;
 let photoRight=null;
 
 function startApp(){
-  camHand='left';
-  photoLeft=null;
-  photoRight=null;
-  camStream=null;
-  cameraReady=false;
-  cameraLoading=false;
+  camHand='left';photoLeft=null;photoRight=null;camStream=null;cameraReady=false;cameraLoading=false;
   const prog=document.getElementById('cam-progress');
   if(prog) prog.style.visibility='visible';
-  updateCameraUI();
-  go('s-camera');
-  // Kamera paleidžiama automatiškai
+  updateCameraUI();go('s-camera');
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
-    camStream=stream;
-    const video=document.getElementById('cam-video');
-    video.srcObject=stream;
-    video.onloadedmetadata=()=>{video.play();cameraReady=true;};
+    camStream=stream;const video=document.getElementById('cam-video');
+    video.srcObject=stream;video.onloadedmetadata=()=>{video.play();cameraReady=true;};
   })
-  .catch(()=>{
-    document.getElementById('cam-error').style.display='flex';
-  });
+  .catch(()=>{document.getElementById('cam-error').style.display='flex';});
 }
 
-function openCameraScreen(){ startApp(); }
+function openCameraScreen(){startApp();}
 
 function updateCameraUI(){
   const title=document.getElementById('cam-title');
-  const dot1=document.getElementById('cam-dot1');
-  const dot2=document.getElementById('cam-dot2');
-  const hint=document.getElementById('cam-hint-txt');
-  const shutterTxt=document.getElementById('cam-shutter-txt');
+  const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');
+  const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';
-    dot1.classList.remove('inactive');
-    dot2.classList.add('inactive');
+    dot1.classList.remove('inactive');dot2.classList.add('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI KAIRĮJĮ DELNĄ';
   }else{
     title.textContent='Nufotografuokite dešinįjį delną';
-    dot1.classList.remove('inactive');
-    dot2.classList.remove('inactive');
+    dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
-  if(hint&&!handVisible) hint.textContent=camHand==='left'
-    ?'Nukreipkite kamerą į kairįjį delną'
-    :'Nukreipkite kamerą į dešinįjį delną';
+  if(hint&&!handVisible) hint.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';
 }
 
-
-
-let handDetector=null;
-let handDetectLoop=null;
-let handVisible=false;
+let handDetector=null;let handDetectLoop=null;let handVisible=false;
 
 async function startHandDetection(){
   const shutter=document.getElementById('cam-shutter');
   const hintTxt=document.getElementById('cam-hint-txt');
-
   setHandDetected(false,shutter,hintTxt);
   clearTimeout(window._handAutoTimer);
-  window._handAutoTimer=setTimeout(()=>{
-    setHandDetected(true,shutter,hintTxt);
-  },2500);
+  window._handAutoTimer=setTimeout(()=>{setHandDetected(true,shutter,hintTxt);},2500);
   startSkinDetection(shutter,hintTxt);
 }
 
 function loadScript(src){
   return new Promise((res,rej)=>{
     if(document.querySelector(`script[src="${src}"]`)){res();return;}
-    const s=document.createElement('script');
-    s.src=src;s.onload=res;s.onerror=rej;
-    document.head.appendChild(s);
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
   });
 }
 
 function startSkinDetection(shutter,hintTxt){
   const video=document.getElementById('cam-video');
-  const tmpCanvas=document.createElement('canvas');
-  tmpCanvas.width=80;tmpCanvas.height=60;
-  const ctx=tmpCanvas.getContext('2d');
-  let noHandFrames=0;
-
+  const tmpCanvas=document.createElement('canvas');tmpCanvas.width=80;tmpCanvas.height=60;
+  const ctx=tmpCanvas.getContext('2d');let noHandFrames=0;
   handDetectLoop=setInterval(()=>{
     if(!camStream||!video.videoWidth) return;
     try{
       ctx.drawImage(video,0,0,80,60);
-      const data=ctx.getImageData(0,0,80,60).data;
-      let skinPixels=0;
-      for(let i=0;i<data.length;i+=4){
-        const r=data[i],g=data[i+1],b=data[i+2];
-        if(r>50&&g>30&&b>15&&r>g&&r>b&&r<252) skinPixels++;
-      }
+      const data=ctx.getImageData(0,0,80,60).data;let skinPixels=0;
+      for(let i=0;i<data.length;i+=4){const r=data[i],g=data[i+1],b=data[i+2];if(r>50&&g>30&&b>15&&r>g&&r>b&&r<252) skinPixels++;}
       const ratio=skinPixels/(80*60);
-      if(ratio<0.04){
-        // Beveik nėra odos spalvos — ranka gali būti išėjusi
-        noHandFrames++;
-        if(noHandFrames>4) setHandDetected(false,shutter,hintTxt);
-      }else{
-        noHandFrames=0;
-        setHandDetected(true,shutter,hintTxt);
-      }
+      if(ratio<0.04){noHandFrames++;if(noHandFrames>4) setHandDetected(false,shutter,hintTxt);}
+      else{noHandFrames=0;setHandDetected(true,shutter,hintTxt);}
     }catch(e){}
   },400);
 }
 
 function setHandDetected(detected,shutter,hintTxt){
-  // Neberodome "Delnas aptiktas" — tik aktyvuojame mygtuką
-  if(detected===handVisible) return;
-  handVisible=detected;
-  if(detected){
-    shutter.style.opacity='1';
-    shutter.style.pointerEvents='auto';
-    if(hintTxt) hintTxt.textContent='Spauskite, kai būsite pasiruošę';
-  }else{
-    shutter.style.opacity='0.35';
-    shutter.style.pointerEvents='none';
-  }
+  if(detected===handVisible) return;handVisible=detected;
+  if(detected){shutter.style.opacity='1';shutter.style.pointerEvents='auto';if(hintTxt) hintTxt.textContent='Spauskite, kai būsite pasiruošę';}
+  else{shutter.style.opacity='0.35';shutter.style.pointerEvents='none';}
 }
 
 function stopHandDetection(){
@@ -1097,37 +891,20 @@ function stopHandDetection(){
   handVisible=false;
 }
 
-function stopCamera(){
-  if(camStream){
-    camStream.getTracks().forEach(t=>t.stop());
-    camStream=null;
-  }
-}
+function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
 
 function shutterSound(){
   try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const t=ctx.currentTime;
-    // Mechaninis klik — du sluoksniai
-    const buf=ctx.createBuffer(1,ctx.sampleRate*0.12,ctx.sampleRate);
-    const data=buf.getChannelData(0);
-    for(let i=0;i<data.length;i++){
-      const env=i<800?i/800:Math.max(0,1-(i-800)/(data.length-800));
-      data[i]=(Math.random()*2-1)*env*(i<1200?1:0.35);
-    }
-    const src=ctx.createBufferSource();
-    src.buffer=buf;
-    const gain=ctx.createGain();
-    gain.gain.setValueAtTime(0.9,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.12);
-    src.connect(gain);gain.connect(ctx.destination);
-    src.start(t);
-    // Antras trumpas spragtelėjimas (užraktas užsidaro)
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();const t=ctx.currentTime;
+    const buf=ctx.createBuffer(1,ctx.sampleRate*0.12,ctx.sampleRate);const data=buf.getChannelData(0);
+    for(let i=0;i<data.length;i++){const env=i<800?i/800:Math.max(0,1-(i-800)/(data.length-800));data[i]=(Math.random()*2-1)*env*(i<1200?1:0.35);}
+    const src=ctx.createBufferSource();src.buffer=buf;
+    const gain=ctx.createGain();gain.gain.setValueAtTime(0.9,t);gain.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+    src.connect(gain);gain.connect(ctx.destination);src.start(t);
     setTimeout(()=>{
       try{
         const ctx2=new(window.AudioContext||window.webkitAudioContext)();
-        const buf2=ctx2.createBuffer(1,ctx2.sampleRate*0.04,ctx2.sampleRate);
-        const d2=buf2.getChannelData(0);
+        const buf2=ctx2.createBuffer(1,ctx2.sampleRate*0.04,ctx2.sampleRate);const d2=buf2.getChannelData(0);
         for(let i=0;i<d2.length;i++) d2[i]=(Math.random()*2-1)*Math.max(0,1-i/(d2.length*0.6));
         const s2=ctx2.createBufferSource();s2.buffer=buf2;
         const g2=ctx2.createGain();g2.gain.setValueAtTime(0.5,ctx2.currentTime);
@@ -1139,328 +916,147 @@ function shutterSound(){
 
 function capturePhoto(){
   if(!camStream) return;
-  const video=document.getElementById('cam-video');
-  const canvas=document.getElementById('cam-canvas');
-  const flash=document.getElementById('cam-flash');
-  const frozen=document.getElementById('cam-frozen');
-  const rescan=document.getElementById('cam-rescan');
-  const scanOk=document.getElementById('cam-scan-ok');
-  const scanOkText=document.getElementById('scan-ok-text');
-  const scanOkSub=document.getElementById('scan-ok-sub');
-  const shutter=document.getElementById('cam-shutter');
-  const shutterWrap=shutter.closest('.cam-shutter-wrap');
-
-  clearTimeout(window._autoCaptureTimer);
-  shutter.style.pointerEvents='none';
-
-  // ── 1. FLASH + GARSAS + HAPTIC ────────────────
-  flash.style.opacity='1';
-  setTimeout(()=>{flash.style.opacity='0';},100);
-  shutterSound();
-  if(navigator.vibrate) navigator.vibrate([30,20,10]);
-
-  // Fotografuojame
-  canvas.width=video.videoWidth||640;
-  canvas.height=video.videoHeight||480;
-  canvas.getContext('2d').drawImage(video,0,0);
-  const dataURL=canvas.toDataURL('image/jpeg',0.85);
-
-  // ── 2. FROZEN FRAME ────────────────────────────
-  frozen.style.backgroundImage=`url(${dataURL})`;
-  frozen.classList.add('active');
-  video.style.display='none';
-
-  // Žalia rescan linija per frozen frame
-  setTimeout(()=>rescan.classList.add('active'),60);
-  setTimeout(()=>rescan.classList.remove('active'),720);
-
-  // ── 3. LOADING EKRANAS (statinis, 2.5s) ────────
+  const video=document.getElementById('cam-video');const canvas=document.getElementById('cam-canvas');
+  const flash=document.getElementById('cam-flash');const frozen=document.getElementById('cam-frozen');
+  const rescan=document.getElementById('cam-rescan');const scanOk=document.getElementById('cam-scan-ok');
+  const scanOkText=document.getElementById('scan-ok-text');const scanOkSub=document.getElementById('scan-ok-sub');
+  const shutter=document.getElementById('cam-shutter');const shutterWrap=shutter.closest('.cam-shutter-wrap');
+  clearTimeout(window._autoCaptureTimer);shutter.style.pointerEvents='none';
+  flash.style.opacity='1';setTimeout(()=>{flash.style.opacity='0';},100);
+  shutterSound();if(navigator.vibrate) navigator.vibrate([30,20,10]);
+  canvas.width=video.videoWidth||640;canvas.height=video.videoHeight||480;
+  canvas.getContext('2d').drawImage(video,0,0);const dataURL=canvas.toDataURL('image/jpeg',0.85);
+  frozen.style.backgroundImage=`url(${dataURL})`;frozen.classList.add('active');video.style.display='none';
+  setTimeout(()=>rescan.classList.add('active'),60);setTimeout(()=>rescan.classList.remove('active'),720);
   setTimeout(()=>{
     const isLeft=camHand==='left';
-    // Viršutinis tekstas keičiasi
     document.getElementById('cam-title').textContent='Delnas sėkmingai užfiksuotas!';
     document.getElementById('cam-sub').style.display='none';
     scanOkText.textContent='Delnas sėkmingai užfiksuotas!';
     scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'';
-    scanOk.classList.add('active');
-    shutterWrap.style.display='none';
+    scanOk.classList.add('active');shutterWrap.style.display='none';
   },700);
-
-  // ── 4. PERĖJIMAS ───────────────────────────────
   const delay=2500;
   setTimeout(()=>{
-    scanOk.classList.remove('active');
-    frozen.classList.remove('active');
-    frozen.style.backgroundImage='';
-    video.style.display='block';
-    shutterWrap.style.display='';
-    document.getElementById('cam-sub').style.display='';
-    handVisible=false;
-    shutter.style.pointerEvents='none';
-    shutter.style.opacity='.35';
-    setTimeout(()=>{
-      shutter.style.opacity='1';
-      shutter.style.pointerEvents='auto';
-    },1500);
-
-    if(camHand==='left'){
-      photoLeft=dataURL;
-      camHand='right';
-      updateCameraUI();
-    }else{
-      photoRight=dataURL;
-      stopCamera();
-      startBackgroundAnalysis();
-      go('s-processing');
-      setTimeout(()=>{
-        go('s-loading');
-        animateLoading();
-      },3000);
+    scanOk.classList.remove('active');frozen.classList.remove('active');frozen.style.backgroundImage='';
+    video.style.display='block';shutterWrap.style.display='';document.getElementById('cam-sub').style.display='';
+    handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
+    setTimeout(()=>{shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
+    if(camHand==='left'){photoLeft=dataURL;camHand='right';updateCameraUI();}
+    else{
+      photoRight=dataURL;stopCamera();startBackgroundAnalysis();go('s-processing');
+      setTimeout(()=>{go('s-loading');animateLoading();},3000);
     }
   },delay);
 }
 
-// Foninė analizė — rezultatas saugomas serveryje pagal sessionId
-window.bgSessionId=null;
-window.bgAnalysisDone=false;
-window.bgAnalysisError=null;
+window.bgSessionId=null;window.bgAnalysisDone=false;window.bgAnalysisError=null;
 
 function startBackgroundAnalysis(){
-  // Generuojame unikalų sessionId
-  window.bgSessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now();
-  window.bgAnalysisDone=false;
-  window.bgAnalysisError=null;
-
+  window.bgSessionId=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now();
+  window.bgAnalysisDone=false;window.bgAnalysisError=null;
   const photoData=[];
   if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
   if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-
-  fetch('/start-analysis',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      photos:photoData,
-      name:window.userName||'',
-      sessionId:window.bgSessionId
-    })
-  }).then(r=>r.json()).then(d=>{
-    if(d.started) console.log('Foninė analizė paleista:', window.bgSessionId);
-    else console.warn('Analizė nepaleista:', d.error);
-  }).catch(e=>console.warn('start-analysis klaida:', e));
-
-  // Tikrinamas statusas kas 3s
+  fetch('/start-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',sessionId:window.bgSessionId})})
+  .then(r=>r.json()).then(d=>{if(d.started) console.log('Foninė analizė paleista:',window.bgSessionId);else console.warn('Analizė nepaleista:',d.error);}).catch(e=>console.warn('start-analysis klaida:',e));
   const checkInterval=setInterval(()=>{
-    fetch(`/analysis-status?sessionId=${window.bgSessionId}`)
-      .then(r=>r.json())
-      .then(d=>{
-        if(d.status==='done'){
-          window.bgAnalysisDone=true;
-          clearInterval(checkInterval);
-        } else if(d.status==='error'){
-          window.bgAnalysisDone=true;
-          window.bgAnalysisError='Serverio klaida';
-          clearInterval(checkInterval);
-        }
-      }).catch(()=>{});
+    fetch(`/analysis-status?sessionId=${window.bgSessionId}`).then(r=>r.json()).then(d=>{
+      if(d.status==='done'){window.bgAnalysisDone=true;clearInterval(checkInterval);}
+      else if(d.status==='error'){window.bgAnalysisDone=true;window.bgAnalysisError='Serverio klaida';clearInterval(checkInterval);}
+    }).catch(()=>{});
   },3000);
 }
 
 let oracleAnimId=null;
 
 function startOracleCanvas(){
-  const canvas=document.getElementById('oracle-canvas');
-  if(!canvas) return;
+  const canvas=document.getElementById('oracle-canvas');if(!canvas) return;
   if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-
-  const ctx=canvas.getContext('2d');
-  const W=120,H=120,cx=60,cy=60;
-
-  // Dalelės
+  const ctx=canvas.getContext('2d');const W=120,H=120,cx=60,cy=60;
   const particles=[];
   for(let i=0;i<80;i++){
-    const angle=Math.random()*Math.PI*2;
-    const r=55+Math.random()*40;
-    particles.push({
-      angle,r,
-      speed:(Math.random()-0.5)*0.012,
-      alpha:Math.random(),
-      size:Math.random()*1.8+0.3,
-      drift:Math.random()*0.4-0.2
-    });
+    const angle=Math.random()*Math.PI*2;const r=55+Math.random()*40;
+    particles.push({angle,r,speed:(Math.random()-0.5)*0.012,alpha:Math.random(),size:Math.random()*1.8+0.3,drift:Math.random()*0.4-0.2});
   }
-
-  // Žiedai (3 elipsės skirtingais kampais)
-  const rings=[
-    {tilt:0.3,speed:0.008,phase:0},
-    {tilt:-0.5,speed:-0.006,phase:1.2},
-    {tilt:0.8,speed:0.005,phase:2.4},
-  ];
-
+  const rings=[{tilt:0.3,speed:0.008,phase:0},{tilt:-0.5,speed:-0.006,phase:1.2},{tilt:0.8,speed:0.005,phase:2.4}];
   let t=0;
-
   function draw(){
     ctx.clearRect(0,0,W,H);
-
-    // Fonas — tamsus apskritimas
-    ctx.beginPath();
-    ctx.arc(cx,cy,55,0,Math.PI*2);
-    ctx.fillStyle='rgba(7,4,15,0.92)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx,cy,55,0,Math.PI*2);
-    ctx.strokeStyle='rgba(212,168,67,0.12)';
-    ctx.lineWidth=1;
-    ctx.stroke();
-
-    // Dalelės
+    ctx.beginPath();ctx.arc(cx,cy,55,0,Math.PI*2);ctx.fillStyle='rgba(7,4,15,0.92)';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,55,0,Math.PI*2);ctx.strokeStyle='rgba(212,168,67,0.12)';ctx.lineWidth=1;ctx.stroke();
     particles.forEach(p=>{
-      p.angle+=p.speed;
-      p.alpha+=p.drift*0.02;
-      if(p.alpha>1) p.drift=-Math.abs(p.drift);
-      if(p.alpha<0) p.drift=Math.abs(p.drift);
+      p.angle+=p.speed;p.alpha+=p.drift*0.02;
+      if(p.alpha>1) p.drift=-Math.abs(p.drift);if(p.alpha<0) p.drift=Math.abs(p.drift);
       p.alpha=Math.max(0,Math.min(1,p.alpha));
-
-      const px=cx+Math.cos(p.angle)*p.r;
-      const py=cy+Math.sin(p.angle)*p.r*0.7;
-      ctx.beginPath();
-      ctx.arc(px,py,p.size,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,215,80,${p.alpha*0.7})`;
-      ctx.fill();
+      const px=cx+Math.cos(p.angle)*p.r;const py=cy+Math.sin(p.angle)*p.r*0.7;
+      ctx.beginPath();ctx.arc(px,py,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(255,215,80,${p.alpha*0.7})`;ctx.fill();
     });
-
-    // Besisukantys žiedai
     rings.forEach(ring=>{
-      ring.phase+=ring.speed;
-      ctx.save();
-      ctx.translate(cx,cy);
-      ctx.rotate(ring.phase);
-
-      // Gradientinis žiedas
+      ring.phase+=ring.speed;ctx.save();ctx.translate(cx,cy);ctx.rotate(ring.phase);
       const grad=ctx.createLinearGradient(-80,0,80,0);
-      grad.addColorStop(0,'rgba(212,168,67,0)');
-      grad.addColorStop(0.3,'rgba(255,200,50,0.9)');
-      grad.addColorStop(0.5,'rgba(255,230,100,1)');
-      grad.addColorStop(0.7,'rgba(255,200,50,0.9)');
-      grad.addColorStop(1,'rgba(212,168,67,0)');
-
-      ctx.beginPath();
-      ctx.ellipse(0,0,46,46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
-      ctx.strokeStyle=grad;
-      ctx.lineWidth=1.8;
-      ctx.shadowColor='rgba(255,200,50,0.6)';
-      ctx.shadowBlur=5;
-      ctx.stroke();
-      ctx.shadowBlur=0;
-
-      const sparkPos=ring.phase*3;
-      const sx=Math.cos(sparkPos)*46;
-      const sy=Math.sin(sparkPos)*46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
-      ctx.beginPath();
-      ctx.arc(sx,sy,3,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,240,120,0.95)';
-      ctx.shadowColor='rgba(255,220,80,1)';
-      ctx.shadowBlur=12;
-      ctx.fill();
-      ctx.shadowBlur=0;
-
+      grad.addColorStop(0,'rgba(212,168,67,0)');grad.addColorStop(0.3,'rgba(255,200,50,0.9)');
+      grad.addColorStop(0.5,'rgba(255,230,100,1)');grad.addColorStop(0.7,'rgba(255,200,50,0.9)');grad.addColorStop(1,'rgba(212,168,67,0)');
+      ctx.beginPath();ctx.ellipse(0,0,46,46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3)),ring.tilt,0,Math.PI*2);
+      ctx.strokeStyle=grad;ctx.lineWidth=1.8;ctx.shadowColor='rgba(255,200,50,0.6)';ctx.shadowBlur=5;ctx.stroke();ctx.shadowBlur=0;
+      const sparkPos=ring.phase*3;const sx=Math.cos(sparkPos)*46;const sy=Math.sin(sparkPos)*46*Math.abs(Math.sin(ring.tilt+ring.phase*0.3));
+      ctx.beginPath();ctx.arc(sx,sy,3,0,Math.PI*2);ctx.fillStyle='rgba(255,240,120,0.95)';ctx.shadowColor='rgba(255,220,80,1)';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
       ctx.restore();
     });
-
-    // Vidinis švytėjimas
     const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,30);
-    glow.addColorStop(0,'rgba(212,168,67,0.18)');
-    glow.addColorStop(0.5,'rgba(212,168,67,0.08)');
-    glow.addColorStop(1,'rgba(212,168,67,0)');
-    ctx.beginPath();
-    ctx.arc(cx,cy,30,0,Math.PI*2);
-    ctx.fillStyle=glow;
-    ctx.fill();
-
-    const pulse=0.92+Math.sin(t*0.04)*0.08;
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.scale(pulse,pulse);
-    ctx.font='26px serif';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(255,200,60,0.8)';
-    ctx.shadowBlur=18;
-    ctx.globalAlpha=0.88+Math.sin(t*0.04)*0.12;
-    ctx.fillText('🖐',0,2);
-    ctx.shadowBlur=0;
-    ctx.globalAlpha=1;
-    ctx.restore();
-
-    t++;
-    oracleAnimId=requestAnimationFrame(draw);
+    glow.addColorStop(0,'rgba(212,168,67,0.18)');glow.addColorStop(0.5,'rgba(212,168,67,0.08)');glow.addColorStop(1,'rgba(212,168,67,0)');
+    ctx.beginPath();ctx.arc(cx,cy,30,0,Math.PI*2);ctx.fillStyle=glow;ctx.fill();
+    const pulse=0.92+Math.sin(t*0.04)*0.08;ctx.save();ctx.translate(cx,cy);ctx.scale(pulse,pulse);
+    ctx.font='26px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(255,200,60,0.8)';ctx.shadowBlur=18;ctx.globalAlpha=0.88+Math.sin(t*0.04)*0.12;
+    ctx.fillText('🖐',0,2);ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.restore();
+    t++;oracleAnimId=requestAnimationFrame(draw);
   }
   draw();
 }
 
 function animateLoading(){
-  requestWakeLock();
-  startOracleCanvas();
-
-  // Analizės ekrane taškeliai nesirodo
-  const prog=document.getElementById('cam-progress');
-  if(prog) prog.style.visibility='hidden';
-
-  const pbar=document.getElementById('pbar');
-  const ptime=document.getElementById('ptime');
-  const ppct=document.getElementById('ppct');
+  requestWakeLock();startOracleCanvas();
+  const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='hidden';
+  const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');const ppct=document.getElementById('ppct');
   const loadScreen=document.getElementById('s-loading');
 
+  // Smalsumo magnetai — sinchronizuoti su animateLoading
   const stepTexts=[
-    'Analizuojama asmenybė ir charakterio bruožai',
-    'Nuskaitomi meilės, santykių ir suderinamumo rodmenys',
-    'Skaičiuojama finansinės sėkmės ir karjeros trajektorija',
-    'Atveriama sielos misija ir planetų įtaka delne'
+    'Jūsų „paslėptas" genijus: apie ką nutyli aplinkiniai?',
+    'Kokia Jūsų tikroji gyvenimo misija?',
+    'Kodėl Jums vis dar nepavyksta rasti „to vienintelio"?',
+    'Kada Jūsų finansinė „prabanga" taps realybe?',
+    'Kokią unikalią galią Jūs atsinešėte gimdami?',
+    'Ką delno linijos sako apie Jūsų ateities posūkį?',
+    'Koks vienintelis stabdis neleidžia Jums tapti turtingu?'
   ];
-  [1,2,3,4].forEach(i=>{
-    const el=document.getElementById('ls'+i);
-    const st=document.getElementById('ls'+i+'-status');
-    const txt=el&&el.querySelector('.ls-text');
+  [1,2,3,4,5,6,7].forEach(i=>{
+    const el=document.getElementById('ls'+i);const st=document.getElementById('ls'+i+'-status');const txt=el&&el.querySelector('.ls-text');
     if(el) el.classList.remove('active');
     if(txt) txt.textContent=stepTexts[i-1];
-    if(st){
-      st.textContent='·';
-      st.style.color='rgba(245,238,216,.25)';
-      st.style.animation='';
-      st.style.fontSize='18px';
-    }
+    if(st){st.textContent='·';st.style.color='rgba(245,238,216,.25)';st.style.animation='';st.style.fontSize='18px';}
   });
   if(pbar) pbar.style.width='0%';
 
-  const totalSec=90;
-  let elapsed=0;
+  const totalSec=90;let elapsed=0;
   const t=setInterval(()=>{
-    elapsed+=0.25;
-    const pct=Math.min((elapsed/totalSec)*85,85);
-    const pctRound=Math.round(pct);
-    if(pbar) pbar.style.width=pct+'%';
-    if(ppct) ppct.textContent=pctRound+'%';
+    elapsed+=0.25;const pct=Math.min((elapsed/totalSec)*85,85);const pctRound=Math.round(pct);
+    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';
     const left=Math.max(Math.ceil(totalSec-elapsed),0);
     if(ptime) ptime.textContent=left>0?`~${left} sek. liko`:'Beveik baigta...';
     if(elapsed>=totalSec){
-      clearInterval(t);
-      if(ppct) ppct.textContent='85%';
-      window._currentProgress=85;
-      loadScreen.style.transition='opacity .8s ease';
-      loadScreen.style.opacity='0';
+      clearInterval(t);if(ppct) ppct.textContent='85%';window._currentProgress=85;
+      loadScreen.style.transition='opacity .8s ease';loadScreen.style.opacity='0';
       setTimeout(()=>{
-        loadScreen.style.opacity='';
-        loadScreen.style.transition='';
+        loadScreen.style.opacity='';loadScreen.style.transition='';
         if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-        go('s-info');
-        initQuickPay();
-        initStripeElements();
-        requestWakeLock();
-        startPayPbar();
+        go('s-info');initQuickPay();initStripeElements();requestWakeLock();startPayPbar();
       },800);
     }
   },250);
 
-  // 90s / 7 žingsnių = kas ~12.5s
+  // 7 žingsniai kas ~12.5s — sinchronizuoti su progresijos juosta
   setTimeout(()=>activateStep(1,false),500);
   setTimeout(()=>{activateStep(1,true);activateStep(2,false);},12500);
   setTimeout(()=>{activateStep(2,true);activateStep(3,false);},25000);
@@ -1471,32 +1067,16 @@ function animateLoading(){
 }
 
 function activateStep(n,done){
-  const el=document.getElementById('ls'+n);
-  const st=document.getElementById('ls'+n+'-status');
-  if(!el||!st) return;
-  el.classList.add('active');
+  const el=document.getElementById('ls'+n);const st=document.getElementById('ls'+n+'-status');
+  if(!el||!st) return;el.classList.add('active');
   if(done){
-    st.style.animation='none';
-    st.style.border='none';
-    st.style.width='18px';
-    st.style.height='18px';
-    st.textContent='✓';
-    st.style.color='#4cff6a';
-    st.style.fontSize='15px';
-    st.style.display='inline-flex';
-    st.style.alignItems='center';
-    st.style.justifyContent='center';
+    st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
+    st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';
+    st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
   }else{
-    st.textContent='';
-    st.style.display='inline-block';
-    st.style.width='16px';
-    st.style.height='16px';
-    st.style.border='2px solid rgba(212,168,67,.25)';
-    st.style.borderTopColor='#d4a843';
-    st.style.borderRadius='50%';
-    st.style.animation='spinStep .7s linear infinite';
-    st.style.fontSize='0';
-    st.style.flexShrink='0';
+    st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
+    st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';
+    st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';st.style.fontSize='0';st.style.flexShrink='0';
   }
 }
 
@@ -1504,33 +1084,16 @@ async function callClaude(){
   const photoData=[];
   if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
   if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-  const res=await fetch('/analyze-palm',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
-  });
-  if(!res.ok){
-    const err=await res.json();
-    throw new Error(err.error||'Serverio klaida');
-  }
+  const res=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
+  if(!res.ok){const err=await res.json();throw new Error(err.error||'Serverio klaida');}
   return await res.json();
 }
 
 function displayResult(r){
-  if(r.userName) window.userName=r.userName;
-  if(!r)return;
+  if(r.userName) window.userName=r.userName;if(!r)return;
   const name=window.userName||'';
-
-  function formatText(text){
-    if(!text)return'';
-    return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');
-  }
-
-  // Personalizuotas viršelis
-  document.getElementById('res-name').textContent=name
-    ?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`
-    :'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
-
+  function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
+  document.getElementById('res-name').textContent=name?`🌟 ${name}, tavo asmeninė delnų analizė ir likimo žemėlapis`:'🌟 Tavo asmeninė delnų analizė ir likimo žemėlapis';
   document.getElementById('r-char').innerHTML=formatText(r.charakteris);
   document.getElementById('r-mission').innerHTML=formatText(r.sielos_misija);
   document.getElementById('r-love').innerHTML=formatText(r.meile_santykiai);
@@ -1544,44 +1107,16 @@ function displayResult(r){
 }
 
 function shareTo(platform){
-  const name=window.userName||'Mano';
-  const url=window.location.href;
+  const name=window.userName||'Mano';const url=window.location.href;
   const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`;
-  const encodedText=encodeURIComponent(text);
-  const encodedUrl=encodeURIComponent(url);
-
+  const encodedText=encodeURIComponent(text);const encodedUrl=encodeURIComponent(url);
   switch(platform){
-    case 'whatsapp':
-      window.open(`https://wa.me/?text=${encodedText}%20${encodedUrl}`,'_blank');
-      break;
-    case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,'_blank');
-      break;
-    case 'instagram':
-      // Instagram neturi tiesioginio share URL — kopijuojame tekstą
-      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
-        alert('Tekstas nukopijuotas! Atidaryk Instagram ir įkelk į Stories ar Bio.');
-      });
-      break;
-    case 'tiktok':
-      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
-        alert('Tekstas nukopijuotas! Įkelk į TikTok aprašymą.');
-      });
-      break;
-    case 'native':
-      if(navigator.share){
-        navigator.share({title:'Mano delno skaitymas',text,url});
-      }else{
-        navigator.clipboard.writeText(text+'\n'+url);
-        alert('Nuoroda nukopijuota!');
-      }
-      break;
-    case 'copy':
-      navigator.clipboard.writeText(text+'\n'+url).then(()=>{
-        const btn=document.getElementById('copy-btn');
-        if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='📋 Kopijuoti',2000);}
-      });
-      break;
+    case 'whatsapp':window.open(`https://wa.me/?text=${encodedText}%20${encodedUrl}`,'_blank');break;
+    case 'facebook':window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,'_blank');break;
+    case 'instagram':navigator.clipboard.writeText(text+'\n'+url).then(()=>{alert('Tekstas nukopijuotas! Atidaryk Instagram ir įkelk į Stories ar Bio.');});break;
+    case 'tiktok':navigator.clipboard.writeText(text+'\n'+url).then(()=>{alert('Tekstas nukopijuotas! Įkelk į TikTok aprašymą.');});break;
+    case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url});}else{navigator.clipboard.writeText(text+'\n'+url);alert('Nuoroda nukopijuota!');}break;
+    case 'copy':navigator.clipboard.writeText(text+'\n'+url).then(()=>{const btn=document.getElementById('copy-btn');if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='📋 Kopijuoti',2000);}});break;
   }
 }
 </script>
