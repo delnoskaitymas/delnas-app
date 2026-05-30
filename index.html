@@ -270,21 +270,23 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- QUICK PAY -->
     <div id="quick-pay-wrap" style="margin-bottom:6px"></div>
 
-    <div id="order-err" class="err"></div>
+    <!-- MOKĖTI KORTELE — pagrindinėje sekcijoje, ne sticky -->
+    <div id="card-section" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+      <div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer" onclick="toggleCard()">💳 MOKĖTI KORTELE <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px">▼</span></div>
+      <div id="card-fields" style="display:none;margin-top:8px">
+        <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
+        <div id="stripe-card-element" style="padding:2px 0"></div>
+        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
+      </div>
+    </div>
 
+    <div id="order-err" class="err"></div>
+    <div style="height:140px"></div>
   </div>
 </div>
 
 <!-- STICKY CTA -->
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:8px 16px 14px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
-  <div id="card-section" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:0;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="toggleCard()">💳 MOKĖTI KORTELE <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px">▼</span></div>
-    <div id="card-fields" style="display:none;margin-top:8px">
-      <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
-      <div id="stripe-card-element" style="padding:2px 0"></div>
-      <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
-    </div>
-  </div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
     <span style="font-size:11px;color:var(--gold2);font-weight:500">✓ Analizę gausite iškart po apmokėjimo.</span>
     <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2)">5,99 €</span>
@@ -298,7 +300,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 4b: DUOMENŲ APDOROJIMAS -->
 <div class="screen" id="s-processing">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;padding-bottom:15vh">
     <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 1.8s ease-in-out infinite">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);opacity:.85;animation:sp 1.4s linear infinite"></div>
     </div>
@@ -685,11 +687,9 @@ function toggleCard(){
   if(cardOpen){
     fields.style.display='block';
     if(arrow) arrow.textContent='▲';
-    // Stripe mount jei dar ne
     if(!stripeInstance) initStripeElements();
     setTimeout(()=>{
-      const cta=document.getElementById('sticky-cta');
-      if(cta) cta.scrollIntoView({behavior:'smooth',block:'end'});
+      document.getElementById('card-section').scrollIntoView({behavior:'smooth',block:'start'});
     },100);
   }else{
     fields.style.display='none';
@@ -810,18 +810,20 @@ async function onPaymentSuccess(name,email){
   document.body.appendChild(successDiv);
   setTimeout(()=>successDiv.style.opacity='1',30);
 
-  // Po 2s — tiesiog pasiimame rezultatą iš cache, jokios naujos analizės
+  // Po 2s — pasiimame iš cache su token ir sessionId
   setTimeout(()=>{
     successDiv.style.transition='opacity .4s ease';
     successDiv.style.opacity='0';
     setTimeout(()=>{
       successDiv.remove();
-      // Pasiimame rezultatą iš cache per token
+      const photoData=[];
+      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
       fetch('/analyze-palm',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          photos:[],
+          photos:photoData,
           name:window.userName||name,
           token:window.palmToken||'',
           sessionId:window.bgSessionId||''
