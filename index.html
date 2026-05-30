@@ -278,10 +278,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <!-- STICKY CTA -->
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:8px 16px 14px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
   <div id="card-section" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px">💳 MOKĖTI KORTELE</div>
-    <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
-    <div id="stripe-card-element" style="padding:2px 0"></div>
-    <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:0;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="toggleCard()">💳 MOKĖTI KORTELE <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px">▼</span></div>
+    <div id="card-fields" style="display:none;margin-top:8px">
+      <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
+      <div id="stripe-card-element" style="padding:2px 0"></div>
+      <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
+    </div>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
     <span style="font-size:11px;color:var(--gold2);font-weight:500">✓ Analizę gausite iškart po apmokėjimo.</span>
@@ -300,7 +302,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:pulse3 1.8s ease-in-out infinite">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);opacity:.85;animation:sp 1.4s linear infinite"></div>
     </div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:.04em">Duomenų apdorojimas...</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:.04em;text-align:center">Duomenų apdorojimas...</div>
   </div>
 </div>
 
@@ -674,6 +676,26 @@ function formatExp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2) v=v.subs
 
 let stripeInstance=null;
 let stripeCardElement=null;
+let cardOpen=false;
+
+function toggleCard(){
+  const fields=document.getElementById('card-fields');
+  const arrow=document.getElementById('card-toggle-arrow');
+  cardOpen=!cardOpen;
+  if(cardOpen){
+    fields.style.display='block';
+    if(arrow) arrow.textContent='▲';
+    // Stripe mount jei dar ne
+    if(!stripeInstance) initStripeElements();
+    setTimeout(()=>{
+      const cta=document.getElementById('sticky-cta');
+      if(cta) cta.scrollIntoView({behavior:'smooth',block:'end'});
+    },100);
+  }else{
+    fields.style.display='none';
+    if(arrow) arrow.textContent='▼';
+  }
+}
 
 function initStripeElements(){
   if(stripeInstance) return;
@@ -788,27 +810,31 @@ async function onPaymentSuccess(name,email){
   document.body.appendChild(successDiv);
   setTimeout(()=>successDiv.style.opacity='1',30);
 
-  // Rodome max 2s, tada iškart rezultatai iš cache — jokio papildomo laukimo
-  const minWait=new Promise(r=>setTimeout(r,2000));
-  const analysisPromise=waitForAnalysis();
-
-  Promise.all([analysisPromise,minWait]).then(([result])=>{
+  // Po 2s — tiesiog pasiimame rezultatą iš cache, jokios naujos analizės
+  setTimeout(()=>{
     successDiv.style.transition='opacity .4s ease';
     successDiv.style.opacity='0';
-    setTimeout(()=>{successDiv.remove();displayResult(result);},400);
-  }).catch(()=>{
     setTimeout(()=>{
-      waitForAnalysis().then(result=>{
-        successDiv.style.opacity='0';
-        setTimeout(()=>{successDiv.remove();displayResult(result);},400);
+      successDiv.remove();
+      // Pasiimame rezultatą iš cache per token
+      fetch('/analyze-palm',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          photos:[],
+          name:window.userName||name,
+          token:window.palmToken||'',
+          sessionId:window.bgSessionId||''
+        })
+      }).then(r=>r.json()).then(result=>{
+        displayResult(result);
       }).catch(()=>{
-        successDiv.remove();
         const errEl=document.getElementById('order-err');
         if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
         go('s-info');
       });
-    },2000);
-  });
+    },400);
+  },2000);
 }
 
 function submitInfo(){initiatePayment();}
