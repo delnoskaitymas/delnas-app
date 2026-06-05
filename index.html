@@ -244,8 +244,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <!-- SCREEN 3: MOKĖJIMAS -->
 <div class="screen" id="s-info">
   <div style="padding:16px 16px 20px">
-
-    <!-- PROGRESIJOS JUOSTA -->
     <div style="margin-bottom:8px;background:rgba(212,168,67,.08);border-radius:8px;padding:7px 10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">85%</span>
@@ -256,8 +254,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
       </div>
     </div>
-
-    <!-- SĄRAŠAS — smalsumo magnetai -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.06) 0%,rgba(255,255,255,.02) 100%);border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:14px 14px 10px;margin-bottom:12px;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.5),transparent)"></div>
       <div style="font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
@@ -266,77 +262,50 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span style="display:inline-block;width:18px;height:1px;background:var(--gold);opacity:.5"></span>
       </div>
       <div style="display:flex;flex-direction:column;gap:0">
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Kokia paslėpta galia glūdi Tavyje, apie kurią dar nežinai?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Koks yra Tavo tikrasis gyvenimo pašaukimas ir misija?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Kodėl Tavo meilės istorija dar nėra tokia, apie kokią svajoji?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Kada Tavo delnas „uždegs žalią šviesą" finansinei laisvei?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Kokios unikalios stiprybės Tave veda į sėkmę?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Koks svarbus posūkis Tavęs laukia jau artimiausiu metu?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
         <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:500">Kas iki šiol stabdė Tavo progresą ir kaip tai įveikti?</span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
-
       </div>
       <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent)"></div>
     </div>
-
-    <!-- EL. PAŠTAS + VARDAS -->
     <div id="info-err" class="err"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:5px">
       <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
       <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
     </div>
-    <!-- QUICK PAY -->
     <div id="quick-pay-wrap" style="margin-bottom:6px"></div>
-
-    <!-- MOKĖTI KORTELE — pagrindinėje sekcijoje, ne sticky -->
     <div id="card-section" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px">
       <div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer" onclick="toggleCard()">💳 MOKĖTI KORTELE <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px">▼</span></div>
       <div id="card-fields" style="display:none;margin-top:8px">
@@ -345,7 +314,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
       </div>
     </div>
-
     <div id="order-err" class="err"></div>
     <div style="height:140px"></div>
   </div>
@@ -362,7 +330,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu · Nereikia registruotis</div>
 </div>
 
-<!-- SCREEN 4: ORDER (redirect placeholder) -->
 <div class="screen" id="s-order" style="display:none"></div>
 
 <!-- SCREEN 4b: DUOMENŲ APDOROJIMAS -->
@@ -377,18 +344,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 5: LOADING — smalsumo magnetai -->
+<!-- SCREEN 5: LOADING -->
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div>
       <div class="load-title">ANALIZUOJAMI TAVO DELNAI...</div>
       <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
     </div>
-
     <div style="position:relative;width:130px;height:130px;flex-shrink:0">
       <canvas id="oracle-canvas" width="130" height="130" style="display:block"></canvas>
     </div>
-
     <div class="pbar-wrap">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
@@ -396,74 +361,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="ptime" style="font-style:italic"></span>
       </div>
     </div>
-
     <div class="load-steps">
-      <div class="ls" id="ls1">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/>
-          </svg>
-        </div>
-        <div class="ls-text">Atskleidžiamos Jūsų prigimtinės stiprybės ir unikalūs charakterio bruožai...</div>
-        <div class="ls-status" id="ls1-status">·</div>
-      </div>
-      <div class="ls" id="ls2">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/>
-          </svg>
-        </div>
-        <div class="ls-text">Nustatoma gyvenimo tikslo ir asmeninio pašaukimo kryptis...</div>
-        <div class="ls-status" id="ls2-status">·</div>
-      </div>
-      <div class="ls" id="ls3">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/>
-          </svg>
-        </div>
-        <div class="ls-text">Atliekama asmeninio gyvenimo ir santykių dėsningumų analizė...</div>
-        <div class="ls-status" id="ls3-status">·</div>
-      </div>
-      <div class="ls" id="ls4">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/>
-          </svg>
-        </div>
-        <div class="ls-text">Analizuojama finansinės laisvės bei materialinės sėkmės prognozė...</div>
-        <div class="ls-status" id="ls4-status">·</div>
-      </div>
-      <div class="ls" id="ls5">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </div>
-        <div class="ls-text">Apžvelgiami svarbiausi ateinančių metų gyvenimo pokyčiai...</div>
-        <div class="ls-status" id="ls5-status">·</div>
-      </div>
-      <div class="ls" id="ls6">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/>
-          </svg>
-        </div>
-        <div class="ls-text">Atskleidžiami paslėpti gebėjimai ir potencialo išnaudojimo būdai...</div>
-        <div class="ls-status" id="ls6-status">·</div>
-      </div>
-      <div class="ls" id="ls7">
-        <div class="ls-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <div class="ls-text">Nustatomos kliūtys, stabdančios asmeninę pažangą ir sėkmę...</div>
-        <div class="ls-status" id="ls7-status">·</div>
-      </div>
+      <div class="ls" id="ls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Atskleidžiamos Jūsų prigimtinės stiprybės ir unikalūs charakterio bruožai...</div><div class="ls-status" id="ls1-status">·</div></div>
+      <div class="ls" id="ls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg></div><div class="ls-text">Nustatoma gyvenimo tikslo ir asmeninio pašaukimo kryptis...</div><div class="ls-status" id="ls2-status">·</div></div>
+      <div class="ls" id="ls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg></div><div class="ls-text">Atliekama asmeninio gyvenimo ir santykių dėsningumų analizė...</div><div class="ls-status" id="ls3-status">·</div></div>
+      <div class="ls" id="ls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg></div><div class="ls-text">Analizuojama finansinės laisvės bei materialinės sėkmės prognozė...</div><div class="ls-status" id="ls4-status">·</div></div>
+      <div class="ls" id="ls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Apžvelgiami svarbiausi ateinančių metų gyvenimo pokyčiai...</div><div class="ls-status" id="ls5-status">·</div></div>
+      <div class="ls" id="ls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Atskleidžiami paslėpti gebėjimai ir potencialo išnaudojimo būdai...</div><div class="ls-status" id="ls6-status">·</div></div>
+      <div class="ls" id="ls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="ls-text">Nustatomos kliūtys, stabdančios asmeninę pažangą ir sėkmę...</div><div class="ls-status" id="ls7-status">·</div></div>
     </div>
-
-    <!-- FOOTER: tik viena žinutė -->
   </div>
 </div>
 
@@ -485,9 +391,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="result-subtitle">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div class="result-divider"></div>
   </div>
-
   <div style="padding:0 16px 40px">
-
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">I · Prigimtinės stiprybės ir unikalūs charakterio bruožai</div>
       <div class="rs-body" id="r-char"></div>
@@ -495,51 +399,41 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Ši galia visada buvo Tavyje — dabar žinai, kur ieškoti.</div>
       <button onclick="shareSection()" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
     </div>
-
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">II · Gyvenimo tikslo ir asmeninio pašaukimo kryptis</div>
       <div class="rs-body" id="r-mission"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pašaukimas neieško tavęs — tu jau esi ant jo slenksčio.</div>
     </div>
-
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">III · Asmeninio gyvenimo ir santykių dėsningumų analizė</div>
       <div class="rs-body" id="r-love"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti save — tai pirmas žingsnis į tikrą meilę ir tikrą ryšį.</div>
     </div>
-
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">IV · Finansinės laisvės bei materialinės sėkmės prognozė</div>
       <div class="rs-body" id="r-finance"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Sėkmė nėra atsitiktinumas — ji jau užkoduota Tavo delne. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
     </div>
-
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">V · Svarbiausi ateinančių metų gyvenimo pokyčiai</div>
       <div class="rs-body" id="r-gifts-text"></div>
       <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai — tik tikimybė. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
     </div>
-
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VI · Paslėpti gebėjimai ir potencialo išnaudojimo būdai</div>
       <div class="rs-body" id="r-astro"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas nerealizuotas — dar ne prarastas. Jis laukia Tavo sprendimo.</div>
     </div>
-
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VII · Kliūtys, stabdančios asmeninę pažangą ir sėkmę</div>
       <div class="rs-body" id="r-challenges"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Žinoti kliūtį — jau reiškia būti pusę kelio ją įveikus.</div>
     </div>
-
-    <!-- Finalas -->
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Išsaugok — ir grįžk kai prireiks atsakymų.</div>
     </div>
-
-    <!-- Dalintis — stiprus CTA -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.5),transparent)"></div>
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Tavo draugai nusipelnė žinoti</div>
@@ -555,15 +449,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em" id="copy-btn">Kopijuoti</button>
       </div>
     </div>
-
-    <!-- Upsell — priminimas po 3 mėnesių -->
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
       <div style="font-size:10px;letter-spacing:.14em;color:var(--gold3);text-transform:uppercase;margin-bottom:8px">Nori pakartoti?</div>
       <div style="font-size:14px;font-weight:600;color:var(--text);font-family:'Playfair Display',serif;margin-bottom:6px">Tavo delnas po 3 mėnesių bus kitoks</div>
       <div style="font-size:12px;color:var(--gold2);line-height:1.6;margin-bottom:4px">✦ Priminimas jau užregistruotas automatiškai.</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.6">Išsiųsime laišką į Tavo el. paštą kai ateis tinkamas laikas naujam delnų skaitymui.</div>
     </div>
-
   </div>
 </div>
 
@@ -576,20 +467,13 @@ let wakeLock=null;
 let _noSleepVideo=null;
 
 async function requestWakeLock(){
-  try{
-    if('wakeLock' in navigator){
-      wakeLock=await navigator.wakeLock.request('screen');
-    }
-  }catch(e){}
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');}}catch(e){}
   if(!_noSleepVideo){
     _noSleepVideo=document.createElement('video');
-    _noSleepVideo.setAttribute('loop','');
-    _noSleepVideo.setAttribute('playsinline','');
-    _noSleepVideo.setAttribute('muted','');
+    _noSleepVideo.setAttribute('loop','');_noSleepVideo.setAttribute('playsinline','');_noSleepVideo.setAttribute('muted','');
     _noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0;pointer-events:none';
     _noSleepVideo.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA';
-    document.body.appendChild(_noSleepVideo);
-    _noSleepVideo.play().catch(()=>{});
+    document.body.appendChild(_noSleepVideo);_noSleepVideo.play().catch(()=>{});
   }
 }
 
@@ -609,16 +493,9 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const cam=document.getElementById('s-camera');
   cam.classList.remove('active');
-  if(id==='s-camera'){
-    cam.classList.add('active');
-  }else{
-    const el=document.getElementById(id);
-    if(el)el.classList.add('active');
-  }
-  if(id==='s-order'){
-    const banner=document.getElementById('photos-done-banner');
-    if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';
-  }
+  if(id==='s-camera'){cam.classList.add('active');}
+  else{const el=document.getElementById(id);if(el)el.classList.add('active');}
+  if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
   window.scrollTo(0,0);
   const cta=document.getElementById('sticky-cta');
   if(cta) cta.style.display=id==='s-info'?'block':'none';
@@ -637,18 +514,13 @@ async function verifyAndProceed(sessionId){
     const res=await fetch(`/verify-payment?session_id=${sessionId}`);
     const data=await res.json();
     if(data.paid){
-      window.userName=data.name;
-      window.userEmail=data.email;
-      window.palmToken=data.token;
+      window.userName=data.name;window.userEmail=data.email;window.palmToken=data.token;
       window.history.replaceState({},'','/');
       if(!photoLeft) photoLeft=sessionStorage.getItem('photoLeft');
       if(!photoRight) photoRight=sessionStorage.getItem('photoRight');
       const storedBgId=sessionStorage.getItem('bgSessionId');
       if(storedBgId) window.bgSessionId=storedBgId;
-      sessionStorage.removeItem('photoLeft');
-      sessionStorage.removeItem('photoRight');
-      sessionStorage.removeItem('bgSessionId');
-      const uName=window.userName||'';
+      sessionStorage.removeItem('photoLeft');sessionStorage.removeItem('photoRight');sessionStorage.removeItem('bgSessionId');
       const successDiv=document.createElement('div');
       successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .4s ease;gap:28px';
       successDiv.innerHTML=`
@@ -666,25 +538,18 @@ async function verifyAndProceed(sessionId){
       document.body.appendChild(successDiv);
       requestAnimationFrame(()=>requestAnimationFrame(()=>successDiv.style.opacity='1'));
       setTimeout(()=>{
-        const photoData=[];
-        if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-        if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-        fetch('/analyze-palm',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
-        }).then(r=>r.json()).then(result=>{
-          successDiv.style.opacity='0';
-          setTimeout(()=>{successDiv.remove();displayResult(result);},400);
-        }).catch(()=>{
-          // Nerodyti mokėjimo ekrano — pasiūlyti bandyti dar kartą
-          successDiv.innerHTML=`<div style="text-align:center;padding:32px"><div style="font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:12px">Analizė gaunama...</div><button onclick="location.reload()" style="background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:10px;padding:12px 24px;color:#07040f;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Atnaujinti puslapį</button></div>`;
-        });
+        successDiv.style.opacity='0';
+        setTimeout(()=>{
+          successDiv.remove();
+          const photoData=[];
+          if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+          if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+          fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
+          .then(r=>r.json()).then(result=>{displayResult(result);}).catch(()=>go('s-result'));
+        },500);
       },2000);
-    }else{
-      go('s-home');
-    }
-  }catch(e){go('s-home');}
+    }else{go('s-info');}
+  }catch(e){go('s-info');}
 }
 
 function waitForAnalysis(){
@@ -693,44 +558,27 @@ function waitForAnalysis(){
     if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
     if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
     function tryFetch(){
-      fetch('/analyze-palm',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
-      }).then(r=>{
-        if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});
-        return r.json();
-      }).then(resolve).catch(reject);
+      fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
+      .then(r=>{if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});return r.json();})
+      .then(resolve).catch(reject);
     }
     if(window.bgAnalysisDone){tryFetch();return;}
     let waited=0;
-    const iv=setInterval(()=>{
-      waited+=1;
-      if(window.bgAnalysisDone||waited>=120){clearInterval(iv);tryFetch();}
-    },1000);
+    const iv=setInterval(()=>{waited+=1;if(window.bgAnalysisDone||waited>=120){clearInterval(iv);tryFetch();}},1000);
   });
 }
 
 function animateLoadingWait(){
-  const pbar=document.getElementById('pbar');
-  const ptime=document.getElementById('ptime');
-  if(pbar) pbar.style.width='85%';
-  if(ptime) ptime.textContent='Beveik baigta...';
+  const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');
+  if(pbar) pbar.style.width='85%';if(ptime) ptime.textContent='Beveik baigta...';
   let p=85;
-  const t=setInterval(()=>{
-    p=Math.min(p+0.5,99);
-    if(pbar) pbar.style.width=p+'%';
-    if(p>=99) clearInterval(t);
-  },300);
+  const t=setInterval(()=>{p=Math.min(p+0.5,99);if(pbar) pbar.style.width=p+'%';if(p>=99) clearInterval(t);},300);
 }
 
 function startPayPbar(){
-  const pbar=document.getElementById('pay-pbar');
-  const ppct=document.getElementById('pay-pct');
+  const pbar=document.getElementById('pay-pbar');const ppct=document.getElementById('pay-pct');
   if(!pbar) return;
-  window._currentProgress=85;
-  pbar.style.width='85%';
-  if(ppct) ppct.textContent='85%';
+  window._currentProgress=85;pbar.style.width='85%';if(ppct) ppct.textContent='85%';
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
   const t=setInterval(()=>{
     const inc=window._currentProgress<93?0.3:0.05;
@@ -746,62 +594,32 @@ function startPayPbar(){
   window._payPbarInterval=t;
 }
 
-function startUnlockScreen(){
-  const msgs=['Tikrinami delnų duomenys...','Skaičiuojami rodikliai...','Analizuojamos gyvenimo linijos...','Ruošiama santykių įžvalga...','Skaičiuojama gyvenimo trukmės linija...','Ruošiama galutinė ataskaita...'];
-  const msgEl=document.getElementById('unlock-msg');
-  const pbar=document.getElementById('pbar2');
-  const pct=document.getElementById('unlock-pct');
-  let i=0;let p=0;
-  if(pbar) pbar.style.width='0%';
-  const iv=setInterval(()=>{
-    i=(i+1)%msgs.length;p=Math.min(p+15,95);
-    if(msgEl){msgEl.style.opacity='0';setTimeout(()=>{msgEl.textContent=msgs[i];msgEl.style.opacity='1';},300);}
-    if(pbar) pbar.style.width=p+'%';
-    if(pct) pct.textContent=p+'%';
-  },10000);
-  window._unlockInterval=iv;
-}
-
 function updatePersonalTxt(){
   const name=document.getElementById('i-name').value.trim();
   const el=document.getElementById('pay-personal-txt');
   if(!el) return;
-  el.textContent=name
-    ?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`
-    :'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
+  el.textContent=name?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`:'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
   if(name) window.userName=name;
 }
 
 function updatePayBtn(){
   const name=document.getElementById('i-name').value.trim();
-  const btn=document.getElementById('pay-btn');
-  if(!btn) return;
+  const btn=document.getElementById('pay-btn');if(!btn) return;
   btn.textContent=name?`ATRAKINTI ${name.toUpperCase()} ANALIZĘ →`:'ATRAKINTI MANO ANALIZĘ →';
 }
 
 function initQuickPay(){
-  const wrap=document.getElementById('quick-pay-wrap');
-  if(!wrap) return;
-  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
-  const isAndroid=/Android/.test(navigator.userAgent);
+  const wrap=document.getElementById('quick-pay-wrap');if(!wrap) return;
+  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);const isAndroid=/Android/.test(navigator.userAgent);
   const btn='border-radius:10px;padding:11px 8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:\'DM Sans\',sans-serif;width:100%';
-  if(isIOS){
-    wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;
-  }else if(isAndroid){
-    wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;
-  }else{
-    wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple</button><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button></div>`;
-  }
+  if(isIOS){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple Pay</button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;}
+  else if(isAndroid){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button><button onclick="quickPay('klarna')" style="background:#FFB3C7;color:#000;border:none;${btn}">klarna</button></div>`;}
+  else{wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px"><button onclick="quickPay('apple')" style="background:#000;color:#fff;border:none;${btn}"> Apple</button><button onclick="quickPay('google')" style="background:#fff;color:#000;border:none;${btn}"><span style="font-weight:800;color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#34A853">g</span><span style="color:#EA4335">l</span><span style="color:#4285F4">e</span></button><button onclick="quickPay('revolut')" style="background:#191C1F;color:#fff;border:1px solid #444;${btn}">Revolut</button></div>`;}
 }
 
 function quickPay(method){
-  const email=document.getElementById('i-email').value.trim();
-  const err=document.getElementById('info-err');
-  if(!email||!email.includes('@')){
-    if(err){err.textContent='Pirmiausia įvesk el. paštą';err.style.display='block';}
-    document.getElementById('i-email').focus();
-    return;
-  }
+  const email=document.getElementById('i-email').value.trim();const err=document.getElementById('info-err');
+  if(!email||!email.includes('@')){if(err){err.textContent='Pirmiausia įvesk el. paštą';err.style.display='block';}document.getElementById('i-email').focus();return;}
   if(err){err.style.display='none';err.textContent='';}
   initiatePayment();
 }
@@ -810,8 +628,7 @@ function validatePayForm(){
   const email=document.getElementById('i-email').value.trim();
   const valid=email.includes('@')&&email.includes('.');
   const btn=document.getElementById('pay-btn');
-  btn.disabled=!valid;
-  btn.style.opacity=valid?'1':'0.45';
+  btn.disabled=!valid;btn.style.opacity=valid?'1':'0.45';
   if(valid){const err=document.getElementById('info-err');if(err){err.style.display='none';err.textContent='';}}
   updatePayBtn();
 }
@@ -819,106 +636,70 @@ function validatePayForm(){
 function formatCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
 function formatExp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2) v=v.substring(0,2)+'/'+v.substring(2,4);el.value=v;}
 
-let stripeInstance=null;
-let stripeCardElement=null;
-let cardOpen=false;
+let stripeInstance=null;let stripeCardElement=null;let cardOpen=false;
 
 function toggleCard(){
-  const fields=document.getElementById('card-fields');
-  const arrow=document.getElementById('card-toggle-arrow');
+  const fields=document.getElementById('card-fields');const arrow=document.getElementById('card-toggle-arrow');
   cardOpen=!cardOpen;
   if(cardOpen){
-    fields.style.display='block';
-    if(arrow) arrow.textContent='▲';
+    fields.style.display='block';if(arrow) arrow.textContent='▲';
     if(!stripeInstance) initStripeElements();
-    setTimeout(()=>{
-      document.getElementById('card-section').scrollIntoView({behavior:'smooth',block:'start'});
-    },100);
-  }else{
-    fields.style.display='none';
-    if(arrow) arrow.textContent='▼';
-  }
+    setTimeout(()=>{document.getElementById('card-section').scrollIntoView({behavior:'smooth',block:'start'});},100);
+  }else{fields.style.display='none';if(arrow) arrow.textContent='▼';}
 }
 
 function initStripeElements(){
   if(stripeInstance) return;
   if(!window._stripeKey){setTimeout(initStripeElements,200);return;}
   stripeInstance=Stripe(window._stripeKey);
-  const elements=stripeInstance.elements({
-    appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',colorDanger:'#ff6b6b',fontFamily:'DM Sans, sans-serif',borderRadius:'8px'}}
-  });
-  stripeCardElement=elements.create('card',{
-    style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},invalid:{color:'#ff6b6b'}},
-    hidePostalCode:true
-  });
+  const elements=stripeInstance.elements({appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',colorDanger:'#ff6b6b',fontFamily:'DM Sans, sans-serif',borderRadius:'8px'}}});
+  stripeCardElement=elements.create('card',{style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},invalid:{color:'#ff6b6b'}},hidePostalCode:true});
   stripeCardElement.mount('#stripe-card-element');
-  stripeCardElement.on('change',e=>{
-    const errEl=document.getElementById('stripe-card-errors');
-    if(errEl) errEl.textContent=e.error?e.error.message:'';
-  });
+  stripeCardElement.on('change',e=>{const errEl=document.getElementById('stripe-card-errors');if(errEl) errEl.textContent=e.error?e.error.message:'';});
   const pr=stripeInstance.paymentRequest({country:'LT',currency:'eur',total:{label:'Delnų analizė',amount:599},requestPayerName:true,requestPayerEmail:true});
   window._stripePaymentRequest=pr;
   pr.canMakePayment().then(result=>{
-    const prWrap=document.getElementById('pr-button-wrap');
-    if(!prWrap) return;
+    const prWrap=document.getElementById('pr-button-wrap');if(!prWrap) return;
     if(result){
       const prElements=stripeInstance.elements();
       const prButton=prElements.create('paymentRequestButton',{paymentRequest:pr,style:{paymentRequestButton:{type:'default',theme:'dark',height:'44px'}}});
-      prButton.mount('#pr-button-mount');
-      prWrap.style.display='block';
+      prButton.mount('#pr-button-mount');prWrap.style.display='block';
       pr.on('paymentmethod',async(ev)=>{
-        const autoName=ev.payerName||'';
-        const autoEmail=ev.payerEmail||'';
+        const autoName=ev.payerName||'';const autoEmail=ev.payerEmail||'';
         window.userName=autoName;window.userEmail=autoEmail;
         const nameEl=document.getElementById('i-name');const emailEl=document.getElementById('i-email');
-        if(nameEl&&autoName) nameEl.value=autoName;
-        if(emailEl&&autoEmail) emailEl.value=autoEmail;
+        if(nameEl&&autoName) nameEl.value=autoName;if(emailEl&&autoEmail) emailEl.value=autoEmail;
         try{
           const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:autoName,email:autoEmail})});
-          const data=await res.json();
-          if(!data.clientSecret){ev.complete('fail');return;}
+          const data=await res.json();if(!data.clientSecret){ev.complete('fail');return;}
           window._paymentIntentId=data.paymentIntentId;
           const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
-          if(error){ev.complete('fail');return;}
-          ev.complete('success');
+          if(error){ev.complete('fail');return;}ev.complete('success');
           if(paymentIntent.status==='requires_action'){await stripeInstance.confirmCardPayment(data.clientSecret);}
           await onPaymentSuccess(autoName,autoEmail);
-        }catch(e){
-          ev.complete('fail');
-          const err=document.getElementById('order-err');
-          if(err){err.textContent='Klaida: '+e.message;err.style.display='block';}
-        }
+        }catch(e){ev.complete('fail');const err=document.getElementById('order-err');if(err){err.textContent='Klaida: '+e.message;err.style.display='block';}}
       });
     }else{if(prWrap) prWrap.style.display='none';}
   });
 }
 
 async function initiatePayment(){
-  const email=document.getElementById('i-email').value.trim();
-  const name=document.getElementById('i-name').value.trim();
+  const email=document.getElementById('i-email').value.trim();const name=document.getElementById('i-name').value.trim();
   const err=document.getElementById('order-err');
   if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';return;}
-  err.style.display='none';
-  window.userName=name;window.userEmail=email;
-  const btn=document.getElementById('pay-btn');
-  btn.disabled=true;btn.style.opacity='.6';
+  err.style.display='none';window.userName=name;window.userEmail=email;
+  const btn=document.getElementById('pay-btn');btn.disabled=true;btn.style.opacity='.6';
   try{
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
-    const data=await res.json();
-    if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
+    const data=await res.json();if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
     window._paymentIntentId=data.paymentIntentId;
     const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
     if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
     const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:{card:stripeCardElement,billing_details:{name:cardHolder,email}}});
     if(error) throw new Error(error.message);
-    if(paymentIntent.status==='succeeded'){
-      window._paymentIntentId=paymentIntent.id;
-      await onPaymentSuccess(name,email);
-    }else{throw new Error('Mokėjimas nepavyko: '+paymentIntent.status);}
-  }catch(e){
-    btn.disabled=false;btn.style.opacity='1';
-    err.textContent='Klaida: '+e.message;err.style.display='block';
-  }
+    if(paymentIntent.status==='succeeded'){window._paymentIntentId=paymentIntent.id;await onPaymentSuccess(name,email);}
+    else{throw new Error('Mokėjimas nepavyko: '+paymentIntent.status);}
+  }catch(e){btn.disabled=false;btn.style.opacity='1';err.textContent='Klaida: '+e.message;err.style.display='block';}
 }
 
 async function onPaymentSuccess(name,email){
@@ -931,140 +712,75 @@ async function onPaymentSuccess(name,email){
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
 
-  // KRITIŠKAI SVARBU: visam laikui paslėpti mokėjimo ekraną
   const infoScreen=document.getElementById('s-info');
   const stickyEl=document.getElementById('sticky-cta');
-  if(infoScreen){infoScreen.style.display='none';infoScreen.classList.remove('active');}
+  if(infoScreen) infoScreen.style.display='none';
   if(stickyEl) stickyEl.style.display='none';
 
-  // Sėkmės ekranas
   const successDiv=document.createElement('div');
-  successDiv.id='payment-success-overlay';
-  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity .4s ease;gap:24px';
+  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease;gap:24px';
   successDiv.innerHTML=`
-    <div style="position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center">
-      <div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,168,67,.3);animation:pulse3 2s ease-in-out infinite"></div>
-      <div style="position:absolute;inset:8px;border-radius:50%;border:1.5px solid rgba(212,168,67,.6);animation:pulse3 2s ease-in-out infinite .4s"></div>
-      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(212,168,67,.5)">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#07040f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
+    <div style="width:72px;height:72px;border-radius:50%;border:2px solid #d4a843;display:flex;align-items:center;justify-content:center;animation:pulse3 1.6s ease-in-out infinite">
+      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);animation:pulse3 1.6s ease-in-out infinite reverse"></div>
     </div>
     <div style="text-align:center">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
-      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Tavo ataskaita...</div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
+      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Jūsų ataskaita...</div>
     </div>`;
   document.body.appendChild(successDiv);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>successDiv.style.opacity='1'));
+  setTimeout(()=>successDiv.style.opacity='1',30);
 
-  // Po 2s — fetch rezultato, overlay lieka kol negauname atsakymo
   setTimeout(()=>{
-    const photoData=[];
-    if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-    if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-    fetch('/analyze-palm',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        photos:photoData,
-        name:window.userName||name,
-        token:window.palmToken||'',
-        sessionId:window.bgSessionId||''
-      })
-    }).then(r=>r.json()).then(result=>{
-      successDiv.style.opacity='0';
-      setTimeout(()=>{
-        successDiv.remove();
+    successDiv.style.transition='opacity .4s ease';successDiv.style.opacity='0';
+    setTimeout(()=>{
+      successDiv.remove();
+      const photoData=[];
+      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+      fetch('/analyze-palm',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
+      }).then(r=>r.json()).then(result=>{
         displayResult(result);
-      },400);
-    }).catch(err=>{
-      // Klaida — nerodyti mokėjimo ekrano, rodyti klaidos pranešimą overlay viduje
-      console.error('Analizės klaida:',err);
-      successDiv.innerHTML=`
-        <div style="text-align:center;padding:32px">
-          <div style="font-size:32px;margin-bottom:16px;opacity:.6">⚠️</div>
-          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">Analizė gaunama...</div>
-          <div style="font-size:13px;color:rgba(212,168,67,.7);line-height:1.6;margin-bottom:20px">Prašome palaukti kelias sekundes.<br>Jūsų ataskaita ruošiama.</div>
-          <button onclick="retryAnalysis('${name}','${window.palmToken||''}','${window.bgSessionId||''}')" style="background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:10px;padding:12px 24px;color:#07040f;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Bandyti dar kartą</button>
-        </div>`;
-    });
+      }).catch(()=>{
+        const errEl=document.getElementById('order-err');
+        if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
+        go('s-info');
+      });
+    },400);
   },2000);
 }
 
-async function retryAnalysis(name,token,sessionId){
-  const overlay=document.getElementById('payment-success-overlay');
-  if(overlay){overlay.innerHTML=`<div style="color:#d4a843;font-family:'Playfair Display',serif;font-size:18px">Kraunama...</div>`;}
-  const photoData=[];
-  if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-  if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-  try{
-    const r=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||name,token,sessionId})});
-    const result=await r.json();
-    if(overlay){overlay.style.opacity='0';setTimeout(()=>{overlay.remove();displayResult(result);},400);}
-  }catch(e){
-    if(overlay) overlay.innerHTML=`<div style="text-align:center;padding:32px"><div style="color:#fff;font-size:16px;margin-bottom:12px">Susisiekite su mumis.</div><div style="color:rgba(212,168,67,.7);font-size:13px">support@delnas.lt</div></div>`;
-  }
-}
-
-function showReminderModal(){
-  const modal=document.getElementById('reminder-modal');
-  if(modal){
-    modal.style.display='flex';
-    // Užpildyti email jei žinomas
-    const emailInput=document.getElementById('reminder-email');
-    if(emailInput&&window.userEmail) emailInput.value=window.userEmail;
-  }
-}
-function hideReminderModal(){
-  const modal=document.getElementById('reminder-modal');
-  if(modal) modal.style.display='none';
-}
+function showReminderModal(){const modal=document.getElementById('reminder-modal');if(modal){modal.style.display='flex';const emailInput=document.getElementById('reminder-email');if(emailInput&&window.userEmail) emailInput.value=window.userEmail;}}
+function hideReminderModal(){const modal=document.getElementById('reminder-modal');if(modal) modal.style.display='none';}
 async function submitReminder(){
-  const emailInput=document.getElementById('reminder-email');
-  const errEl=document.getElementById('reminder-err');
+  const emailInput=document.getElementById('reminder-email');const errEl=document.getElementById('reminder-err');
   const email=emailInput?emailInput.value.trim():'';
-  if(!email||!email.includes('@')){
-    if(errEl){errEl.textContent='Įveskite teisingą el. paštą.';errEl.style.display='block';}
-    return;
-  }
+  if(!email||!email.includes('@')){if(errEl){errEl.textContent='Įveskite teisingą el. paštą.';errEl.style.display='block';}return;}
   if(errEl) errEl.style.display='none';
   try{
-    const res=await fetch('/schedule-reminder',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,name:window.userName||''})
-    });
-    if(res.ok){
-      hideReminderModal();
-      const done=document.getElementById('reminder-done');
-      if(done) done.style.display='block';
-    }else{
-      if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}
-    }
-  }catch(e){
-    if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}
-  }
+    const res=await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||''})});
+    if(res.ok){hideReminderModal();const done=document.getElementById('reminder-done');if(done) done.style.display='block';}
+    else{if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
+  }catch(e){if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
 }
 
 function submitInfo(){initiatePayment();}
 function selPay(){}
 
-let camStream=null;
-let camHand='left';
-let photoLeft=null;
-let photoRight=null;
+let camStream=null;let camHand='left';let photoLeft=null;let photoRight=null;
+let cameraReady=false;let cameraLoading=false;
 
 function startApp(){
   camHand='left';photoLeft=null;photoRight=null;camStream=null;cameraReady=false;cameraLoading=false;
-  const prog=document.getElementById('cam-progress');
-  if(prog) prog.style.visibility='visible';
+  const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='visible';
   updateCameraUI();go('s-camera');
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
     camStream=stream;const video=document.getElementById('cam-video');
     video.srcObject=stream;video.onloadedmetadata=()=>{
       video.play();cameraReady=true;
-      const shutter=document.getElementById('cam-shutter');
-      const guide=document.getElementById('cam-guide');
+      const shutter=document.getElementById('cam-shutter');const guide=document.getElementById('cam-guide');
       if(shutter){shutter.disabled=false;shutter.style.opacity='1';}
       if(guide) guide.style.opacity='0';
       setTimeout(()=>{if(guide) guide.style.display='none';},400);
@@ -1076,16 +792,13 @@ function startApp(){
 function openCameraScreen(){startApp();}
 
 function updateCameraUI(){
-  const title=document.getElementById('cam-title');
-  const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');
+  const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');
   const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
-    title.textContent='Nufotografuokite kairįjį delną';
-    dot1.classList.remove('inactive');dot2.classList.add('inactive');
+    title.textContent='Nufotografuokite kairįjį delną';dot1.classList.remove('inactive');dot2.classList.add('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI KAIRĮJĮ DELNĄ';
   }else{
-    title.textContent='Nufotografuokite dešinįjį delną';
-    dot1.classList.remove('inactive');dot2.classList.remove('inactive');
+    title.textContent='Nufotografuokite dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
   if(hint&&!handVisible) hint.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';
@@ -1094,11 +807,8 @@ function updateCameraUI(){
 let handDetector=null;let handDetectLoop=null;let handVisible=false;
 
 async function startHandDetection(){
-  const shutter=document.getElementById('cam-shutter');
-  const hintTxt=document.getElementById('cam-hint-txt');
-  setHandDetected(false,shutter,hintTxt);
-  clearTimeout(window._handAutoTimer);
-  // Rodome patarimą iš karto
+  const shutter=document.getElementById('cam-shutter');const hintTxt=document.getElementById('cam-hint-txt');
+  setHandDetected(false,shutter,hintTxt);clearTimeout(window._handAutoTimer);
   if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nukreipkite kamerą į delną';}
   startSkinDetection(shutter,hintTxt);
 }
@@ -1122,13 +832,8 @@ function startSkinDetection(shutter,hintTxt){
 
 function setHandDetected(detected,shutter,hintTxt){
   if(detected===handVisible) return;handVisible=detected;
-  if(detected){
-    shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Delnas aptiktas — spauskite ✓';}
-  }else{
-    shutter.style.opacity='0.35';shutter.style.pointerEvents='none';
-    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nukreipkite kamerą į delną';}
-  }
+  if(detected){shutter.style.opacity='1';shutter.style.pointerEvents='auto';if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Delnas aptiktas — spauskite ✓';}}
+  else{shutter.style.opacity='0.35';shutter.style.pointerEvents='none';if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nukreipkite kamerą į delną';}}
 }
 
 function stopHandDetection(){
@@ -1190,10 +895,7 @@ function capturePhoto(){
     handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
     setTimeout(()=>{shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
     if(camHand==='left'){photoLeft=dataURL;camHand='right';updateCameraUI();}
-    else{
-      photoRight=dataURL;stopCamera();startBackgroundAnalysis();go('s-processing');
-      setTimeout(()=>{go('s-loading');animateLoading();},3000);
-    }
+    else{photoRight=dataURL;stopCamera();startBackgroundAnalysis();go('s-processing');setTimeout(()=>{go('s-loading');animateLoading();},3000);}
   },delay);
 }
 
@@ -1222,10 +924,7 @@ function startOracleCanvas(){
   if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
   const ctx=canvas.getContext('2d');const W=130,H=130,cx=65,cy=65;
   const particles=[];
-  for(let i=0;i<60;i++){
-    const angle=Math.random()*Math.PI*2;const r=20+Math.random()*28;
-    particles.push({angle,r,speed:(Math.random()-0.5)*0.012,alpha:Math.random(),size:Math.random()*1.6+0.3,drift:Math.random()*0.4-0.2});
-  }
+  for(let i=0;i<60;i++){const angle=Math.random()*Math.PI*2;const r=20+Math.random()*28;particles.push({angle,r,speed:(Math.random()-0.5)*0.012,alpha:Math.random(),size:Math.random()*1.6+0.3,drift:Math.random()*0.4-0.2});}
   const rings=[{tilt:0.4,speed:0.008,phase:0},{tilt:-0.4,speed:-0.007,phase:2.1},{tilt:0,speed:0.005,phase:4.2}];
   let t=0;
   function draw(){
@@ -1267,25 +966,14 @@ function animateLoading(){
   const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='hidden';
   const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');const ppct=document.getElementById('ppct');
   const loadScreen=document.getElementById('s-loading');
-
-  const stepTexts=[
-    'Atskleidžiamos Jūsų prigimtinės stiprybės ir unikalūs charakterio bruožai...',
-    'Nustatoma gyvenimo tikslo ir asmeninio pašaukimo kryptis...',
-    'Atliekama asmeninio gyvenimo ir santykių dėsningumų analizė...',
-    'Analizuojama finansinės laisvės bei materialinės sėkmės prognozė...',
-    'Apžvelgiami svarbiausi ateinančių metų gyvenimo pokyčiai...',
-    'Atskleidžiami paslėpti gebėjimai ir potencialo išnaudojimo būdai...',
-    'Nustatomos kliūtys, stabdančios asmeninę pažangą ir sėkmę...'
-  ];
+  const stepTexts=['Atskleidžiamos Jūsų prigimtinės stiprybės ir unikalūs charakterio bruožai...','Nustatoma gyvenimo tikslo ir asmeninio pašaukimo kryptis...','Atliekama asmeninio gyvenimo ir santykių dėsningumų analizė...','Analizuojama finansinės laisvės bei materialinės sėkmės prognozė...','Apžvelgiami svarbiausi ateinančių metų gyvenimo pokyčiai...','Atskleidžiami paslėpti gebėjimai ir potencialo išnaudojimo būdai...','Nustatomos kliūtys, stabdančios asmeninę pažangą ir sėkmę...'];
   [1,2,3,4,5,6,7].forEach(i=>{
     const el=document.getElementById('ls'+i);const st=document.getElementById('ls'+i+'-status');const txt=el&&el.querySelector('.ls-text');
-    if(el) el.classList.remove('active');
-    if(txt) txt.textContent=stepTexts[i-1];
+    if(el) el.classList.remove('active');if(txt) txt.textContent=stepTexts[i-1];
     if(st){st.textContent='·';st.style.color='rgba(245,238,216,.25)';st.style.animation='';st.style.fontSize='18px';}
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
-
   const totalSec=110;let elapsed=0;let pct=0;
   const t=setInterval(()=>{
     elapsed+=0.25;
@@ -1299,28 +987,14 @@ function animateLoading(){
     pct=Math.min(pct,85);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';
-    const processMsg=[
-      'Atskleidžiama Tavo unikali prigimtinė galia...',
-      'Nustatomas Tavo gyvenimo pašaukimas ir misija...',
-      'Analizuojami santykių dėsningumai...',
-      'Analizuojama Tavo finansinė laisvė ir sėkmė...',
-      'Dekoduojamos charakterio stiprybės...',
-      'Apžvelgiami artimiausi gyvenimo posūkiai...',
-      'Atskleidžiamos kliūtys ir jų priežastys...'
-    ];
-    const msgIdx=Math.min(Math.floor(elapsed/15),6);
-    if(ptime) ptime.textContent=processMsg[msgIdx];
+    const processMsg=['Atskleidžiama Tavo unikali prigimtinė galia...','Nustatomas Tavo gyvenimo pašaukimas ir misija...','Analizuojami santykių dėsningumai...','Analizuojama Tavo finansinė laisvė ir sėkmė...','Dekoduojamos charakterio stiprybės...','Apžvelgiami artimiausi gyvenimo posūkiai...','Atskleidžiamos kliūtys ir jų priežastys...'];
+    const msgIdx=Math.min(Math.floor(elapsed/15),6);if(ptime) ptime.textContent=processMsg[msgIdx];
     if(elapsed>=totalSec){
       clearInterval(t);if(ppct) ppct.textContent='85%';window._currentProgress=85;
       loadScreen.style.transition='opacity 1.2s ease';loadScreen.style.opacity='0';
-      setTimeout(()=>{
-        loadScreen.style.opacity='';loadScreen.style.transition='';
-        if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-        go('s-info');initQuickPay();initStripeElements();requestWakeLock();startPayPbar();
-      },1200);
+      setTimeout(()=>{loadScreen.style.opacity='';loadScreen.style.transition='';if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}go('s-info');initQuickPay();initStripeElements();requestWakeLock();startPayPbar();},1200);
     }
   },250);
-
   setTimeout(()=>activateStep(1,false),500);
   setTimeout(()=>{activateStep(1,true);activateStep(2,false);},15000);
   setTimeout(()=>{activateStep(2,true);activateStep(3,false);},30000);
@@ -1333,15 +1007,8 @@ function animateLoading(){
 function activateStep(n,done){
   const el=document.getElementById('ls'+n);const st=document.getElementById('ls'+n+'-status');
   if(!el||!st) return;el.classList.add('active');
-  if(done){
-    st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
-    st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';
-    st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
-  }else{
-    st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
-    st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';
-    st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';st.style.fontSize='0';st.style.flexShrink='0';
-  }
+  if(done){st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';}
+  else{st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';st.style.fontSize='0';st.style.flexShrink='0';}
 }
 
 async function callClaude(){
@@ -1355,7 +1022,6 @@ async function callClaude(){
 
 function pillIcon(text){
   const t=text.toLowerCase();
-  // SVG ikonos aukso spalvos — atitinka app stilių
   const svgOpts={
     brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
     star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
@@ -1396,7 +1062,6 @@ function displayResult(r){
   document.getElementById('r-love').innerHTML=formatText(r.santykiai);
   document.getElementById('r-finance').innerHTML=formatText(r.finansai);
   document.getElementById('r-gifts-text').innerHTML=formatText(r.pokyciai);
-  // VIII skyrius — premium savybių sąrašas
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
@@ -1408,23 +1073,17 @@ function displayResult(r){
   }
   document.getElementById('r-astro').innerHTML=formatText(r.galimybes);
   document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
-  document.getElementById('r-strengths').innerHTML='';
-  // Fade-in stebėjimas
+  // PATAISYTA: saugus tikrinimas prieš naudojimą
+  const rStr=document.getElementById('r-strengths');if(rStr) rStr.innerHTML='';
   const revealObserver=new IntersectionObserver((entries)=>{
     entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObserver.unobserve(e.target);}});
   },{threshold:0.12});
   document.querySelectorAll('.rs-reveal').forEach(el=>revealObserver.observe(el));
-
-  // V skyriaus veiksmų planas
   const actionEl=document.getElementById('r-action');
   if(actionEl&&r.klutys){
-    const klutysText=r.klutys||'';
-    const firstKlutys=klutysText.split(/\.\s+/)[0]||'';
-    if(firstKlutys){
-      actionEl.textContent=`Konkretus žingsnis: Ateinančius 30 dienų atkreipk dėmesį į tai — ${firstKlutys.toLowerCase().replace(/^[^a-ząčęėįšųūž]/,m=>m.toLowerCase())}. Tai yra tavo artimiausias augimo taškas.`;
-    }
+    const klutysText=r.klutys||'';const firstKlutys=klutysText.split(/\.\s+/)[0]||'';
+    if(firstKlutys){actionEl.textContent=`Konkretus žingsnis: Ateinančius 30 dienų atkreipk dėmesį į tai — ${firstKlutys.toLowerCase().replace(/^[^a-ząčęėįšųūž]/,m=>m.toLowerCase())}. Tai yra tavo artimiausias augimo taškas.`;}
   }
-
   go('s-result');
 }
 
@@ -1442,47 +1101,29 @@ function shareTo(platform){
   }
 }
 
-// Viralinis skyriaus dalinimasis — screenshot + share
 async function shareSection(){
   const section=document.querySelector('.rs.rs-feat');
   if(!section){shareTo('native');return;}
   try{
-    // Dinamiškai įkelti html2canvas
     if(!window.html2canvas){
       await new Promise((res,rej)=>{
         const s=document.createElement('script');
         s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload=res;s.onerror=rej;
-        document.head.appendChild(s);
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
       });
     }
-    const canvas=await html2canvas(section,{
-      backgroundColor:'#07040f',
-      scale:2,
-      useCORS:true,
-      logging:false
-    });
+    const canvas=await html2canvas(section,{backgroundColor:'#07040f',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async(blob)=>{
       if(!blob){shareTo('native');return;}
       const file=new File([blob],'delnas-analize.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare({files:[file]})){
-        await navigator.share({
-          title:'Mano delno skaitymas',
-          text:`${window.userName||'Mano'} delno skaitymas — bandyk pati! #delnaskaitymas`,
-          files:[file]
-        });
+        await navigator.share({title:'Mano delno skaitymas',text:`${window.userName||'Mano'} delno skaitymas — bandyk pati! #delnaskaitymas`,files:[file]});
       }else{
-        // Fallback — atsisiųsti paveikslėlį
-        const a=document.createElement('a');
-        a.href=canvas.toDataURL('image/png');
-        a.download='delnas-analize.png';
-        a.click();
+        const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='delnas-analize.png';a.click();
         setTimeout(()=>shareTo('native'),500);
       }
     },'image/png');
-  }catch(e){
-    shareTo('native');
-  }
+  }catch(e){shareTo('native');}
 }
 </script>
 </body>
