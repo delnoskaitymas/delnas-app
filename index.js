@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +13,66 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
 app.use('/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
+
+// --- Priminimų saugykla ---
+const REMINDERS_FILE = path.join(__dirname, 'reminders.json');
+
+function loadReminders() {
+  try {
+    if (fs.existsSync(REMINDERS_FILE)) return JSON.parse(fs.readFileSync(REMINDERS_FILE, 'utf8'));
+  } catch(e) {}
+  return [];
+}
+
+function saveReminders(reminders) {
+  try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
+}
+
+// Kasdieninis tikrinimas — kas valandą
+setInterval(async () => {
+  const reminders = loadReminders();
+  const now = Date.now();
+  const remaining = [];
+  for (const r of reminders) {
+    if (now >= r.sendAt) {
+      // Laikas siųsti priminimą
+      try {
+        await mailer.sendMail({
+          from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
+          to: r.email,
+          subject: `${r.name ? r.name + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
+          html: `
+            <div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto">
+              <div style="text-align:center;margin-bottom:24px">
+                <div style="font-size:28px;margin-bottom:8px">✦</div>
+                <div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">
+                  ${r.name ? r.name + ', atėjo laikas' : 'Atėjo laikas'}
+                </div>
+                <div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div>
+              </div>
+              <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">
+                Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas. Nauja analizė atskleis naujus atsakymus.
+              </div>
+              <div style="text-align:center">
+                <a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" 
+                   style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">
+                  ATLIKTI NAUJĄ ANALIZĘ →
+                </a>
+              </div>
+            </div>
+          `
+        });
+        console.log(`Priminimas išsiųstas: ${r.email}`);
+      } catch(e) {
+        console.error(`Priminimo klaida ${r.email}:`, e.message);
+        remaining.push(r); // Bandyti vėl
+      }
+    } else {
+      remaining.push(r);
+    }
+  }
+  if (remaining.length !== reminders.length) saveReminders(remaining);
+}, 60 * 60 * 1000); // kas valandą
 
 // --- Token sistema (po mokėjimo) ---
 const validTokens = new Map();
@@ -63,19 +124,19 @@ SVARBU — ANALIZĖS PRINCIPAI:
 
 SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
 
-prigimtine_galia — unikali prigimtinė galia ir potencialas: kokie unikalūs gebėjimai, stiprybės ir galimybės glūdi šio žmogaus prigimtyje
-gyvenimo_pasaukimas — tikrasis gyvenimo pašaukimas ir misija: ko šis žmogus ieško, koks jo tikrasis kelias ir gyvenimo tikslas
-santykiai — asmeninio gyvenimo ir santykių dėsningumai: kaip myli, ko ieško partnerijoje, kokie santykių modeliai ir dėsningumai
-finansai — finansinės laisvės ir materialinės sėkmės prognozė: finansinė trajektorija, karjeros galimybės, pinigų santykis
-stiprybes_dekoduotos — charakterio stiprybių ir sėkmės žymų dekodavimas: kokie charakterio bruožai veda į sėkmę, ką delno linijos atskleidžia
-gyvenimo_posukiai — artimiausio gyvenimo etapo posūkiai ir galimybės: kokie pokyčiai, galimybės ir svarbūs momentai laukia artimiausiu metu
-klutys — tikrosios priežastys ir kliūtys, stabdančios progresą: kas iki šiol stabdė, kokie vidiniai ar išoriniai barjerai
+prigimtines_stiprybes — prigimtinės stiprybės ir unikalūs charakterio bruožai: kokie giluminiai charakterio bruožai, talentai ir stiprybės glūdi šiame žmoguje, kas jį daro unikalų
+gyvenimo_tikslas — gyvenimo tikslo ir asmeninio pašaukimo kryptis: kur veda šio žmogaus gyvenimo kelias, kokia jo misija ir tikslas, ko jis iš tikrųjų siekia
+santykiai — asmeninio gyvenimo ir santykių dėsningumų analizė: kaip myli, ko ieško partnerijoje, kokie santykių modeliai ir dėsningumai
+finansai — finansinės laisvės bei materialinės sėkmės prognozė: finansinė trajektorija, karjeros galimybės, materialinės sėkmės kelias
+pokyciai — svarbiausi ateinančių metų gyvenimo pokyčiai: kokie reikšmingi pokyčiai, nauji etapai ir posūkiai laukia artimiausiu laikotarpiu
+galimybes — paslėpti gebėjimai ir potencialo išnaudojimo būdai: kokios neišnaudotos galimybės ir paslėpti gebėjimai laukia atskleidimo
+klutys — kliūtys, stabdančios asmeninę pažangą ir sėkmę: kokie vidiniai ir išoriniai barjerai stabdo augimą ir kaip juos atpažinti
 
 KIEKVIENAS skyrius: 5-6 trumpi, konkretūs sakiniai. Tik faktai. Be įžangų ir išvadų.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
-{"prigimtine_galia":"5-6 sakiniai","gyvenimo_pasaukimas":"5-6 sakiniai","santykiai":"5-6 sakiniai","finansai":"5-6 sakiniai","stiprybes_dekoduotos":"5-6 sakiniai","stiprybes_sarasas":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"],"gyvenimo_posukiai":"5-6 sakiniai","klutys":"5-6 sakiniai"}`
+{"prigimtines_stiprybes":"5-6 sakiniai","gyvenimo_tikslas":"5-6 sakiniai","santykiai":"5-6 sakiniai","finansai":"5-6 sakiniai","pokyciai":"5-6 sakiniai","galimybes":"5-6 sakiniai","stiprybes_sarasas":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"],"klutys":"5-6 sakiniai"}`
   });
 
   let data;
@@ -114,7 +175,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
   if (!jsonMatch) throw new Error('JSON nerastas');
 
   const result = JSON.parse(jsonMatch[0]);
-  if (!result || !result.prigimtine_galia) throw new Error('Netinkamas rezultatas');
+  if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
   return result;
 }
@@ -241,6 +302,20 @@ app.post('/analyze-palm', async (req, res) => {
       result.userName = userName;
     }
 
+    // Automatiškai užregistruoti priminimą po 3 mėnesių
+    const reminders = loadReminders();
+    const alreadyRegistered = reminders.find(r => r.email === tokenEntry.email);
+    if (!alreadyRegistered) {
+      reminders.push({
+        email: tokenEntry.email,
+        name: userName || '',
+        sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000),
+        createdAt: Date.now()
+      });
+      saveReminders(reminders);
+      console.log(`Priminimas automatiškai užregistruotas: ${tokenEntry.email}`);
+    }
+
     // El. laiškas siunčiamas fone — negrąžina klientui laukimo
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -259,14 +334,14 @@ app.post('/analyze-palm', async (req, res) => {
 
 function buildEmailHtml(userName, result) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#07040f;font-family:Georgia,serif"><div style="max-width:600px;margin:0 auto;padding:40px 24px"><div style="text-align:center;margin-bottom:32px"><div style="font-size:32px;margin-bottom:12px">✦</div><h1 style="color:#d4a843;font-size:24px;margin:0 0 6px">${userName ? userName + ' —' : ''} Tavo Delno Skaitymas</h1><p style="color:rgba(245,238,216,0.5);font-size:13px;margin:0;font-style:italic">Delno planetų kalnai · Chiromantija · Sielos žemėlapis</p></div>
-  ${section('Atskleista Jūsų unikali prigimtinė galia ir potencialas', result.prigimtine_galia)}
-  ${section('Tikrojo Jūsų gyvenimo pašaukimo ir misijos nustatymas', result.gyvenimo_pasaukimas)}
+  ${section('Prigimtinės stiprybės ir unikalūs charakterio bruožai', result.prigimtines_stiprybes)}
+  ${section('Gyvenimo tikslo ir asmeninio pašaukimo kryptis', result.gyvenimo_tikslas)}
   ${section('Asmeninio gyvenimo ir santykių dėsningumų analizė', result.santykiai)}
   ${section('Finansinės laisvės bei materialinės sėkmės prognozė', result.finansai)}
-  ${section('Jūsų charakterio stiprybių ir sėkmės žymų dekodavimas', result.stiprybes_dekoduotos)}
+  ${section('Paslėpti gebėjimai ir potencialo išnaudojimo būdai', result.galimybes)}
   ${pills(result.stiprybes_sarasas)}
-  ${section('Artimiausio gyvenimo etapo posūkių ir galimybių apžvalga', result.gyvenimo_posukiai)}
-  ${section('Tikrosios priežastys ir kliūtys, stabdančios Jūsų progresą', result.klutys)}
+  ${section('Svarbiausi ateinančių metų gyvenimo pokyčiai', result.pokyciai)}
+  ${section('Kliūtys, stabdančios asmeninę pažangą ir sėkmę', result.klutys)}
   <div style="text-align:center;padding-top:24px;border-top:0.5px solid rgba(212,168,67,0.15)"><p style="color:rgba(245,238,216,0.35);font-size:12px;line-height:1.7;margin:0;font-style:italic">Šis skaitymas sukurtas tik tau ✦<br>Išsaugok jį — galėsi grįžti ir perskaityti dar kartą</p></div></div></body></html>`;
 }
 
@@ -339,4 +414,29 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// --- ENDPOINT: Priminimas po 3 mėnesių ---
+app.post('/schedule-reminder', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email || !email.includes('@')) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+
+    const reminders = loadReminders();
+
+    // Patikrinti ar jau užregistruotas
+    const exists = reminders.find(r => r.email === email);
+    if (exists) return res.json({ ok: true, message: 'Jau užregistruota' });
+
+    // 3 mėnesiai nuo dabar
+    const sendAt = Date.now() + (90 * 24 * 60 * 60 * 1000);
+    reminders.push({ email, name: name || '', sendAt, createdAt: Date.now() });
+    saveReminders(reminders);
+
+    console.log(`Priminimas užregistruotas: ${email}, bus išsiųstas: ${new Date(sendAt).toLocaleDateString('lt-LT')}`);
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('Priminimo klaida:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`DELNAS v24 veikia: http://localhost:${PORT}`));
