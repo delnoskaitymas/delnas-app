@@ -17,7 +17,7 @@
 html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
-.screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .4s ease}
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .serif{font-family:'Playfair Display',serif}
@@ -95,7 +95,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-body p:last-child{margin-bottom:0}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
-.result-hero{text-align:center;padding:40px 20px 28px}
+.rs-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rs-reveal.visible{opacity:1;transform:translateY(0)}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
 .rh1{inset:0;border-color:rgba(212,168,67,.25);animation:sp 18s linear infinite}
 .rh2{inset:12px;border-color:rgba(212,168,67,.4);animation:sp 12s linear infinite reverse}
@@ -487,48 +488,48 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
   <div style="padding:0 16px 40px">
 
-    <div class="rs rs-feat">
+    <div class="rs rs-feat rs-reveal">
       <div class="rs-label">I · Prigimtinės stiprybės ir unikalūs charakterio bruožai</div>
       <div class="rs-body" id="r-char"></div>
+      <div id="r-gifts-pills" style="display:flex;flex-direction:column;gap:7px;margin-top:12px"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Ši galia visada buvo Tavyje — dabar žinai, kur ieškoti.</div>
-      <button onclick="shareTo('native')" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
+      <button onclick="shareSection()" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
     </div>
 
-    <div class="rs rs-feat">
+    <div class="rs rs-feat rs-reveal">
       <div class="rs-label">II · Gyvenimo tikslo ir asmeninio pašaukimo kryptis</div>
       <div class="rs-body" id="r-mission"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pašaukimas neieško tavęs — tu jau esi ant jo slenksčio.</div>
     </div>
 
-    <div class="rs rs-feat">
+    <div class="rs rs-feat rs-reveal">
       <div class="rs-label">III · Asmeninio gyvenimo ir santykių dėsningumų analizė</div>
       <div class="rs-body" id="r-love"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti save — tai pirmas žingsnis į tikrą meilę.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti save — tai pirmas žingsnis į tikrą meilę ir tikrą ryšį.</div>
     </div>
 
-    <div class="rs rs-std">
+    <div class="rs rs-std rs-reveal">
       <div class="rs-label">IV · Finansinės laisvės bei materialinės sėkmės prognozė</div>
       <div class="rs-body" id="r-finance"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Sėkmė nėra atsitiktinumas — ji jau užkoduota Tavo delne.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Sėkmė nėra atsitiktinumas — ji jau užkoduota Tavo delne. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
     </div>
 
-    <div class="rs rs-std">
+    <div class="rs rs-std rs-reveal">
       <div class="rs-label">V · Svarbiausi ateinančių metų gyvenimo pokyčiai</div>
       <div class="rs-body" id="r-gifts-text"></div>
-      <div class="pills" id="r-gifts-pills"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai ne tik bruožai — tai Tavo ginklai gyvenimo kelyje.</div>
+      <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai — tik tikimybė. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
     </div>
 
-    <div class="rs rs-std">
+    <div class="rs rs-std rs-reveal">
       <div class="rs-label">VI · Paslėpti gebėjimai ir potencialo išnaudojimo būdai</div>
       <div class="rs-body" id="r-astro"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Galimybės ateina tiems, kurie jas mato iš anksto.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas nerealizuotas — dar ne prarastas. Jis laukia Tavo sprendimo.</div>
     </div>
 
-    <div class="rs rs-std">
+    <div class="rs rs-std rs-reveal">
       <div class="rs-label">VII · Kliūtys, stabdančios asmeninę pažangą ir sėkmę</div>
       <div class="rs-body" id="r-challenges"></div>
-      <div class="pills" id="r-strengths"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Žinoti kliūtį — jau reiškia būti pusę kelio ją įveikus.</div>
     </div>
 
@@ -544,14 +545,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Tavo draugai nusipelnė žinoti</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Dauguma žmonių visą gyvenimą ieško šių atsakymų.<br>Padėk jiems rasti — pasidalink savo rezultatu.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button onclick="shareTo('whatsapp')" style="background:#25D366;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">WhatsApp</button>
-        <button onclick="shareTo('facebook')" style="background:#1877F2;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Facebook</button>
-        <button onclick="shareTo('instagram')" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Instagram</button>
-        <button onclick="shareTo('tiktok')" style="background:#010101;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">TikTok</button>
+        <button onclick="shareTo('whatsapp')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">WhatsApp</button>
+        <button onclick="shareTo('facebook')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Facebook</button>
+        <button onclick="shareTo('instagram')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Instagram</button>
+        <button onclick="shareTo('tiktok')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">TikTok</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif">Dalintis</button>
-        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Sans',sans-serif" id="copy-btn">Kopijuoti</button>
+        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Dalintis</button>
+        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em" id="copy-btn">Kopijuoti</button>
       </div>
     </div>
 
@@ -1371,10 +1372,35 @@ function displayResult(r){
   document.getElementById('r-love').innerHTML=formatText(r.santykiai);
   document.getElementById('r-finance').innerHTML=formatText(r.finansai);
   document.getElementById('r-gifts-text').innerHTML=formatText(r.pokyciai);
-  document.getElementById('r-gifts-pills').innerHTML=(r.stiprybes_sarasas||[]).map(d=>`<span class="pill">${pillIcon(d)} ${d}</span>`).join('');
+  // VIII skyrius — premium savybių sąrašas
+  const pillsContainer=document.getElementById('r-gifts-pills');
+  if(pillsContainer){
+    pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIcon(d)}</div>
+        <span style="font-size:13px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.02em">${d}</span>
+      </div>
+    `).join('');
+  }
   document.getElementById('r-astro').innerHTML=formatText(r.galimybes);
   document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
   document.getElementById('r-strengths').innerHTML='';
+  // Fade-in stebėjimas
+  const revealObserver=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObserver.unobserve(e.target);}});
+  },{threshold:0.12});
+  document.querySelectorAll('.rs-reveal').forEach(el=>revealObserver.observe(el));
+
+  // V skyriaus veiksmų planas
+  const actionEl=document.getElementById('r-action');
+  if(actionEl&&r.klutys){
+    const klutysText=r.klutys||'';
+    const firstKlutys=klutysText.split(/\.\s+/)[0]||'';
+    if(firstKlutys){
+      actionEl.textContent=`Konkretus žingsnis: Ateinančius 30 dienų atkreipk dėmesį į tai — ${firstKlutys.toLowerCase().replace(/^[^a-ząčęėįšųūž]/,m=>m.toLowerCase())}. Tai yra tavo artimiausias augimo taškas.`;
+    }
+  }
+
   go('s-result');
 }
 
@@ -1389,6 +1415,49 @@ function shareTo(platform){
     case 'tiktok':navigator.clipboard.writeText(text+'\n'+url).then(()=>{alert('Tekstas nukopijuotas! Įkelk į TikTok aprašymą.');});break;
     case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url});}else{navigator.clipboard.writeText(text+'\n'+url);alert('Nuoroda nukopijuota!');}break;
     case 'copy':navigator.clipboard.writeText(text+'\n'+url).then(()=>{const btn=document.getElementById('copy-btn');if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='Kopijuoti',2000);}});break;
+  }
+}
+
+// Viralinis skyriaus dalinimasis — screenshot + share
+async function shareSection(){
+  const section=document.querySelector('.rs.rs-feat');
+  if(!section){shareTo('native');return;}
+  try{
+    // Dinamiškai įkelti html2canvas
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res;s.onerror=rej;
+        document.head.appendChild(s);
+      });
+    }
+    const canvas=await html2canvas(section,{
+      backgroundColor:'#07040f',
+      scale:2,
+      useCORS:true,
+      logging:false
+    });
+    canvas.toBlob(async(blob)=>{
+      if(!blob){shareTo('native');return;}
+      const file=new File([blob],'delnas-analize.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare({files:[file]})){
+        await navigator.share({
+          title:'Mano delno skaitymas',
+          text:`${window.userName||'Mano'} delno skaitymas — bandyk pati! #delnaskaitymas`,
+          files:[file]
+        });
+      }else{
+        // Fallback — atsisiųsti paveikslėlį
+        const a=document.createElement('a');
+        a.href=canvas.toDataURL('image/png');
+        a.download='delnas-analize.png';
+        a.click();
+        setTimeout(()=>shareTo('native'),500);
+      }
+    },'image/png');
+  }catch(e){
+    shareTo('native');
   }
 }
 </script>
