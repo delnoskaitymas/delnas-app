@@ -286,13 +286,26 @@ app.post('/analyze-palm', async (req, res) => {
       }
     }
 
-    // Jei cache nebuvo arba nepavyko — paleisti naują analizę su nuotraukomis
+    // Jei cache nebuvo arba nepavyko — bandyti su nuotraukomis arba laukti dar
     if (!result) {
       if (!photos || photos.length === 0) {
-        return res.status(400).json({ error: 'Analizė dar nevykdyta. Bandykite dar kartą.' });
+        // Bandome palaukti dar 5s jei cache vis dar pending
+        if (sessionId) {
+          console.log('Nuotraukos tuščios, laukiame cache papildomai 5s...');
+          await new Promise(r => setTimeout(r, 5000));
+          const lateEntry = analysisCache.get(sessionId);
+          if (lateEntry && lateEntry.status === 'done' && lateEntry.result) {
+            result = lateEntry.result;
+            analysisCache.delete(sessionId);
+          }
+        }
+        if (!result) {
+          return res.status(400).json({ error: 'Analizė dar nebaigta. Prašome palaukti ir bandyti dar kartą.' });
+        }
+      } else {
+        console.log('Cache nerastas, paleidžiame naują analizę:', sessionId);
+        result = await runPalmAnalysis(photos, userName);
       }
-      console.log('Cache nerastas, paleidžiame naują analizę:', sessionId);
-      result = await runPalmAnalysis(photos, userName);
     }
 
     tokenEntry.used = true;
