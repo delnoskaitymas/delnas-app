@@ -666,25 +666,25 @@ async function verifyAndProceed(sessionId){
       document.body.appendChild(successDiv);
       requestAnimationFrame(()=>requestAnimationFrame(()=>successDiv.style.opacity='1'));
       setTimeout(()=>{
-        successDiv.style.opacity='0';
-        setTimeout(()=>{
-          successDiv.remove();
-          const photoData=[];
-          if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-          if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-          fetch('/analyze-palm',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
-          }).then(r=>r.json()).then(result=>{
-            displayResult(result);
-          }).catch(()=>go('s-result'));
-        },500);
+        const photoData=[];
+        if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+        if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+        fetch('/analyze-palm',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})
+        }).then(r=>r.json()).then(result=>{
+          successDiv.style.opacity='0';
+          setTimeout(()=>{successDiv.remove();displayResult(result);},400);
+        }).catch(()=>{
+          // Nerodyti mokėjimo ekrano — pasiūlyti bandyti dar kartą
+          successDiv.innerHTML=`<div style="text-align:center;padding:32px"><div style="font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:12px">Analizė gaunama...</div><button onclick="location.reload()" style="background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:10px;padding:12px 24px;color:#07040f;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Atnaujinti puslapį</button></div>`;
+        });
       },2000);
     }else{
-      go('s-info');
+      go('s-home');
     }
-  }catch(e){go('s-info');}
+  }catch(e){go('s-home');}
 }
 
 function waitForAnalysis(){
@@ -930,55 +930,79 @@ async function onPaymentSuccess(name,email){
   if(photoRight) sessionStorage.setItem('photoRight',photoRight);
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
-  const uName=window.userName||name;
 
-  // Iš karto paslėpti mokėjimo ekraną — nebeturi rodyti
+  // KRITIŠKAI SVARBU: visam laikui paslėpti mokėjimo ekraną
   const infoScreen=document.getElementById('s-info');
   const stickyEl=document.getElementById('sticky-cta');
-  if(infoScreen) infoScreen.style.display='none';
+  if(infoScreen){infoScreen.style.display='none';infoScreen.classList.remove('active');}
   if(stickyEl) stickyEl.style.display='none';
 
-  // Vienas minimalus ekranas: pulsas + tekstas
+  // Sėkmės ekranas
   const successDiv=document.createElement('div');
-  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease;gap:24px';
+  successDiv.id='payment-success-overlay';
+  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity .4s ease;gap:24px';
   successDiv.innerHTML=`
-    <div style="width:72px;height:72px;border-radius:50%;border:2px solid #d4a843;display:flex;align-items:center;justify-content:center;animation:pulse3 1.6s ease-in-out infinite">
-      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);animation:pulse3 1.6s ease-in-out infinite reverse"></div>
+    <div style="position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center">
+      <div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,168,67,.3);animation:pulse3 2s ease-in-out infinite"></div>
+      <div style="position:absolute;inset:8px;border-radius:50%;border:1.5px solid rgba(212,168,67,.6);animation:pulse3 2s ease-in-out infinite .4s"></div>
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(212,168,67,.5)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#07040f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
     </div>
     <div style="text-align:center">
-      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
-      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Jūsų ataskaita...</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
+      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Tavo ataskaita...</div>
     </div>`;
   document.body.appendChild(successDiv);
-  setTimeout(()=>successDiv.style.opacity='1',30);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>successDiv.style.opacity='1'));
 
-  // Po 2s — pasiimame iš cache su token ir sessionId
+  // Po 2s — fetch rezultato, overlay lieka kol negauname atsakymo
   setTimeout(()=>{
-    successDiv.style.transition='opacity .4s ease';
-    successDiv.style.opacity='0';
-    setTimeout(()=>{
-      successDiv.remove();
-      const photoData=[];
-      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-      fetch('/analyze-palm',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          photos:photoData,
-          name:window.userName||name,
-          token:window.palmToken||'',
-          sessionId:window.bgSessionId||''
-        })
-      }).then(r=>r.json()).then(result=>{
+    const photoData=[];
+    if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+    if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+    fetch('/analyze-palm',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        photos:photoData,
+        name:window.userName||name,
+        token:window.palmToken||'',
+        sessionId:window.bgSessionId||''
+      })
+    }).then(r=>r.json()).then(result=>{
+      successDiv.style.opacity='0';
+      setTimeout(()=>{
+        successDiv.remove();
         displayResult(result);
-      }).catch(()=>{
-        const errEl=document.getElementById('order-err');
-        if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-        go('s-info');
-      });
-    },400);
+      },400);
+    }).catch(err=>{
+      // Klaida — nerodyti mokėjimo ekrano, rodyti klaidos pranešimą overlay viduje
+      console.error('Analizės klaida:',err);
+      successDiv.innerHTML=`
+        <div style="text-align:center;padding:32px">
+          <div style="font-size:32px;margin-bottom:16px;opacity:.6">⚠️</div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">Analizė gaunama...</div>
+          <div style="font-size:13px;color:rgba(212,168,67,.7);line-height:1.6;margin-bottom:20px">Prašome palaukti kelias sekundes.<br>Jūsų ataskaita ruošiama.</div>
+          <button onclick="retryAnalysis('${name}','${window.palmToken||''}','${window.bgSessionId||''}')" style="background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:10px;padding:12px 24px;color:#07040f;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Bandyti dar kartą</button>
+        </div>`;
+    });
   },2000);
+}
+
+async function retryAnalysis(name,token,sessionId){
+  const overlay=document.getElementById('payment-success-overlay');
+  if(overlay){overlay.innerHTML=`<div style="color:#d4a843;font-family:'Playfair Display',serif;font-size:18px">Kraunama...</div>`;}
+  const photoData=[];
+  if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+  if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+  try{
+    const r=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||name,token,sessionId})});
+    const result=await r.json();
+    if(overlay){overlay.style.opacity='0';setTimeout(()=>{overlay.remove();displayResult(result);},400);}
+  }catch(e){
+    if(overlay) overlay.innerHTML=`<div style="text-align:center;padding:32px"><div style="color:#fff;font-size:16px;margin-bottom:12px">Susisiekite su mumis.</div><div style="color:rgba(212,168,67,.7);font-size:13px">support@delnas.lt</div></div>`;
+  }
 }
 
 function showReminderModal(){
