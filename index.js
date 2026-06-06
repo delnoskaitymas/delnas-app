@@ -238,13 +238,13 @@ RAŠYMO TAISYKLĖS:
 - Skyriai negali kartoti vienas kito — kiekvienas kalba tiktai apie savo sritį
 
 SKYRIŲ TURINYS:
-- prigimtines_stiprybes: prigimtinės stiprybės ir charakterio bruožai — kas šis žmogus iš prigimties, kokie jo įgimti talentai
-- gyvenimo_tikslas: tikroji gyvenimo kryptis — kur turėtų nukreipti pastangas, kur realizuojasi pilniausiai
-- santykiai: santykių ir bendravimo modeliai — kaip bendrauja, ko ieško santykiuose, kokie dėsningumai kartojasi
-- finansai: finansinis potencialas — jo santykis su pinigais, finansinio augimo galimybės ir kryptis
-- pokyciai: svarbiausi ateities pokyčiai — kokie reikšmingi pokyčiai artėja, kas keisis gyvenime
-- galimybes: unikalus sėkmės raktas — kokia savybė ar gebėjimas daro jį pranašesnį, kas išskiria iš kitų
-- klutys: pažangą stabdančios kliūtys — kokie vidiniai barjerai ir įpročiai stabdo jo augimą
+- prigimtines_stiprybes: prigimtinės stiprybės ir charakteris — kokie įgimti bruožai, talentai ir charakterio savybės
+- gyvenimo_tikslas: gyvenimo kryptis ir tikslai — kur turėtų nukreipti pastangas, kas teikia prasmę
+- santykiai: bendravimo būdas ir jo įtaka santykiams — kaip bendrauja, kokią įtaką daro kitiems, ko ieško ryšiuose
+- finansai: finansinis potencialas — santykis su pinigais, finansinio augimo galimybės
+- galimybes: unikalus sėkmės raktas — kokia savybė ar gebėjimas išskiria iš kitų, kur slypi pranašumas
+- pokyciai: svarbiausi artėjantys pokyčiai — kokie reikšmingi pokyčiai artėja gyvenime
+- klutys: pažangą stabdančios kliūtys — kokie vidiniai barjerai stabdo augimą ir sėkmę
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai kiekvienas)
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
@@ -293,6 +293,48 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
   return result;
 }
+
+// --- ENDPOINT: Greita delno validacija (prieš mokėjimą) ---
+app.post('/validate-palm', async (req, res) => {
+  try {
+    const { photos } = req.body;
+    if (!photos || photos.length === 0) return res.json({ valid: false, error: 'Nėra nuotraukų' });
+
+    const imageBlocks = photos.map(p => ({
+      type: 'image',
+      source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
+    }));
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 10,
+        temperature: 0,
+        messages: [{
+          role: 'user',
+          content: [
+            ...imageBlocks,
+            { type: 'text', text: 'Is there a human palm or hand clearly visible in this image? Answer only YES or NO.' }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const answer = (data.content?.[0]?.text || '').trim().toUpperCase();
+    const valid = answer.startsWith('YES');
+    res.json({ valid });
+  } catch(e) {
+    console.error('validate-palm klaida:', e.message);
+    res.json({ valid: true }); // Klaidos atveju leidžiame tęsti
+  }
+});
 
 // --- ENDPOINT: Paleisti foninę analizę ---
 app.post('/start-analysis', async (req, res) => {
