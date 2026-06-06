@@ -70,13 +70,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-track{width:100%;height:3px;background:rgba(212,168,67,.15);border-radius:50px;overflow:hidden;margin-bottom:4px}
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
-.load-steps{display:grid;gap:6px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border-left:2px solid rgba(212,168,67,.15);border-top:.5px solid rgba(212,168,67,.08);border-right:.5px solid rgba(212,168,67,.08);border-bottom:.5px solid rgba(212,168,67,.08);border-radius:0 9px 9px 0;padding:8px 10px;transition:all .5s ease;opacity:.45;transform:translateX(-4px)}
-.ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 12px rgba(212,168,67,.08)}
-.ls-icon{width:24px;height:24px;border-radius:6px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.load-steps{display:grid;gap:3px;width:100%;max-width:340px}
+.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(212,168,67,.06);border-right:.5px solid rgba(212,168,67,.06);border-bottom:.5px solid rgba(212,168,67,.06);border-radius:0 8px 8px 0;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px)}
+.ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 10px rgba(212,168,67,.08)}
+.ls.done{border-left:2px solid #4cff6a;background:rgba(76,255,106,.04);opacity:1;transform:translateX(0)}
+.ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
-.ls-text{flex:1;text-align:left;font-size:11px;line-height:1.35;color:rgba(245,238,216,.4);font-weight:400;font-style:italic}
-.ls.active .ls-text{color:var(--gold2);font-weight:500;font-style:normal}
+.ls.done .ls-icon{background:rgba(76,255,106,.12);border-color:#4cff6a}
+.ls-text{flex:1;text-align:left;font-size:11.5px;line-height:1.35;color:rgba(245,238,216,.3);font-weight:400;font-style:normal}
+.ls.active .ls-text{color:var(--gold2);font-weight:500}
+.ls.done .ls-text{color:rgba(245,238,216,.85);font-weight:500}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 6px rgba(240,201,106,.4)}50%{box-shadow:0 0 14px rgba(240,201,106,.9),0 0 24px rgba(240,201,106,.3)}}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -370,12 +373,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
     <div class="load-steps">
-      <div class="ls" id="ls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Nustatomos prigimtinės stiprybės ir charakteris.</div><div class="ls-status" id="ls1-status">·</div></div>
-      <div class="ls" id="ls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg></div><div class="ls-text">Ieškoma tikroji gyvenimo kryptis.</div><div class="ls-status" id="ls2-status">·</div></div>
-      <div class="ls" id="ls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg></div><div class="ls-text">Analizuojami santykių ir bendravimo modeliai.</div><div class="ls-status" id="ls3-status">·</div></div>
-      <div class="ls" id="ls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg></div><div class="ls-text">Vertinamas finansinis potencialas.</div><div class="ls-status" id="ls4-status">·</div></div>
+      <div class="ls" id="ls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="12" cy="8" r="1.5" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Identifikuojamos tavo prigimtinės stiprybės ir charakteris.</div><div class="ls-status" id="ls1-status">·</div></div>
+      <div class="ls" id="ls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg></div><div class="ls-text">Gryninama tavo gyvenimo kryptis ir tikslai.</div><div class="ls-status" id="ls2-status">·</div></div>
+      <div class="ls" id="ls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg></div><div class="ls-text">Analizuojamas tavo bendravimo būdas ir jo įtaka santykiams.</div><div class="ls-status" id="ls3-status">·</div></div>
+      <div class="ls" id="ls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".3"/></svg></div><div class="ls-text">Skaičiuojamas tavo finansinis potencialas.</div><div class="ls-status" id="ls4-status">·</div></div>
       <div class="ls" id="ls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Atrandamas tavo unikalus sėkmės raktas.</div><div class="ls-status" id="ls5-status">·</div></div>
-      <div class="ls" id="ls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Apžvelgiami svarbiausi ateities pokyčiai.</div><div class="ls-status" id="ls6-status">·</div></div>
+      <div class="ls" id="ls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg></div><div class="ls-text">Apžvelgiami svarbiausi artėjantys pokyčiai.</div><div class="ls-status" id="ls6-status">·</div></div>
       <div class="ls" id="ls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="ls-text">Identifikuojamos pažangą stabdančios kliūtys.</div><div class="ls-status" id="ls7-status">·</div></div>
     </div>
   </div>
@@ -408,12 +411,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <button onclick="shareSection()" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
     </div>
     <div class="rs rs-feat rs-reveal">
-      <div class="rs-label">II · Tikroji gyvenimo kryptis</div>
+      <div class="rs-label">II · Gyvenimo kryptis ir tikslai</div>
       <div class="rs-body" id="r-mission"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pašaukimas neieško tavęs — tu jau esi ant jo slenksčio.</div>
     </div>
     <div class="rs rs-feat rs-reveal">
-      <div class="rs-label">III · Santykių ir bendravimo modeliai</div>
+      <div class="rs-label">III · Bendravimo būdas ir jo įtaka santykiams</div>
       <div class="rs-body" id="r-love"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti save — tai pirmas žingsnis į tikrą meilę ir tikrą ryšį.</div>
     </div>
@@ -429,7 +432,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai — tik tikimybė. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
     </div>
     <div class="rs rs-std rs-reveal">
-      <div class="rs-label">VI · Svarbiausi ateities pokyčiai</div>
+      <div class="rs-label">VI · Svarbiausi artėjantys pokyčiai</div>
       <div class="rs-body" id="r-astro"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas nerealizuotas — dar ne prarastas. Jis laukia Tavo sprendimo.</div>
     </div>
@@ -1046,7 +1049,7 @@ function animateLoading(){
   const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='hidden';
   const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');const ppct=document.getElementById('ppct');
   const loadScreen=document.getElementById('s-loading');
-  const stepTexts=['Nustatomos prigimtinės stiprybės ir charakteris.','Ieškoma tikroji gyvenimo kryptis.','Analizuojami santykių ir bendravimo modeliai.','Vertinamas finansinis potencialas.','Atrandamas tavo unikalus sėkmės raktas.','Apžvelgiami svarbiausi ateities pokyčiai.','Identifikuojamos pažangą stabdančios kliūtys.'];
+  const stepTexts=['Identifikuojamos tavo prigimtinės stiprybės ir charakteris.','Gryninama tavo gyvenimo kryptis ir tikslai.','Analizuojamas tavo bendravimo būdas ir jo įtaka santykiams.','Skaičiuojamas tavo finansinis potencialas.','Atrandamas tavo unikalus sėkmės raktas.','Apžvelgiami svarbiausi artėjantys pokyčiai.','Identifikuojamos pažangą stabdančios kliūtys.'];
   [1,2,3,4,5,6,7].forEach(i=>{
     const el=document.getElementById('ls'+i);const st=document.getElementById('ls'+i+'-status');const txt=el&&el.querySelector('.ls-text');
     if(el) el.classList.remove('active');if(txt) txt.textContent=stepTexts[i-1];
@@ -1088,9 +1091,19 @@ function animateLoading(){
 
 function activateStep(n,done){
   const el=document.getElementById('ls'+n);const st=document.getElementById('ls'+n+'-status');
-  if(!el||!st) return;el.classList.add('active');
-  if(done){st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';}
-  else{st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';st.style.fontSize='0';st.style.flexShrink='0';}
+  if(!el||!st) return;
+  if(done){
+    el.classList.remove('active');el.classList.add('done');
+    st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
+    st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';
+    st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
+  }else{
+    el.classList.add('active');el.classList.remove('done');
+    st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
+    st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';
+    st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';
+    st.style.fontSize='0';st.style.flexShrink='0';
+  }
 }
 
 async function callClaude(){
