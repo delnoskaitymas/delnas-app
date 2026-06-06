@@ -913,23 +913,70 @@ function capturePhoto(){
   canvas.getContext('2d').drawImage(video,0,0);const dataURL=canvas.toDataURL('image/jpeg',0.85);
   frozen.style.backgroundImage=`url(${dataURL})`;frozen.classList.add('active');video.style.display='none';
   setTimeout(()=>rescan.classList.add('active'),60);setTimeout(()=>rescan.classList.remove('active'),720);
-  setTimeout(()=>{
-    const isLeft=camHand==='left';
-    document.getElementById('cam-title').textContent='Delnas sėkmingai užfiksuotas!';
+  const isLeftHand=camHand==='left';
+
+  if(isLeftHand){
+    // Kairysis — tik flash efektas, pereiti į dešinįjį, be sėkmės žinutės
+    setTimeout(()=>{
+      document.getElementById('cam-sub').style.display='none';
+      shutterWrap.style.display='none';
+    },200);
+    setTimeout(()=>{
+      frozen.classList.remove('active');frozen.style.backgroundImage='';
+      video.style.display='block';shutterWrap.style.display='';
+      document.getElementById('cam-sub').style.display='';
+      handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
+      setTimeout(()=>{shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
+      photoLeft=dataURL;camHand='right';updateCameraUI();
+    },1200);
+  } else {
+    // Dešinysis — NERODYTI sėkmės kol validacija nepatvirtins
+    frozen.classList.remove('active');frozen.style.backgroundImage='';
+    video.style.display='block';shutterWrap.style.display='none';
     document.getElementById('cam-sub').style.display='none';
-    scanOkText.textContent='Delnas sėkmingai užfiksuotas!';
-    scanOkSub.textContent=isLeft?'Dabar fotografuokite dešinįjį delną...':'';
-    scanOk.classList.add('active');shutterWrap.style.display='none';
-  },700);
-  const delay=2500;
-  setTimeout(()=>{
-    scanOk.classList.remove('active');frozen.classList.remove('active');frozen.style.backgroundImage='';
-    video.style.display='block';shutterWrap.style.display='';document.getElementById('cam-sub').style.display='';
-    handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
-    setTimeout(()=>{shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
-    if(camHand==='left'){photoLeft=dataURL;camHand='right';updateCameraUI();}
-    else{photoRight=dataURL;stopCamera();startBackgroundAnalysis();go('s-processing');setTimeout(()=>{go('s-loading');animateLoading();},3000);}
-  },delay);
+    document.getElementById('cam-title').textContent='Tikrinamas delnas...';
+    setTimeout(()=>{
+      photoRight=dataURL;
+      stopCamera();
+      // Validuoti ar nuotraukose yra delnai — prieš einant toliau
+      go('s-processing');
+      const photoData=[];
+      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+      fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData})})
+      .then(r=>r.json()).then(v=>{
+        if(!v.valid){
+          // Ne delnas — grįžti į kamerą su klaida, nerodyti sėkmės
+          photoLeft=null;photoRight=null;camHand='left';
+          go('s-camera');
+          startApp();
+          setTimeout(()=>{
+            const errDiv=document.createElement('div');
+            errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center;animation:fu .3s ease';
+            errDiv.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">⚠️ Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
+            document.body.appendChild(errDiv);
+            setTimeout(()=>errDiv.remove(),4000);
+          },300);
+        } else {
+          // Delnas patvirtintas — rodyti sėkmę ir tęsti
+          scanOkText.textContent='Delnai sėkmingai užfiksuoti!';
+          scanOkSub.textContent='';
+          scanOk.classList.add('active');
+          setTimeout(()=>{
+            scanOk.classList.remove('active');
+            startBackgroundAnalysis();
+            go('s-processing');
+            setTimeout(()=>{go('s-loading');animateLoading();},3000);
+          },1500);
+        }
+      }).catch(()=>{
+        // Tinklo klaida — tęsiame, serveris validuos vėliau
+        startBackgroundAnalysis();
+        go('s-processing');
+        setTimeout(()=>{go('s-loading');animateLoading();},3000);
+      });
+    },500);
+  }
 }
 
 window.bgSessionId=null;window.bgAnalysisDone=false;window.bgAnalysisError=null;
