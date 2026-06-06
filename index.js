@@ -35,7 +35,6 @@ setInterval(async () => {
   const remaining = [];
   for (const r of reminders) {
     if (now >= r.sendAt) {
-      // Laikas siųsti priminimą
       try {
         await mailer.sendMail({
           from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -65,14 +64,14 @@ setInterval(async () => {
         console.log(`Priminimas išsiųstas: ${r.email}`);
       } catch(e) {
         console.error(`Priminimo klaida ${r.email}:`, e.message);
-        remaining.push(r); // Bandyti vėl
+        remaining.push(r);
       }
     } else {
       remaining.push(r);
     }
   }
   if (remaining.length !== reminders.length) saveReminders(remaining);
-}, 60 * 60 * 1000); // kas valandą
+}, 60 * 60 * 1000);
 
 // --- Token sistema (po mokėjimo) ---
 const validTokens = new Map();
@@ -99,49 +98,132 @@ const mailer = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
 });
 
-// --- Pagrindinė Claude analizės funkcija ---
+// --- Pagrindinė Claude analizės funkcija (dviejų žingsnių) ---
 async function runPalmAnalysis(photos, name) {
-  const content = [];
-  for (const p of photos) {
-    content.push({
-      type: 'image',
-      source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
+
+  // Paruošiame nuotraukų bloką (naudojamas abiejuose žingsniuose)
+  const imageBlocks = photos.map(p => ({
+    type: 'image',
+    source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
+  }));
+
+  // ── ŽINGSNIS 1: Profesionali vizualinė delno diagnostika ──
+  const step1Body = JSON.stringify({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 1000,
+    temperature: 0.2,
+    messages: [{
+      role: 'user',
+      content: [
+        ...imageBlocks,
+        {
+          type: 'text',
+          text: `Tu esi patyręs chiromantijos specialistas. Pažvelk į abi delno nuotraukas (kairysis ir dešinysis) ir atlik tikslią vizualinę diagnostiką.
+
+Išmatuok ir aprašyk KIEKVIENĄ iš šių parametrų pagal tai, ką MATAI nuotraukose:
+
+1. DELNO FORMA: plotis vs ilgis, ar kvadratinis/pailgas/siauras, pirštų bazės plotis
+2. PIRŠTŲ ILGIAI: kuris pirštas ilgiausias, santykiai tarp pirštų, ar pirštai ilgi/trumpi lyginant su delnu
+3. ŠIRDIES LINIJA (viršutinė horizontali): ilgis, kreivumas, ar pasiekia smiliaus/vidurinio piršto pagrindą, ar tiesiai/išlenkta, gylis
+4. PROTO LINIJA (vidurinė horizontali): ilgis, kryptis (ar eina tiesiai ar žemyn), gylis, ar susijusi su gyvybės linija
+5. GYVYBĖS LINIJA (aplink nykštį): ilgis, ar plati/siaura kilpa, gylis, ar nutrūksta/tęsiasi
+6. LIKIMO LINIJA (vertikali per centrą): ar yra matoma, ilgis, ryškumas, nuo kur prasideda
+7. PAPILDOMOS LINIJOS IR ŽENKLAI: mažos horizontalios linijos, kryžiai, žvaigždutės, kvadratai, grandinėlės, pertrūkiai pagrindinėse linijose
+
+Grąžink TIKTAI JSON:
+{
+  "bruozai": [
+    "Delno forma: [tikslus aprašymas]",
+    "Pirštų ilgiai: [tikslus aprašymas]",
+    "Širdies linija: [tikslus aprašymas]",
+    "Proto linija: [tikslus aprašymas]",
+    "Gyvybės linija: [tikslus aprašymas]",
+    "Likimo linija: [tikslus aprašymas]",
+    "Papildomi ženklai: [tikslus aprašymas]"
+  ]
+}`
+        }
+      ]
+    }]
+  });
+
+  let step1Data;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: step1Body
     });
+    step1Data = await r.json();
+    if (step1Data?.error?.type === 'overloaded_error') {
+      console.log(`Žingsnis 1 perkrautas, bandymas ${attempt}/3...`);
+      if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
+      continue;
+    }
+    break;
   }
 
-  content.push({
-    type: 'text',
-    text: `Tu esi profesionalus chiromantijos ir žmogaus charakterio analitikas. Pažvelk į šias dvi delno nuotraukas ir pateik tikslią, profesionalią analizę lietuvių kalba.
+  // Ištraukiame bruožus iš 1 žingsnio
+  let bruozai = [];
+  try {
+    const step1Text = step1Data.content.map(b => b.text || '').join('');
+    const jsonMatch = step1Text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) bruozai = JSON.parse(jsonMatch[0]).bruozai || [];
+  } catch(e) {
+    console.warn('Žingsnis 1 JSON klaida, tęsiame be bruožų:', e.message);
+  }
 
-SVARBU — ANALIZĖS PRINCIPAI:
-- Rašyk tik konkrečius faktus ir teiginius apie šį žmogų
-- Jokios poezijos, metaforų ar pasakojimų
-- Jokio pamokslavimo ar patarimų kaip gyventi
-- Trumpi, tiesūs sakiniai — kaip gydytojo diagnozė
-- Kiekvienas skyrius kalba TIKTAI apie savo temą — jokio kartojimo
-- Kalba: taisyklinga lietuvių kalba, kreipkis "tu"
-- DRAUDŽIAMA minėti bet kokias laiko ar amžiaus nuorodas: "artimiausi metai", "artimiausiu metu", "po X metų", "X-Y metų amžiuje", "šiais metais" ir pan. Vietoj to kalbėk apie charakterio savybes ir tendencijas be laiko rėmų.
+  console.log('Žingsnis 1 bruožai:', bruozai);
 
-SKYRIAI — kiekvienas turi savo ATSKIRĄ temą:
+  // ── ŽINGSNIS 2: Analizė remiantis vizualiais bruožais ──
+  const bruozaiText = bruozai.length > 0
+    ? `Vizualiniai delno parametrai, kuriuos matai nuotraukose:\n${bruozai.map((b, i) => `${i+1}. ${b}`).join('\n')}\n\n`
+    : '';
 
-prigimtines_stiprybes — prigimtinės stiprybės ir unikalūs charakterio bruožai: kokie giluminiai charakterio bruožai, talentai ir stiprybės glūdi šiame žmoguje, kas jį daro unikalų
-gyvenimo_tikslas — gyvenimo tikslo ir asmeninio pašaukimo kryptis: kur veda šio žmogaus gyvenimo kelias, kokia jo misija ir tikslas, ko jis iš tikrųjų siekia
-santykiai — asmeninio gyvenimo ir santykių dėsningumų analizė: kaip myli, ko ieško partnerijoje, kokie santykių modeliai ir dėsningumai
-finansai — finansinės laisvės bei materialinės sėkmės prognozė: finansinė trajektorija, karjeros galimybės, materialinės sėkmės kelias
-pokyciai — svarbiausi ateinančių metų gyvenimo pokyčiai: kokie reikšmingi pokyčiai, nauji etapai ir posūkiai laukia artimiausiu laikotarpiu
-galimybes — paslėpti gebėjimai ir potencialo išnaudojimo būdai: kokios neišnaudotos galimybės ir paslėpti gebėjimai laukia atskleidimo
-klutys — kliūtys, stabdančios asmeninę pažangą ir sėkmę: kokie vidiniai ir išoriniai barjerai stabdo augimą ir kaip juos atpažinti
+  const step2Content = [
+    ...imageBlocks,
+    {
+      type: 'text',
+      text: `Tu esi profesionalus chiromantijos meistras su 20 metų patirtimi. Prieš tave yra kairio ir dešinio delno nuotraukos${name ? ` — žmogus vardu ${name}` : ''}.
 
-KIEKVIENAS skyrius: 5-6 trumpi, konkretūs sakiniai. Tik faktai. Be įžangų ir išvadų.
+Vizualinė diagnostika, kurią jau atlikei:
+${bruozaiText || '[žiūrėk į nuotraukas tiesiogiai]'}
+
+Remdamasis tuo, ką MATAI šiose nuotraukose, parašyk išsamią asmeninę chiromantijos analizę lietuvių kalba. Kalbėk kaip patyręs specialistas — tiesiogiai, konkrečiai, be dviprasmybių.
+
+RAŠYMO TAISYKLĖS:
+- Kiekvienas skyrius: 6–8 sakiniai
+- Kiekvienas teiginys turi būti pagrįstas konkrečia vizualine delno savybe, kurią matai
+- Rašyk tiesioginiais teiginiais: "Tu esi...", "Tavo...", "Šis...", "Matau, kad..."
+- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti" — tik tiesioginiai faktai
+- DRAUDŽIAMA: "širdies linija", "proto linija", "gyvybės linija" — nevardink linijų pavadinimų, tik aprašyk ką tai reiškia žmogui
+- DRAUDŽIAMA: laiko nuorodos su skaičiais — "po 2 metų", "šiais metais", "iki 30-ties"
+- Kalba: lietuvių, kreipkis "tu", stilius — šiltas bet profesionalus
+- Skyriai negali kartoti vienas kito — kiekvienas kalba tiktai apie savo sritį
+
+SKYRIŲ TURINYS:
+- prigimtines_stiprybes: kokie įgimti charakterio bruožai, talentai ir vidinė jėga — kas šį žmogų daro unikaliu
+- gyvenimo_tikslas: kur veda jo gyvenimo kryptis, kokia jo misija, kur realizuojasi pilniausiai
+- santykiai: kaip šis žmogus myli, ko ieško partnerijoje, kokie jo santykių modeliai ir polinkiai
+- finansai: jo santykis su pinigais ir materialiniu pasauliu, finansinis mąstymas, galimybės
+- pokyciai: kokie vidiniai ir išoriniai pokyčiai artėja, kas keičiasi jo gyvenime
+- galimybes: kokie neišnaudoti gebėjimai ir potencialas laukia atskleidimo
+- klutys: kokie vidiniai barjerai ir įpročiai stabdo jo augimą
+- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai kiekvienas)
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
-{"prigimtines_stiprybes":"5-6 sakiniai","gyvenimo_tikslas":"5-6 sakiniai","santykiai":"5-6 sakiniai","finansai":"5-6 sakiniai","pokyciai":"5-6 sakiniai","galimybes":"5-6 sakiniai","stiprybes_sarasas":["Stiprybė 1","Stiprybė 2","Stiprybė 3","Stiprybė 4","Stiprybė 5"],"klutys":"5-6 sakiniai"}`
-  });
+{"prigimtines_stiprybes":"6-8 sakiniai","gyvenimo_tikslas":"6-8 sakiniai","santykiai":"6-8 sakiniai","finansai":"6-8 sakiniai","pokyciai":"6-8 sakiniai","galimybes":"6-8 sakiniai","stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai"}`
+    }
+  ];
 
-  let data;
+  let step2Data;
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,26 +233,26 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 5000,
+        temperature: 0.2,
         messages: [
-          { role: 'user', content },
+          { role: 'user', content: step2Content },
           { role: 'assistant', content: '{' }
         ]
       })
     });
-    data = await response.json();
-
-    if (data?.error?.type === 'overloaded_error') {
-      console.log(`Overloaded, bandymas ${attempt}/3, laukiam ${attempt * 3} sek...`);
-      if (attempt < 3) await new Promise(r => setTimeout(r, 3000 * attempt));
+    step2Data = await r.json();
+    if (step2Data?.error?.type === 'overloaded_error') {
+      console.log(`Žingsnis 2 perkrautas, bandymas ${attempt}/3...`);
+      if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
       continue;
     }
     break;
   }
 
-  if (!data.content || data.content.length === 0) throw new Error('Tuščias Claude atsakymas');
-  if (data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
+  if (!step2Data.content || step2Data.content.length === 0) throw new Error('Tuščias Claude atsakymas');
+  if (step2Data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
 
-  const rawText = '{' + data.content.map(b => b.text || '').join('');
+  const rawText = '{' + step2Data.content.map(b => b.text || '').join('');
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('JSON nerastas');
 
@@ -251,7 +333,6 @@ app.post('/analyze-palm', async (req, res) => {
 
     const userName = name || tokenEntry.name || '';
 
-    // Jei cache jau done — grąžiname iš karto
     let result = null;
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
@@ -260,7 +341,6 @@ app.post('/analyze-palm', async (req, res) => {
         console.log('Cache done, grąžinama iš karto:', sessionId);
         analysisCache.delete(sessionId);
       } else if (cached.status === 'pending') {
-        // Laukiame max 8s — analizė turėjo baigti per 110s ekraną
         console.log('Cache pending, laukiame max 8s:', sessionId);
         await new Promise((resolve) => {
           let waited = 0;
@@ -281,15 +361,12 @@ app.post('/analyze-palm', async (req, res) => {
           analysisCache.delete(sessionId);
         }
       } else {
-        // error arba notfound
         analysisCache.delete(sessionId);
       }
     }
 
-    // Jei cache nebuvo arba nepavyko — bandyti su nuotraukomis arba laukti dar
     if (!result) {
       if (!photos || photos.length === 0) {
-        // Bandome palaukti dar 5s jei cache vis dar pending
         if (sessionId) {
           console.log('Nuotraukos tuščios, laukiame cache papildomai 5s...');
           await new Promise(r => setTimeout(r, 5000));
@@ -315,7 +392,6 @@ app.post('/analyze-palm', async (req, res) => {
       result.userName = userName;
     }
 
-    // Automatiškai užregistruoti priminimą po 3 mėnesių
     const reminders = loadReminders();
     const alreadyRegistered = reminders.find(r => r.email === tokenEntry.email);
     if (!alreadyRegistered) {
@@ -329,7 +405,6 @@ app.post('/analyze-palm', async (req, res) => {
       console.log(`Priminimas automatiškai užregistruotas: ${tokenEntry.email}`);
     }
 
-    // El. laiškas siunčiamas fone — negrąžina klientui laukimo
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
       to: tokenEntry.email,
@@ -427,19 +502,16 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-// --- ENDPOINT: Priminimas po 3 mėnesių ---
+
 app.post('/schedule-reminder', async (req, res) => {
   try {
     const { email, name } = req.body;
     if (!email || !email.includes('@')) return res.status(400).json({ error: 'Neteisingas el. paštas' });
 
     const reminders = loadReminders();
-
-    // Patikrinti ar jau užregistruotas
     const exists = reminders.find(r => r.email === email);
     if (exists) return res.json({ ok: true, message: 'Jau užregistruota' });
 
-    // 3 mėnesiai nuo dabar
     const sendAt = Date.now() + (90 * 24 * 60 * 60 * 1000);
     reminders.push({ email, name: name || '', sendAt, createdAt: Date.now() });
     saveReminders(reminders);
