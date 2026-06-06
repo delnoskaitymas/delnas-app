@@ -234,7 +234,7 @@ SKYRIAI:
 - pokyciai: kokie pokyčiai artėja šio žmogaus gyvenime
 - klutys: kas stabdo šį žmogų — kokie įpročiai ar mąstysena trukdo jam augti
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, paprasti ir konkretūs)
-- Kiekvienam skyriui "_insights": 3 LABAI trumpi, smogiantys sakiniai (max 8 žodžiai) — konkretus faktas apie šį žmogų, ne bendras teiginys. Pvz: "Stipriausias kai dirba vienas", "Pinigus leidžia protingai", "Sunkiai pasitiki naujais žmonėmis"
+- Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) kurie PAPILDO tekstą — ne kartoja jį. Kiekvienas insights turi būti NAUJAS faktas kurio nebuvo tekste. Jie turi tiksliai atitikti tą skyrių — finansų insights kalba tik apie pinigus, santykių — tik apie santykius. Pvz finansams: "Geriau taupyti nei skolintis", "Stabilumas svarbiau nei greitas pelnas". Pvz santykiams: "Mylėti giliai bet atsargiai", "Sunku atleisti išdavystę"
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
