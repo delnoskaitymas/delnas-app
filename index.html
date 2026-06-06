@@ -864,7 +864,7 @@ function setHandDetected(detected,shutter,hintTxt){
     shutter.style.pointerEvents='auto';
 
     if(guideSvg){
-      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}})
+      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
       guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
     }
@@ -877,7 +877,7 @@ function setHandDetected(detected,shutter,hintTxt){
     shutter.style.pointerEvents='none';
 
     if(guideSvg){
-      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}})
+      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}});
       guideSvg.style.opacity='.18';
       guideSvg.style.filter='none';
     }
@@ -927,30 +927,35 @@ function capturePhoto(){
   shutterSound();if(navigator.vibrate) navigator.vibrate([30,20,10]);
   canvas.width=video.videoWidth||640;canvas.height=video.videoHeight||480;
   canvas.getContext('2d').drawImage(video,0,0);const dataURL=canvas.toDataURL('image/jpeg',0.85);
-  frozen.style.backgroundImage=`url(${dataURL})`;frozen.classList.add('active');video.style.display='none';
+  frozen.style.backgroundImage='url('+dataURL+')';frozen.classList.add('active');video.style.display='none';
   setTimeout(()=>rescan.classList.add('active'),60);setTimeout(()=>rescan.classList.remove('active'),720);
   const isLeftHand=camHand==='left';
 
+  function showErr(msg){
+    const d=document.createElement('div');
+    d.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center';
+    d.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">'+msg+'</div>';
+    document.body.appendChild(d);setTimeout(()=>d.remove(),4000);
+  }
+
+  function resetCam(title){
+    frozen.classList.remove('active');frozen.style.backgroundImage='';
+    video.style.display='block';shutterWrap.style.display='';
+    document.getElementById('cam-sub').style.display='';
+    document.getElementById('cam-title').textContent=title;
+    handVisible=false;shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+  }
+
   if(isLeftHand){
-    // Kairysis — validuoti iš karto
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
     fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})})
     .then(r=>r.json()).then(v=>{
       if(!v.valid){
-        // Ne delnas — grįžti į kamerą
-        frozen.classList.remove('active');frozen.style.backgroundImage='';
-        video.style.display='block';shutterWrap.style.display='';
-        document.getElementById('cam-sub').style.display='';
-        document.getElementById('cam-title').textContent='Nufotografuokite kairįjį delną';
-        handVisible=false;shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-        const errDiv=document.createElement('div');
-        errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center';
-        errDiv.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">⚠️ Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">Prašome nufotografuoti atvirą delną</div>';
-        document.body.appendChild(errDiv);setTimeout(()=>errDiv.remove(),4000);
+        resetCam('Nufotografuokite kairiji delna');
+        showErr('Prasome nufotografuoti atvirata delna');
       } else {
-        // Delnas patvirtintas — pereiti į dešinįjį
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
         setTimeout(()=>{
           frozen.classList.remove('active');frozen.style.backgroundImage='';
@@ -962,7 +967,6 @@ function capturePhoto(){
         },800);
       }
     }).catch(()=>{
-      // Klaida — tęsiame
       document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
       setTimeout(()=>{
         frozen.classList.remove('active');frozen.style.backgroundImage='';
@@ -974,54 +978,35 @@ function capturePhoto(){
       },800);
     });
   } else {
-    // Dešinysis — pakeisti užrašą viršuje
-    document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
+    document.getElementById('cam-title').textContent='Tikrinamas delnas...';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
-    setTimeout(()=>{
-      frozen.classList.remove('active');frozen.style.backgroundImage='';
-      photoRight=dataURL;
-      stopCamera();
-      // Validuoti ar nuotraukose yra delnai — prieš einant toliau
-      go('s-processing');
-      const photoData=[];
-      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-      fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData})})
-      .then(r=>r.json()).then(v=>{
-        if(!v.valid){
-          // Ne delnas — iš naujo paleisti kamerą nuo pradžių
-          photoLeft=null;photoRight=null;camHand='left';handVisible=false;
-          camStream=null;cameraReady=false;
-          // Klaidos pranešimas
-          const errDiv=document.createElement('div');
-          errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center;animation:fu .3s ease';
-          errDiv.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">⚠️ Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
-          document.body.appendChild(errDiv);
-          setTimeout(()=>errDiv.remove(),4000);
-          // Iš naujo paleisti kamerą
-          startApp();
-        } else {
-          // Delnas patvirtintas — rodyti sėkmę ir tęsti
-          scanOkText.textContent='Delnai nufotografuoti!';
-          scanOkSub.textContent='';
-          scanOk.classList.add('active');
-          setTimeout(()=>{
-            scanOk.classList.remove('active');
-            startBackgroundAnalysis();
-            go('s-processing');
-            setTimeout(()=>{go('s-loading');animateLoading();},3000);
-          },1500);
-        }
-      }).catch(()=>{
-        // Tinklo klaida — tęsiame, serveris validuos vėliau
+    fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})})
+    .then(r=>r.json()).then(v=>{
+      if(!v.valid){
+        resetCam('Nufotografuokite desiniaji delna');
+        showErr('Prasome nufotografuoti atvirata delna');
+        return;
+      }
+      document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
+      setTimeout(()=>{
+        frozen.classList.remove('active');frozen.style.backgroundImage='';
+        photoRight=dataURL;
+        stopCamera();
         startBackgroundAnalysis();
         go('s-processing');
         setTimeout(()=>{go('s-loading');animateLoading();},3000);
-      });
-    },500);
+      },800);
+    }).catch(()=>{
+      photoRight=dataURL;
+      stopCamera();
+      startBackgroundAnalysis();
+      go('s-processing');
+      setTimeout(()=>{go('s-loading');animateLoading();},3000);
+    });
   }
 }
+
 
 window.bgSessionId=null;window.bgAnalysisDone=false;window.bgAnalysisError=null;
 
