@@ -99,6 +99,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .rs-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.insight-cards{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
+.insight-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:10px;opacity:0;transform:translateX(-12px);transition:opacity .5s ease,transform .5s ease}
+.insight-card.visible{opacity:1;transform:translateX(0)}
+.insight-dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);flex-shrink:0;box-shadow:0 0 8px rgba(240,201,106,.8);animation:insightPulse 2s ease-in-out infinite}
+.insight-text{font-size:12.5px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:500;line-height:1.4;letter-spacing:.01em}
+@keyframes insightPulse{0%,100%{box-shadow:0 0 4px rgba(240,201,106,.5)}50%{box-shadow:0 0 12px rgba(240,201,106,1),0 0 20px rgba(240,201,106,.4)}}
 .rs-reveal.visible{opacity:1;transform:translateY(0)}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
 .rh1{inset:0;border-color:rgba(212,168,67,.25);animation:sp 18s linear infinite}
@@ -406,6 +412,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">I · Prigimtinės stiprybės ir charakteris</div>
       <div class="rs-body" id="r-char"></div>
+      <div id="insights-char" class="insight-cards"></div>
       <div id="r-gifts-pills" style="display:flex;flex-direction:column;gap:7px;margin-top:12px"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Šios stiprybės yra tavo — jos niekur nedingsta ir visada su tavimi.</div>
       <button onclick="shareSection()" style="margin-top:10px;width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.25);border-radius:8px;padding:9px;color:var(--gold2);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Pasidalink šia įžvalga su draugu →</button>
@@ -413,32 +420,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">II · Gyvenimo kryptis ir tikslai</div>
       <div class="rs-body" id="r-mission"></div>
+      <div id="insights-mission" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kai žmogus eina savo keliu — viskas sekasi lengviau.</div>
     </div>
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">III · Bendravimo būdas ir jo įtaka santykiams</div>
       <div class="rs-body" id="r-love"></div>
+      <div id="insights-love" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti kaip tu bendraujį — tai pirmas žingsnis geresnių santykių link.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">IV · Finansinis potencialas</div>
       <div class="rs-body" id="r-finance"></div>
+      <div id="insights-finance" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pinigai eina paskui sprendimus. Tavo potencialas — reikia tik jį panaudoti.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">V · Unikalus sėkmės raktas</div>
       <div class="rs-body" id="r-gifts-text"></div>
+      <div id="insights-galimybes" class="insight-cards"></div>
       <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai, kas tave išskiria iš kitų — yra ir tavo didžiausias privalumas.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VI · Svarbiausi artėjantys pokyčiai</div>
       <div class="rs-body" id="r-astro"></div>
+      <div id="insights-astro" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pokyčiai visada atveria naujų galimybių — svarbu jų nepaleisti.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VII · Pažangą stabdančios kliūtys</div>
       <div class="rs-body" id="r-challenges"></div>
+      <div id="insights-challenges" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kas žino savo kliūtis — tas gali jas įveikti.</div>
     </div>
     <div class="result-final">
@@ -1173,16 +1186,38 @@ function pillIcon(text){
   return svgOpts.star;
 }
 
+function renderInsights(containerId, insights){
+  const el=document.getElementById(containerId);
+  if(!el||!insights||!insights.length) return;
+  el.innerHTML=insights.map(txt=>`
+    <div class="insight-card">
+      <div class="insight-dot"></div>
+      <div class="insight-text">${txt}</div>
+    </div>
+  `).join('');
+  // Animuoti su delay
+  setTimeout(()=>{
+    el.querySelectorAll('.insight-card').forEach((card,i)=>{
+      setTimeout(()=>card.classList.add('visible'),i*150);
+    });
+  },300);
+}
+
 function displayResult(r){
   if(r.userName) window.userName=r.userName;if(!r)return;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
   document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninė delnų analizė`:'✦ Tavo asmeninė delnų analizė';
   document.getElementById('r-char').innerHTML=formatText(r.prigimtines_stiprybes);
+  renderInsights('insights-char', r.prigimtines_insights);
   document.getElementById('r-mission').innerHTML=formatText(r.gyvenimo_tikslas);
+  renderInsights('insights-mission', r.gyvenimo_insights);
   document.getElementById('r-love').innerHTML=formatText(r.santykiai);
+  renderInsights('insights-love', r.santykiai_insights);
   document.getElementById('r-finance').innerHTML=formatText(r.finansai);
+  renderInsights('insights-finance', r.finansai_insights);
   document.getElementById('r-gifts-text').innerHTML=formatText(r.galimybes);
+  renderInsights('insights-galimybes', r.galimybes_insights);
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
@@ -1193,7 +1228,9 @@ function displayResult(r){
     `).join('');
   }
   document.getElementById('r-astro').innerHTML=formatText(r.pokyciai);
+  renderInsights('insights-astro', r.pokyciai_insights);
   document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
+  renderInsights('insights-challenges', r.klutys_insights);
   // PATAISYTA: saugus tikrinimas prieš naudojimą
   const rStr=document.getElementById('r-strengths');if(rStr) rStr.innerHTML='';
   const revealObserver=new IntersectionObserver((entries)=>{
