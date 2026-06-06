@@ -125,7 +125,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Is there a human palm/hand clearly visible in this image? Answer only YES or NO.'
+            text: 'Is a full open human palm clearly visible in this image, with fingers spread and the entire palm visible? Partial hands, fingertips only, blurry images, or non-hand objects should be NO. Answer only YES or NO.'
           }
         ]
       }]
@@ -320,7 +320,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Is there a human palm or hand clearly visible in this image? Answer only YES or NO.' }
+            { type: 'text', text: 'Is a full open human palm clearly visible and centered in this image, with the entire hand including fingers and palm base visible? It must NOT be just fingertips, partial hand, blurry, or a different object. Answer only YES or NO.' }
           ]
         }]
       })
