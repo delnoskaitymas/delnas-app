@@ -210,29 +210,30 @@ Grąžink TIKTAI JSON:
     ...imageBlocks,
     {
       type: 'text',
-      text: `Tu esi chiromantijos meistras su giliu šios mokslo srities išmanymu.${name ? ' Prieš tave — ' + name + ' delnai.' : ''}
+      text: `Tu esi chiromantijos specialistas.${name ? ' Prieš tave yra ' + name + ' delnai.' : ''}
 
-${bruozaiText ? 'Vizualinė diagnostika:\n' + bruozaiText + '\n' : ''}
+${bruozaiText ? bruozaiText + '\n' : ''}
 
-Parašyk profesionalią chiromantijos analizę lietuvių kalba pagal šias temas. Kalbėk tiesiai apie žmogų — jo charakterį, prigimtį, gyvenimo kelią, santykius, finansinį potencialą. Kiekvienas sakinys turi atskleisti kažką svarbaus ir tikslaus apie šį konkretų žmogų.
+Parašyk chiromantijos analizę lietuvių kalba. Rašyk paprastai ir aiškiai — kaip kalbėtum su žmogumi akis į akį. Jokių metaforų, jokių sudėtingų žodžių, jokių palyginimų su gamta ar elementais. Tik konkretūs, aiškūs sakiniai apie šį žmogų.
 
 TAISYKLĖS:
-- DRAUDŽIAMA minėti linijų pavadinimus, delno formą, pirštų ilgį ar bet kokias anatomines savybes
-- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti"
+- Rašyk paprastais, kasdieniais žodžiais — kad suprastų bet kas
+- DRAUDŽIAMA: metaforos, poetiniai pasakymai, gamtos palyginimai (akmuo, vanduo, ugnis, energija ir pan.)
+- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti" — tik tiesioginiai teiginiai
+- DRAUDŽIAMA: linijų pavadinimai, delno forma, pirštų ilgis
 - DRAUDŽIAMA: laiko nuorodos su skaičiais
-- Rašyk: "Tu esi...", "Tavo prigimtis...", "Tu linkęs...", "Tavo stiprybė..."
+- Kreipkis "tu", kalba — lietuvių
 - Kiekvienas skyrius: 6–8 sakiniai, skyriai nesikartoja
-- Kalba: lietuvių, kreipkis "tu"
 
 SKYRIAI:
-- prigimtines_stiprybes: kokie šio žmogaus prigimtiniai charakterio bruožai, įgimti talentai ir vidinė jėga
-- gyvenimo_tikslas: kur šis žmogus realizuojasi pilniausiai, kokia jo gyvenimo kryptis ir misija
-- santykiai: kaip šis žmogus myli ir bendrauja, ko ieško ryšiuose, kokios jo stiprybės ir silpnybės santykiuose
-- finansai: koks šio žmogaus santykis su pinigais ir materialiniu pasauliu, koks finansinis potencialas
-- galimybes: kokia unikali savybė išskiria jį iš kitų, kur slypi jo didžiausias pranašumas
-- pokyciai: kokie vidiniai pokyčiai ir augimas artėja šio žmogaus gyvenime
-- klutys: kokie vidiniai barjerai ir įpročiai stabdo šį žmogų nuo pilno potencialo realizavimo
-- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
+- prigimtines_stiprybes: kokie šio žmogaus charakterio bruožai ir stiprybės — kas jis yra iš prigimties
+- gyvenimo_tikslas: kur šis žmogus geriausiai realizuojasi, kokia jo kryptis gyvenime
+- santykiai: kaip šis žmogus elgiasi santykiuose, ko ieško, kas jam sekasi ir kas sunkiai sekasi
+- finansai: kaip šis žmogus elgiasi su pinigais, koks jo finansinis potencialas
+- galimybes: kokia savybė šį žmogų išskiria iš kitų, kur jo didžiausias pranašumas
+- pokyciai: kokie pokyčiai artėja šio žmogaus gyvenime
+- klutys: kas stabdo šį žmogų — kokie įpročiai ar mąstysena trukdo jam augti
+- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, paprasti ir konkretūs)
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
