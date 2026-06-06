@@ -222,7 +222,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <!-- Delnas -->
         <rect id="palm" x="18" y="96" width="124" height="110" rx="22" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
       </svg>
-      <div id="cam-guide-txt" style="font-size:11px;color:rgba(212,168,67,.45);letter-spacing:.08em;margin-top:6px;text-align:center;text-transform:uppercase;font-family:'DM Sans',sans-serif">Patalpinkite delną į siluetą</div>
+
     </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
@@ -247,7 +247,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .3s,transform .15s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
-    <div class="cam-hint" id="cam-hint-txt" style="display:none"></div>
+    
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -796,8 +796,16 @@ let camStream=null;let camHand='left';let photoLeft=null;let photoRight=null;
 let cameraReady=false;let cameraLoading=false;
 
 function startApp(){
-  camHand='left';photoLeft=null;photoRight=null;camStream=null;cameraReady=false;cameraLoading=false;
+  camHand='left';photoLeft=null;photoRight=null;camStream=null;cameraReady=false;cameraLoading=false;handVisible=false;
   const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='visible';
+  // Atstatyti visus kameros UI elementus
+  const sw=document.querySelector('.cam-shutter-wrap');if(sw) sw.style.display='';
+  const cs=document.getElementById('cam-sub');if(cs) cs.style.display='';
+  const sh=document.getElementById('cam-shutter');
+  if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
+  const guide=document.getElementById('cam-guide');if(guide){guide.style.display='';guide.style.opacity='1';}
+  const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
+  const video=document.getElementById('cam-video');if(video) video.style.display='block';
   updateCameraUI();go('s-camera');
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
@@ -834,7 +842,7 @@ let handDetector=null;let handDetectLoop=null;let handVisible=false;
 async function startHandDetection(){
   const shutter=document.getElementById('cam-shutter');const hintTxt=document.getElementById('cam-hint-txt');
   setHandDetected(false,shutter,hintTxt);clearTimeout(window._handAutoTimer);
-  if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nukreipkite kamerą į delną';}
+
   startSkinDetection(shutter,hintTxt);
 }
 
@@ -851,24 +859,24 @@ function setHandDetected(detected,shutter,hintTxt){
     shutter.disabled=false;
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
-    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Delnas aptiktas — spauskite ✓';}
+
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}})
       guideSvg.style.opacity='.55';
       guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
     }
-    if(guideTxt){guideTxt.textContent='Delnas aptiktas — fotografuojame';guideTxt.style.color='rgba(212,168,67,.8)';}
+
   }else{
     shutter.disabled=true;
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
-    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nematome delno. Laikykite ranką ryškiai apšviestoje vietoje';}
+
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}})
       guideSvg.style.opacity='.18';
       guideSvg.style.filter='none';
     }
-    if(guideTxt){guideTxt.textContent='Patalpinkite delną į siluetą';guideTxt.style.color='rgba(212,168,67,.4)';}
+
   }
 }
 
@@ -949,27 +957,17 @@ function capturePhoto(){
       fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData})})
       .then(r=>r.json()).then(v=>{
         if(!v.valid){
-          // Ne delnas — grįžti į kamerą, atstatyti visus elementus
+          // Ne delnas — iš naujo paleisti kamerą nuo pradžių
           photoLeft=null;photoRight=null;camHand='left';handVisible=false;
-          go('s-camera');
-          // Atstatyti kameros UI elementus
-          const sw=document.querySelector('.cam-shutter-wrap');
-          const cs=document.getElementById('cam-sub');
-          const ct=document.getElementById('cam-title');
-          const sh=document.getElementById('cam-shutter');
-          if(sw) sw.style.display='';
-          if(cs) cs.style.display='';
-          if(ct) ct.textContent='Nufotografuokite kairįjį delną';
-          if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
-          updateCameraUI();
+          camStream=null;cameraReady=false;
           // Klaidos pranešimas
-          setTimeout(()=>{
-            const errDiv=document.createElement('div');
-            errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center;animation:fu .3s ease';
-            errDiv.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">⚠️ Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
-            document.body.appendChild(errDiv);
-            setTimeout(()=>errDiv.remove(),4000);
-          },300);
+          const errDiv=document.createElement('div');
+          errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center;animation:fu .3s ease';
+          errDiv.innerHTML='<div style="font-size:14px;color:#f99;font-weight:600;margin-bottom:4px">⚠️ Delnas neaptiktas</div><div style="font-size:12px;color:rgba(249,153,153,.75)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
+          document.body.appendChild(errDiv);
+          setTimeout(()=>errDiv.remove(),4000);
+          // Iš naujo paleisti kamerą
+          startApp();
         } else {
           // Delnas patvirtintas — rodyti sėkmę ir tęsti
           scanOkText.textContent='Delnai sėkmingai užfiksuoti!';
