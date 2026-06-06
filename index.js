@@ -234,10 +234,11 @@ SKYRIAI:
 - pokyciai: kokie pokyčiai artėja šio žmogaus gyvenime
 - klutys: kas stabdo šį žmogų — kokie įpročiai ar mąstysena trukdo jam augti
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, paprasti ir konkretūs)
+- Kiekvienam skyriui "_insights": 3 LABAI trumpi, smogiantys sakiniai (max 8 žodžiai) — konkretus faktas apie šį žmogų, ne bendras teiginys. Pvz: "Stipriausias kai dirba vienas", "Pinigus leidžia protingai", "Sunkiai pasitiki naujais žmonėmis"
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
-{"prigimtines_stiprybes":"6-8 sakiniai","gyvenimo_tikslas":"6-8 sakiniai","santykiai":"6-8 sakiniai","finansai":"6-8 sakiniai","pokyciai":"6-8 sakiniai","galimybes":"6-8 sakiniai","stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai"}`
+{"prigimtines_stiprybes":"6-8 sakiniai","prigimtines_insights":["Trumpas teiginys apie šį žmogų","Trumpas teiginys","Trumpas teiginys"],"gyvenimo_tikslas":"6-8 sakiniai","gyvenimo_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"santykiai":"6-8 sakiniai","santykiai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"finansai":"6-8 sakiniai","finansai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"pokyciai":"6-8 sakiniai","pokyciai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"galimybes":"6-8 sakiniai","galimybes_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai","klutys_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"]}`
     }
   ];
 
