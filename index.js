@@ -107,6 +107,38 @@ async function runPalmAnalysis(photos, name) {
     source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
   }));
 
+  // ── VALIDACIJA: Ar nuotraukoje yra delnas? ──
+  const validationResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 20,
+      temperature: 0,
+      messages: [{
+        role: 'user',
+        content: [
+          ...imageBlocks,
+          {
+            type: 'text',
+            text: 'Is there a human palm/hand clearly visible in this image? Answer only YES or NO.'
+          }
+        ]
+      }]
+    })
+  });
+
+  const validationData = await validationResponse.json();
+  const validationText = (validationData.content?.[0]?.text || '').trim().toUpperCase();
+
+  if (!validationText.startsWith('YES')) {
+    throw new Error('NEDELNAS: Nuotraukoje nematome delno. Prašome nufotografuoti atvirą delną.');
+  }
+
   // ── ŽINGSNIS 1: Profesionali vizualinė delno diagnostika ──
   const step1Body = JSON.stringify({
     model: 'claude-sonnet-4-5',
@@ -206,13 +238,13 @@ RAŠYMO TAISYKLĖS:
 - Skyriai negali kartoti vienas kito — kiekvienas kalba tiktai apie savo sritį
 
 SKYRIŲ TURINYS:
-- prigimtines_stiprybes: kokie įgimti charakterio bruožai, talentai ir vidinė jėga — kas šį žmogų daro unikaliu
-- gyvenimo_tikslas: kur veda jo gyvenimo kryptis, kokia jo misija, kur realizuojasi pilniausiai
-- santykiai: kaip šis žmogus myli, ko ieško partnerijoje, kokie jo santykių modeliai ir polinkiai
-- finansai: jo santykis su pinigais ir materialiniu pasauliu, finansinis mąstymas, galimybės
-- pokyciai: kokie vidiniai ir išoriniai pokyčiai artėja, kas keičiasi jo gyvenime
-- galimybes: kokie neišnaudoti gebėjimai ir potencialas laukia atskleidimo
-- klutys: kokie vidiniai barjerai ir įpročiai stabdo jo augimą
+- prigimtines_stiprybes: prigimtinės stiprybės ir charakterio bruožai — kas šis žmogus iš prigimties, kokie jo įgimti talentai
+- gyvenimo_tikslas: tikroji gyvenimo kryptis — kur turėtų nukreipti pastangas, kur realizuojasi pilniausiai
+- santykiai: santykių ir bendravimo modeliai — kaip bendrauja, ko ieško santykiuose, kokie dėsningumai kartojasi
+- finansai: finansinis potencialas — jo santykis su pinigais, finansinio augimo galimybės ir kryptis
+- pokyciai: svarbiausi ateities pokyčiai — kokie reikšmingi pokyčiai artėja, kas keisis gyvenime
+- galimybes: unikalus sėkmės raktas — kokia savybė ar gebėjimas daro jį pranašesnį, kas išskiria iš kitų
+- klutys: pažangą stabdančios kliūtys — kokie vidiniai barjerai ir įpročiai stabdo jo augimą
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai kiekvienas)
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
@@ -416,6 +448,9 @@ app.post('/analyze-palm', async (req, res) => {
 
   } catch (err) {
     console.error('Klaida /analyze-palm:', err);
+    if (err.message.startsWith('NEDELNAS')) {
+      return res.json({ error: err.message }); // 200 su klaida — tokenas lieka galioti
+    }
     res.status(500).json({ error: err.message });
   }
 });
