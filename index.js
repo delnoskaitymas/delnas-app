@@ -150,28 +150,18 @@ async function runPalmAnalysis(photos, name) {
         ...imageBlocks,
         {
           type: 'text',
-          text: `Tu esi patyręs chiromantijos specialistas. Pažvelk į abi delno nuotraukas (kairysis ir dešinysis) ir atlik tikslią vizualinę diagnostiką.
-
-Išmatuok ir aprašyk KIEKVIENĄ iš šių parametrų pagal tai, ką MATAI nuotraukose:
-
-1. DELNO FORMA: plotis vs ilgis, ar kvadratinis/pailgas/siauras, pirštų bazės plotis
-2. PIRŠTŲ ILGIAI: kuris pirštas ilgiausias, santykiai tarp pirštų, ar pirštai ilgi/trumpi lyginant su delnu
-3. ŠIRDIES LINIJA (viršutinė horizontali): ilgis, kreivumas, ar pasiekia smiliaus/vidurinio piršto pagrindą, ar tiesiai/išlenkta, gylis
-4. PROTO LINIJA (vidurinė horizontali): ilgis, kryptis (ar eina tiesiai ar žemyn), gylis, ar susijusi su gyvybės linija
-5. GYVYBĖS LINIJA (aplink nykštį): ilgis, ar plati/siaura kilpa, gylis, ar nutrūksta/tęsiasi
-6. LIKIMO LINIJA (vertikali per centrą): ar yra matoma, ilgis, ryškumas, nuo kur prasideda
-7. PAPILDOMOS LINIJOS IR ŽENKLAI: mažos horizontalios linijos, kryžiai, žvaigždutės, kvadratai, grandinėlės, pertrūkiai pagrindinėse linijose
+          text: `Pažvelk į šias delno nuotraukas ir nustatyk 7 svarbiausius vizualinius požymius kurie atskleidžia šio žmogaus charakterį.
 
 Grąžink TIKTAI JSON:
 {
   "bruozai": [
-    "Delno forma: [tikslus aprašymas]",
-    "Pirštų ilgiai: [tikslus aprašymas]",
-    "Širdies linija: [tikslus aprašymas]",
-    "Proto linija: [tikslus aprašymas]",
-    "Gyvybės linija: [tikslus aprašymas]",
-    "Likimo linija: [tikslus aprašymas]",
-    "Papildomi ženklai: [tikslus aprašymas]"
+    "Energijos lygis ir vitalumas: [ką matai]",
+    "Emocinis gylis ir jautrumas: [ką matai]",
+    "Mąstymo tipas - analitinis ar intuityvus: [ką matai]",
+    "Ryžtas ir valios stiprumas: [ką matai]",
+    "Santykių su kitais pobūdis: [ką matai]",
+    "Ambicijų ir tikslų ryškumas: [ką matai]",
+    "Vidinė įtampa ar ramybė: [ką matai]"
   ]
 }`
         }
@@ -220,32 +210,29 @@ Grąžink TIKTAI JSON:
     ...imageBlocks,
     {
       type: 'text',
-      text: `Tu esi profesionalus chiromantijos meistras su 20 metų patirtimi. Prieš tave yra kairio ir dešinio delno nuotraukos${name ? ` — žmogus vardu ${name}` : ''}.
+      text: `Tu esi chiromantijos meistras su giliu šios mokslo srities išmanymu.${name ? ' Prieš tave — ' + name + ' delnai.' : ''}
 
-Vizualinė diagnostika, kurią jau atlikei:
-${bruozaiText || '[žiūrėk į nuotraukas tiesiogiai]'}
+${bruozaiText ? 'Vizualinė diagnostika:\n' + bruozaiText + '\n' : ''}
 
-Remdamasis tuo, ką MATAI šiose nuotraukose, parašyk išsamią asmeninę chiromantijos analizę lietuvių kalba. Kalbėk kaip patyręs specialistas — tiesiogiai, konkrečiai, be dviprasmybių.
+Parašyk profesionalią chiromantijos analizę lietuvių kalba pagal šias temas. Kalbėk tiesiai apie žmogų — jo charakterį, prigimtį, gyvenimo kelią, santykius, finansinį potencialą. Kiekvienas sakinys turi atskleisti kažką svarbaus ir tikslaus apie šį konkretų žmogų.
 
-RAŠYMO TAISYKLĖS:
-- Kiekvienas skyrius: 6–8 sakiniai
-- Kiekvienas teiginys turi būti pagrįstas konkrečia vizualine delno savybe, kurią matai
-- Rašyk tiesioginiais teiginiais: "Tu esi...", "Tavo...", "Šis...", "Matau, kad..."
-- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti" — tik tiesioginiai faktai
-- DRAUDŽIAMA: "širdies linija", "proto linija", "gyvybės linija" — nevardink linijų pavadinimų, tik aprašyk ką tai reiškia žmogui
-- DRAUDŽIAMA: laiko nuorodos su skaičiais — "po 2 metų", "šiais metais", "iki 30-ties"
-- Kalba: lietuvių, kreipkis "tu", stilius — šiltas bet profesionalus
-- Skyriai negali kartoti vienas kito — kiekvienas kalba tiktai apie savo sritį
+TAISYKLĖS:
+- DRAUDŽIAMA minėti linijų pavadinimus, delno formą, pirštų ilgį ar bet kokias anatomines savybes
+- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti"
+- DRAUDŽIAMA: laiko nuorodos su skaičiais
+- Rašyk: "Tu esi...", "Tavo prigimtis...", "Tu linkęs...", "Tavo stiprybė..."
+- Kiekvienas skyrius: 6–8 sakiniai, skyriai nesikartoja
+- Kalba: lietuvių, kreipkis "tu"
 
-SKYRIŲ TURINYS:
-- prigimtines_stiprybes: prigimtinės stiprybės ir charakteris — kokie įgimti bruožai, talentai ir charakterio savybės
-- gyvenimo_tikslas: gyvenimo kryptis ir tikslai — kur turėtų nukreipti pastangas, kas teikia prasmę
-- santykiai: bendravimo būdas ir jo įtaka santykiams — kaip bendrauja, kokią įtaką daro kitiems, ko ieško ryšiuose
-- finansai: finansinis potencialas — santykis su pinigais, finansinio augimo galimybės
-- galimybes: unikalus sėkmės raktas — kokia savybė ar gebėjimas išskiria iš kitų, kur slypi pranašumas
-- pokyciai: svarbiausi artėjantys pokyčiai — kokie reikšmingi pokyčiai artėja gyvenime
-- klutys: pažangą stabdančios kliūtys — kokie vidiniai barjerai stabdo augimą ir sėkmę
-- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai kiekvienas)
+SKYRIAI:
+- prigimtines_stiprybes: kokie šio žmogaus prigimtiniai charakterio bruožai, įgimti talentai ir vidinė jėga
+- gyvenimo_tikslas: kur šis žmogus realizuojasi pilniausiai, kokia jo gyvenimo kryptis ir misija
+- santykiai: kaip šis žmogus myli ir bendrauja, ko ieško ryšiuose, kokios jo stiprybės ir silpnybės santykiuose
+- finansai: koks šio žmogaus santykis su pinigais ir materialiniu pasauliu, koks finansinis potencialas
+- galimybes: kokia unikali savybė išskiria jį iš kitų, kur slypi jo didžiausias pranašumas
+- pokyciai: kokie vidiniai pokyčiai ir augimas artėja šio žmogaus gyvenime
+- klutys: kokie vidiniai barjerai ir įpročiai stabdo šį žmogų nuo pilno potencialo realizavimo
+- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
 
