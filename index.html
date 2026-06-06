@@ -73,13 +73,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .load-steps{display:grid;gap:3px;width:100%;max-width:340px}
 .ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(212,168,67,.06);border-right:.5px solid rgba(212,168,67,.06);border-bottom:.5px solid rgba(212,168,67,.06);border-radius:0 8px 8px 0;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px)}
 .ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 10px rgba(212,168,67,.08)}
-.ls.done{border-left:2px solid #4cff6a;background:rgba(76,255,106,.04);opacity:1;transform:translateX(0)}
+.ls.done{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0)}
 .ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
-.ls.done .ls-icon{background:rgba(76,255,106,.12);border-color:#4cff6a}
+.ls.done .ls-icon{background:rgba(212,168,67,.18);border-color:var(--gold)}
 .ls-text{flex:1;text-align:left;font-size:11.5px;line-height:1.35;color:rgba(245,238,216,.3);font-weight:400;font-style:normal}
 .ls.active .ls-text{color:var(--gold2);font-weight:500}
-.ls.done .ls-text{color:rgba(245,238,216,.85);font-weight:500}
+.ls.done .ls-text{color:var(--gold2);font-weight:600}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 6px rgba(240,201,106,.4)}50%{box-shadow:0 0 14px rgba(240,201,106,.9),0 0 24px rgba(240,201,106,.3)}}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -413,28 +413,28 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">II · Gyvenimo kryptis ir tikslai</div>
       <div class="rs-body" id="r-mission"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pašaukimas neieško tavęs — tu jau esi ant jo slenksčio.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tavo kryptis aiški. Belieka žengti pirmus žingsnius.</div>
     </div>
     <div class="rs rs-feat rs-reveal">
       <div class="rs-label">III · Bendravimo būdas ir jo įtaka santykiams</div>
       <div class="rs-body" id="r-love"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Suprasti save — tai pirmas žingsnis į tikrą meilę ir tikrą ryšį.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tavo bendravimo stilius — tavo stiprybė. Suprask jį ir jis atidarys tau duris.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">IV · Finansinis potencialas</div>
       <div class="rs-body" id="r-finance"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Sėkmė nėra atsitiktinumas — ji jau užkoduota Tavo delne. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tavo finansinis potencialas realus. Jis auga kartu su tavo patirtimi ir ryžtu.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">V · Unikalus sėkmės raktas</div>
       <div class="rs-body" id="r-gifts-text"></div>
       <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai — tik tikimybė. Tavo veiksmai šiandien nulems, kurią ateities versiją pasirinksi.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tavo unikalumas — tai ne atsitiktinumas. Jis laukia, kol tu jį panaudosi.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VI · Svarbiausi artėjantys pokyčiai</div>
       <div class="rs-body" id="r-astro"></div>
-      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas nerealizuotas — dar ne prarastas. Jis laukia Tavo sprendimo.</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Pokyčiai jau prasidėjo. Tavo užduotis — juos pamatyti ir eiti jų link.</div>
     </div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">VII · Pažangą stabdančios kliūtys</div>
@@ -1103,12 +1103,12 @@ function activateStep(n,done){
   if(done){
     el.classList.remove('active');el.classList.add('done');
     st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
-    st.textContent='✓';st.style.color='#4cff6a';st.style.fontSize='15px';
+    st.textContent='✓';st.style.color='var(--gold2)';st.style.fontSize='15px';st.style.textShadow='0 0 8px rgba(212,168,67,.8)';
     st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
   }else{
     el.classList.add('active');el.classList.remove('done');
     st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
-    st.style.border='2px solid rgba(212,168,67,.25)';st.style.borderTopColor='#d4a843';
+    st.style.border='2px solid rgba(212,168,67,.2)';st.style.borderTopColor='var(--gold2)';
     st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';
     st.style.fontSize='0';st.style.flexShrink='0';
   }
@@ -1164,7 +1164,7 @@ function displayResult(r){
   document.getElementById('r-mission').innerHTML=formatText(r.gyvenimo_tikslas);
   document.getElementById('r-love').innerHTML=formatText(r.santykiai);
   document.getElementById('r-finance').innerHTML=formatText(r.finansai);
-  document.getElementById('r-gifts-text').innerHTML=formatText(r.pokyciai);
+  document.getElementById('r-gifts-text').innerHTML=formatText(r.galimybes);
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
@@ -1174,7 +1174,7 @@ function displayResult(r){
       </div>
     `).join('');
   }
-  document.getElementById('r-astro').innerHTML=formatText(r.galimybes);
+  document.getElementById('r-astro').innerHTML=formatText(r.pokyciai);
   document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
   // PATAISYTA: saugus tikrinimas prieš naudojimą
   const rStr=document.getElementById('r-strengths');if(rStr) rStr.innerHTML='';
@@ -1182,11 +1182,7 @@ function displayResult(r){
     entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObserver.unobserve(e.target);}});
   },{threshold:0.12});
   document.querySelectorAll('.rs-reveal').forEach(el=>revealObserver.observe(el));
-  const actionEl=document.getElementById('r-action');
-  if(actionEl&&r.klutys){
-    const klutysText=r.klutys||'';const firstKlutys=klutysText.split(/\.\s+/)[0]||'';
-    if(firstKlutys){actionEl.textContent=`Konkretus žingsnis: Ateinančius 30 dienų atkreipk dėmesį į tai — ${firstKlutys.toLowerCase().replace(/^[^a-ząčęėįšųūž]/,m=>m.toLowerCase())}. Tai yra tavo artimiausias augimo taškas.`;}
-  }
+  const actionEl=document.getElementById('r-action');if(actionEl) actionEl.style.display='none';
   go('s-result');
 }
 
