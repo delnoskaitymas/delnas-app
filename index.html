@@ -949,10 +949,20 @@ function capturePhoto(){
       fetch('/validate-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData})})
       .then(r=>r.json()).then(v=>{
         if(!v.valid){
-          // Ne delnas — grįžti į kamerą su klaida, nerodyti sėkmės
-          photoLeft=null;photoRight=null;camHand='left';
+          // Ne delnas — grįžti į kamerą, atstatyti visus elementus
+          photoLeft=null;photoRight=null;camHand='left';handVisible=false;
           go('s-camera');
-          startApp();
+          // Atstatyti kameros UI elementus
+          const sw=document.querySelector('.cam-shutter-wrap');
+          const cs=document.getElementById('cam-sub');
+          const ct=document.getElementById('cam-title');
+          const sh=document.getElementById('cam-shutter');
+          if(sw) sw.style.display='';
+          if(cs) cs.style.display='';
+          if(ct) ct.textContent='Nufotografuokite kairįjį delną';
+          if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
+          updateCameraUI();
+          // Klaidos pranešimas
           setTimeout(()=>{
             const errDiv=document.createElement('div');
             errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center;animation:fu .3s ease';
