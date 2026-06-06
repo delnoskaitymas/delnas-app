@@ -203,15 +203,22 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
     <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .4s">
-      <svg width="100" height="120" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.15">
-        <rect x="40" y="2" width="14" height="60" rx="7" fill="#d4a843"/>
-        <rect x="58" y="2" width="14" height="68" rx="7" fill="#d4a843"/>
-        <rect x="76" y="6" width="14" height="64" rx="7" fill="#d4a843"/>
-        <rect x="22" y="14" width="14" height="54" rx="7" fill="#d4a843"/>
-        <rect x="22" y="56" width="82" height="72" rx="14" fill="#d4a843"/>
-        <rect x="4" y="52" width="20" height="40" rx="10" fill="#d4a843"/>
+      <!-- Natūralus žmogaus delno kontūras — viena ištisinė linija -->
+      <svg id="cam-guide-svg" width="160" height="220" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.30;transition:opacity .4s,filter .4s">
+        <!-- Mažasis pirštas -->
+        <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <!-- Bevardis pirštas -->
+        <rect id="p4" x="94" y="28" width="20" height="74" rx="10" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <!-- Vidurinis pirštas -->
+        <rect id="p3" x="68" y="18" width="22" height="84" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <!-- Rodomasis pirštas -->
+        <rect id="p2" x="42" y="26" width="22" height="76" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <!-- Nykštys -->
+        <rect id="p1" x="4" y="72" width="16" height="52" rx="8" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)" transform="rotate(-18 12 98)"/>
+        <!-- Delnas -->
+        <rect id="palm" x="18" y="96" width="124" height="110" rx="22" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
       </svg>
-      <div style="font-size:10px;color:rgba(212,168,67,.4);letter-spacing:.1em;margin-top:10px;text-align:center;text-transform:uppercase">Laikykite delną čia</div>
+      <div id="cam-guide-txt" style="font-size:11px;color:rgba(212,168,67,.45);letter-spacing:.08em;margin-top:6px;text-align:center;text-transform:uppercase;font-family:'DM Sans',sans-serif">Patalpinkite delną į siluetą</div>
     </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
@@ -741,6 +748,19 @@ async function onPaymentSuccess(name,email){
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
       }).then(r=>r.json()).then(result=>{
+        if(result.error && result.error.includes('NEDELNAS')) {
+          // Grąžinti į kamerą su klaidos pranešimu
+          camHand='left';photoLeft=null;photoRight=null;
+          go('s-camera');
+          setTimeout(()=>{
+            const errDiv=document.createElement('div');
+            errDiv.style.cssText='position:fixed;bottom:100px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:100;text-align:center';
+            errDiv.innerHTML='<div style="font-size:13px;color:#f99;font-weight:500;margin-bottom:4px">Nuotraukoje nematome delno</div><div style="font-size:11px;color:rgba(249,153,153,.7)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
+            document.body.appendChild(errDiv);
+            setTimeout(()=>errDiv.remove(), 4000);
+          }, 400);
+          return;
+        }
         displayResult(result);
       }).catch(()=>{
         const errEl=document.getElementById('order-err');
@@ -832,8 +852,29 @@ function startSkinDetection(shutter,hintTxt){
 
 function setHandDetected(detected,shutter,hintTxt){
   if(detected===handVisible) return;handVisible=detected;
-  if(detected){shutter.style.opacity='1';shutter.style.pointerEvents='auto';if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Delnas aptiktas — spauskite ✓';}}
-  else{shutter.style.opacity='0.35';shutter.style.pointerEvents='none';if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nukreipkite kamerą į delną';}}
+  const guideSvg=document.getElementById('cam-guide-svg');
+  const guideTxt=document.getElementById('cam-guide-txt');
+  if(detected){
+    shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Delnas aptiktas — spauskite ✓';}
+    // Siluetas tampa auksinis
+    if(guideSvg){
+      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}})
+      guideSvg.style.opacity='.55';
+      guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
+    }
+    if(guideTxt){guideTxt.textContent='Delnas aptiktas — fotografuojame';guideTxt.style.color='rgba(212,168,67,.8)';}
+  }else{
+    shutter.style.opacity='0.35';shutter.style.pointerEvents='none';
+    if(hintTxt){hintTxt.style.display='block';hintTxt.textContent='Nematome delno. Laikykite ranką ryškiai apšviestoje vietoje';}
+    // Siluetas grįžta į pilką
+    if(guideSvg){
+      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}})
+      guideSvg.style.opacity='.18';
+      guideSvg.style.filter='none';
+    }
+    if(guideTxt){guideTxt.textContent='Patalpinkite delną į siluetą';guideTxt.style.color='rgba(212,168,67,.4)';}
+  }
 }
 
 function stopHandDetection(){
