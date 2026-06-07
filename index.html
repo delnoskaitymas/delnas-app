@@ -930,20 +930,38 @@ function shutterSound(){
 
 function checkSkinArea(dataURL, minRatio){
   return new Promise(resolve=>{
-    const c=document.createElement('canvas');c.width=120;c.height=120;
+    const c=document.createElement('canvas');c.width=160;c.height=160;
     const ctx=c.getContext('2d');
     const img=new Image();
     img.onload=function(){
-      ctx.drawImage(img,0,0,120,120);
-      const d=ctx.getImageData(0,0,120,120).data;
+      ctx.drawImage(img,0,0,160,160);
+      const d=ctx.getImageData(0,0,160,160).data;
+      const total=160*160;
+      // Skaičiuojame odos pikselius visuose kvadrantuose
+      const quads=[0,0,0,0]; // viršus-kairė, viršus-dešinė, apačia-kairė, apačia-dešinė
       let skin=0;
-      for(let i=0;i<d.length;i+=4){
-        const r=d[i],g=d[i+1],b=d[i+2];
-        if(r>80&&g>40&&b>20&&r>g&&r>b&&r-b>20&&r<252) skin++;
+      for(let y=0;y<160;y++){
+        for(let x=0;x<160;x++){
+          const i=(y*160+x)*4;
+          const r=d[i],g=d[i+1],b=d[i+2];
+          // Platesni odos spalvos kriterijai (šviesūs, tamsūs, įvairūs atspalviai)
+          const isSkin=(
+            (r>95&&g>40&&b>20&&r>g&&r>b&&Math.abs(r-g)>15&&r<250) || // šviesi oda
+            (r>60&&g>30&&b>15&&r>g&&r>b&&r-b>15&&r<200)               // tamsesnė oda
+          );
+          if(isSkin){
+            skin++;
+            const qi=(y<80?0:2)+(x<80?0:1);
+            quads[qi]++;
+          }
+        }
       }
-      resolve(skin/(120*120)>=minRatio);
+      const ratio=skin/total;
+      // Tikrinti ar oda pasiskirsčiusi bent 2 kvadrantuose (visas delnas užima daugiau erdvės)
+      const nonEmptyQuads=quads.filter(q=>q>total*0.05).length;
+      resolve(ratio>=minRatio && nonEmptyQuads>=2);
     };
-    img.onerror=()=>resolve(true);
+    img.onerror=()=>resolve(false);
     img.src=dataURL;
   });
 }
@@ -994,7 +1012,7 @@ function capturePhoto(){
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
 
-    checkSkinArea(dataURL, 0.18).then(function(hasSkin){
+    checkSkinArea(dataURL, 0.30).then(function(hasSkin){
       if(!hasSkin){
         resetToCamera(title);
         showCamError('Delnas neaptiktas','Laikykite visą atvertą delną prieš kamerą');
