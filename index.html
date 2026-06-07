@@ -714,7 +714,7 @@ function initStripeElements(){
       prButton.mount('#pr-button-mount');prWrap.style.display='block';
       pr.on('paymentmethod',async(ev)=>{
         const autoName=ev.payerName||'';const autoEmail=ev.payerEmail||'';
-        window.userName=autoName;window.userEmail=autoEmail;
+        window.userName=autoName;window.userEmail=autoEmail;window._userEmail=autoEmail;
         const nameEl=document.getElementById('i-name');const emailEl=document.getElementById('i-email');
         if(nameEl&&autoName) nameEl.value=autoName;if(emailEl&&autoEmail) emailEl.value=autoEmail;
         try{
@@ -735,7 +735,7 @@ async function initiatePayment(){
   const email=document.getElementById('i-email').value.trim();const name=document.getElementById('i-name').value.trim();
   const err=document.getElementById('order-err');
   if(!email||!email.includes('@')){err.textContent='Įvesk teisingą el. paštą';err.style.display='block';return;}
-  err.style.display='none';window.userName=name;window.userEmail=email;
+  err.style.display='none';window.userName=name;window.userEmail=email;window._userEmail=email;
   const btn=document.getElementById('pay-btn');btn.disabled=true;btn.style.opacity='.6';
   try{
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
@@ -1300,7 +1300,7 @@ function displayResult(r){window._palmResult=r;window._shareUrl=null;
 }
 
 async function registerReminder(){
-  const email = window._userEmail;
+  const email = window._userEmail || window.userEmail || window.palmEmail || '';
   const name = window._userName || window.userName || '';
   if(!email){
     alert('El. pašto adresas nerastas. Priminimas negali būti užregistruotas.');
