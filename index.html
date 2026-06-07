@@ -958,8 +958,8 @@ function checkSkinArea(dataURL, minRatio){
       }
       const ratio=skin/total;
       // Tikrinti ar oda pasiskirsčiusi bent 2 kvadrantuose (visas delnas užima daugiau erdvės)
-      const nonEmptyQuads=quads.filter(q=>q>total*0.05).length;
-      resolve(ratio>=minRatio && nonEmptyQuads>=2);
+      const nonEmptyQuads=quads.filter(q=>q>total*0.03).length;
+      resolve(ratio>=minRatio && nonEmptyQuads>=1);
     };
     img.onerror=()=>resolve(false);
     img.src=dataURL;
@@ -1012,7 +1012,7 @@ function capturePhoto(){
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
 
-    checkSkinArea(dataURL, 0.30).then(function(hasSkin){
+    checkSkinArea(dataURL, 0.12).then(function(hasSkin){
       if(!hasSkin){
         resetToCamera(title);
         showCamError('Delnas neaptiktas','Laikykite visą atvertą delną prieš kamerą');
