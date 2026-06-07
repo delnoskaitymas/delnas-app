@@ -125,7 +125,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Is there a human hand visible in this image? Answer YES if you can see a hand. Answer NO only if there is no human hand at all. Answer only YES or NO.'
+            text: 'Look at this image. Is this a photo of an open human PALM (the inner side of a hand, with fingers spread)? Answer YES only if it is clearly a palm facing the camera. Answer NO if it is: a face, head, fingertips only, the back of a hand, a body part other than palm, a table, or any object. Answer only YES or NO.'
           }
         ]
       }]
@@ -309,7 +309,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Is there a human hand visible in this image? Answer YES if you can see a hand. Answer NO only if there is no human hand at all. Answer only YES or NO.' }
+            { type: 'text', text: 'Look at this image. Is this a photo of an open human PALM (the inner side of a hand, with fingers spread)? Answer YES only if it is clearly a palm facing the camera. Answer NO if it is: a face, head, fingertips only, the back of a hand, a body part other than palm, a table, or any object. Answer only YES or NO.' }
           ]
         }]
       })
