@@ -125,7 +125,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Is there a human hand visible in this image? Answer YES if you can clearly see a hand with fingers. Answer NO only if there is clearly no human hand — such as a table, floor, or object with no hand present. Answer only YES or NO.'
+            text: 'Look at this image carefully. Answer YES only if you can see a human palm with at least 3-4 fingers AND the palm area clearly visible — not just fingertips. If you see only fingertips, a partial view with no palm, a table, floor, or any non-hand object — answer NO. Answer only YES or NO.'
           }
         ]
       }]
@@ -309,7 +309,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Is there a human hand visible in this image? Answer YES if you can clearly see a hand with fingers. Answer NO only if there is clearly no human hand — such as a table, floor, or object with no hand present. Answer only YES or NO.' }
+            { type: 'text', text: 'Look at this image carefully. Answer YES only if you can see a human palm with at least 3-4 fingers AND the palm area clearly visible — not just fingertips. If you see only fingertips, a partial view with no palm, a table, floor, or any non-hand object — answer NO. Answer only YES or NO.' }
           ]
         }]
       })
