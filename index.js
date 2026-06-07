@@ -1,4 +1,4 @@
-// v24 — foninė analizė prieš mokėjimą
+// v25 — švariai perrašyta
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require('nodemailer');
@@ -28,7 +28,6 @@ function saveReminders(reminders) {
   try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
 }
 
-// Kasdieninis tikrinimas — kas valandą
 setInterval(async () => {
   const reminders = loadReminders();
   const now = Date.now();
@@ -40,26 +39,7 @@ setInterval(async () => {
           from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
           to: r.email,
           subject: `${r.name ? r.name + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-          html: `
-            <div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto">
-              <div style="text-align:center;margin-bottom:24px">
-                <div style="font-size:28px;margin-bottom:8px">✦</div>
-                <div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">
-                  ${r.name ? r.name + ', atėjo laikas' : 'Atėjo laikas'}
-                </div>
-                <div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div>
-              </div>
-              <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">
-                Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas. Nauja analizė atskleis naujus atsakymus.
-              </div>
-              <div style="text-align:center">
-                <a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" 
-                   style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">
-                  ATLIKTI NAUJĄ ANALIZĘ →
-                </a>
-              </div>
-            </div>
-          `
+          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? r.name + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">ATLIKTI NAUJĄ ANALIZĘ →</a></div></div>`
         });
         console.log(`Priminimas išsiųstas: ${r.email}`);
       } catch(e) {
@@ -73,7 +53,7 @@ setInterval(async () => {
   if (remaining.length !== reminders.length) saveReminders(remaining);
 }, 60 * 60 * 1000);
 
-// --- Token sistema (po mokėjimo) ---
+// --- Token sistema ---
 const validTokens = new Map();
 
 function createToken(name, email) {
@@ -98,16 +78,15 @@ const mailer = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
 });
 
-// --- Pagrindinė Claude analizės funkcija (dviejų žingsnių) ---
+// --- Pagrindinė Claude analizės funkcija ---
 async function runPalmAnalysis(photos, name) {
 
-  // Paruošiame nuotraukų bloką (naudojamas abiejuose žingsniuose)
   const imageBlocks = photos.map(p => ({
     type: 'image',
     source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
   }));
 
-  // ── VALIDACIJA: Ar nuotraukoje yra delnas? ──
+  // Validacija
   const validationResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -139,7 +118,7 @@ async function runPalmAnalysis(photos, name) {
     throw new Error('NEDELNAS: Nuotraukoje nematome delno. Prašome nufotografuoti atvirą delną.');
   }
 
-  // ── ŽINGSNIS 1: Profesionali vizualinė delno diagnostika ──
+  // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
     model: 'claude-sonnet-4-5',
     max_tokens: 1000,
@@ -189,56 +168,51 @@ Grąžink TIKTAI JSON:
     break;
   }
 
-  // Ištraukiame bruožus iš 1 žingsnio
   let bruozai = [];
   try {
     const step1Text = step1Data.content.map(b => b.text || '').join('');
     const jsonMatch = step1Text.match(/\{[\s\S]*\}/);
     if (jsonMatch) bruozai = JSON.parse(jsonMatch[0]).bruozai || [];
   } catch(e) {
-    console.warn('Žingsnis 1 JSON klaida, tęsiame be bruožų:', e.message);
+    console.warn('Žingsnis 1 JSON klaida:', e.message);
   }
 
-  console.log('Žingsnis 1 bruožai:', bruozai);
-
-  // ── ŽINGSNIS 2: Analizė remiantis vizualiais bruožais ──
+  // Žingsnis 2: Pilna analizė
   const bruozaiText = bruozai.length > 0
-    ? `Vizualiniai delno parametrai, kuriuos matai nuotraukose:\n${bruozai.map((b, i) => `${i+1}. ${b}`).join('\n')}\n\n`
+    ? `Vizualiniai delno parametrai:\n${bruozai.map((b, i) => `${i+1}. ${b}`).join('\n')}\n\n`
     : '';
 
   const step2Content = [
     ...imageBlocks,
     {
       type: 'text',
-      text: `Tu esi chiromantijos specialistas.${name ? ' Prieš tave yra ' + name + ' delnai.' : ''}
+      text: `Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave yra${name ? ' ' + name + ' —' : ''} kairio ir dešinio delno nuotraukos. Matai juos aiškiai.
 
-${bruozaiText ? bruozaiText + '\n' : ''}
-
-Parašyk chiromantijos analizę lietuvių kalba. Rašyk paprastai ir aiškiai — kaip kalbėtum su žmogumi akis į akį. Jokių metaforų, jokių sudėtingų žodžių, jokių palyginimų su gamta ar elementais. Tik konkretūs, aiškūs sakiniai apie šį žmogų.
+${bruozaiText}Remdamasis tuo ką MATAI šiuose delnuose, parašyk tikslią ir naudingą chiromantijos analizę lietuvių kalba. Kiekvienas tavo teiginys turi būti pagrįstas tuo, ką matai — ne bendromis frazėmis.
 
 TAISYKLĖS:
-- Rašyk paprastais, kasdieniais žodžiais — kad suprastų bet kas
-- DRAUDŽIAMA: metaforos, poetiniai pasakymai, gamtos palyginimai (akmuo, vanduo, ugnis, energija ir pan.)
-- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti" — tik tiesioginiai teiginiai
-- DRAUDŽIAMA: linijų pavadinimai, delno forma, pirštų ilgis
-- DRAUDŽIAMA: laiko nuorodos su skaičiais
-- Kreipkis "tu", kalba — lietuvių
-- Kiekvienas skyrius: 6–8 sakiniai, skyriai nesikartoja
+- Kiekvienas sakinys = konkretus faktas apie ŠĮ žmogų paremtas delno analize
+- Rašyk tiesiai ir drąsiai: "Tu esi...", "Tu linkęs...", "Tau sekasi...", "Tu vengi...", "Tau sunku..."
+- DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
+- DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
+- DRAUDŽIAMA: abstrakčios frazės kurios tiktų bet kuriam žmogui
+- Kalba: paprasta, kasdienė, lietuvių, kreipkis "tu"
+- Kiekvienas skyrius: 6–8 sakiniai, skyriai nesikartoja tarpusavyje
 
-SKYRIAI:
-- prigimtines_stiprybes: kokie šio žmogaus charakterio bruožai ir stiprybės — kas jis yra iš prigimties
-- gyvenimo_tikslas: kur šis žmogus geriausiai realizuojasi, kokia jo kryptis gyvenime
-- santykiai: kaip šis žmogus elgiasi santykiuose, ko ieško, kas jam sekasi ir kas sunkiai sekasi
-- finansai: kaip šis žmogus elgiasi su pinigais, koks jo finansinis potencialas
-- galimybes: kokia savybė šį žmogų išskiria iš kitų, kur jo didžiausias pranašumas
-- pokyciai: kokie pokyčiai artėja šio žmogaus gyvenime
-- klutys: kas stabdo šį žmogų — kokie įpročiai ar mąstysena trukdo jam augti
-- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, paprasti ir konkretūs)
-- Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) kurie PAPILDO tekstą — ne kartoja jį. Kiekvienas insights turi būti NAUJAS faktas kurio nebuvo tekste. Jie turi tiksliai atitikti tą skyrių — finansų insights kalba tik apie pinigus, santykių — tik apie santykius. Pvz finansams: "Geriau taupyti nei skolintis", "Stabilumas svarbiau nei greitas pelnas". Pvz santykiams: "Mylėti giliai bet atsargiai", "Sunku atleisti išdavystę"
+SKYRIAI — kiekvienas kalba tik apie savo temą:
+- prigimtines_stiprybes: kokie šio žmogaus stipriausi prigimtiniai charakterio bruožai ir kaip jie pasireiškia kasdieniame gyvenime
+- gyvenimo_tikslas: kur šis žmogus geriausiai realizuojasi — kokia veikla, kokia aplinka, kas jam teikia tikrą prasmę
+- santykiai: kaip šis žmogus myli ir bendrauja — ko ieško ryšiuose, kaip elgiasi su artimaisiais, kas jam sunku santykiuose
+- finansai: kaip šis žmogus mąsto apie pinigus, kokia jo finansinė strategija, kur jo finansinis potencialas
+- galimybes: kokia konkreti savybė ar gebėjimas išskiria jį iš kitų — tai jo didžiausias pranašumas
+- pokyciai: kokie reikšmingi gyvenimo pokyčiai artėja arba jau vyksta
+- klutys: kas konkrečiai stabdo šį žmogų — koks jo pagrindinis vidinių barjeras
+- stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
+- Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 
-ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
+ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"6-8 sakiniai","prigimtines_insights":["Trumpas teiginys apie šį žmogų","Trumpas teiginys","Trumpas teiginys"],"gyvenimo_tikslas":"6-8 sakiniai","gyvenimo_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"santykiai":"6-8 sakiniai","santykiai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"finansai":"6-8 sakiniai","finansai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"pokyciai":"6-8 sakiniai","pokyciai_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"galimybes":"6-8 sakiniai","galimybes_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai","klutys_insights":["Trumpas teiginys","Trumpas teiginys","Trumpas teiginys"]}`
+{"prigimtines_stiprybes":"6-8 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"6-8 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"6-8 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"6-8 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"6-8 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"6-8 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
     }
   ];
 
@@ -283,11 +257,11 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {. Jokio teksto prieš ar po.
   return result;
 }
 
-// --- ENDPOINT: Greita delno validacija (prieš mokėjimą) ---
+// --- ENDPOINT: Greita delno validacija ---
 app.post('/validate-palm', async (req, res) => {
   try {
     const { photos } = req.body;
-    if (!photos || photos.length === 0) return res.json({ valid: false, error: 'Nėra nuotraukų' });
+    if (!photos || photos.length === 0) return res.json({ valid: false });
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
@@ -317,11 +291,10 @@ app.post('/validate-palm', async (req, res) => {
 
     const data = await response.json();
     const answer = (data.content?.[0]?.text || '').trim().toUpperCase();
-    const valid = answer.startsWith('YES');
-    res.json({ valid });
+    res.json({ valid: answer.startsWith('YES') });
   } catch(e) {
     console.error('validate-palm klaida:', e.message);
-    res.json({ valid: true }); // Klaidos atveju leidžiame tęsti
+    res.json({ valid: false });
   }
 });
 
@@ -332,9 +305,7 @@ app.post('/start-analysis', async (req, res) => {
     if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
     if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
 
-    if (analysisCache.has(sessionId)) {
-      return res.json({ started: true, sessionId });
-    }
+    if (analysisCache.has(sessionId)) return res.json({ started: true, sessionId });
 
     analysisCache.set(sessionId, {
       status: 'pending',
@@ -350,19 +321,11 @@ app.post('/start-analysis', async (req, res) => {
     runPalmAnalysis(photos, req.body.name || '')
       .then(result => {
         const entry = analysisCache.get(sessionId);
-        if (entry) {
-          entry.status = 'done';
-          entry.result = result;
-          console.log('Foninė analizė baigta:', sessionId);
-        }
+        if (entry) { entry.status = 'done'; entry.result = result; }
       })
       .catch(err => {
         const entry = analysisCache.get(sessionId);
-        if (entry) {
-          entry.status = 'error';
-          entry.error = err.message;
-          console.error('Foninė analizė klaida:', err.message);
-        }
+        if (entry) { entry.status = 'error'; entry.error = err.message; }
       });
 
   } catch (err) {
@@ -370,14 +333,12 @@ app.post('/start-analysis', async (req, res) => {
   }
 });
 
-// --- ENDPOINT: Patikrinti analizės statusą ---
+// --- ENDPOINT: Analizės statusas ---
 app.get('/analysis-status', async (req, res) => {
   const { sessionId } = req.query;
   if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
-
   const entry = analysisCache.get(sessionId);
   if (!entry) return res.json({ status: 'notfound' });
-
   res.json({ status: entry.status });
 });
 
@@ -387,42 +348,31 @@ app.post('/analyze-palm', async (req, res) => {
     const { photos, name, token, sessionId } = req.body;
 
     const tokenEntry = validTokens.get(token);
-    if (!tokenEntry) {
-      return res.status(403).json({ error: 'Mokėjimas nepatvirtintas. Norėdami skaitymo — sumokėkite.' });
-    }
-    if (tokenEntry.used) {
-      return res.status(403).json({ error: 'Skaitymas jau atliktas. Norėdami naujo — sumokėkite dar kartą.' });
-    }
+    if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
+    if (tokenEntry.used) return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
 
     const userName = name || tokenEntry.name || '';
-
     let result = null;
+
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
       if (cached.status === 'done' && cached.result) {
         result = cached.result;
-        console.log('Cache done, grąžinama iš karto:', sessionId);
         analysisCache.delete(sessionId);
       } else if (cached.status === 'pending') {
-        console.log('Cache pending, laukiame max 8s:', sessionId);
         await new Promise((resolve) => {
           let waited = 0;
           const iv = setInterval(() => {
-            waited += 1;
+            waited++;
             const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 8) {
-              clearInterval(iv);
-              resolve();
-            }
+            if (!entry || entry.status !== 'pending' || waited >= 8) { clearInterval(iv); resolve(); }
           }, 1000);
         });
         const entry = analysisCache.get(sessionId);
         if (entry && entry.status === 'done' && entry.result) {
           result = entry.result;
-          analysisCache.delete(sessionId);
-        } else {
-          analysisCache.delete(sessionId);
         }
+        analysisCache.delete(sessionId);
       } else {
         analysisCache.delete(sessionId);
       }
@@ -430,42 +380,18 @@ app.post('/analyze-palm', async (req, res) => {
 
     if (!result) {
       if (!photos || photos.length === 0) {
-        if (sessionId) {
-          console.log('Nuotraukos tuščios, laukiame cache papildomai 5s...');
-          await new Promise(r => setTimeout(r, 5000));
-          const lateEntry = analysisCache.get(sessionId);
-          if (lateEntry && lateEntry.status === 'done' && lateEntry.result) {
-            result = lateEntry.result;
-            analysisCache.delete(sessionId);
-          }
-        }
-        if (!result) {
-          return res.status(400).json({ error: 'Analizė dar nebaigta. Prašome palaukti ir bandyti dar kartą.' });
-        }
-      } else {
-        console.log('Cache nerastas, paleidžiame naują analizę:', sessionId);
-        result = await runPalmAnalysis(photos, userName);
+        return res.status(400).json({ error: 'Analizė dar nebaigta. Bandykite dar kartą.' });
       }
+      result = await runPalmAnalysis(photos, userName);
     }
 
     tokenEntry.used = true;
-    console.log('Analizė sėkminga:', userName);
-
-    if (userName) {
-      result.userName = userName;
-    }
+    if (userName) result.userName = userName;
 
     const reminders = loadReminders();
-    const alreadyRegistered = reminders.find(r => r.email === tokenEntry.email);
-    if (!alreadyRegistered) {
-      reminders.push({
-        email: tokenEntry.email,
-        name: userName || '',
-        sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000),
-        createdAt: Date.now()
-      });
+    if (!reminders.find(r => r.email === tokenEntry.email)) {
+      reminders.push({ email: tokenEntry.email, name: userName, sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
       saveReminders(reminders);
-      console.log(`Priminimas automatiškai užregistruotas: ${tokenEntry.email}`);
     }
 
     mailer.sendMail({
@@ -473,34 +399,32 @@ app.post('/analyze-palm', async (req, res) => {
       to: tokenEntry.email,
       subject: `${userName ? userName + ' — ' : ''}Tavo delno skaitymas ✦`,
       html: buildEmailHtml(userName, result)
-    }).catch(mailErr => console.error('Laiško klaida (nesvarbi):', mailErr.message));
+    }).catch(e => console.error('Laiško klaida:', e.message));
 
     res.json(result);
 
   } catch (err) {
     console.error('Klaida /analyze-palm:', err);
-    if (err.message.startsWith('NEDELNAS')) {
-      return res.json({ error: err.message }); // 200 su klaida — tokenas lieka galioti
-    }
+    if (err.message.startsWith('NEDELNAS')) return res.json({ error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
 
 function buildEmailHtml(userName, result) {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#07040f;font-family:Georgia,serif"><div style="max-width:600px;margin:0 auto;padding:40px 24px"><div style="text-align:center;margin-bottom:32px"><div style="font-size:32px;margin-bottom:12px">✦</div><h1 style="color:#d4a843;font-size:24px;margin:0 0 6px">${userName ? userName + ' —' : ''} Tavo Delno Skaitymas</h1><p style="color:rgba(245,238,216,0.5);font-size:13px;margin:0;font-style:italic">Delno planetų kalnai · Chiromantija · Sielos žemėlapis</p></div>
-  ${section('Prigimtinės stiprybės ir unikalūs charakterio bruožai', result.prigimtines_stiprybes)}
-  ${section('Gyvenimo tikslo ir asmeninio pašaukimo kryptis', result.gyvenimo_tikslas)}
-  ${section('Asmeninio gyvenimo ir santykių dėsningumų analizė', result.santykiai)}
-  ${section('Finansinės laisvės bei materialinės sėkmės prognozė', result.finansai)}
-  ${section('Paslėpti gebėjimai ir potencialo išnaudojimo būdai', result.galimybes)}
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#07040f;font-family:Georgia,serif"><div style="max-width:600px;margin:0 auto;padding:40px 24px"><div style="text-align:center;margin-bottom:32px"><div style="font-size:32px;margin-bottom:12px">✦</div><h1 style="color:#d4a843;font-size:24px;margin:0 0 6px">${userName ? userName + ' —' : ''} Tavo Delno Skaitymas</h1></div>
+  ${section('I · Prigimtinės stiprybės ir charakteris', result.prigimtines_stiprybes)}
+  ${section('II · Gyvenimo kryptis ir tikslai', result.gyvenimo_tikslas)}
+  ${section('III · Bendravimo būdas ir jo įtaka santykiams', result.santykiai)}
+  ${section('IV · Finansinis potencialas', result.finansai)}
+  ${section('V · Unikalus sėkmės raktas', result.galimybes)}
   ${pills(result.stiprybes_sarasas)}
-  ${section('Svarbiausi ateinančių metų gyvenimo pokyčiai', result.pokyciai)}
-  ${section('Kliūtys, stabdančios asmeninę pažangą ir sėkmę', result.klutys)}
-  <div style="text-align:center;padding-top:24px;border-top:0.5px solid rgba(212,168,67,0.15)"><p style="color:rgba(245,238,216,0.35);font-size:12px;line-height:1.7;margin:0;font-style:italic">Šis skaitymas sukurtas tik tau ✦<br>Išsaugok jį — galėsi grįžti ir perskaityti dar kartą</p></div></div></body></html>`;
+  ${section('VI · Svarbiausi artėjantys pokyčiai', result.pokyciai)}
+  ${section('VII · Pažangą stabdančios kliūtys', result.klutys)}
+  <div style="text-align:center;padding-top:24px;border-top:0.5px solid rgba(212,168,67,0.15)"><p style="color:rgba(245,238,216,0.35);font-size:12px;margin:0;font-style:italic">Šis skaitymas sukurtas tik tau ✦</p></div></div></body></html>`;
 }
 
 function section(title, text) {
-  return `<div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">${title}</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0;font-style:italic">${text || ''}</p></div>`;
+  return `<div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(212,168,67,0.2);border-radius:14px;padding:20px;margin-bottom:12px"><div style="font-size:10px;letter-spacing:.16em;color:#d4a843;margin-bottom:10px;text-transform:uppercase">${title}</div><p style="color:#f5eed8;font-size:14px;line-height:1.8;margin:0">${text || ''}</p></div>`;
 }
 
 function pills(arr) {
@@ -511,7 +435,6 @@ app.post('/create-payment', async (req, res) => {
   try {
     const { name, email } = req.body;
     if (!email) return res.status(400).json({ error: 'Trūksta el. pašto' });
-
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 599,
       currency: 'eur',
@@ -519,11 +442,7 @@ app.post('/create-payment', async (req, res) => {
       receipt_email: email,
       automatic_payment_methods: { enabled: true }
     });
-
-    res.json({
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
-    });
+    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -533,7 +452,6 @@ app.post('/verify-payment-intent', async (req, res) => {
   try {
     const { paymentIntentId, name, email } = req.body;
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
-
     if (pi.status === 'succeeded') {
       const token = createToken(name || pi.metadata.name || '', email || pi.metadata.email || '');
       res.json({ paid: true, token, name: name || pi.metadata.name || '', email: email || pi.metadata.email || '' });
@@ -563,31 +481,23 @@ app.get('/stripe-key', (req, res) => {
   res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
+app.post('/schedule-reminder', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email || !email.includes('@')) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    const reminders = loadReminders();
+    if (reminders.find(r => r.email === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
+    reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
+    saveReminders(reminders);
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
-
-app.post('/schedule-reminder', async (req, res) => {
-  try {
-    const { email, name } = req.body;
-    if (!email || !email.includes('@')) return res.status(400).json({ error: 'Neteisingas el. paštas' });
-
-    const reminders = loadReminders();
-    const exists = reminders.find(r => r.email === email);
-    if (exists) return res.json({ ok: true, message: 'Jau užregistruota' });
-
-    const sendAt = Date.now() + (90 * 24 * 60 * 60 * 1000);
-    reminders.push({ email, name: name || '', sendAt, createdAt: Date.now() });
-    saveReminders(reminders);
-
-    console.log(`Priminimas užregistruotas: ${email}, bus išsiųstas: ${new Date(sendAt).toLocaleDateString('lt-LT')}`);
-    res.json({ ok: true });
-  } catch(e) {
-    console.error('Priminimo klaida:', e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.listen(PORT, () => console.log(`DELNAS v24 veikia: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`DELNAS v25 veikia: http://localhost:${PORT}`));
