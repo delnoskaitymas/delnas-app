@@ -125,7 +125,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Examine this image carefully. Answer YES ONLY if ALL of these are true: (1) you can clearly see an open human palm, (2) you can see the full palm area including the base of the hand, (3) you can see at least 4 fingers extending from the palm. Answer NO if you see: only fingertips without the palm base, a face or head, legs, feet, a table, keyboard, floor, or any object that is not a full open palm. Be very strict. Answer only YES or NO.'
+            text: 'Is there a human hand visible in this image? Answer YES if you can see a hand. Answer NO only if there is no human hand at all. Answer only YES or NO.'
           }
         ]
       }]
@@ -309,7 +309,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Examine this image carefully. Answer YES ONLY if ALL of these are true: (1) you can clearly see an open human palm, (2) you can see the full palm area including the base of the hand, (3) you can see at least 4 fingers extending from the palm. Answer NO if you see: only fingertips without the palm base, a face or head, legs, feet, a table, keyboard, floor, or any object that is not a full open palm. Be very strict. Answer only YES or NO.' }
+            { type: 'text', text: 'Is there a human hand visible in this image? Answer YES if you can see a hand. Answer NO only if there is no human hand at all. Answer only YES or NO.' }
           ]
         }]
       })
