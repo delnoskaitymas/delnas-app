@@ -980,15 +980,12 @@ function capturePhoto(){
         },800);
       }
     }).catch(()=>{
-      document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
-      setTimeout(()=>{
-        frozen.classList.remove('active');frozen.style.backgroundImage='';
-        video.style.display='block';shutterWrap.style.display='';
-        document.getElementById('cam-sub').style.display='';
-        handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
-        setTimeout(()=>{shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
-        photoLeft=dataURL;camHand='right';updateCameraUI();
-      },800);
+      // Serverio klaida — grįžtame į kamerą
+      frozen.classList.remove('active');frozen.style.backgroundImage='';
+      video.style.display='block';shutterWrap.style.display='';
+      document.getElementById('cam-sub').style.display='';
+      document.getElementById('cam-title').textContent='Nufotografuokite kairįjį delną';
+      handVisible=false;shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
     });
   } else {
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
@@ -1011,11 +1008,12 @@ function capturePhoto(){
         setTimeout(()=>{go('s-loading');animateLoading();},3000);
       },800);
     }).catch(()=>{
-      photoRight=dataURL;
-      stopCamera();
-      startBackgroundAnalysis();
-      go('s-processing');
-      setTimeout(()=>{go('s-loading');animateLoading();},3000);
+      // Serverio klaida — grįžtame į kamerą, neleisti tęsti
+      frozen.classList.remove('active');frozen.style.backgroundImage='';
+      video.style.display='block';shutterWrap.style.display='';
+      document.getElementById('cam-sub').style.display='';
+      document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
+      handVisible=false;shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
     });
   }
 }
