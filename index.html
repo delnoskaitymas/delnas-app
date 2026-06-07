@@ -1012,13 +1012,7 @@ function capturePhoto(){
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
 
-    checkSkinArea(dataURL, 0.12).then(function(hasSkin){
-      if(!hasSkin){
-        resetToCamera(title);
-        showCamError('Delnas neaptiktas','Laikykite visą atvertą delną prieš kamerą');
-        return;
-      }
-      fetch('/validate-palm',{
+    fetch('/validate-palm',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})
@@ -1051,7 +1045,6 @@ function capturePhoto(){
       }).catch(function(){
         resetToCamera(title);
       });
-    });
   }
 
   if(isLeftHand){
