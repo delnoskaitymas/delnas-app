@@ -166,6 +166,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-hint{color:rgba(212,168,67,.45);font-size:10px;letter-spacing:.06em;font-family:'DM Sans',sans-serif}
 </style>
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </head>
 <body>
@@ -193,9 +194,125 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="padding:0 20px">
     <div style="height:.5px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent);margin:8px 0 24px"></div>
     <div class="sec-lbl">ką sako klientai</div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">nezinau kaip bet tiksliai apie mane, net baisu kaip gerai 😳</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Tomas K.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text">Labai asmeniška ir tikslu. Rekomenduoju.</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
-    <div class="rev"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text">drauge irgi isibande abi nustebom verta išbandyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+    <div id="rev-carousel" style="position:relative;overflow:hidden">
+      <div id="rev-slides" style="display:flex;transition:transform .4s ease">
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nezinau kaip bet tiksliai apie mane net baisu kaip gerai 😳</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Tomas K.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">labai asmeniška ir tikslu rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">drauge irgi isibande abi nustebom verta isbandyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌺</div><div><div class="rev-name">Rūta</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">apie santykius parasyta taip tiksliai kad net nejauku kaip jie tai zino is delno</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎯</div><div><div class="rev-name">Mantas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skeptiskas buvau bet isbandžiau finansu dalis tiesiog sokiravo labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Agnė</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">perskaiciau du kartus kiekviena karta randu ka naujo tikrai verta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🔮</div><div><div class="rev-name">Lina R.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">papasakojo apie mane dalyku kuriu net artimiausiem nesakau keista ir nuostabu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Eglė</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">visai neticejau is pradzio bet perskaitau ir tiesiog wow kaip taip gali buti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌿</div><div><div class="rev-name">Darius</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nebloga tiksliai parasyta apie charakteri santykiai irgi atitinka rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💫</div><div><div class="rev-name">Kristina</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">mama irgi padare ir abi nustebome kaip skiriasi bet kiekviena tiksli pagal savo charakteri</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌻</div><div><div class="rev-name">Viktorija</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">net nesinorejo skaityti apie klutis bet visos tiesos reikia susimasyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎪</div><div><div class="rev-name">Arnas</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tikejaus kad bus koks bendrinis tekstas bet ne labai konkretus ir i mane</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌈</div><div><div class="rev-name">Simona</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirma karta girdziu apie save tokius dalykus kurie tikrai tiesa bet niekada nesakiau garsiai 😯</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🦋</div><div><div class="rev-name">Jolanta</div><div class="rev-handle">Marijampolė</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">labai tiksliai apie finansus viskas kaip yra is tiesu net gasdina kiek tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌊</div><div><div class="rev-name">Rokas</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geras nustebino santykiu dalis nes labai tiksliai aprase kaip as elgiuosi</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">⭐</div><div><div class="rev-name">Neringa</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">drauge patare ir neapgavau tikrai verta tu 6 euru gal net per pigu 😄</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Edita</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">trecia karta perskaitau vis dar randu nauju dalyku apie save labai gilu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍁</div><div><div class="rev-name">Marius</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">netikėtai tiksliai ypac dalis apie gyvenimo krypti tiesiog atsake i klausimu kurio ilgai ieskojau</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💎</div><div><div class="rev-name">Ingrida</div><div class="rev-handle">Alytus</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">rodziau vyrui jis sako 100% tu tai jau pasakyta viskas 😂</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Vaida</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nustebino galvojau bus koks horoskopas tipo bet ne labai konkretus apie mane asmeniskai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎭</div><div><div class="rev-name">Andrius</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skeptikas buvau bet drauge taip ikalbejo dabar suprantu kodel tikslu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌿</div><div><div class="rev-name">Gintarė</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">ypac tiksliai apie santykius su seima net nezinau kaip jie tai mato bet matyt mato</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💫</div><div><div class="rev-name">Lukas</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">gerai finansu dalis nelabai patiko nes per tiksli 😅 bet tai tik reiskia kad tiesa</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌺</div><div><div class="rev-name">Renata</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">labai personalizuota jautesi kad tikrai mane analizavo o ne kopijavo kazka</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">⚡</div><div><div class="rev-name">Mindaugas</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">klutys skyrius labai tiksliai net nejauku nes tikrai tai yra mano problema</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌻</div><div><div class="rev-name">Asta</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirkau sau ir seseriai dovanu abu patenkinti ir abu sake tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🦋</div><div><div class="rev-name">Paulius</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tikejaus kitko bet gavau labai tikslius atsakymus ypac apie gyvenimo tiksla</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌈</div><div><div class="rev-name">Dovilė</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">mama neticejo kol pati nepabande dabar abu stebimes 😊</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Tadas</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geras produktas nustebino detalumu rekomenduosiu draugams</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌊</div><div><div class="rev-name">Žydrūnė</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skaiciau su vyru kartu jis irgi sake tikslu daug apie ka kalbejome po to</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Egidijus</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nebloga tiksliau nei tikejaus santykiu dalis labiausiai pataike i desimtuka</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Aušra</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">visiškai netiketa patirtis pirkau is smalsumo ir dabar galvoju apie viska kas parasyta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💎</div><div><div class="rev-name">Ignas</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">sauniai padirbta klutys ir finansai labai tiksliai gyvenimo kryptis irgi</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Virginija</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">rekomenduoju tikrai verta labai tiksliai apie santykius ir charakteri</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎯</div><div><div class="rev-name">Saulius</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">visai neticejau bet drauge isikalbejo gerai kad paklausiau nes tikrai tikslu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌿</div><div><div class="rev-name">Raimonda</div><div class="rev-handle">Alytus</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pergyventa ypac dalis apie klutis tiksli kaip peilis daug apie ka reikia mastyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">⭐</div><div><div class="rev-name">Viktoras</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geras nustebino kad taip skiriasi nuo tokiu dalyku kuriais netikiu paprastai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍁</div><div><div class="rev-name">Jurgita</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tiksliai apie charakteri draugei parodziau ji irgi sake tai tikrai tu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💫</div><div><div class="rev-name">Rytis</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirmas kartas su tokiu dalyku nustebino labai konkretu ir i mane</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌺</div><div><div class="rev-name">Nijolė</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirkau sau 55 metu gimtadienio proga labai tiksliai apie gyvenima aciu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌻</div><div><div class="rev-name">Erikas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tikejaus visisku nieko bet gavau tikrai tikslius atsakymus ypac finansai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎭</div><div><div class="rev-name">Laima</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">rodziau draugei ir ji irgi nusipirko abi sakome tiksliau nei pas psichologa 😄</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌊</div><div><div class="rev-name">Donatas</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">neblogai tikslu rekomenduoju jei norite kazko naujo apie save suzinoti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💎</div><div><div class="rev-name">Kristė</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">negaliu patiketei kaip tiksliai tikrai verta jau pirkau draugei dovanu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌈</div><div><div class="rev-name">Dainius</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geras labai asmeniška nustebino detalumas rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Erika</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">santykiu dalis tiesiog tiksliai apibrede viska kas vyksta mano gyvenime keista bet gerai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">⚡</div><div><div class="rev-name">Valdas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nustebino tikejaus bus bendrinis tekstas bet labai konkretus gerai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Miglė</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">perskaiciau tris kartus ir kiekviena karta vis labiau sutinku labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Karolis</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tikslu ypac klutys tiesiog mano problema tiksliai aprasyta rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Diana</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">verta tikrai pirkau is smalsumo bet likau su daug minciu labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🐝</div><div><div class="rev-name">Laurynas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirkau per pietu pertrauka is smalsumo paskui visa diena galvojau apie tai kas parasyta tikslu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌟</div><div><div class="rev-name">Ramunė</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nezinau ar tikiu tokiais dalykais bet tiksliai parasyta draugei irgi patiko</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🦚</div><div><div class="rev-name">Aurimas</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">klucciu skyrius kaip i veidrodi pazurejau nemaloniai tikslu bet reikia zinoti 😬</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🐉</div><div><div class="rev-name">Evaldas</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skeptikas esu ir lieku bet cia tikrai geras finansu dalis ypac trafila</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌼</div><div><div class="rev-name">Sonata</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">brolis nusiutte nuoroda galvojau bus juokinga nebuvo labai tiksliai apie mane</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎋</div><div><div class="rev-name">Tautvydas</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geriau nei tikejaus nesuprantu kaip veikia bet veikia rekomenduoju draugams</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+
+      <div style="display:flex;justify-content:center;gap:4px;margin-top:10px;flex-wrap:wrap">
+        <div class="rev-dot" onclick="goRevSlide(0)" style="width:5px;height:5px;border-radius:50%;background:var(--gold);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(1)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(2)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(3)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(4)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(5)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(6)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(7)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(8)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(9)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(10)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(11)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(12)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(13)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(14)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(15)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(16)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(17)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(18)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(19)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(20)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(21)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(22)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(23)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(24)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(25)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(26)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(27)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(28)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(29)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(30)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(31)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(32)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(33)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(34)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(35)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(36)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(37)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(38)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(39)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(40)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(41)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(42)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(43)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(44)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(45)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(46)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(47)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(48)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(49)"
+        <div class="rev-dot" onclick="goRevSlide(50)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(51)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(52)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(53)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(54)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(55)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+        <div class="rev-dot" onclick="goRevSlide(56)" style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div> style="width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.2);cursor:pointer;transition:background .2s"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -285,32 +402,32 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 3 14.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12.5-9 12.5z"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Ar tikrai gyveni tą gyvenimą, kurį turėtum gyventi? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie gyvenimo tikslą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Kodėl tavo santykiai vis „strigo" tose pačiose vietose? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie tikrąsias priežastis</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9 12h6"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Kada pagaliau tavo pastangos taps pinigais, o ne tik darbu? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie finansinę sėkmę</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Kokia savybė tave išskiria iš visų kitų minioje? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie tavo tikrąjį unikalumą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-20 12 12)"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Koks lūžis tavo gyvenime įvyks per artimiausius mėnesius? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie laukiančius pokyčius</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:5px 0">
-          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <span style="font-size:11px;line-height:1.3;color:var(--text);font-weight:600">Koks „nematomas stabdis" neleidžia tau pasiekti to, ko vertas? <span style="font-size:10px;color:var(--muted);font-weight:400">Apie kliūtis</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);letter-spacing:.06em;white-space:nowrap">🔒</span>
         </div>
@@ -322,7 +439,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
       <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
     </div>
-    <div id="quick-pay-wrap" style="margin-bottom:4px"></div>
+    <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
     <div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:8px 12px;margin-bottom:4px">
       <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Mokėti kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
       <div id="card-fields" style="display:none;margin-top:8px">
@@ -338,11 +455,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- STICKY CTA -->
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-    <span style="font-size:11px;color:var(--gold2);font-weight:500">✓ Analizę gausite iškart po apmokėjimo.</span>
-    <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2)">5,99 €</span>
+  <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--muted)">Vienkartinis mokestis</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5">12,99 €</span>
+        <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">5,99 €</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">7 temų išsami analizė · Asmeninės įžvalgos · Jokios prenumeratos</div>
   </div>
-  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau 3 241 žmogus sužinojo savo atsakymus</span></div>
+  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">3 241</span> žmogus sužinojo savo atsakymus</span></div>
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI MANO ANALIZĘ →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu · Nereikia registruotis</div>
 </div>
@@ -422,7 +545,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="insights-mission" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kai žmogus eina savo keliu — viskas sekasi lengviau.</div>
     </div>
-    <div class="rs rs-feat rs-reveal">
+    <div style="padding:0 16px 12px">
+    <button onclick="downloadPDF()" style="width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:14px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Atsisiųsti santrauką kaip PDF</button>
+  </div>
+  <div class="rs rs-feat rs-reveal">
       <div class="rs-label">III · Bendravimo būdas ir jo įtaka santykiams</div>
       <div class="rs-body" id="r-love"></div>
       <div id="insights-love" class="insight-cards"></div>
@@ -462,14 +588,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Tavo draugai nusipelnė žinoti</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Dauguma žmonių visą gyvenimą ieško šių atsakymų.<br>Padėk jiems rasti — pasidalink savo rezultatu.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button onclick="shareTo('whatsapp')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">WhatsApp</button>
-        <button onclick="shareTo('facebook')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Facebook</button>
-        <button onclick="shareTo('instagram')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Instagram</button>
-        <button onclick="shareTo('tiktok')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">TikTok</button>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="shareTo('native')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Dalintis</button>
-        <button onclick="shareTo('copy')" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em" id="copy-btn">Kopijuoti</button>
+        <button onclick="shareTo('whatsapp')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:#25D366;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>WhatsApp</button>
+        <button onclick="shareTo('facebook')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:#1877F2;border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</button>
+        <button onclick="shareTo('instagram')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>Instagram</button>
+        <button onclick="shareTo('tiktok')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:#010101;border:.5px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>TikTok</button>
+        <button onclick="shareTo('native')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s">Dalintis</button>
+        <button id="copy-btn" onclick="shareTo('copy')" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'" style="background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:12px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s">Kopijuoti</button>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
@@ -659,10 +783,18 @@ function updatePayBtn(){
 function initQuickPay(){
   const wrap=document.getElementById('quick-pay-wrap');if(!wrap) return;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);const isAndroid=/Android/.test(navigator.userAgent);
-  const btn='background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:11px 8px;color:var(--gold2);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:\'DM Sans\',sans-serif;width:100%;letter-spacing:.04em;transition:background .15s';
-  if(isIOS){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px"><button onclick="quickPay('apple')" style="${btn}"> Apple Pay</button><button onclick="quickPay('revolut')" style="${btn}">Revolut</button><button onclick="quickPay('klarna')" style="${btn}">Klarna</button></div>`;}
-  else if(isAndroid){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px"><button onclick="quickPay('google')" style="${btn}">Google Pay</button><button onclick="quickPay('revolut')" style="${btn}">Revolut</button><button onclick="quickPay('klarna')" style="${btn}">Klarna</button></div>`;}
-  else{wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px"><button onclick="quickPay('apple')" style="${btn}">Apple Pay</button><button onclick="quickPay('google')" style="${btn}">Google Pay</button><button onclick="quickPay('revolut')" style="${btn}">Revolut</button></div>`;}
+  const base='border-radius:10px;padding:10px 6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:\'DM Sans\',sans-serif;width:100%;letter-spacing:.02em;transition:opacity .15s;border:none';
+  const apple=`background:#000;color:#fff;${base}`;
+  const google=`background:#fff;color:#3c4043;${base};border:.5px solid #dadce0`;
+  const revolut=`background:#191C1F;color:#fff;${base};border:.5px solid #444`;
+  const klarna=`background:#FFB3C7;color:#17120E;${base}`;
+  const appleBtn=`<button onclick="quickPay('apple')" style="${apple}" onmousedown="this.style.opacity='.75'" onmouseup="this.style.opacity='1'"><svg width="14" height="14" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46.7 790.7 0 663 0 541.8c0-207.5 135.4-317.3 269-317.3 71 0 130.5 46.4 175 46.4 42.7 0 109.2-49.1 192.6-49.1zm-174-220.4c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg> Apple Pay</button>`;
+  const googleBtn=`<button onclick="quickPay('google')" style="${google}" onmousedown="this.style.opacity='.75'" onmouseup="this.style.opacity='1'"><svg width="40" height="16" viewBox="0 0 80 32"><text x="0" y="24" font-family="Arial" font-size="20" font-weight="600"><tspan fill="#4285F4">G</tspan><tspan fill="#EA4335">o</tspan><tspan fill="#FBBC05">o</tspan><tspan fill="#34A853">g</tspan><tspan fill="#EA4335">l</tspan><tspan fill="#4285F4">e</tspan></text><text x="44" y="24" font-family="Arial" font-size="20" fill="#3c4043">Pay</text></svg></button>`;
+  const revolutBtn=`<button onclick="quickPay('revolut')" style="${revolut}" onmousedown="this.style.opacity='.75'" onmouseup="this.style.opacity='1'">Revolut</button>`;
+  const klarnaBtn=`<button onclick="quickPay('klarna')" style="${klarna}" onmousedown="this.style.opacity='.75'" onmouseup="this.style.opacity='1'">klarna</button>`;
+  if(isIOS){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px">${appleBtn}${revolutBtn}${klarnaBtn}</div>`;}
+  else if(isAndroid){wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px">${googleBtn}${revolutBtn}${klarnaBtn}</div>`;}
+  else{wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:4px">${appleBtn}${googleBtn}${revolutBtn}</div>`;}
 }
 
 function quickPay(method){
@@ -992,11 +1124,18 @@ function checkSkinArea(dataURL, minRatio){
 
 function showCamError(title, msg){
   const errDiv=document.createElement('div');
-  errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:200;text-align:center';
-  const t=document.createElement('div');t.style.cssText='font-size:14px;color:#f99;font-weight:600;margin-bottom:4px';t.textContent=title;
-  const s=document.createElement('div');s.style.cssText='font-size:12px;color:rgba(249,153,153,.75)';s.textContent=msg;
-  errDiv.appendChild(t);errDiv.appendChild(s);
-  document.body.appendChild(errDiv);setTimeout(()=>errDiv.remove(),4000);
+  errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(30,20,0,.85);border:.5px solid rgba(240,180,60,.35);border-radius:14px;padding:14px 16px;z-index:200;display:flex;align-items:flex-start;gap:10px';
+  // Delno ikona
+  const icon=document.createElement('div');
+  icon.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
+  icon.style.cssText='flex-shrink:0;margin-top:2px';
+  // Tekstas
+  const txt=document.createElement('div');
+  const t=document.createElement('div');t.style.cssText='font-size:13px;color:#f0c96a;font-weight:600;margin-bottom:3px';t.textContent=title;
+  const s=document.createElement('div');s.style.cssText='font-size:12px;color:rgba(240,200,120,.75);line-height:1.4';s.textContent=msg;
+  txt.appendChild(t);txt.appendChild(s);
+  errDiv.appendChild(icon);errDiv.appendChild(txt);
+  document.body.appendChild(errDiv);setTimeout(()=>errDiv.remove(),4500);
 }
 
 function capturePhoto(){
@@ -1026,13 +1165,17 @@ function capturePhoto(){
     frozen.classList.remove('active');frozen.style.backgroundImage='';
     video.style.display='block';shutterWrap.style.display='';
     document.getElementById('cam-sub').style.display='';
-    document.getElementById('cam-title').textContent=title;
+    document.getElementById('cam-title').textContent=title;const cl2=document.getElementById('cam-loader');if(cl2)cl2.style.display='none';
     handVisible=false;shutter.disabled=false;
     shutter.style.opacity='1';shutter.style.pointerEvents='auto';
   }
 
   function doValidate(title){
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
+    // Pridėti loading indikatoriją po antrašte
+    let camLoader=document.getElementById('cam-loader');
+    if(!camLoader){camLoader=document.createElement('div');camLoader.id='cam-loader';camLoader.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;font-size:11px;color:rgba(212,168,67,.6)';camLoader.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spinStep .7s linear infinite"></div>Tikriname...';const sub=document.getElementById('cam-sub');if(sub&&sub.parentNode)sub.parentNode.insertBefore(camLoader,sub.nextSibling);}
+    camLoader.style.display='flex';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
 
@@ -1043,10 +1186,11 @@ function capturePhoto(){
       }).then(function(r){return r.json();}).then(function(v){
         if(!v.valid){
           resetToCamera(title);
-          showCamError('Delnas neaptiktas','Laikykite visą atvertą delną prieš kamerą');
+          showCamError('Delnas neaptiktas','Delnas neaptiktas. Įsitikinkite, kad ranka yra arčiau kameros ir delnas visiškai atviras.');
           return;
         }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
+        const cl=document.getElementById('cam-loader');if(cl)cl.style.display='none';
         if(isLeftHand){
           setTimeout(function(){
             frozen.classList.remove('active');frozen.style.backgroundImage='';
@@ -1318,30 +1462,133 @@ async function registerReminder(){
   }
 }
 
+function downloadPDF(){
+  const r = window._palmResult;
+  if(!r){ alert('Rezultatai nerasti.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const name = window.userName || '';
+  const W = 210; const margin = 18; const maxW = W - margin*2;
+  let y = 20;
+
+  // Šriftas
+  doc.setFont('helvetica');
+
+  // Antraštė
+  doc.setFontSize(20);
+  doc.setTextColor(180, 130, 40);
+  doc.text('DELNAS — Delno skaitymas', W/2, y, {align:'center'});
+  y += 8;
+  if(name){
+    doc.setFontSize(13);
+    doc.setTextColor(120, 100, 60);
+    doc.text(name, W/2, y, {align:'center'});
+    y += 6;
+  }
+  doc.setDrawColor(180,130,40);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, W-margin, y);
+  y += 8;
+
+  const sections = [
+    ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes],
+    ['II · Gyvenimo kryptis ir tikslai', r.gyvenimo_tikslas],
+    ['III · Bendravimo būdas ir jo įtaka santykiams', r.santykiai],
+    ['IV · Finansinis potencialas', r.finansai],
+    ['V · Unikalus sėkmės raktas', r.galimybes],
+    ['VI · Svarbiausi artėjantys pokyčiai', r.pokyciai],
+    ['VII · Pažangą stabdančios kliūtys', r.klutys],
+  ];
+
+  sections.forEach(([title, text]) => {
+    if(!text) return;
+    // Patikrinti ar reikia naujo puslapio
+    if(y > 260){ doc.addPage(); y = 20; }
+    // Skyriaus pavadinimas
+    doc.setFontSize(9);
+    doc.setTextColor(180,130,40);
+    doc.text(title.toUpperCase(), margin, y);
+    y += 5;
+    // Tekstas
+    doc.setFontSize(10);
+    doc.setTextColor(40,40,40);
+    const lines = doc.splitTextToSize(text, maxW);
+    lines.forEach(line => {
+      if(y > 275){ doc.addPage(); y = 20; }
+      doc.text(line, margin, y);
+      y += 5;
+    });
+    y += 4;
+    doc.setDrawColor(220,200,160);
+    doc.setLineWidth(0.2);
+    doc.line(margin, y, W-margin, y);
+    y += 6;
+  });
+
+  // Apatinė dalis
+  doc.setFontSize(9);
+  doc.setTextColor(150,130,100);
+  doc.text('✦ Šis skaitymas sukurtas tik tau — delnas.lt', W/2, 290, {align:'center'});
+
+  const fileName = name ? name.replace(/\s+/g,'-')+'-delno-skaitymas.pdf' : 'delno-skaitymas.pdf';
+  doc.save(fileName);
+}
+
 async function shareTo(platform){
-  // Sukurti dalinimosi nuorodą su rezultatais
+  // Pirma sukurti unikalią analizės dalinimosi nuorodą
   let shareUrl = window._shareUrl;
   if(!shareUrl && window._palmResult){
     try{
       const resp=await fetch('/share-result',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({result:window._palmResult})});
       const data=await resp.json();
       if(data.url){shareUrl=data.url;window._shareUrl=shareUrl;}
-    }catch(e){shareUrl=window.location.origin;}
+    }catch(e){}
   }
-  if(!shareUrl) shareUrl=window.location.origin;
+  if(!shareUrl) shareUrl=window.location.href;
 
-  const name=window.userName||'Mano';
-  const text=`${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`;
-  const encodedText=encodeURIComponent(text);const encodedUrl=encodeURIComponent(shareUrl);
+  const name=window.userName||'';
+  const text=name
+    ? `${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
+    : `Atlikau delnų analizę ✨🤚 Tikslumas šokiravo — bandyk ir tu! #delnaskaitymas #chiromantija #lietuva`;
+  const encodedText=encodeURIComponent(text);
+  const encodedUrl=encodeURIComponent(shareUrl);
+
+  function copyWithFeedback(str, btn){
+    navigator.clipboard.writeText(str).then(()=>{
+      if(btn){const o=btn.textContent;btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent=o,2000);}
+    });
+  }
+
   switch(platform){
-    case 'whatsapp':window.open(`https://wa.me/?text=${encodedText}%20${encodedUrl}`,'_blank');break;
-    case 'facebook':window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,'_blank');break;
-    case 'instagram':navigator.clipboard.writeText(text+'\n'+shareUrl).then(()=>{const btn=document.querySelector('[onclick*=instagram]');if(btn){const o=btn.textContent;btn.textContent='Nukopijuota!';setTimeout(()=>btn.textContent=o,2000);}});break;
-    case 'tiktok':navigator.clipboard.writeText(text+'\n'+shareUrl).then(()=>{const btn=document.querySelector('[onclick*=tiktok]');if(btn){const o=btn.textContent;btn.textContent='Nukopijuota!';setTimeout(()=>btn.textContent=o,2000);}});break;
-    case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url:shareUrl});}else{navigator.clipboard.writeText(shareUrl);}break;
-    case 'copy':navigator.clipboard.writeText(shareUrl).then(()=>{const btn=document.getElementById('copy-btn');if(btn){btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent='Kopijuoti',2000);}});break;
+    case 'whatsapp':window.open('https://wa.me/?text='+encodedText+'%20'+encodedUrl,'_blank');break;
+    case 'facebook':window.open('https://www.facebook.com/sharer/sharer.php?u='+encodedUrl,'_blank');break;
+    case 'instagram':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=instagram]'));break;
+    case 'tiktok':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=tiktok]'));break;
+    case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url:shareUrl});}else{copyWithFeedback(shareUrl,null);}break;
+    case 'copy':copyWithFeedback(shareUrl, document.getElementById('copy-btn'));break;
   }
 }
+
+// Karuselė
+let revCurrentSlide=0;
+function goRevSlide(n){
+  revCurrentSlide=n;
+  const slides=document.getElementById('rev-slides');
+  if(slides) slides.style.transform=`translateX(-${n*100}%)`;
+  document.querySelectorAll('.rev-dot').forEach((d,i)=>{
+    d.style.background=i===n?'var(--gold)':'rgba(212,168,67,.25)';
+  });
+}
+// Auto-rotate karuselė
+setInterval(()=>{goRevSlide((revCurrentSlide+1)%56);},4000);
+
+// Skaitiklių sinchronizavimas
+function syncCounters(){
+  const count='3 241';
+  const g=document.getElementById('global-count');if(g)g.textContent=count;
+  const p=document.getElementById('pay-count');if(p)p.textContent=count;
+}
+window.addEventListener('DOMContentLoaded',()=>{syncCounters();});
 
 async function shareSection(){
   const hero=document.querySelector('.result-hero');
