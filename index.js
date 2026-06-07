@@ -201,9 +201,9 @@ TAISYKLĖS:
 
 SKYRIAI — kiekvienas kalba tik apie savo temą:
 - prigimtines_stiprybes: kokie šio žmogaus stipriausi prigimtiniai charakterio bruožai ir kaip jie pasireiškia kasdieniame gyvenime
-- gyvenimo_tikslas: kur šis žmogus geriausiai realizuojasi — kokia veikla, kokia aplinka, kas jam teikia tikrą prasmę
+- gyvenimo_tikslas: TEMOS ESMĖ — gyvenimo KRYPTIS ir TIKSLAI. Ką šis žmogus nori pasiekti gyvenime? Kokia jo gyvenimo misija? Kur jis juda? Ko siekia? Kas jam svarbiausia gyvenime — ne darbe, bet gyvenime apskritai. Rašyk apie jo vidinę kryptį, svajonę, tikslą
 - santykiai: kaip šis žmogus myli ir bendrauja — ko ieško ryšiuose, kaip elgiasi su artimaisiais, kas jam sunku santykiuose
-- finansai: kaip šis žmogus mąsto apie pinigus, kokia jo finansinė strategija, kur jo finansinis potencialas
+- finansai: TEMOS ESMĖ — FINANSINIS POTENCIALAS. Kiek šis žmogus gali uždirbti? Kokioje srityje jo finansinė sėkmė didžiausia? Ar jo potencialas didelis ar vidutinis? Kaip jis gali jį realizuoti? Rašyk apie galimybes ir potencialą — ne apie tai kaip jis elgiasi su pinigais
 - galimybes: kokia konkreti savybė ar gebėjimas išskiria jį iš kitų — tai jo didžiausias pranašumas
 - pokyciai: kokie reikšmingi gyvenimo pokyčiai artėja arba jau vyksta
 - klutys: kas konkrečiai stabdo šį žmogų — koks jo pagrindinis vidinių barjeras
@@ -388,11 +388,7 @@ app.post('/analyze-palm', async (req, res) => {
     tokenEntry.used = true;
     if (userName) result.userName = userName;
 
-    const reminders = loadReminders();
-    if (!reminders.find(r => r.email === tokenEntry.email)) {
-      reminders.push({ email: tokenEntry.email, name: userName, sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
-      saveReminders(reminders);
-    }
+    // Priminimas užregistruojamas tik kai vartotojas pats paspaudžia mygtuką (/schedule-reminder)
 
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
@@ -496,6 +492,42 @@ app.post('/schedule-reminder', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// --- Dalinimosi rezultatai ---
+const sharedResults = new Map();
+
+// Valyti pasibaigusius (po 7 dienų)
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, entry] of sharedResults.entries()) {
+    if (now - entry.createdAt > 7 * 24 * 60 * 60 * 1000) sharedResults.delete(id);
+  }
+}, 60 * 60 * 1000);
+
+// Išsaugoti analizę
+app.post('/share-result', (req, res) => {
+  try {
+    const { result } = req.body;
+    if (!result || !result.prigimtines_stiprybes) return res.status(400).json({ error: 'Nėra rezultato' });
+    const id = crypto.randomBytes(8).toString('hex');
+    sharedResults.set(id, { result, createdAt: Date.now() });
+    res.json({ id, url: `https://${req.headers.host}/shared/${id}` });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Gauti dalinimosi rezultatą
+app.get('/shared-result/:id', (req, res) => {
+  const entry = sharedResults.get(req.params.id);
+  if (!entry) return res.status(404).json({ error: 'Rezultatas nerastas arba pasibaigė galiojimo laikas' });
+  res.json(entry.result);
+});
+
+// Shared puslapis
+app.get('/shared/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
