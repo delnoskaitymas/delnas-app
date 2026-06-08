@@ -181,11 +181,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="core">🤚</div>
     </div>
     <h1 class="serif" style="font-size:28px;font-weight:700;line-height:1.2;margin-bottom:10px">
-      Tavo ranka žino<br><em class="gold">viską apie tave</em>
+      Tavo gyvenimo<br><em class="gold">žemėlapis</em>
     </h1>
-    <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
-      Pradėk savo delnų analizę dabar.<br>Sužinok, ką slepia tavo gyvenimo linijos.
+    <p style="font-size:16px;color:rgba(224,224,224,.8);line-height:1.7;margin-bottom:20px;font-family:'DM Sans',sans-serif;font-weight:400;max-width:90%;margin-left:auto;margin-right:auto">
+      Tavo delnai — raktas į tavo tikrąjį „aš". Atrask stiprybes ir paversk jas sėkmės įrankiu:
     </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;text-align:left;max-width:85%;margin-left:auto;margin-right:auto">
+      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.3s">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
+        Karjeroje
+      </div>
+      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.5s">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
+        Santykiuose
+      </div>
+      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.7s">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
+        Finansuose
+      </div>
+    </div>
     <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()">Atskleisti gyvenimo žemėlapį →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
       Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
@@ -639,6 +653,20 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 function go(id){
+  if(id==='s-home'){
+    setTimeout(()=>{
+      document.querySelectorAll('.home-bullet').forEach((el,i)=>{
+        setTimeout(()=>{
+          el.style.opacity='1';el.style.transform='translateY(0)';
+          const svg=el.querySelector('svg');
+          if(svg){
+            svg.style.filter='drop-shadow(0 0 4px rgba(196,154,53,.7))';
+            setTimeout(()=>{svg.style.filter='drop-shadow(0 0 2px rgba(196,154,53,.3))';},600);
+          }
+        },i*200+300);
+      });
+    },50);
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const cam=document.getElementById('s-camera');
   cam.classList.remove('active');
