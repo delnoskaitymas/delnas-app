@@ -17,7 +17,7 @@
 html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
-.screen{display:none;position:relative;z-index:1;min-height:100vh;padding-bottom:48px;scroll-behavior:smooth}
+.screen{display:none;position:relative;z-index:1;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .4s ease}
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .serif{font-family:'Playfair Display',serif}
@@ -25,7 +25,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .wrap{padding:32px 20px 24px}
 .center{text-align:center}
 .back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-style:italic;font-family:'DM Sans',sans-serif;padding:0;margin-bottom:20px;display:block}
-.orb{width:160px;height:160px;margin:0 auto 22px;position:relative;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:none}
+.orb{width:120px;height:120px;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:none}
 .ring{position:absolute;border-radius:50%;border:1px solid;pointer-events:none}
 .r1{inset:0;border-color:rgba(212,168,67,.1);animation:sp 22s linear infinite}
 .r2{inset:14px;border-color:rgba(212,168,67,.18);animation:sp 15s linear infinite reverse}
@@ -174,13 +174,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <!-- SCREEN 1: LANDING -->
 <div class="screen active" id="s-home">
-  <div class="wrap center" style="padding-top:40px">
+  <div class="wrap center" style="padding-top:20px">
     <div class="orb">
       <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
       <div class="pd"></div><div class="pd"></div><div class="pd"></div>
       <div class="core">🤚</div>
     </div>
-    <h1 class="serif" style="font-size:32px;font-weight:700;line-height:1.2;margin-bottom:14px">
+    <h1 class="serif" style="font-size:28px;font-weight:700;line-height:1.2;margin-bottom:10px">
       Tavo ranka žino<br><em class="gold">viską apie tave</em>
     </h1>
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
