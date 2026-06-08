@@ -393,7 +393,7 @@ app.post('/analyze-palm', async (req, res) => {
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
       to: tokenEntry.email,
-      subject: `${userName ? userName + ' — ' : ''}Tavo delno skaitymas ✦`,
+      subject: `${userName ? userName + ' — ' : ''}Tavo gyvenimo žemėlapis ✦`,
       html: buildEmailHtml(userName, result)
     }).catch(e => console.error('Laiško klaida:', e.message));
 
@@ -495,15 +495,29 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- Dalinimosi rezultatai ---
-const sharedResults = new Map();
+// --- Dalinimosi rezultatai (saugomi faile) ---
+const SHARED_FILE = path.join(__dirname, 'shared_results.json');
+
+function loadShared() {
+  try {
+    if (fs.existsSync(SHARED_FILE)) return JSON.parse(fs.readFileSync(SHARED_FILE, 'utf8'));
+  } catch(e) {}
+  return {};
+}
+
+function saveShared(data) {
+  try { fs.writeFileSync(SHARED_FILE, JSON.stringify(data)); } catch(e) {}
+}
 
 // Valyti pasibaigusius (po 7 dienų)
 setInterval(() => {
+  const data = loadShared();
   const now = Date.now();
-  for (const [id, entry] of sharedResults.entries()) {
-    if (now - entry.createdAt > 7 * 24 * 60 * 60 * 1000) sharedResults.delete(id);
+  let changed = false;
+  for (const id in data) {
+    if (now - data[id].createdAt > 7 * 24 * 60 * 60 * 1000) { delete data[id]; changed = true; }
   }
+  if (changed) saveShared(data);
 }, 60 * 60 * 1000);
 
 // Išsaugoti analizę
@@ -512,8 +526,11 @@ app.post('/share-result', (req, res) => {
     const { result } = req.body;
     if (!result || !result.prigimtines_stiprybes) return res.status(400).json({ error: 'Nėra rezultato' });
     const id = crypto.randomBytes(8).toString('hex');
-    sharedResults.set(id, { result, createdAt: Date.now() });
-    res.json({ id, url: `https://${req.headers.host}/shared/${id}` });
+    const data = loadShared();
+    data[id] = { result, createdAt: Date.now() };
+    saveShared(data);
+    const host = req.headers.host || process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app';
+    res.json({ id, url: `https://${host}/shared/${id}` });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
@@ -521,8 +538,9 @@ app.post('/share-result', (req, res) => {
 
 // Gauti dalinimosi rezultatą
 app.get('/shared-result/:id', (req, res) => {
-  const entry = sharedResults.get(req.params.id);
-  if (!entry) return res.status(404).json({ error: 'Rezultatas nerastas arba pasibaigė galiojimo laikas' });
+  const data = loadShared();
+  const entry = data[req.params.id];
+  if (!entry) return res.status(404).json({ error: 'Rezultatas nerastas' });
   res.json(entry.result);
 });
 
