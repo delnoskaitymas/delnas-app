@@ -19,6 +19,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
 .screen{display:none;position:relative;z-index:1;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .4s ease}
+@keyframes bulletIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .serif{font-family:'Playfair Display',serif}
 .gold{color:var(--gold2)}
@@ -39,7 +40,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pd:nth-child(4){top:36px;left:8px;animation-delay:.2s}
 @keyframes pda{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
 .btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
-.btn-gold{background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);color:#07040f;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 14px rgba(212,168,67,.25)}
+.btn-gold{background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);color:#07040f;transition:transform .1s ease,opacity .1s ease;active:transform:scale(.97);letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 14px rgba(212,168,67,.25)}
 .btn-gold:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 4px 20px rgba(212,168,67,.35)}
 .btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .field{margin-bottom:14px}
@@ -187,20 +188,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       Tavo delnai — raktas į tavo tikrąjį „aš". Atrask stiprybes ir paversk jas sėkmės įrankiu:
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;text-align:left;max-width:85%;margin-left:auto;margin-right:auto">
-      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.3s">
+      <div class="home-bullet" style="display:flex;align-items:center;gap:14px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:1">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
         Karjeroje
       </div>
-      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.5s">
+      <div class="home-bullet" style="display:flex;align-items:center;gap:14px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:1">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
         Santykiuose
       </div>
-      <div class="home-bullet" style="display:flex;align-items:center;gap:10px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;animation-delay:.7s">
+      <div class="home-bullet" style="display:flex;align-items:center;gap:14px;font-size:15px;color:rgba(224,224,224,.85);font-family:'DM Sans',sans-serif;font-weight:400;opacity:1">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c49a35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;filter:drop-shadow(0 0 3px rgba(196,154,53,.0));transition:filter .4s ease"><polyline points="20 6 9 17 4 12"/></svg>
         Finansuose
       </div>
     </div>
-    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()">Atskleisti gyvenimo žemėlapį →</button>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()" onmousedown="this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity=''" ontouchstart="this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity=''">Atskleisti gyvenimo žemėlapį →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
       Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
     </div>
