@@ -161,8 +161,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok.active{display:flex}
 .cam-scan-ok-badge{<div st<div st<div style="width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;font-size:28px">🤚</div>
 
-<!-- SCREEN 1: LANDING -->
-<div class="screen active" id="s-home">
+
+<div class="screen active" id="s-home" class="screen active">
   <div class="wrap center" style="padding-top:20px">
     <div class="orb" style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
       <div style="position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(212,168,67,.15);animation:ringPulse 3s ease-in-out infinite;animation-delay:0s"></div>
@@ -339,7 +339,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 2: KAMERA -->
+
 <div id="s-camera">
   <div class="cam-progress" id="cam-progress">
     <div class="cam-dot" id="cam-dot1"></div>
@@ -353,19 +353,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
     <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .3s ease">
-      <!-- Natūralus žmogaus delno kontūras — viena ištisinė linija -->
+      
       <svg id="cam-guide-svg" width="150" height="195" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.30;transition:opacity .4s,filter .4s;display:block;margin:35% auto 0;">
-        <!-- Mažasis pirštas -->
+        
         <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
-        <!-- Bevardis pirštas -->
+        
         <rect id="p4" x="94" y="28" width="20" height="74" rx="10" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
-        <!-- Vidurinis pirštas -->
+        
         <rect id="p3" x="68" y="18" width="22" height="84" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
-        <!-- Rodomasis pirštas -->
+        
         <rect id="p2" x="42" y="26" width="22" height="76" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
-        <!-- Nykštys -->
+        
         <rect id="p1" x="4" y="72" width="16" height="52" rx="8" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)" transform="rotate(-18 12 98)"/>
-        <!-- Delnas -->
+        
         <rect id="palm" x="18" y="96" width="124" height="110" rx="22" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
       </svg>
 
@@ -398,7 +398,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
 
-<!-- SCREEN 3: MOKĖJIMAS -->
+
 <div class="screen" id="s-info">
   <div style="padding:10px 16px 16px">
     <div style="margin-bottom:5px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
@@ -476,7 +476,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- STICKY CTA -->
+
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
   <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -495,7 +495,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 <div class="screen" id="s-order" style="display:none"></div>
 
-<!-- SCREEN 4b: DUOMENŲ APDOROJIMAS -->
+
 <div class="screen" id="s-processing">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:20px;padding-bottom:15vh">
     <div style="position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center">
@@ -507,7 +507,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 5: LOADING -->
+
 <div class="screen" id="s-loading">
   <div class="load-wrap">
     <div>
@@ -554,14 +554,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 
-<!-- SCREEN 5b: PERSONALIZAVIMO EKRANAS -->
+
 <div class="screen" id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
     <div class="serif gold" style="font-size:22px;letter-spacing:.03em;font-weight:700;text-align:center;line-height:1.5">Formuojame Jūsų asmeninę ataskaitą...</div>
   </div>
 </div>
 
-<!-- SCREEN 6: RESULT -->
+
 <div class="screen" id="s-result">
   <div class="result-hero" style="text-align:center;padding:28px 16px 16px">
     <div class="result-hero-orb">
