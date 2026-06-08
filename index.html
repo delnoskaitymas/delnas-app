@@ -19,6 +19,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
 .screen{display:none;position:relative;z-index:1;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .4s ease}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
+@keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
+@keyframes scanGlow{0%,100%{transform:translateY(-18px);opacity:0}30%{opacity:.5}55%{transform:translateY(18px);opacity:.5}80%{opacity:0}}
+.gold-icon{stroke:#D4AF37;transition:0.3s;fill:none;stroke-width:20px;stroke-linecap:round;stroke-linejoin:round}
 @keyframes bulletIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .serif{font-family:'Playfair Display',serif}
@@ -155,31 +159,35 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
 .cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#07040f;gap:20px}
 .cam-scan-ok.active{display:flex}
-.cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 12px rgba(212,168,67,.1),0 0 28px rgba(212,168,67,.35);margin-bottom:4px}
-.cam-scan-ok-text{color:#fff;font-size:18px;font-weight:700;letter-spacing:.04em;font-family:'Playfair Display',serif}
-.cam-scan-ok-sub{color:rgba(212,168,67,.65);font-size:12px;font-style:italic;font-family:'DM Sans',sans-serif;letter-spacing:.04em}
-.cam-error{display:none;position:absolute;inset:0;background:#07040f;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:24px}
-.cam-error-ico{font-size:36px;margin-bottom:14px;opacity:.6}
-.cam-error-title{color:var(--gold2);font-size:15px;font-weight:600;text-align:center;margin-bottom:8px;font-family:'Playfair Display',serif}
-.cam-error-sub{color:rgba(245,238,216,.4);font-size:13px;text-align:center;line-height:1.6;margin-bottom:20px}
-.cam-retry-btn{background:transparent;color:var(--gold);border:.5px solid rgba(212,168,67,.4);padding:11px 28px;border-radius:25px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.06em}
-.cam-shutter-wrap{margin-top:6px;margin-bottom:8px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:10;flex-shrink:0}
-.cam-hint{color:rgba(212,168,67,.45);font-size:10px;letter-spacing:.06em;font-family:'DM Sans',sans-serif}
-</style>
-<script src="https://js.stripe.com/v3/"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-</head>
-<body>
-<div id="stars"></div>
+.cam-scan-ok-badge{<div st<div st<div style="width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;font-size:28px">🤚</div>
 
 <!-- SCREEN 1: LANDING -->
 <div class="screen active" id="s-home">
   <div class="wrap center" style="padding-top:20px">
-    <div class="orb">
-      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
-      <div class="pd"></div><div class="pd"></div><div class="pd"></div>
-      <div class="core">🤚</div>
+    <div class="orb" style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <div style="position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(212,168,67,.15);animation:ringPulse 3s ease-in-out infinite;animation-delay:0s"></div>
+      <div style="position:absolute;width:130%;height:130%;border-radius:50%;border:1px solid rgba(212,168,67,.12);animation:ringPulse 3s ease-in-out infinite;animation-delay:.7s"></div>
+      <div style="position:absolute;width:165%;height:165%;border-radius:50%;border:1px solid rgba(212,168,67,.08);animation:ringPulse 3s ease-in-out infinite;animation-delay:1.4s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:8%;left:22%;animation:floatP 3.5s ease-in-out infinite;animation-delay:0s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:6%;left:66%;animation:floatP 4s ease-in-out infinite;animation-delay:.6s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:22%;left:88%;animation:floatP 3.8s ease-in-out infinite;animation-delay:1.1s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:72%;left:88%;animation:floatP 4.2s ease-in-out infinite;animation-delay:1.6s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:84%;left:58%;animation:floatP 3.6s ease-in-out infinite;animation-delay:.9s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:80%;left:12%;animation:floatP 4.3s ease-in-out infinite;animation-delay:1.9s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:48%;left:4%;animation:floatP 3.9s ease-in-out infinite;animation-delay:.4s"></div>
+      <div style="position:absolute;width:60%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent);top:50%;left:20%;animation:scanGlow 3s ease-in-out infinite"></div>
+      <div class="core" style="width:80px;height:80px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;font-size:36px"><span style="filter:sepia(1) saturate(8) hue-rotate(5deg);display:block">🤚</span></div>
+    </div>
+      <div style="position:absolute;width:165%;height:165%;border-radius:50%;border:1px solid rgba(212,168,67,.08);animation:ringPulse 3s ease-in-out infinite;animation-delay:1.4s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:8%;left:22%;animation:floatP 3.5s ease-in-out infinite;animation-delay:0s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:6%;left:66%;animation:floatP 4s ease-in-out infinite;animation-delay:.6s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:22%;left:88%;animation:floatP 3.8s ease-in-out infinite;animation-delay:1.1s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:72%;left:88%;animation:floatP 4.2s ease-in-out infinite;animation-delay:1.6s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:84%;left:58%;animation:floatP 3.6s ease-in-out infinite;animation-delay:.9s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:80%;left:12%;animation:floatP 4.3s ease-in-out infinite;animation-delay:1.9s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:48%;left:4%;animation:floatP 3.9s ease-in-out infinite;animation-delay:.4s"></div>
+      <div style="position:absolute;width:60%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent);top:50%;left:20%;animation:scanGlow 3s ease-in-out infinite"></div>
+      <div class="core" style="width:80px;height:80px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;font-size:36px">🤚</div>
     </div>
     <h1 class="serif" style="font-size:28px;font-weight:700;line-height:1.2;margin-bottom:10px">
       Tavo gyvenimo<br><em class="gold">žemėlapis</em>
@@ -216,7 +224,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">drauge irgi isibande abi nustebom verta isbandyti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌺</div><div><div class="rev-name">Rūta</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">apie santykius parasyta taip tiksliai kad net nejauku kaip jie tai zino is delno</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎯</div><div><div class="rev-name">Mantas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skeptiskas buvau bet isbandžiau finansu dalis tiesiog sokiravo labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
-        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Agnė</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">perskaiciau du kartus kiekviena karta randu ka naujo tikrai verta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av"></div><div><div class="rev-name">Agnė</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">perskaiciau du kartus kiekviena karta randu ka naujo tikrai verta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🔮</div><div><div class="rev-name">Lina R.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">papasakojo apie mane dalyku kuriu net artimiausiem nesakau keista ir nuostabu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Eglė</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">visai neticejau is pradzio bet perskaitau ir tiesiog wow kaip taip gali buti</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌿</div><div><div class="rev-name">Darius</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nebloga tiksliai parasyta apie charakteri santykiai irgi atitinka rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
@@ -241,7 +249,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌈</div><div><div class="rev-name">Dovilė</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">mama neticejo kol pati nepabande dabar abu stebimes 😊</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Tadas</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">geras produktas nustebino detalumu rekomenduosiu draugams</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌊</div><div><div class="rev-name">Žydrūnė</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">skaiciau su vyru kartu jis irgi sake tikslu daug apie ka kalbejome po to</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
-        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Egidijus</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nebloga tiksliau nei tikejaus santykiu dalis labiausiai pataike i desimtuka</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av"></div><div><div class="rev-name">Egidijus</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nebloga tiksliau nei tikejaus santykiu dalis labiausiai pataike i desimtuka</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Aušra</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">visiškai netiketa patirtis pirkau is smalsumo ir dabar galvoju apie viska kas parasyta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💎</div><div><div class="rev-name">Ignas</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">sauniai padirbta klutys ir finansai labai tiksliai gyvenimo kryptis irgi</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Virginija</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">rekomenduoju tikrai verta labai tiksliai apie santykius ir charakteri</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
@@ -260,7 +268,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">⚡</div><div><div class="rev-name">Valdas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nustebino tikejaus bus bendrinis tekstas bet labai konkretus gerai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Miglė</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">perskaiciau tris kartus ir kiekviena karta vis labiau sutinku labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">Karolis</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">tikslu ypac klutys tiesiog mano problema tiksliai aprasyta rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
-        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">✨</div><div><div class="rev-name">Diana</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">verta tikrai pirkau is smalsumo bet likau su daug minciu labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
+        <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av"></div><div><div class="rev-name">Diana</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">verta tikrai pirkau is smalsumo bet likau su daug minciu labai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🐝</div><div><div class="rev-name">Laurynas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">pirkau per pietu pertrauka is smalsumo paskui visa diena galvojau apie tai kas parasyta tikslu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌟</div><div><div class="rev-name">Ramunė</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">nezinau ar tikiu tokiais dalykais bet tiksliai parasyta draugei irgi patiko</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
         <div class="rev" style="min-width:100%;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🦚</div><div><div class="rev-name">Aurimas</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:15px;line-height:1.6">klucciu skyrius kaip i veidrodi pazurejau nemaloniai tikslu bet reikia zinoti 😬</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
@@ -506,8 +514,26 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="load-title">ANALIZUOJAMI TAVO DELNAI...</div>
       <div class="load-sub">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis.</div>
     </div>
-    <div style="position:relative;width:130px;height:130px;flex-shrink:0">
-      <canvas id="oracle-canvas" width="130" height="130" style="display:block"></canvas>
+    <div style="position:relative;width:130px;height:130px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+      <div style="position:absolute;width:90px;height:90px;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:0s"></div>
+      <div style="position:absolute;width:115px;height:115px;border-radius:50%;border:1px solid rgba(212,168,67,.12);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:.7s"></div>
+      <div style="position:absolute;width:130px;height:130px;border-radius:50%;border:1px solid rgba(212,168,67,.07);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:1.4s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:8%;left:25%;animation:floatP 3.5s ease-in-out infinite"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:6%;left:68%;animation:floatP 4s ease-in-out infinite;animation-delay:.6s"></div>
+      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:78%;left:80%;animation:floatP 3.8s ease-in-out infinite;animation-delay:1.1s"></div>
+      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:80%;left:15%;animation:floatP 4.2s ease-in-out infinite;animation-delay:1.7s"></div>
+      <div style="position:absolute;width:55%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.35),transparent);top:50%;left:22%;animation:scanGlow 2.5s ease-in-out infinite"></div>
+      <div style="width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#2a1800,#0d0800);border:1px solid rgba(212,168,67,.35);display:flex;align-items:center;justify-content:center;position:relative;z-index:2"><svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="4" width="5" height="18" rx="2.5" stroke="#d4a843" stroke-width="1.2" fill="none"/>
+  <rect x="15" y="2" width="5" height="20" rx="2.5" stroke="#d4a843" stroke-width="1.2" fill="none"/>
+  <rect x="22" y="2" width="5" height="20" rx="2.5" stroke="#d4a843" stroke-width="1.2" fill="none"/>
+  <rect x="29" y="4" width="5" height="18" rx="2.5" stroke="#d4a843" stroke-width="1.2" fill="none"/>
+  <path d="M8 16 Q4 16 3 20 Q2 26 5 28" stroke="#d4a843" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M8 20 Q8 36 10 40 Q16 44 22 44 Q28 44 34 40 Q36 36 36 20" stroke="#d4a843" stroke-width="1.2" fill="none"/>
+  <path d="M11 28 Q18 26 30 29" stroke="#d4a843" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M10 33 Q17 31 28 33" stroke="#d4a843" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M18 22 Q20 30 19 38" stroke="#d4a843" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.6"/>
+</svg></div>
     </div>
     <div class="pbar-wrap">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
@@ -621,6 +647,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
 </div>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 const sb=document.getElementById('stars');
@@ -1577,8 +1605,8 @@ async function shareTo(platform){
 
   const name=window.userName||'';
   const text=name
-    ? `${name} gyvenimo žemėlapis ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
-    : `Atlikau delnų analizę ✨🤚 Tikslumas šokiravo — bandyk ir tu! #delnaskaitymas #chiromantija #lietuva`;
+    ? `${name} gyvenimo žemėlapis 🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
+    : `Atlikau delnų analizę 🤚 Tikslumas šokiravo — bandyk ir tu! #delnaskaitymas #chiromantija #lietuva`;
   const encodedText=encodeURIComponent(text);
   const encodedUrl=encodeURIComponent(shareUrl);
 
