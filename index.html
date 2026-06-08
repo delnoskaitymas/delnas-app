@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DELNAS — Delno skaitymas</title>
+<title>DELNAS — Gyvenimo žemėlapis</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -186,7 +186,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px">
       Pradėk savo delnų analizę dabar.<br>Sužinok, ką slepia tavo gyvenimo linijos.
     </p>
-    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()">Skenuoti delnus →</button>
+    <button class="btn btn-gold" style="font-size:18px;padding:18px;border-radius:14px;margin-bottom:10px" onclick="startApp()">Atskleisti gyvenimo žemėlapį →</button>
     <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:4px">
       Jau <span style="color:var(--gold2);font-weight:500">2 847</span> žmonės atliko savo analizę
     </div>
@@ -489,7 +489,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="load-wrap">
     <div>
       <div class="load-title">ANALIZUOJAMI TAVO DELNAI...</div>
-      <div class="load-sub">Generuojamas asmeninis gyvenimo žemėlapis.</div>
+      <div class="load-sub">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis.</div>
     </div>
     <div style="position:relative;width:130px;height:130px;flex-shrink:0">
       <canvas id="oracle-canvas" width="130" height="130" style="display:block"></canvas>
@@ -527,7 +527,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="ring rh1"></div><div class="ring rh2"></div><div class="ring rh3"></div>
       <div class="result-hero-core">🤚</div>
     </div>
-    <div class="result-name" id="res-name">Tavo Delno Skaitymas</div>
+    <div class="result-name" id="res-name">Tavo Gyvenimo Žemėlapis</div>
     <div class="result-subtitle">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div class="result-divider"></div>
   </div>
@@ -905,7 +905,7 @@ async function onPaymentSuccess(name,email){
     </div>
     <div style="text-align:center">
       <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
-      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Kraunama Jūsų ataskaita...</div>
+      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Atskleidžiamas tavo gyvenimo žemėlapis...</div>
     </div>`;
   document.body.appendChild(successDiv);
   setTimeout(()=>successDiv.style.opacity='1',30);
@@ -1409,7 +1409,7 @@ function displayResult(r){window._palmResult=r;window._shareUrl=null;
   if(r.userName) window.userName=r.userName;if(!r)return;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
-  document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninė delnų analizė`:'✦ Tavo asmeninė delnų analizė';
+  document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
   document.getElementById('r-char').innerHTML=formatText(r.prigimtines_stiprybes);
   renderInsights('insights-char', r.prigimtines_insights);
   document.getElementById('r-mission').innerHTML=formatText(r.gyvenimo_tikslas);
@@ -1477,7 +1477,7 @@ function downloadPDF(){
   // Antraštė
   doc.setFontSize(20);
   doc.setTextColor(180, 130, 40);
-  doc.text('DELNAS — Delno skaitymas', W/2, y, {align:'center'});
+  doc.text('DELNAS — Gyvenimo žemėlapis', W/2, y, {align:'center'});
   y += 8;
   if(name){
     doc.setFontSize(13);
@@ -1548,7 +1548,7 @@ async function shareTo(platform){
 
   const name=window.userName||'';
   const text=name
-    ? `${name} delno skaitymas ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
+    ? `${name} gyvenimo žemėlapis ✨🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
     : `Atlikau delnų analizę ✨🤚 Tikslumas šokiravo — bandyk ir tu! #delnaskaitymas #chiromantija #lietuva`;
   const encodedText=encodeURIComponent(text);
   const encodedUrl=encodeURIComponent(shareUrl);
@@ -1564,7 +1564,7 @@ async function shareTo(platform){
     case 'facebook':window.open('https://www.facebook.com/sharer/sharer.php?u='+encodedUrl,'_blank');break;
     case 'instagram':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=instagram]'));break;
     case 'tiktok':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=tiktok]'));break;
-    case 'native':if(navigator.share){navigator.share({title:'Mano delno skaitymas',text,url:shareUrl});}else{copyWithFeedback(shareUrl,null);}break;
+    case 'native':if(navigator.share){navigator.share({title:'Mano gyvenimo žemėlapis',text,url:shareUrl});}else{copyWithFeedback(shareUrl,null);}break;
     case 'copy':copyWithFeedback(shareUrl, document.getElementById('copy-btn'));break;
   }
 }
@@ -1615,7 +1615,7 @@ async function shareSection(){
       if(!blob){shareTo('native');return;}
       const file=new File([blob],'delnas-analize.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare({files:[file]})){
-        await navigator.share({title:'Mano delno skaitymas',text:`${window.userName||'Mano'} delno skaitymas — bandyk pati! #delnaskaitymas`,files:[file]});
+        await navigator.share({title:'Mano gyvenimo žemėlapis',text:`${window.userName||'Mano'} gyvenimo žemėlapis — bandyk pati! #delnaskaitymas`,files:[file]});
       }else{
         const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='delnas-analize.png';a.click();
         setTimeout(()=>shareTo('native'),500);
