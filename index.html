@@ -76,7 +76,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
 .load-steps{display:grid;gap:3px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(212,168,67,.06);border-right:.5px solid rgba(212,168,67,.06);border-bottom:.5px solid rgba(212,168,67,.06);border-radius:0 8px 8px 0;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px)}
+.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px)}
 .ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 10px rgba(212,168,67,.08)}
 .ls.done{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0)}
 .ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -160,7 +160,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#07040f;gap:20px}
 .cam-scan-ok.active{display:flex}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
-@keyframes palmPulse{0%{opacity:0}50%{opacity:1}100%{opacity:0}}</style>
+@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}</style>
 </head>
 <body>
 <div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
@@ -173,7 +173,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 25% at 52% 20%,rgba(7,4,15,.8) 0%,rgba(7,4,15,.4) 55%,transparent 80%);z-index:1;pointer-events:none"></div>
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse 75% 12% at 52% 0%,rgba(7,4,15,.90) 0%,rgba(7,4,15,.6) 25%,rgba(7,4,15,.2) 50%,transparent 70%);z-index:1;pointer-events:none"></div>
       
-      <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 55% 30% at 52% 85%,rgba(212,168,67,.38) 0%,rgba(212,168,67,.12) 50%,transparent 100%);opacity:0;animation:palmPulse 4s ease-in-out infinite;filter:blur(22px)"></div>
+      <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 55% 30% at 52% 85%,rgba(212,168,67,.18) 0%,rgba(212,168,67,.06) 50%,transparent 100%);opacity:0;animation:palmPulse 4s ease-in-out infinite;filter:blur(22px)"></div>
       <div style="position:relative;z-index:2;padding:48px 24px 0;text-align:center">
         <div style="font-size:13px;letter-spacing:.2em;color:rgba(212,168,67,.65);text-transform:uppercase;margin-bottom:13px;font-family:'DM Sans',sans-serif">Skaitmeninė chiromantijos analizė</div>
         <h1 class="serif" style="font-size:31px;font-weight:700;line-height:1.2;margin-bottom:0;color:#f0ece2">
@@ -382,43 +382,60 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-loading">
-  <div class="load-wrap">
-    <div>
-      <div class="load-title">ANALIZUOJAMI TAVO DELNAI...</div>
-      <div class="load-sub">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis.</div>
+  <div class="load-wrap" style="padding:16px 16px 0;gap:8px;justify-content:flex-start">
+    <div style="text-align:center;flex-shrink:0">
+      <div class="load-title" style="font-size:15px;margin-bottom:2px">ANALIZUOJAMI TAVO DELNAI...</div>
+      <div class="load-sub" style="font-size:11px">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis.</div>
     </div>
-    <div style="position:relative;width:130px;height:130px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
-      <div style="position:absolute;width:90px;height:90px;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:0s"></div>
-      <div style="position:absolute;width:115px;height:115px;border-radius:50%;border:1px solid rgba(212,168,67,.12);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:.7s"></div>
-      <div style="position:absolute;width:130px;height:130px;border-radius:50%;border:1px solid rgba(212,168,67,.07);animation:ringPulse 2.5s ease-in-out infinite;animation-delay:1.4s"></div>
-      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:8%;left:25%;animation:floatP 3.5s ease-in-out infinite"></div>
-      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:6%;left:68%;animation:floatP 4s ease-in-out infinite;animation-delay:.6s"></div>
-      <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#d4a843;top:78%;left:80%;animation:floatP 3.8s ease-in-out infinite;animation-delay:1.1s"></div>
-      <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#f0c96a;top:80%;left:15%;animation:floatP 4.2s ease-in-out infinite;animation-delay:1.7s"></div>
-      <div style="position:absolute;width:55%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.35),transparent);top:50%;left:22%;animation:scanGlow 2.5s ease-in-out infinite"></div>
-      <div style="width:72px;height:72px;border-radius:50%;background:url(data:image/jpeg;base64,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) center/cover no-repeat,radial-gradient(circle at 40% 40%,#2a1800,#0d0800);border:1px solid rgba(212,168,67,.45);box-shadow:0 0 14px rgba(212,168,67,.2) inset,0 0 10px rgba(212,168,67,.15);position:relative;z-index:2"></div>
+
+    <!-- RANKA su auksiniais žiedais — max 38vh -->
+    <div style="position:relative;width:min(38vh,220px);height:min(38vh,220px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto">
+      <!-- Išoriniai žiedai -->
+      <div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(212,168,67,.25);animation:sp 18s linear infinite"></div>
+      <div style="position:absolute;inset:6%;border-radius:50%;border:1.5px solid rgba(212,168,67,.4);animation:sp 12s linear infinite reverse"></div>
+      <div style="position:absolute;inset:12%;border-radius:50%;border:2px solid rgba(212,168,67,.6);animation:sp 8s linear infinite;box-shadow:0 0 12px rgba(212,168,67,.2),inset 0 0 12px rgba(212,168,67,.05)"></div>
+      <!-- Glow fone -->
+      <div style="position:absolute;inset:15%;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.12) 0%,transparent 70%);animation:pulse3 2.5s ease-in-out infinite"></div>
+      <!-- Maži taškeliai -->
+      <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:var(--gold2);top:8%;left:22%;animation:floatP 3.5s ease-in-out infinite;box-shadow:0 0 6px rgba(240,201,106,.8)"></div>
+      <div style="position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gold);top:7%;right:25%;animation:floatP 4s ease-in-out infinite .6s;box-shadow:0 0 6px rgba(212,168,67,.8)"></div>
+      <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:var(--gold2);bottom:10%;right:18%;animation:floatP 3.8s ease-in-out infinite 1.1s;box-shadow:0 0 6px rgba(240,201,106,.8)"></div>
+      <div style="position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gold);bottom:12%;left:20%;animation:floatP 4.2s ease-in-out infinite 1.7s;box-shadow:0 0 6px rgba(212,168,67,.8)"></div>
+      <!-- Delno nuotrauka apskritime -->
+      <div style="position:absolute;inset:16%;border-radius:50%;overflow:hidden;border:1.5px solid rgba(212,168,67,.5);box-shadow:0 0 20px rgba(212,168,67,.25),inset 0 0 20px rgba(212,168,67,.1)">
+        <canvas id="oracle-canvas" width="130" height="130" style="width:100%;height:100%;border-radius:50%"></canvas>
+      </div>
+      <!-- Scan linija -->
+      <div style="position:absolute;inset:16%;border-radius:50%;overflow:hidden;pointer-events:none;z-index:2">
+        <div style="position:absolute;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.6),transparent);top:50%;animation:scanGlow 2.5s ease-in-out infinite"></div>
+      </div>
     </div>
-    <div class="pbar-wrap">
+
+    <!-- Progress bar -->
+    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
     </div>
-    <div class="load-steps">
-      <div class="ls" id="ls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="ls-text">Identifikuojamos tavo prigimtinės stiprybės ir charakteris.</div><div class="ls-status" id="ls1-status">·</div></div>
-      <div class="ls" id="ls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="12" r="9"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></div><div class="ls-text">Gryninama tavo gyvenimo kryptis ir tikslai.</div><div class="ls-status" id="ls2-status">·</div></div>
-      <div class="ls" id="ls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Analizuojamas tavo bendravimo būdas ir jo įtaka santykiams.</div><div class="ls-status" id="ls3-status">·</div></div>
-      <div class="ls" id="ls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9 12h6"/></svg></div><div class="ls-text">Skaičiuojamas tavo finansinis potencialas.</div><div class="ls-status" id="ls4-status">·</div></div>
-      <div class="ls" id="ls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="ls-text">Atrandamas tavo unikalus sėkmės raktas.</div><div class="ls-status" id="ls5-status">·</div></div>
-      <div class="ls" id="ls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></div><div class="ls-text">Apžvelgiami svarbiausi artėjantys pokyčiai.</div><div class="ls-status" id="ls6-status">·</div></div>
-      <div class="ls" id="ls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(212,168,67,.6))"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="ls-text">Identifikuojamos pažangą stabdančios kliūtys.</div><div class="ls-status" id="ls7-status">·</div></div>
+
+    <!-- Sąrašas su glassmorphism ir fade-out -->
+    <div style="position:relative;width:100%;max-width:340px;flex:1;min-height:0;overflow:hidden">
+      <!-- Fade-out apačioje -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none"></div>
+      <div class="load-steps" id="load-steps-inner" style="gap:4px;padding-bottom:20px">
+        <div class="ls" id="ls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="ls-text">Identifikuojamos tavo prigimtinės stiprybės ir charakteris.</div><div class="ls-status" id="ls1-status">·</div></div>
+        <div class="ls" id="ls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></div><div class="ls-text">Gryninama tavo gyvenimo kryptis ir tikslai.</div><div class="ls-status" id="ls2-status">·</div></div>
+        <div class="ls" id="ls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Analizuojamas tavo bendravimo būdas ir jo įtaka santykiams.</div><div class="ls-status" id="ls3-status">·</div></div>
+        <div class="ls" id="ls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9 12h6"/></svg></div><div class="ls-text">Skaičiuojamas tavo finansinis potencialas.</div><div class="ls-status" id="ls4-status">·</div></div>
+        <div class="ls" id="ls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="ls-text">Atrandamas tavo unikalus sėkmės raktas.</div><div class="ls-status" id="ls5-status">·</div></div>
+        <div class="ls" id="ls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></div><div class="ls-text">Apžvelgiami svarbiausi artėjantys pokyčiai.</div><div class="ls-status" id="ls6-status">·</div></div>
+        <div class="ls" id="ls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="ls-text">Identifikuojamos pažangą stabdančios kliūtys.</div><div class="ls-status" id="ls7-status">·</div></div>
+      </div>
     </div>
   </div>
-</div>
-
-
-<div class="screen" id="s-personalizing" style="animation:fu .8s ease">
+id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
     <div class="serif gold" style="font-size:22px;letter-spacing:.03em;font-weight:700;text-align:center;line-height:1.5">Formuojame Jūsų asmeninę ataskaitą...</div>
   </div>
