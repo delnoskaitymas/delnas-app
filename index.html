@@ -282,7 +282,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="margin-bottom:5px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">85%</span>
-        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Analizė sugeneruota ✓</span>
+        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Žemėlapis sugeneruotas ✓</span>
         <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
@@ -358,17 +358,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
   <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <span style="font-size:12px;color:var(--muted)">Vienkartinis mokestis</span>
+      <span style="font-size:12px;color:var(--muted)">Vienkartinis mokėjimas</span>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5">12,99 €</span>
         <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">5,99 €</span>
         <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.04em;margin-top:2px;animation:pulse3 2s ease-in-out infinite">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
       </div>
     </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">7 temų išsami analizė · Asmeninės įžvalgos · Jokios prenumeratos</div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Vienkartinis mokėjimas. Jokių prenumeratų. Pilna ataskaita.</div>
   </div>
   <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">3 241</span> žmogus sužinojo savo atsakymus</span></div>
-  <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI MANO ANALIZĘ →</button>
+  <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu · Nereikia registruotis</div>
 </div>
 
@@ -395,7 +395,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
-    <div style="position:relative;width:min(38vh,210px);height:min(38vh,210px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto">
+    <div style="position:relative;width:min(38vh,210px);height:min(38vh,210px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto" id="hand-container">
       <!-- Išoriniai žiedai -->
       <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:sp 22s linear infinite"></div>
       <div style="position:absolute;inset:5%;border-radius:50%;border:1.5px solid rgba(212,168,67,.35);animation:sp 14s linear infinite reverse"></div>
@@ -443,7 +443,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 id="s-personalizing" style="animation:fu .8s ease">
   <div class="load-wrap">
-    <div class="serif gold" style="font-size:22px;letter-spacing:.03em;font-weight:700;text-align:center;line-height:1.5">Formuojame Jūsų asmeninę ataskaitą...</div>
+    <div class="serif gold" style="font-size:22px;letter-spacing:.03em;font-weight:700;text-align:center;line-height:1.5">Formuojamas Tavo gyvenimo žemėlapis...</div>
   </div>
 </div>
 
@@ -703,7 +703,7 @@ function startPayPbar(){
     if(window._currentProgress>=98){
       clearInterval(t);
       const ptxtEl=document.getElementById('pay-status-txt');
-      if(ptxtEl) ptxtEl.textContent='Ataskaita paruošta. Laukia apmokėjimo.';
+      if(ptxtEl) ptxtEl.textContent='Žemėlapis paruoštas. Laukia apmokėjimo.';
     }
   },1000);
   window._payPbarInterval=t;
@@ -713,14 +713,14 @@ function updatePersonalTxt(){
   const name=document.getElementById('i-name').value.trim();
   const el=document.getElementById('pay-personal-txt');
   if(!el) return;
-  el.textContent=name?`Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`:'Duomenys gauti. Šiuo metu ruošiame jūsų personalizuotą analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
+  el.textContent=name?`Duomenys gauti. Šiuo metu ruošiame jūsų gyvenimo žemėlapį ${name} analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.`:'Duomenys gauti. Šiuo metu ruošiame jūsų gyvenimo žemėlapį analizę. Kad procesas būtų baigtas, prašome užbaigti apmokėjimą.';
   if(name) window.userName=name;
 }
 
 function updatePayBtn(){
   const name=document.getElementById('i-name').value.trim();
   const btn=document.getElementById('pay-btn');if(!btn) return;
-  btn.textContent=name?`ATRAKINTI ${name.toUpperCase()} ANALIZĘ →`:'ATRAKINTI MANO ANALIZĘ →';
+  btn.textContent=name?`ATRAKINTI ${name.toUpperCase()} ŽEMĖLAPĮ →`:'ATRAKINTI GYVENIMO ŽEMĖLAPĮ →';
 }
 
 function initQuickPay(){
@@ -779,7 +779,7 @@ function initStripeElements(){
   stripeCardElement=elements.create('card',{style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}},invalid:{color:'#ff6b6b'}},hidePostalCode:true});
   stripeCardElement.mount('#stripe-card-element');
   stripeCardElement.on('change',e=>{const errEl=document.getElementById('stripe-card-errors');if(errEl) errEl.textContent=e.error?e.error.message:'';});
-  const pr=stripeInstance.paymentRequest({country:'LT',currency:'eur',total:{label:'Delnų analizė',amount:599},requestPayerName:true,requestPayerEmail:true});
+  const pr=stripeInstance.paymentRequest({country:'LT',currency:'eur',total:{label:'Gyvenimo žemėlapis',amount:599},requestPayerName:true,requestPayerEmail:true});
   window._stripePaymentRequest=pr;
   pr.canMakePayment().then(result=>{
     const prWrap=document.getElementById('pr-button-wrap');if(!prWrap) return;
@@ -1294,7 +1294,7 @@ function activateStep(n,done){
   
   // Collapse efektas — ranka mažėja palaipsniui su kiekvienu žingsniu
   if(done){
-    const handEl=document.querySelector('#s-loading .load-wrap > div:nth-child(2)');
+    const handEl=document.getElementById('hand-container');
     if(handEl){
       // Pradinis dydis: 38vh, galutinis: 22vh — 7 žingsniai
       const sizes=['38vh','35vh','33vh','30vh','28vh','25vh','22vh'];
