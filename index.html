@@ -231,7 +231,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div class="cam-viewport" style="margin-top:8px;margin-bottom:8px;flex:1;min-height:0">
+  <div class="cam-viewport" style="margin-top:8px;margin-bottom:4px;flex:1;min-height:0">
     <video id="cam-video" autoplay playsinline muted></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
@@ -911,7 +911,7 @@ function startApp(){
   const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
   const video=document.getElementById('cam-video');if(video) video.style.display='block';
   updateCameraUI();go('s-camera');
-  try{if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}else if(document.documentElement.webkitRequestFullscreen&&!document.webkitFullscreenElement){document.documentElement.webkitRequestFullscreen();}}catch(e){}
+  // fullscreen disabled
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
     camStream=stream;const video=document.getElementById('cam-video');
@@ -1110,10 +1110,12 @@ function capturePhoto(){
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
     // Paslėpti cam-sub
     const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
-    // Paslėpti loader jei buvo
     const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
+    // Tikrinamas delnas - palikti tik uzrasa
+    const camVpEl=document.querySelector('.cam-viewport');if(camVpEl)camVpEl.style.visibility='hidden';
+    const camProgEl=document.getElementById('cam-progress');if(camProgEl)camProgEl.style.visibility='hidden';
 
     fetch('/validate-palm',{
         method:'POST',
@@ -1128,10 +1130,15 @@ function capturePhoto(){
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
         const camSubEl=document.getElementById('cam-sub');if(camSubEl)camSubEl.style.display='none';
         const cl=document.getElementById('cam-loader');if(cl)cl.style.display='none';
+        // Paslėpti mygtuką ir privatumo tekstą
+        const shutterWrapEl=document.querySelector('.cam-shutter-wrap');if(shutterWrapEl)shutterWrapEl.style.visibility='hidden';
+        const progEl=document.getElementById('cam-progress');if(progEl)progEl.style.visibility='hidden';
         if(isLeftHand){
           setTimeout(function(){
             frozen.classList.remove('active');frozen.style.backgroundImage='';
             video.style.display='block';shutterWrap.style.display='';
+            const swEl=document.querySelector('.cam-shutter-wrap');if(swEl)swEl.style.visibility='';
+            const prEl=document.getElementById('cam-progress');if(prEl)prEl.style.visibility='';
             document.getElementById('cam-sub').style.display='';
             handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
             setTimeout(function(){shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
