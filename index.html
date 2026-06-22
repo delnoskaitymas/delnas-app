@@ -2,11 +2,14 @@
 <html lang="lt">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DELNAS — Gyvenimo žemėlapis</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;height:-webkit-fill-available}
+body{min-height:100vh;min-height:-webkit-fill-available;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+:root{--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
 :root{
   --bg:#07040f;--g2:#120b28;--g3:#1a1035;
   --gold:#d4a843;--gold2:#f0c96a;--gold3:#a07828;
@@ -142,11 +145,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
 #s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;height:100dvh;max-height:100dvh;overflow:hidden;justify-content:space-between;box-sizing:border-box}
 #s-camera.active{display:flex;animation:fu .3s ease}
-.cam-progress{display:flex;gap:10px;margin-top:18px;z-index:10;flex-shrink:0;align-items:center}
+.cam-progress{display:flex;gap:10px;margin-top:max(28px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
-.cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:10px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
-.cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:5px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
+.cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:18px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
+.cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:10px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
 .cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:16px;overflow:hidden;background:#0a0a0a;z-index:10;border:1px solid rgba(212,168,67,.35);box-shadow:0 0 0 1px rgba(212,168,67,.1),0 0 24px rgba(212,168,67,.08)}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
@@ -159,6 +162,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
 .cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#07040f;gap:20px}
 .cam-scan-ok.active{display:flex}
+.cam-shutter-wrap{padding:12px 20px 24px;padding-bottom:max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes lastStepPulse{
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
@@ -227,7 +231,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div class="cam-viewport">
+  <div class="cam-viewport" style="margin-top:12px;margin-bottom:12px">
     <video id="cam-video" autoplay playsinline muted></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
@@ -269,8 +273,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
-    <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase">🔒 Privatumas garantuojamas</div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .3s,transform .15s;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:8px">🔒 Privatumas garantuojamas</div>
+    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .5s ease,transform .15s ease,background .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     
@@ -920,6 +924,7 @@ function startApp(){
   const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
   const video=document.getElementById('cam-video');if(video) video.style.display='block';
   updateCameraUI();go('s-camera');
+  try{if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}else if(document.documentElement.webkitRequestFullscreen&&!document.webkitFullscreenElement){document.documentElement.webkitRequestFullscreen();}}catch(e){}
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
   .then(stream=>{
     camStream=stream;const video=document.getElementById('cam-video');
@@ -1118,7 +1123,7 @@ function capturePhoto(){
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
     // Pridėti loading indikatoriją po antrašte
     let camLoader=document.getElementById('cam-loader');
-    if(!camLoader){camLoader=document.createElement('div');camLoader.id='cam-loader';camLoader.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;font-size:11px;color:rgba(212,168,67,.6)';camLoader.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spinStep .7s linear infinite"></div>Tikriname...';const sub=document.getElementById('cam-sub');if(sub&&sub.parentNode)sub.parentNode.insertBefore(camLoader,sub.nextSibling);}
+    if(!camLoader){camLoader=document.createElement('div');camLoader.id='cam-loader';camLoader.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;font-size:11px;color:rgba(212,168,67,.6)';camLoader.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spinStep .7s linear infinite"></div>';const sub=document.getElementById('cam-sub');if(sub&&sub.parentNode)sub.parentNode.insertBefore(camLoader,sub.nextSibling);}
     camLoader.style.display='flex';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
