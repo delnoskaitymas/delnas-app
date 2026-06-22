@@ -153,11 +153,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
 #s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;height:100dvh;max-height:100dvh;overflow:hidden;justify-content:space-between;box-sizing:border-box}
 #s-camera.active{display:flex;animation:fu .3s ease}
-.cam-progress{display:flex;gap:10px;margin-top:max(10px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
+.cam-progress{display:flex;gap:10px;margin-top:max(24px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
-.cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:6px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
-.cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:3px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
+.cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
+.cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
 .cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:16px;overflow:hidden;background:#0a0a0a;z-index:10;border:1px solid rgba(212,168,67,.35);box-shadow:0 0 0 1px rgba(212,168,67,.1),0 0 24px rgba(212,168,67,.08)}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
@@ -631,7 +631,9 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function verifyAndProceed(sessionId){
-  go('s-loading');
+  const co=document.getElementById('chk-ovl');if(co)co.remove();
+    const camVpShow=document.querySelector('.cam-viewport');if(camVpShow)camVpShow.style.visibility='';
+    go('s-loading');
   try{
     const res=await fetch(`/verify-payment?session_id=${sessionId}`);
     const data=await res.json();
@@ -1122,7 +1124,21 @@ function capturePhoto(){
   }
 
   function doValidate(title){
-    document.getElementById('cam-title').textContent='Tikrinamas delnas...';
+    // Tikrinimo ekranas - juodas su spinner
+    document.getElementById('cam-title').textContent='';
+    const camSubHide=document.getElementById('cam-sub');if(camSubHide)camSubHide.style.display='none';
+    shutterWrap.style.visibility='hidden';
+    const camProgHide=document.getElementById('cam-progress');if(camProgHide)camProgHide.style.visibility='hidden';
+    const camVpHide=document.querySelector('.cam-viewport');if(camVpHide)camVpHide.style.visibility='hidden';
+    let chkOvl=document.getElementById('chk-ovl');
+    if(!chkOvl){
+      chkOvl=document.createElement('div');
+      chkOvl.id='chk-ovl';
+      chkOvl.style.cssText='position:fixed;inset:0;background:#07040f;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px';
+      chkOvl.innerHTML='<div style="width:52px;height:52px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .9s linear infinite"></div><div style="font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;color:rgba(212,168,67,.85);letter-spacing:.1em">Tikriname...</div>';
+      document.body.appendChild(chkOvl);
+    }
+    chkOvl.style.display='flex';
     // Paslėpti cam-sub
     const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
     const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
