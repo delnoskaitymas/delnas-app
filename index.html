@@ -368,7 +368,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Tik vienkartinis mokėjimas. Jokių prenumeratų. Gausite pilną ataskaitą.</div>
   </div>
-  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">3 241</span> žmogus sužinojo savo atsakymus</span></div>
+  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu</div>
 </div>
@@ -1293,14 +1293,14 @@ function activateStep(n,done){
     if(el7){el7.style.animation='';}
   }
   
-  // Collapse efektas — ranka mažėja su kiekvienu AKTYVIU žingsniu
-  if(!done){
+  // Collapse efektas — ranka mažėja po kiekvieno BAIGTO žingsniu (varnelė)
+  if(done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
-      // n=1→38vh, n=2→35vh, n=3→33vh, n=4→30vh, n=5→28vh, n=6→25vh, n=7→22vh
-      const sizes=['38vh','35vh','33vh','30vh','28vh','25vh','22vh'];
+      // n=1→35vh, n=2→33vh, n=3→30vh, n=4→28vh, n=5→25vh, n=6→23vh, n=7→21vh
+      const sizes=['35vh','33vh','30vh','28vh','25vh','23vh','21vh'];
       const idx=Math.min(n-1,sizes.length-1);
-      handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
+      handEl.style.transition='all 1.6s cubic-bezier(0.4,0,0.2,1)';
       handEl.style.width='min('+sizes[idx]+',210px)';
       handEl.style.height='min('+sizes[idx]+',210px)';
     }
