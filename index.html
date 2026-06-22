@@ -392,7 +392,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="load-wrap" style="padding:52px 16px 0;gap:12px;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0">
       <div class="load-title" style="font-size:15px;margin-bottom:8px;letter-spacing:.08em">ANALIZUOJAMI TAVO DELNAI...</div>
-      <div class="load-sub" style="font-size:13px;font-weight:500;color:rgba(245,238,216,.9);letter-spacing:.01em">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis.</div>
+      <div class="load-sub" style="font-size:13px;font-weight:500;color:rgba(245,238,216,.9);letter-spacing:.01em">Atskleidžiamas tavo asmeninis gyvenimo žemėlapis</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
@@ -1293,12 +1293,11 @@ function activateStep(n,done){
     if(el7){el7.style.animation='';}
   }
   
-  // Collapse efektas — ranka mažėja palaipsniui su KIEKVIENU žingsniu (ir aktyviu ir done)
-  {
+  // Collapse efektas — ranka mažėja su kiekvienu AKTYVIU žingsniu
+  if(!done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
-      // Mažėja nuo 38vh (startas) iki 22vh (pabaiga) — 7 žingsniai
-      // Mažėja tiek kai punktas tampa aktyvus, tiek kai pažymimas varnele
+      // n=1→38vh, n=2→35vh, n=3→33vh, n=4→30vh, n=5→28vh, n=6→25vh, n=7→22vh
       const sizes=['38vh','35vh','33vh','30vh','28vh','25vh','22vh'];
       const idx=Math.min(n-1,sizes.length-1);
       handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
