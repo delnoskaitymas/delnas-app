@@ -275,7 +275,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div class="cam-error" id="cam-error">
       <div class="cam-error-ico">📷</div>
-      <div class="cam-error-title">Kamera nepasiekiama</div>
+      <div class="cam-error-title">Nepavyko pasiekti kameros</div>
       <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
       <button class="cam-retry-btn" onclick="startApp()">Bandyti dar kartą</button>
     </div>
@@ -631,9 +631,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function verifyAndProceed(sessionId){
-  const co=document.getElementById('chk-ovl');if(co)co.remove();
-    const camVpShow=document.querySelector('.cam-viewport');if(camVpShow)camVpShow.style.visibility='';
-    go('s-loading');
+  go('s-loading');
   try{
     const res=await fetch(`/verify-payment?session_id=${sessionId}`);
     const data=await res.json();
@@ -683,7 +681,7 @@ function waitForAnalysis(){
     if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
     function tryFetch(){
       fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
-      .then(r=>{if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Serverio klaida');});return r.json();})
+      .then(r=>{if(!r.ok) return r.json().then(e=>{throw new Error(e.error||'Įvyko klaida. Prašome bandyti dar kartą.');});return r.json();})
       .then(resolve).catch(reject);
     }
     if(window.bgAnalysisDone){tryFetch();return;}
@@ -823,7 +821,7 @@ async function initiatePayment(){
   const btn=document.getElementById('pay-btn');btn.disabled=true;btn.style.opacity='.6';
   try{
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
-    const data=await res.json();if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
+    const data=await res.json();if(!data.clientSecret) throw new Error(data.error||'Įvyko klaida. Prašome bandyti dar kartą.');
     window._paymentIntentId=data.paymentIntentId;
     const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
     if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
@@ -1124,21 +1122,7 @@ function capturePhoto(){
   }
 
   function doValidate(title){
-    // Tikrinimo ekranas - juodas su spinner
-    document.getElementById('cam-title').textContent='';
-    const camSubHide=document.getElementById('cam-sub');if(camSubHide)camSubHide.style.display='none';
-    shutterWrap.style.visibility='hidden';
-    const camProgHide=document.getElementById('cam-progress');if(camProgHide)camProgHide.style.visibility='hidden';
-    const camVpHide=document.querySelector('.cam-viewport');if(camVpHide)camVpHide.style.visibility='hidden';
-    let chkOvl=document.getElementById('chk-ovl');
-    if(!chkOvl){
-      chkOvl=document.createElement('div');
-      chkOvl.id='chk-ovl';
-      chkOvl.style.cssText='position:fixed;inset:0;background:#07040f;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px';
-      chkOvl.innerHTML='<div style="width:52px;height:52px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .9s linear infinite"></div><div style="font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;color:rgba(212,168,67,.85);letter-spacing:.1em">Tikriname...</div>';
-      document.body.appendChild(chkOvl);
-    }
-    chkOvl.style.display='flex';
+    document.getElementById('cam-title').textContent='Tikrinamas delnas...';
     // Paslėpti cam-sub
     const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
     const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
@@ -1154,7 +1138,7 @@ function capturePhoto(){
       }).then(function(r){return r.json();}).then(function(v){
         if(!v.valid){
           resetToCamera(title);
-          showCamError('Delnas neaptiktas','Delnas neaptiktas. Įsitikinkite, kad ranka yra arčiau kameros ir delnas visiškai atviras.');
+          showCamError('Delnas neaptiktas. Prašome bandyti dar kartą.','Delnas neaptiktas. Prašome bandyti dar kartą.. Prašome bandyti dar kartą.');
           return;
         }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
@@ -1209,7 +1193,7 @@ function startBackgroundAnalysis(){
   const checkInterval=setInterval(()=>{
     fetch(`/analysis-status?sessionId=${window.bgSessionId}`).then(r=>r.json()).then(d=>{
       if(d.status==='done'){window.bgAnalysisDone=true;clearInterval(checkInterval);}
-      else if(d.status==='error'){window.bgAnalysisDone=true;window.bgAnalysisError='Serverio klaida';clearInterval(checkInterval);}
+      else if(d.status==='error'){window.bgAnalysisDone=true;window.bgAnalysisError='Įvyko klaida. Prašome bandyti dar kartą.';clearInterval(checkInterval);}
     }).catch(()=>{});
   },3000);
 }
@@ -1356,7 +1340,7 @@ async function callClaude(){
   if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
   if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
   const res=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
-  if(!res.ok){const err=await res.json();throw new Error(err.error||'Serverio klaida');}
+  if(!res.ok){const err=await res.json();throw new Error(err.error||'Įvyko klaida. Prašome bandyti dar kartą.');}
   return await res.json();
 }
 
