@@ -162,7 +162,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
 .cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#07040f;gap:20px}
 .cam-scan-ok.active{display:flex}
-.cam-shutter-wrap{padding:12px 20px 24px;padding-bottom:max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;flex-shrink:0}
+.cam-shutter-wrap{padding:8px 20px 0;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes lastStepPulse{
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
@@ -378,18 +378,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <div class="screen" id="s-order" style="display:none"></div>
-
-
-<div class="screen" id="s-processing">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:20px;padding-bottom:15vh">
-    <div style="position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center">
-      <div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(212,168,67,.25);animation:pulse3 2.2s ease-in-out infinite"></div>
-      <div style="position:absolute;inset:10px;border-radius:50%;border:1.5px solid rgba(212,168,67,.5);animation:pulse3 2.2s ease-in-out infinite .5s"></div>
-      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,rgba(240,201,106,.3),rgba(212,168,67,.5));border:1.5px solid var(--gold);box-shadow:0 0 16px rgba(212,168,67,.3);animation:pulse3 1.8s ease-in-out infinite"></div>
-    </div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:.04em;text-align:center">Duomenų apdorojimas...</div>
-  </div>
-</div>
 
 
 <div class="screen" id="s-loading">
@@ -1121,10 +1109,10 @@ function capturePhoto(){
 
   function doValidate(title){
     document.getElementById('cam-title').textContent='Tikrinamas delnas...';
-    // Pridėti loading indikatoriją po antrašte
-    let camLoader=document.getElementById('cam-loader');
-    if(!camLoader){camLoader=document.createElement('div');camLoader.id='cam-loader';camLoader.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;font-size:11px;color:rgba(212,168,67,.6)';camLoader.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spinStep .7s linear infinite"></div>';const sub=document.getElementById('cam-sub');if(sub&&sub.parentNode)sub.parentNode.insertBefore(camLoader,sub.nextSibling);}
-    camLoader.style.display='flex';
+    // Paslėpti cam-sub
+    const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
+    // Paslėpti loader jei buvo
+    const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
     document.getElementById('cam-sub').style.display='none';
     shutterWrap.style.display='none';
 
@@ -1139,6 +1127,7 @@ function capturePhoto(){
           return;
         }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
+        const camSubEl=document.getElementById('cam-sub');if(camSubEl)camSubEl.style.display='none';
         const cl=document.getElementById('cam-loader');if(cl)cl.style.display='none';
         if(isLeftHand){
           setTimeout(function(){
@@ -1155,7 +1144,7 @@ function capturePhoto(){
             photoRight=dataURL;
             stopCamera();
             startBackgroundAnalysis();
-            go('s-processing');
+            go('s-loading');
             setTimeout(function(){go('s-loading');animateLoading();},3000);
           },800);
         }
