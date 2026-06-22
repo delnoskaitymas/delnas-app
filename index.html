@@ -1138,7 +1138,7 @@ function capturePhoto(){
       }).then(function(r){return r.json();}).then(function(v){
         if(!v.valid){
           resetToCamera(title);
-          showCamError('Delnas neaptiktas. Prašome bandyti dar kartą.','Delnas neaptiktas. Prašome bandyti dar kartą.. Prašome bandyti dar kartą.');
+          showCamError('Delnas neaptiktas. Prašome bandyti dar kartą.','Delnas neaptiktas. Prašome bandyti dar kartą.');
           return;
         }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
