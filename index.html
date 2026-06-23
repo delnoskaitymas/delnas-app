@@ -673,7 +673,7 @@ async function verifyAndProceed(sessionId){
           if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
           if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
           fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
-          .then(r=>r.json()).then(result=>{go('s-result');displayResult(result);setTimeout(()=>{document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));},300);}).catch(()=>go('s-result'));
+          .then(r=>{if(!r.ok)throw new Error('Server error');return r.json();}).then(result=>{  if(!result||result.error){go('s-result');return;}  go('s-result');  displayResult(result);  setTimeout(()=>{    document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));    document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));  },300);}).catch((err)=>{  console.error('Analysis error:',err);  go('s-result');});
         },500);
       },500);
     }else{go('s-info');}
@@ -780,9 +780,7 @@ function toggleCard(){
   if(cardOpen){
     fields.style.display='block';if(arrow) arrow.textContent='▲';
     if(!stripeInstance) initStripeElements();
-    // Paslėpti sticky-cta kad neužstotų kortelės laukų
-    const stickyEl=document.getElementById('sticky-cta');if(stickyEl)stickyEl.style.display='none';
-    setTimeout(()=>{document.getElementById('card-section').scrollIntoView({behavior:'smooth',block:'start'});},100);
+    setTimeout(()=>{document.getElementById('card-section').scrollIntoView({behavior:'smooth',block:'nearest'});},100);
   }else{fields.style.display='none';if(arrow) arrow.textContent='▼';
     // Parodyti sticky-cta atgal
     const stickyClose=document.getElementById('sticky-cta');if(stickyClose)stickyClose.style.display='';}
@@ -1404,7 +1402,8 @@ function renderInsights(containerId, insights){
 }
 
 function displayResult(r){window._palmResult=r;window._shareUrl=null;
-  if(r.userName) window.userName=r.userName;if(!r)return;
+  if(!r||typeof r!=='object')return;
+  if(r.userName) window.userName=r.userName;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
   document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
