@@ -29,7 +29,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
 .screen{display:none;position:relative;z-index:1;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
-.screen.active{display:block;animation:fu .2s ease}
+.screen.active{display:block;animation:fu .3s ease}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
 @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
 @keyframes scanGlow{0%,100%{transform:translateY(-18px);opacity:0}30%{opacity:.5}55%{transform:translateY(18px);opacity:.5}80%{opacity:0}}
@@ -587,6 +587,7 @@ function go(id){
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
+  requestWakeLock();
   const cam=document.getElementById('s-camera');
   cam.classList.remove('active');
   if(id==='s-camera'){cam.classList.add('active');}
@@ -700,7 +701,30 @@ async function verifyAndProceed(sessionId){
           if(pl) photoData.push({type:'image/jpeg',data:pl.includes(',')?pl.split(',')[1]:pl});
           if(pr) photoData.push({type:'image/jpeg',data:pr.includes(',')?pr.split(',')[1]:pr});
           fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
-          .then(r=>{if(!r.ok)throw new Error('Server error');return r.json();}).then(result=>{  console.log('Analysis result:',result);  go('s-result');  if(result&&!result.error){displayResult(result);}  else{document.getElementById('res-name').textContent='Tavo analizė baigta';}  setTimeout(()=>{    document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));    document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));  },300);}).catch((err)=>{  console.error('Analysis error:',err);  go('s-result');});
+          .then(r=>{if(!r.ok)throw new Error('Server error '+r.status);return r.json();}).then(result=>{
+            console.log('RESULT:',JSON.stringify(result).substring(0,100));
+            window._lastResult=result;
+            go('s-result');
+            // Duoti laiko DOM atsinaujinti
+            setTimeout(()=>{
+              if(result&&!result.error){
+                displayResult(result);
+              } else {
+                document.getElementById('res-name').textContent='Tavo analizė baigta';
+              }
+              // Force visi elementai matomi
+              document.querySelectorAll('.rs-reveal').forEach(el=>{
+                el.style.opacity='1';el.style.transform='none';
+              });
+              document.querySelectorAll('.insight-card').forEach(el=>{
+                el.style.opacity='1';el.style.transform='none';
+              });
+            },100);
+          }).catch((err)=>{
+            console.error('Analysis error:',err);
+            go('s-result');
+            document.getElementById('res-name').textContent='Klaida. Susisiekite su mumis.';
+          });
         },500);
       },500);
     }else{go('s-info');}
@@ -807,16 +831,21 @@ function toggleCard(){
   if(cardOpen){
     fields.style.display='block';if(arrow) arrow.textContent='▲';
     if(!stripeInstance) initStripeElements();
-    // Scroll į card-section kad visi laukai matomi
+    // Paslėpti sticky-cta
+    const sCta=document.getElementById('sticky-cta');if(sCta)sCta.style.display='none';
+    // Pridėti padding kad Stripe laukai nebūtų uždengti
+    const sInf=document.getElementById('s-info');if(sInf)sInf.style.paddingBottom='120px';
     setTimeout(()=>{
       const cardEl=document.getElementById('card-section');
       if(cardEl){
         const aw=document.getElementById('app-wrap');
-        if(aw){const rect=cardEl.getBoundingClientRect();aw.scrollBy({top:rect.top-60,behavior:'smooth'});}
+        if(aw){const rect=cardEl.getBoundingClientRect();aw.scrollBy({top:rect.top-40,behavior:'smooth'});}
       }
     },200);
 
   }else{fields.style.display='none';if(arrow) arrow.textContent='▼';
+    const sCtaR=document.getElementById('sticky-cta');if(sCtaR)sCtaR.style.display='';
+    const sInfR=document.getElementById('s-info');if(sInfR)sInfR.style.paddingBottom='';
     // Parodyti sticky-cta atgal
     const stickyClose=document.getElementById('sticky-cta');if(stickyClose)stickyClose.style.display='';}
 }
@@ -1184,10 +1213,15 @@ function capturePhoto(){
           showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
           return;
         }
+        // Rodyti sėkmės ekraną
+        const scanOk=document.getElementById('cam-scan-ok');
+        if(scanOk){
+          scanOk.style.display='flex';
+          setTimeout(()=>scanOk.style.display='none',1500);
+        }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
         const camSubEl=document.getElementById('cam-sub');if(camSubEl)camSubEl.style.display='none';
         const cl=document.getElementById('cam-loader');if(cl)cl.style.display='none';
-        // Paslėpti tik mygtuką ir privatumo tekstą
         const shutterWrapEl=document.querySelector('.cam-shutter-wrap');if(shutterWrapEl)shutterWrapEl.style.visibility='hidden';
         if(isLeftHand){
           setTimeout(function(){
@@ -1436,13 +1470,23 @@ function renderInsights(containerId, insights){
   },300);
 }
 
-function displayResult(r){window._palmResult=r;window._shareUrl=null;
-  if(!r||typeof r!=='object')return;
+function displayResult(r){
+  console.log('displayResult called, r=',r?JSON.stringify(r).substring(0,200):'NULL');
+  window._palmResult=r;window._shareUrl=null;
+  if(!r||typeof r!=='object'){
+    console.error('displayResult: invalid result');
+    // Rodyti bent tuščią ekraną su žinute
+    const resName=document.getElementById('res-name');
+    if(resName) resName.textContent='✦ Tavo asmeninė delnų analizė';
+    return;
+  }
   if(r.userName) window.userName=r.userName;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
   document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
-  document.getElementById('r-char').innerHTML=formatText(r.prigimtines_stiprybes);
+  const rChar=document.getElementById('r-char');
+  if(rChar) rChar.innerHTML=formatText(r.prigimtines_stiprybes);
+  else console.error('r-char not found!');
   renderInsights('insights-char', r.prigimtines_insights);
   document.getElementById('r-mission').innerHTML=formatText(r.gyvenimo_tikslas);
   renderInsights('insights-mission', r.gyvenimo_insights);
