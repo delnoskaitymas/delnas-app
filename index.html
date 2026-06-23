@@ -114,9 +114,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-body p:last-child{margin-bottom:0}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
-.rs-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rs-reveal{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s ease}
 .insight-cards{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
-.insight-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:10px;opacity:0;transform:translateX(-12px);transition:opacity .5s ease,transform .5s ease}
+.insight-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:10px;opacity:1;transform:translateX(0);transition:opacity .5s ease,transform .5s ease}
 .insight-card.visible{opacity:1;transform:translateX(0)}
 .insight-dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);flex-shrink:0;box-shadow:0 0 8px rgba(240,201,106,.8);animation:insightPulse 2s ease-in-out infinite}
 .insight-text{font-size:12.5px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:500;line-height:1.4;letter-spacing:.01em}
@@ -447,7 +447,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 
-<div class="screen" id="s-result">
+<div class="screen" id="s-result" style="background:var(--bg)">
   <div class="result-hero" style="text-align:center;padding:28px 16px 16px">
     <div class="result-hero-orb">
       <div class="ring rh1"></div><div class="ring rh2"></div><div class="ring rh3"></div>
@@ -582,6 +582,7 @@ function go(id){
     },50);
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
   const cam=document.getElementById('s-camera');
   cam.classList.remove('active');
   if(id==='s-camera'){cam.classList.add('active');}
@@ -612,6 +613,11 @@ window.addEventListener('DOMContentLoaded',async()=>{
         // Rodyti rezultatų ekraną tiesiai
         go('s-result');
         displayResult(result);
+        // Forced visible po 500ms
+        setTimeout(()=>{
+          document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));
+          document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));
+        },500);
         // Paslėpti mokėjimo ir kitus mygtukus
         const payBtn=document.getElementById('sticky-pay');if(payBtn)payBtn.style.display='none';
         // Pridėti "Shared" ženkliuką
