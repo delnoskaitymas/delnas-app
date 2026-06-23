@@ -362,8 +362,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
         <div id="stripe-card-element" style="padding:2px 0"></div>
         <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:4px"></div>
-      <!-- Mokėjimo mygtukas viduje kortelės -->
-      <button id="card-pay-btn" onclick="initiatePayment()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:14px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35)">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
       </div>
     </div>
     <div id="order-err" class="err"></div>
@@ -667,13 +665,14 @@ async function verifyAndProceed(sessionId){
     if(data.paid){
       window.userName=data.name;window.userEmail=data.email;window._userEmail=data.email;window._userName=data.name;window.palmToken=data.token;
       window.history.replaceState({},'','/');
-      if(!photoLeft) photoLeft=sessionStorage.getItem('photoLeft');
-      if(!photoRight) photoRight=sessionStorage.getItem('photoRight');
+      // Išsaugoti nuotraukas ir session ID
+      photoLeft=sessionStorage.getItem('photoLeft')||photoLeft;
+      photoRight=sessionStorage.getItem('photoRight')||photoRight;
       const storedBgId=sessionStorage.getItem('bgSessionId');
       if(storedBgId) window.bgSessionId=storedBgId;
-      // Išsaugoti nuotraukas prieš valant sessionStorage
-      if(!photoLeft) photoLeft=sessionStorage.getItem('photoLeft');
-      if(!photoRight) photoRight=sessionStorage.getItem('photoRight');
+      // Išsaugoti window lygyje prieš valant
+      window._savedPhotoLeft=photoLeft;
+      window._savedPhotoRight=photoRight;
       sessionStorage.removeItem('photoLeft');sessionStorage.removeItem('photoRight');sessionStorage.removeItem('bgSessionId');
       const successDiv=document.createElement('div');
       successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .4s ease;gap:28px';
@@ -696,8 +695,10 @@ async function verifyAndProceed(sessionId){
         setTimeout(()=>{
           successDiv.remove();
           const photoData=[];
-          if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-          if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+          const pl=window._savedPhotoLeft||photoLeft;
+          const pr=window._savedPhotoRight||photoRight;
+          if(pl) photoData.push({type:'image/jpeg',data:pl.includes(',')?pl.split(',')[1]:pl});
+          if(pr) photoData.push({type:'image/jpeg',data:pr.includes(',')?pr.split(',')[1]:pr});
           fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})})
           .then(r=>{if(!r.ok)throw new Error('Server error');return r.json();}).then(result=>{  console.log('Analysis result:',result);  go('s-result');  if(result&&!result.error){displayResult(result);}  else{document.getElementById('res-name').textContent='Tavo analizė baigta';}  setTimeout(()=>{    document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));    document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));  },300);}).catch((err)=>{  console.error('Analysis error:',err);  go('s-result');});
         },500);
@@ -806,25 +807,16 @@ function toggleCard(){
   if(cardOpen){
     fields.style.display='block';if(arrow) arrow.textContent='▲';
     if(!stripeInstance) initStripeElements();
-    // Paslėpti sticky-cta kad neužstotų Stripe laukų
-    const sCta=document.getElementById('sticky-cta');if(sCta)sCta.style.display='none';
-    // Pridėti padding-bottom
-    const sInfo=document.getElementById('s-info');
-    if(sInfo) sInfo.style.paddingBottom='20px';
-    // Scroll žemyn kad Stripe laukai matomi
+    // Scroll į card-section kad visi laukai matomi
     setTimeout(()=>{
-      const cardEl=document.getElementById('card-fields');
+      const cardEl=document.getElementById('card-section');
       if(cardEl){
         const aw=document.getElementById('app-wrap');
-        if(aw) aw.scrollTop=aw.scrollHeight;
+        if(aw){const rect=cardEl.getBoundingClientRect();aw.scrollBy({top:rect.top-60,behavior:'smooth'});}
       }
-    },300);
+    },200);
 
   }else{fields.style.display='none';if(arrow) arrow.textContent='▼';
-    const sInfoClose=document.getElementById('s-info');
-    if(sInfoClose) sInfoClose.style.paddingBottom='';
-    // Grąžinti sticky-cta
-    const sCtaClose=document.getElementById('sticky-cta');if(sCtaClose)sCtaClose.style.display='';
     // Parodyti sticky-cta atgal
     const stickyClose=document.getElementById('sticky-cta');if(stickyClose)stickyClose.style.display='';}
 }
