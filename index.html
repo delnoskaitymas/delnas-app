@@ -1122,7 +1122,7 @@ function capturePhoto(){
   }
 
   function doValidate(title){
-    document.getElementById('cam-title').textContent='Tikrinamas delnas...';
+    document.getElementById('cam-title').textContent='';
     // Paslėpti cam-sub
     const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
     const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
@@ -1138,7 +1138,7 @@ function capturePhoto(){
       }).then(function(r){return r.json();}).then(function(v){
         if(!v.valid){
           resetToCamera(title);
-          showCamError('Delnas neaptiktas. Prašome bandyti dar kartą.','Delnas neaptiktas. Prašome bandyti dar kartą.');
+          showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
           return;
         }
         document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
