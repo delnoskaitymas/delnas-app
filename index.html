@@ -357,7 +357,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
     <div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:8px 12px;margin-bottom:4px">
-      <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Mokėti kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
+      <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
       <div id="card-fields" style="display:none;margin-top:8px">
         <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
         <div id="stripe-card-element" style="padding:2px 0"></div>
@@ -1641,30 +1641,36 @@ function toggleCard(){
   if(!fields) return;
   const isOpen=fields.style.display==='block';
   if(!isOpen){
+    // Atidaryti
     fields.style.display='block';
     if(arrow) arrow.textContent='▲';
-    // Montuoti Stripe card element
+    // Montuoti Stripe
     if(!stripeInstance&&window._stripeKey){
       stripeInstance=Stripe(window._stripeKey);
-      const elements=stripeInstance.elements({appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',fontFamily:'DM Sans,sans-serif',borderRadius:'8px'}}});
-      const cardEl=elements.create('card',{hidePostalCode:true,style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}}}});
-      cardEl.mount('#stripe-card-element');
-      window._stripeCardElement=cardEl;
+      const els=stripeInstance.elements({appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',fontFamily:'DM Sans,sans-serif',borderRadius:'8px'}}});
+      stripeCardElement=els.create('card',{hidePostalCode:true,style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}}}});
+      stripeCardElement.mount('#stripe-card-element');
+      window._stripeCardElement=stripeCardElement;
     }
-    const sInfo=document.getElementById('s-info');
-    if(sInfo) sInfo.style.paddingBottom='180px';
+    // Sticky-cta - padaryti ne-fixed kad neuzstotu
+    const cta=document.getElementById('sticky-cta');
+    if(cta){cta.style.position='relative';cta.style.background='transparent';}
+    // Scroll žemyn
     setTimeout(()=>{
       const aw=document.getElementById('app-wrap');
       const cs=document.getElementById('card-section');
-      if(aw&&cs){const rect=cs.getBoundingClientRect();aw.scrollBy({top:rect.top-20,behavior:'smooth'});}
+      if(aw&&cs){const r=cs.getBoundingClientRect();aw.scrollBy({top:r.top-20,behavior:'smooth'});}
     },150);
   }else{
+    // Uždaryti
     fields.style.display='none';
     if(arrow) arrow.textContent='▼';
-    const sInfo=document.getElementById('s-info');
-    if(sInfo) sInfo.style.paddingBottom='';
+    // Grąžinti sticky-cta
+    const cta=document.getElementById('sticky-cta');
+    if(cta){cta.style.position='';cta.style.background='';}
   }
 }
+
 
 function initQuickPay(){
   const wrap=document.getElementById('quick-pay-wrap');
@@ -1707,14 +1713,14 @@ function initQuickPay(){
   const revBtn=document.createElement('button');
   revBtn.onclick=()=>quickPay('revolut');
   revBtn.style.cssText="width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(99,91,255,.5);background:rgba(99,91,255,.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box";
-  revBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#635BFF"/><path d="M7 6h5.5c2 0 3.5 1.5 3.5 3s-1.5 3-3.5 3H9v4H7V6zm2 5h3.5c1 0 1.5-.7 1.5-1.5S13.5 8 12.5 8H9v3z" fill="white"/><path d="M12 12l3 4h-2.5L10 12.5" fill="rgba(255,255,255,.5)"/></svg> Mokėti su Revolut';
+  revBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#635BFF"/><path d="M7 6h5.5c2 0 3.5 1.5 3.5 3s-1.5 3-3.5 3H9v4H7V6zm2 5h3.5c1 0 1.5-.7 1.5-1.5S13.5 8 12.5 8H9v3z" fill="white"/></svg> Revolut';
   wrap.appendChild(revBtn);
 
   // Klarna mygtukas
   const klarnaBtn=document.createElement('button');
   klarnaBtn.onclick=()=>quickPay('klarna');
   klarnaBtn.style.cssText="width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(255,179,200,.4);background:rgba(255,179,200,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box";
-  klarnaBtn.innerHTML='<span style="background:#FFB3C8;color:#17120e;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:800">K</span> Mokėti su Klarna';
+  klarnaBtn.innerHTML='<span style="background:#FFB3C8;color:#17120e;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:800">K</span> Klarna';
   wrap.appendChild(klarnaBtn);
 }
 
