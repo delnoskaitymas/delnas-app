@@ -1033,20 +1033,34 @@ function checkSkinArea(dataURL, minRatio){
 }
 
 function showCamError(title, msg){
+  // Pašalinti seną
+  const old=document.getElementById('cam-err-overlay');
+  if(old) old.remove();
+  // Sukurti naują - viduje kameros viewport
+  const vp=document.querySelector('.cam-viewport');
+  if(!vp) return;
   const errDiv=document.createElement('div');
-  errDiv.style.cssText='position:fixed;bottom:110px;left:16px;right:16px;background:rgba(30,20,0,.85);border:.5px solid rgba(240,180,60,.35);border-radius:14px;padding:14px 16px;z-index:200;display:flex;align-items:flex-start;gap:10px';
-  // Delno ikona
+  errDiv.id='cam-err-overlay';
+  errDiv.style.cssText='position:absolute;bottom:8px;left:8px;right:8px;background:rgba(7,4,15,.92);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:10px 12px;z-index:20;display:flex;align-items:center;gap:8px';
   const icon=document.createElement('div');
-  icon.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
-  icon.style.cssText='flex-shrink:0;margin-top:2px';
-  // Tekstas
+  icon.textContent='\u270b';
+  icon.style.cssText='font-size:18px;flex-shrink:0';
   const txt=document.createElement('div');
-  const t=document.createElement('div');t.style.cssText='font-size:13px;color:#f0c96a;font-weight:600;margin-bottom:3px';t.textContent=title;
-  const s=document.createElement('div');s.style.cssText='font-size:12px;color:rgba(240,200,120,.75);line-height:1.4';s.textContent=msg;
-  txt.appendChild(t);txt.appendChild(s);
-  errDiv.appendChild(icon);errDiv.appendChild(txt);
-  document.body.appendChild(errDiv);setTimeout(()=>errDiv.remove(),4500);
+  const t=document.createElement('div');
+  t.style.cssText='font-size:13px;font-weight:600;color:#f0c96a;margin-bottom:2px';
+  t.textContent=title;
+  const s=document.createElement('div');
+  s.style.cssText='font-size:11px;color:rgba(245,238,216,.6)';
+  s.textContent=msg||'';
+  txt.appendChild(t);
+  if(msg) txt.appendChild(s);
+  errDiv.appendChild(icon);
+  errDiv.appendChild(txt);
+  vp.style.position='relative';
+  vp.appendChild(errDiv);
+  setTimeout(()=>{if(errDiv.parentNode)errDiv.remove();},2000);
 }
+
 
 function capturePhoto(){
   if(!camStream) return;
@@ -1064,11 +1078,8 @@ function capturePhoto(){
   canvas.width=video.videoWidth||640;canvas.height=video.videoHeight||480;
   canvas.getContext('2d').drawImage(video,0,0);
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
-  frozen.style.backgroundImage='url('+dataURL+')';
-  frozen.classList.add('active');
-  video.style.display='none';
-  setTimeout(()=>rescan.classList.add('active'),60);
-  setTimeout(()=>rescan.classList.remove('active'),720);
+  // Nebebloguoti frozen - tiesiog blyktelėjimas
+  // video lieka matomas
   const isLeftHand=camHand==='left';
 
   function resetToCamera(title){
@@ -1112,9 +1123,7 @@ function capturePhoto(){
         const shutterWrapEl=document.querySelector('.cam-shutter-wrap');if(shutterWrapEl)shutterWrapEl.style.visibility='hidden';
         if(isLeftHand){
           setTimeout(function(){
-            frozen.classList.remove('active');frozen.style.backgroundImage='';
-            video.style.display='block';shutterWrap.style.visibility='';
-            const swEl=document.querySelector('.cam-shutter-wrap');if(swEl)swEl.style.visibility='';
+            shutterWrap.style.visibility='';
             const prEl=document.getElementById('cam-progress');if(prEl)prEl.style.visibility='';
             document.getElementById('cam-sub').style.display='';
             handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
