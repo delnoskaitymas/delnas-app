@@ -351,11 +351,21 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="info-err" class="err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px">
-      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+    <div style="margin-bottom:8px">
+      <input type="email" id="i-email" name="email" placeholder="El. paštas" autocomplete="email" oninput="validatePayForm()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box;display:block">
+      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box;display:block;margin-top:5px">
     </div>
-    <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
+    <div id="quick-pay-wrap" style="margin-bottom:6px"></div>
+    <div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:10px 12px;margin-bottom:4px">
+      <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
+      <div id="card-fields" style="display:none;margin-top:10px">
+        <div id="stripe-payment-element"></div>
+        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
+        <div style="margin-top:10px">
+          <button onclick="initiatePayment()" id="pay-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35)">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
+        </div>
+      </div>
+    </div>
     <div id="price-info-block" style="margin-bottom:6px">
 <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -369,16 +379,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
 </div>
-<div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:10px 12px;margin-bottom:4px">
-      <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
-      <div id="card-fields" style="display:none;margin-top:10px">
-        <div id="stripe-payment-element"></div>
-        <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
-        <div style="margin-top:10px">
-          <button onclick="initiatePayment()" id="pay-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35)">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
-        </div>
-      </div>
-    </div>
+
     <div id="order-err" class="err"></div>
     <div style="height:100px"></div>
   </div>
@@ -761,13 +762,17 @@ async function verifyAndProceed(sessionId){
         });
       },50);
     } else {
-      // Nėra duomenų - rodyti klaidą, negrįžti į juodą ekraną
-      go('s-info');
-      const err=document.getElementById('info-err')||document.createElement('div');
-      err.style.cssText='color:#ff6b6b;font-size:13px;text-align:center;padding:12px;';
-      err.textContent='Nepavyko gauti analizės. Susisiekite su mumis el. paštu.';
-      const sInfo=document.getElementById('s-info');
-      if(sInfo&&!document.getElementById('info-err')) sInfo.prepend(err);
+      // Nėra duomenų - rodyti rezultatų ekraną su klaidos pranešimu
+      go('s-result');
+      setTimeout(()=>{
+        const rn=document.getElementById('res-name');
+        if(rn) rn.textContent='✦ Analizė';
+        const rc=document.getElementById('r-char');
+        if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Nepavyko gauti rezultatų. Susisiekite el. paštu.</p>';
+        document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+          el.style.opacity='1';el.style.transform='none';
+        });
+      },100);
     }
 
   }catch(e){
@@ -1130,88 +1135,103 @@ function capturePhoto(){
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
-  const frozen=document.getElementById('cam-frozen');
-  const rescan=document.getElementById('cam-rescan');
   const shutter=document.getElementById('cam-shutter');
   const shutterWrap=shutter.closest('.cam-shutter-wrap');
   clearTimeout(window._autoCaptureTimer);
   shutter.style.pointerEvents='none';
-  flash.style.opacity='1';setTimeout(()=>{flash.style.opacity='0';},100);
-  shutterSound();if(navigator.vibrate) navigator.vibrate([30,20,10]);
-  canvas.width=video.videoWidth||640;canvas.height=video.videoHeight||480;
+
+  // Flash efektas
+  flash.style.opacity='1';
+  setTimeout(()=>{flash.style.opacity='0';},100);
+  shutterSound();
+  if(navigator.vibrate) navigator.vibrate([30,20,10]);
+
+  // Nufotografuoti kadrą
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
   canvas.getContext('2d').drawImage(video,0,0);
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
-  // Nebebloguoti frozen - tiesiog blyktelėjimas
-  // video lieka matomas
   const isLeftHand=camHand==='left';
 
-  function resetToCamera(title){
-    frozen.classList.remove('active');frozen.style.backgroundImage='';
-    video.style.display='block';shutterWrap.style.visibility='';
-    document.getElementById('cam-sub').style.display='';
-    document.getElementById('cam-title').textContent=title;const cl2=document.getElementById('cam-loader');if(cl2)cl2.style.display='none';
-    handVisible=false;shutter.disabled=false;
-    shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+  // 0.5s sustingęs kadras - paslėpti video, rodyti frozen kadrą
+  const frozen=document.getElementById('cam-frozen');
+  if(frozen){
+    frozen.style.backgroundImage='url('+dataURL+')';
+    frozen.style.display='block';
+    video.style.display='none';
   }
 
-  function doValidate(title){
-    document.getElementById('cam-title').textContent='';
-    // Paslėpti cam-sub
-    const camSub=document.getElementById('cam-sub');if(camSub)camSub.style.display='none';
-    const camLoader=document.getElementById('cam-loader');if(camLoader)camLoader.style.display='none';
-    document.getElementById('cam-sub').style.display='none';
-    shutterWrap.style.visibility='hidden';
-    // Tikrinamas delnas - palikti kamera matoma
-    const camProgEl=document.getElementById('cam-progress');if(camProgEl)camProgEl.style.visibility='hidden';
+  // Paslėpti mygtuką per tikrinimą
+  shutterWrap.style.visibility='hidden';
+  document.getElementById('cam-title').textContent='';
+  const camSub=document.getElementById('cam-sub');
+  if(camSub) camSub.style.display='none';
 
+  // Po 500ms tikrinti
+  setTimeout(()=>{
     fetch('/validate-palm',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})
-      }).then(function(r){return r.json();}).then(function(v){
-        if(!v.valid){
-          resetToCamera(title);
-          showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
-          return;
-        }
-        // Sustabdyti video iš karto
-        video.style.display='none';
-        // Rodyti sėkmės ekraną
-        const scanOk=document.getElementById('cam-scan-ok');
-        if(scanOk){scanOk.style.display='flex';}
-        if(isLeftHand){
-          photoLeft=dataURL;
-          setTimeout(function(){
-            if(scanOk) scanOk.style.display='none';
-            video.style.display='block';
-            shutterWrap.style.visibility='';
-            const prEl=document.getElementById('cam-progress');if(prEl)prEl.style.visibility='';
-            document.getElementById('cam-sub').style.display='';
-            document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
-            handVisible=false;shutter.disabled=false;
-            shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-            camHand='right';updateCameraUI();
-          },1200);
-        } else {
-          photoRight=dataURL;
-          setTimeout(function(){
-            if(scanOk) scanOk.style.display='none';
-            stopCamera();
-            startBackgroundAnalysis();
-            go('s-loading');
-            setTimeout(function(){animateLoading();},100);
-          },800);
-        }
-      }).catch(function(){
-        resetToCamera(title);
-      });
-  }
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})
+    }).then(r=>r.json()).then(v=>{
+      // Visada grąžinti video
+      if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+      video.style.display='block';
 
-  if(isLeftHand){
-    doValidate('Nufotografuokite kairįjį delną');
-  } else {
-    doValidate('Nufotografuokite dešinįjį delną');
-  }
+      if(!v.valid){
+        // Klaida - grąžinti tą patį ekraną
+        shutterWrap.style.visibility='';
+        if(camSub) camSub.style.display='';
+        document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
+        shutter.disabled=false;
+        shutter.style.opacity='1';
+        shutter.style.pointerEvents='auto';
+        showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
+        return;
+      }
+
+      // Sėkmė - rodyti sėkmės ekraną
+      const scanOk=document.getElementById('cam-scan-ok');
+      const okText=document.getElementById('scan-ok-text');
+      if(okText) okText.textContent='Delnas nufotografuotas!';
+      if(scanOk) scanOk.style.display='flex';
+
+      if(isLeftHand){
+        photoLeft=dataURL;
+        setTimeout(()=>{
+          if(scanOk) scanOk.style.display='none';
+          shutterWrap.style.visibility='';
+          if(camSub) camSub.style.display='';
+          document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
+          handVisible=false;
+          shutter.disabled=false;
+          shutter.style.opacity='1';
+          shutter.style.pointerEvents='auto';
+          camHand='right';
+          updateCameraUI();
+        },1200);
+      } else {
+        photoRight=dataURL;
+        setTimeout(()=>{
+          if(scanOk) scanOk.style.display='none';
+          stopCamera();
+          startBackgroundAnalysis();
+          go('s-loading');
+          setTimeout(()=>animateLoading(),100);
+        },1200);
+      }
+    }).catch(()=>{
+      if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+      video.style.display='block';
+      shutterWrap.style.visibility='';
+      if(camSub) camSub.style.display='';
+      document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
+      shutter.disabled=false;
+      shutter.style.opacity='1';
+      shutter.style.pointerEvents='auto';
+      showCamError('Klaida.','Prašome bandyti dar kartą.');
+    });
+  },500);
 }
 
 
@@ -1728,12 +1748,14 @@ function toggleCard(){
       window._paymentElements=els;
       window._paymentElement=pe;
     }
-    // Scroll
+    // Scroll į mokėjimo formą
     setTimeout(()=>{
       const aw=document.getElementById('app-wrap');
       const cs=document.getElementById('card-section');
-      if(aw&&cs){const r=cs.getBoundingClientRect();const ar=aw.getBoundingClientRect();aw.scrollBy({top:r.top-ar.top-10,behavior:'smooth'});}
-    },200);
+      if(aw&&cs){
+        cs.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+    },300);
   }else{
     fields.style.display='none';
     if(arrow) arrow.textContent='▼';
@@ -1760,7 +1782,7 @@ function initQuickPay(){
         const d=document.createElement('div');
         d.style.cssText='margin-bottom:6px;border-radius:8px;overflow:hidden';
         wrap.appendChild(d);
-        stripeInstance.elements().create('paymentRequestButton',{paymentRequest:pr,style:{paymentRequestButton:{type:'buy',theme:'dark',height:'42px'}}}).mount(d);
+        stripeInstance.elements().create('paymentRequestButton',{paymentRequest:pr,style:{paymentRequestButton:{type:'checkout',theme:'dark',height:'42px'}}}).mount(d);
         pr.on('paymentmethod',async function(ev){
           const email=document.getElementById('i-email').value.trim();
           const name=document.getElementById('i-name').value.trim();
