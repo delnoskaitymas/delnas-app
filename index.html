@@ -35,7 +35,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes scanGlow{0%,100%{transform:translateY(-18px);opacity:0}30%{opacity:.5}55%{transform:translateY(18px);opacity:.5}80%{opacity:0}}
 .gold-icon{stroke:#D4AF37;transition:0.3s;fill:none;stroke-width:20px;stroke-linecap:round;stroke-linejoin:round}
 @keyframes bulletIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:.8;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .serif{font-family:'Playfair Display',serif}
 .gold{color:var(--gold2)}
 .wrap{padding:32px 20px 24px}
@@ -537,6 +537,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
 </div>
 <script src="https://js.stripe.com/v3/">
+function initStripeElements(){
+  if(!window._stripeKey){setTimeout(initStripeElements,300);return;}
+  if(stripeInstance) return;
+  stripeInstance=Stripe(window._stripeKey);
+}
+
 function toggleCard(){
   const fields=document.getElementById('card-fields');
   const arrow=document.getElementById('card-toggle-arrow');
@@ -570,65 +576,56 @@ function toggleCard(){
 
 function initQuickPay(){
   const wrap=document.getElementById('quick-pay-wrap');
-  if(!wrap) return;
+  if(!wrap||wrap.children.length>0) return;
   if(!window._stripeKey){setTimeout(initQuickPay,500);return;}
-  
-  // Google Pay / Apple Pay per Stripe Payment Request
+
+  // Google Pay / Apple Pay - tik jei palaikoma
   try{
     if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
     const pr=stripeInstance.paymentRequest({
-      country:'LT',
-      currency:'eur',
+      country:'LT',currency:'eur',
       total:{label:'Gyvenimo žemėlapis',amount:599},
-      requestPayerName:true,
-      requestPayerEmail:true
+      requestPayerName:true,requestPayerEmail:true
     });
     pr.canMakePayment().then(result=>{
       if(result){
-        const prBtn=stripeInstance.elements().create('paymentRequestButton',{
+        const gpWrap=document.createElement('div');
+        gpWrap.style.cssText='margin-bottom:8px;border-radius:10px;overflow:hidden';
+        wrap.insertBefore(gpWrap,wrap.firstChild);
+        stripeInstance.elements().create('paymentRequestButton',{
           paymentRequest:pr,
           style:{paymentRequestButton:{type:'buy',theme:'dark',height:'44px'}}
-        });
-        const gpDiv=document.createElement('div');
-        gpDiv.id='google-pay-btn';
-        gpDiv.style.cssText='margin-bottom:8px;border-radius:10px;overflow:hidden';
-        wrap.insertBefore(gpDiv,wrap.firstChild);
-        prBtn.mount('#google-pay-btn');
+        }).mount(gpWrap);
         pr.on('paymentmethod',async(ev)=>{
           const email=document.getElementById('i-email').value.trim();
-          const name=document.getElementById('i-name').value.trim();
           if(!email){ev.complete('fail');return;}
           try{
-            const res=await fetch('/create-payment-intent',{
-              method:'POST',headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({email,name,amount:599,currency:'eur'})
-            });
-            const data=await res.json();
-            const {error,paymentIntent}=await stripeInstance.confirmCardPayment(
-              data.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false}
-            );
-            if(error){ev.complete('fail');}
-            else{ev.complete('success');if(paymentIntent.status==='succeeded'||paymentIntent.status==='requires_action'){window.location.href='/?session_id='+data.sessionId;}}
+            const res=await fetch('/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:document.getElementById('i-name').value.trim(),amount:599,currency:'eur'})});
+            const d=await res.json();
+            const{error}=await stripeInstance.confirmCardPayment(d.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
+            ev.complete(error?'fail':'success');
+            if(!error) window.location.href='/?session_id='+d.sessionId;
           }catch(e){ev.complete('fail');}
         });
       }
     });
-  }catch(e){console.warn('PaymentRequest klaida:',e);}
-  
-  // Revolut Pay mygtukas
+  }catch(e){console.warn('GPay:',e);}
+
+  // Revolut mygtukas
   const revBtn=document.createElement('button');
   revBtn.onclick=()=>quickPay('revolut');
-  revBtn.style.cssText='width:100%;padding:11px;border-radius:10px;border:.5px solid rgba(99,91,255,.5);background:rgba(99,91,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;letter-spacing:.02em';
-  revBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="#635BFF"><rect width="24" height="24" rx="6"/><text x="4" y="17" font-size="12" fill="white" font-weight="700">R</text></svg> Mokėti su Revolut';
+  revBtn.style.cssText='width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(99,91,255,.5);background:rgba(99,91,255,.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box';
+  revBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#635BFF"/><path d="M7 6h5.5c2 0 3.5 1.5 3.5 3s-1.5 3-3.5 3H9v4H7V6zm2 5h3.5c1 0 1.5-.7 1.5-1.5S13.5 8 12.5 8H9v3z" fill="white"/><path d="M12 12l3 4h-2.5L10 12.5" fill="rgba(255,255,255,.5)"/></svg> Mokėti su Revolut';
   wrap.appendChild(revBtn);
 
   // Klarna mygtukas
   const klarnaBtn=document.createElement('button');
   klarnaBtn.onclick=()=>quickPay('klarna');
-  klarnaBtn.style.cssText='width:100%;padding:11px;border-radius:10px;border:.5px solid rgba(255,182,193,.4);background:rgba(255,182,193,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;letter-spacing:.02em';
-  klarnaBtn.innerHTML='<span style="background:#FFB3C7;color:#17120e;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">K</span> Mokėti su Klarna';
+  klarnaBtn.style.cssText='width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(255,179,200,.4);background:rgba(255,179,200,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box';
+  klarnaBtn.innerHTML='<span style="background:#FFB3C8;color:#17120e;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:800">K</span> Mokėti su Klarna';
   wrap.appendChild(klarnaBtn);
 }
+
 
 async function quickPay(method){
   const email=document.getElementById('i-email').value.trim();
@@ -1240,7 +1237,7 @@ function capturePhoto(){
             stopCamera();
             startBackgroundAnalysis();
             go('s-loading');
-            setTimeout(function(){go('s-loading');animateLoading();},3000);
+            setTimeout(function(){animateLoading();},100);
           },800);
         }
       }).catch(function(){
