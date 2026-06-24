@@ -1641,87 +1641,48 @@ function toggleCard(){
   if(!fields) return;
   const isOpen=fields.style.display==='block';
   if(!isOpen){
-    // Atidaryti
     fields.style.display='block';
-    if(arrow) arrow.textContent='▲';
-    // Montuoti Stripe
+    if(arrow) arrow.textContent='\u25b2';
     if(!stripeInstance&&window._stripeKey){
       stripeInstance=Stripe(window._stripeKey);
       const els=stripeInstance.elements({appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',fontFamily:'DM Sans,sans-serif',borderRadius:'8px'}}});
-      stripeCardElement=els.create('card',{hidePostalCode:true,style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}}}});
+      stripeCardElement=els.create('card',{hidePostalCode:true,style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'14px'}}});
       stripeCardElement.mount('#stripe-card-element');
       window._stripeCardElement=stripeCardElement;
     }
-    // Sticky-cta - padaryti ne-fixed kad neuzstotu
     const cta=document.getElementById('sticky-cta');
-    if(cta){cta.style.position='relative';cta.style.background='transparent';}
-    // Scroll žemyn
+    if(cta) cta.style.display='none';
+    if(!document.getElementById('inline-pay-btn')){
+      const payDiv=document.createElement('div');
+      payDiv.style.marginTop='10px';
+      const payBtn2=document.createElement('button');
+      payBtn2.id='inline-pay-btn';
+      payBtn2.onclick=initiatePayment;
+      payBtn2.style.width='100%';
+      payBtn2.style.background='linear-gradient(135deg,#f0c96a,#d4a843,#a07828)';
+      payBtn2.style.border='none';
+      payBtn2.style.borderRadius='12px';
+      payBtn2.style.padding='13px';
+      payBtn2.style.fontSize='14px';
+      payBtn2.style.fontWeight='700';
+      payBtn2.style.color='#07040f';
+      payBtn2.style.cursor='pointer';
+      payBtn2.style.letterSpacing='.06em';
+      payBtn2.textContent='ATRAKINTI GYVENIMO \u017dEM\u0116LAP\u012e \u2192';
+      payDiv.appendChild(payBtn2);
+      fields.appendChild(payDiv);
+    }
     setTimeout(()=>{
       const aw=document.getElementById('app-wrap');
       const cs=document.getElementById('card-section');
-      if(aw&&cs){const r=cs.getBoundingClientRect();aw.scrollBy({top:r.top-20,behavior:'smooth'});}
+      if(aw&&cs){const r=cs.getBoundingClientRect();const ar=aw.getBoundingClientRect();aw.scrollBy({top:r.top-ar.top-10,behavior:'smooth'});}
     },150);
   }else{
-    // Uždaryti
     fields.style.display='none';
-    if(arrow) arrow.textContent='▼';
-    // Grąžinti sticky-cta
+    if(arrow) arrow.textContent='\u25bc';
     const cta=document.getElementById('sticky-cta');
-    if(cta){cta.style.position='';cta.style.background='';}
+    if(cta) cta.style.display='';
   }
-}
-
-
-function initQuickPay(){
-  const wrap=document.getElementById('quick-pay-wrap');
-  if(!wrap||wrap.children.length>0) return;
-  if(!window._stripeKey){setTimeout(initQuickPay,500);return;}
-
-  // Google Pay / Apple Pay - tik jei palaikoma
-  try{
-    if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
-    const pr=stripeInstance.paymentRequest({
-      country:'LT',currency:'eur',
-      total:{label:'Gyvenimo žemėlapis',amount:599},
-      requestPayerName:true,requestPayerEmail:true
-    });
-    pr.canMakePayment().then(result=>{
-      if(result){
-        const gpWrap=document.createElement('div');
-        gpWrap.style.cssText='margin-bottom:8px;border-radius:10px;overflow:hidden';
-        wrap.insertBefore(gpWrap,wrap.firstChild);
-        stripeInstance.elements().create('paymentRequestButton',{
-          paymentRequest:pr,
-          style:{paymentRequestButton:{type:'buy',theme:'dark',height:'44px'}}
-        }).mount(gpWrap);
-        pr.on('paymentmethod',async(ev)=>{
-          const email=document.getElementById('i-email').value.trim();
-          if(!email){ev.complete('fail');return;}
-          try{
-            const res=await fetch('/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:document.getElementById('i-name').value.trim(),amount:599,currency:'eur'})});
-            const d=await res.json();
-            const{error}=await stripeInstance.confirmCardPayment(d.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
-            ev.complete(error?'fail':'success');
-            if(!error) window.location.href='/?session_id='+d.sessionId;
-          }catch(e){ev.complete('fail');}
-        });
-      }
-    });
-  }catch(e){console.warn('GPay:',e);}
-
-  // Revolut mygtukas
-  const revBtn=document.createElement('button');
-  revBtn.onclick=()=>quickPay('revolut');
-  revBtn.style.cssText="width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(99,91,255,.5);background:rgba(99,91,255,.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box";
-  revBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#635BFF"/><path d="M7 6h5.5c2 0 3.5 1.5 3.5 3s-1.5 3-3.5 3H9v4H7V6zm2 5h3.5c1 0 1.5-.7 1.5-1.5S13.5 8 12.5 8H9v3z" fill="white"/></svg> Revolut';
-  wrap.appendChild(revBtn);
-
-  // Klarna mygtukas
-  const klarnaBtn=document.createElement('button');
-  klarnaBtn.onclick=()=>quickPay('klarna');
-  klarnaBtn.style.cssText="width:100%;padding:12px;border-radius:10px;border:.5px solid rgba(255,179,200,.4);background:rgba(255,179,200,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;box-sizing:border-box";
-  klarnaBtn.innerHTML='<span style="background:#FFB3C8;color:#17120e;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:800">K</span> Klarna';
-  wrap.appendChild(klarnaBtn);
 }
 
 
