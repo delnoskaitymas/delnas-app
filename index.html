@@ -545,7 +545,14 @@ function toggleCard(){
   if(!isOpen){
     fields.style.display='block';
     if(arrow) arrow.textContent='▲';
-    if(!stripeInstance) initStripeElements();
+    // Montuoti Stripe card element
+    if(!stripeInstance&&window._stripeKey){
+      stripeInstance=Stripe(window._stripeKey);
+      const elements=stripeInstance.elements({appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',fontFamily:'DM Sans,sans-serif',borderRadius:'8px'}}});
+      const cardEl=elements.create('card',{hidePostalCode:true,style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.4)'}}}});
+      cardEl.mount('#stripe-card-element');
+      window._stripeCardElement=cardEl;
+    }
     const sInfo=document.getElementById('s-info');
     if(sInfo) sInfo.style.paddingBottom='180px';
     setTimeout(()=>{
@@ -560,6 +567,96 @@ function toggleCard(){
     if(sInfo) sInfo.style.paddingBottom='';
   }
 }
+
+function initQuickPay(){
+  const wrap=document.getElementById('quick-pay-wrap');
+  if(!wrap) return;
+  if(!window._stripeKey){setTimeout(initQuickPay,500);return;}
+  
+  // Google Pay / Apple Pay per Stripe Payment Request
+  try{
+    if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
+    const pr=stripeInstance.paymentRequest({
+      country:'LT',
+      currency:'eur',
+      total:{label:'Gyvenimo žemėlapis',amount:599},
+      requestPayerName:true,
+      requestPayerEmail:true
+    });
+    pr.canMakePayment().then(result=>{
+      if(result){
+        const prBtn=stripeInstance.elements().create('paymentRequestButton',{
+          paymentRequest:pr,
+          style:{paymentRequestButton:{type:'buy',theme:'dark',height:'44px'}}
+        });
+        const gpDiv=document.createElement('div');
+        gpDiv.id='google-pay-btn';
+        gpDiv.style.cssText='margin-bottom:8px;border-radius:10px;overflow:hidden';
+        wrap.insertBefore(gpDiv,wrap.firstChild);
+        prBtn.mount('#google-pay-btn');
+        pr.on('paymentmethod',async(ev)=>{
+          const email=document.getElementById('i-email').value.trim();
+          const name=document.getElementById('i-name').value.trim();
+          if(!email){ev.complete('fail');return;}
+          try{
+            const res=await fetch('/create-payment-intent',{
+              method:'POST',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({email,name,amount:599,currency:'eur'})
+            });
+            const data=await res.json();
+            const {error,paymentIntent}=await stripeInstance.confirmCardPayment(
+              data.clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false}
+            );
+            if(error){ev.complete('fail');}
+            else{ev.complete('success');if(paymentIntent.status==='succeeded'||paymentIntent.status==='requires_action'){window.location.href='/?session_id='+data.sessionId;}}
+          }catch(e){ev.complete('fail');}
+        });
+      }
+    });
+  }catch(e){console.warn('PaymentRequest klaida:',e);}
+  
+  // Revolut Pay mygtukas
+  const revBtn=document.createElement('button');
+  revBtn.onclick=()=>quickPay('revolut');
+  revBtn.style.cssText='width:100%;padding:11px;border-radius:10px;border:.5px solid rgba(99,91,255,.5);background:rgba(99,91,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;letter-spacing:.02em';
+  revBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="#635BFF"><rect width="24" height="24" rx="6"/><text x="4" y="17" font-size="12" fill="white" font-weight="700">R</text></svg> Mokėti su Revolut';
+  wrap.appendChild(revBtn);
+
+  // Klarna mygtukas
+  const klarnaBtn=document.createElement('button');
+  klarnaBtn.onclick=()=>quickPay('klarna');
+  klarnaBtn.style.cssText='width:100%;padding:11px;border-radius:10px;border:.5px solid rgba(255,182,193,.4);background:rgba(255,182,193,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;letter-spacing:.02em';
+  klarnaBtn.innerHTML='<span style="background:#FFB3C7;color:#17120e;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">K</span> Mokėti su Klarna';
+  wrap.appendChild(klarnaBtn);
+}
+
+async function quickPay(method){
+  const email=document.getElementById('i-email').value.trim();
+  const name=document.getElementById('i-name').value.trim();
+  const err=document.getElementById('info-err');
+  if(!email||!email.includes('@')){
+    if(err){err.textContent='Įvesk el. paštą';err.style.display='block';}
+    document.getElementById('i-email').focus();
+    return;
+  }
+  if(err){err.style.display='none';}
+  
+  if(method==='revolut'||method==='klarna'){
+    // Per Stripe Payment Links arba redirect
+    try{
+      const res=await fetch('/create-checkout',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email,name,method,amount:599,currency:'eur'})
+      });
+      const data=await res.json();
+      if(data.url) window.location.href=data.url;
+      else throw new Error(data.error||'Klaida');
+    }catch(e){
+      if(err){err.textContent='Nepavyko: '+e.message;err.style.display='block';}
+    }
+  }
+}
+
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -797,7 +894,8 @@ async function initiatePayment(){
     const data=await res.json();if(!data.clientSecret) throw new Error(data.error||'Įvyko klaida. Prašome bandyti dar kartą.');
     window._paymentIntentId=data.paymentIntentId;
     const cardHolder=document.getElementById('card-holder')?.value.trim()||name;
-    if(!stripeInstance||!stripeCardElement) throw new Error('Kortelės laukelis neparuoštas');
+    if(!stripeInstance||(!stripeCardElement&&!window._stripeCardElement)) throw new Error('Kortelės laukelis neparuoštas');
+    const activeCard=stripeCardElement||window._stripeCardElement;
     const{error,paymentIntent}=await stripeInstance.confirmCardPayment(data.clientSecret,{payment_method:{card:stripeCardElement,billing_details:{name:cardHolder,email}}});
     if(error) throw new Error(error.message);
     if(paymentIntent.status==='succeeded'){window._paymentIntentId=paymentIntent.id;await onPaymentSuccess(name,email);}
