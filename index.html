@@ -351,22 +351,24 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="info-err" class="err"></div>
-    <div style="margin-bottom:8px">
-      <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box;display:block">
+    <div id="payment-element-wrap" style="display:flex;flex-direction:column;gap:8px">
+      <!-- Express Checkout: Apple/Google Pay viršuje -->
+      <div id="express-checkout-element"></div>
+      <!-- Stripe Payment Element: Card, Revolut, Klarna -->
+      <div id="stripe-payment-element" style="min-height:40px"></div>
+      <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:2px;display:none"></div>
+      <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);opacity:.45;transition:opacity .3s ease">Gauti mano asmeninį žemėlapį →</button>
     </div>
-    <div id="payment-element-wrap" style="margin-bottom:8px">
-      <!-- Express Checkout (Apple/Google Pay) -->
-      <div id="express-checkout-element" style="margin-bottom:8px"></div>
       <!-- Payment Element (Card, Revolut, Klarna) -->
       <div id="stripe-payment-element" style="min-height:40px"></div>
       <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
-      <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);margin-top:10px;opacity:.45;transition:opacity .3s">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
+      <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);margin-top:10px;opacity:.45;transition:opacity .3s">Gauti mano asmeninį žemėlapį →</button>
     </div>
       <div id="card-fields" style="display:none;margin-top:10px">
         <div id="stripe-payment-element"></div>
         <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
         <div style="margin-top:10px">
-          <button onclick="initiatePayment()" id="pay-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35)">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
+          
         </div>
       </div>
     </div>
@@ -393,7 +395,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
   
   
-  <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
+  <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">Gauti mano asmeninį žemėlapį →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu</div>
 </div>
 
@@ -702,61 +704,56 @@ async function verifyAndProceed(sessionId){
 
 
 async function initiatePayment(){
-  const name=document.getElementById('i-name').value.trim();
-  const email=document.getElementById('i-email')?.value.trim()||window._userEmail||'';
   const err=document.getElementById('stripe-card-errors');
-  if(err) err.style.display='none';
-  window._userName=name;window.userName=name;
+  if(err){err.style.display='none';err.textContent='';}
   const btn=document.getElementById('pay-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.6';btn.textContent='Apdorojama...';}
+  
   try{
     if(!stripeInstance||!window._stripeElements){
       throw new Error('Mokėjimo sistema neparuošta. Perkraukite puslapį.');
     }
-    // 1. Pateikti Elements formą
+    // Pateikti formą
     const {error:submitErr}=await window._stripeElements.submit();
     if(submitErr){
       if(err){err.textContent=submitErr.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='ATRAKINTI GYVENIMO ŽEMĖLAPĮ →';}
+      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
       return;
     }
-    // 2. Sukurti PaymentIntent serveryje
+    // Sukurti PaymentIntent
+    const name=window._userName||'';
+    const email=window._userEmail||'';
     const res=await fetch('/create-payment',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,email,amount:599})
     });
     const data=await res.json();
     if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
-    // 3. Išsaugoti nuotraukas prieš mokėjimą
     _savePhotos();
     window._paymentSessionId=data.sessionId||data.paymentIntentId;
-    // 4. Patvirtinti mokėjimą - redirect:'if_required' = neredirectina
+    // Patvirtinti su redirect:'if_required'
     const {paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
-      confirmParams:{
-        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)
-      },
+      confirmParams:{return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)},
       redirect:'if_required'
     });
     if(error){
       if(err){err.textContent=error.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='ATRAKINTI GYVENIMO ŽEMĖLAPĮ →';}
+      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
       return;
     }
-    // 5. Sėkmė - fetchResultsAndNavigate
     if(paymentIntent&&paymentIntent.status==='succeeded'){
       await fetchResultsAndNavigate(data.sessionId||data.paymentIntentId,paymentIntent);
-    } else if(paymentIntent){
-      // requires_action - Stripe peradresuos
+    } else {
       location.href=location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId);
     }
   }catch(e){
     if(err){err.textContent=e.message||'Klaida';err.style.display='block';}
-    if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='ATRAKINTI GYVENIMO ŽEMĖLAPĮ →';}
+    if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
   }
 }
+
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // Rodyti sėkmės ekraną kol kraunami rezultatai
@@ -1768,13 +1765,12 @@ function initQuickPay(){
   wrap.dataset.init='1';
   if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
 
-  // Sukurti Elements su Payment Intent mode
+  // Elements su el. pašto surinkimu Stripe formoje
   const elements=stripeInstance.elements({
     mode:'payment',
     amount:599,
     currency:'eur',
     paymentMethodCreation:'manual',
-    paymentMethodTypes:['card','revolut_pay','klarna'],
     appearance:{
       theme:'night',
       variables:{
@@ -1790,53 +1786,56 @@ function initQuickPay(){
   });
   window._stripeElements=elements;
 
-  // Express Checkout (Apple Pay / Google Pay) - VIRŠUJE
-  const ece=elements.create('expressCheckout',{
-    buttonType:{applePay:'buy',googlePay:'buy'},
-    buttonTheme:{applePay:'black',googlePay:'black'},
-    layout:{maxColumns:1,maxRows:1,overflow:'never'}
-  });
-  ece.mount('#express-checkout-element');
-  ece.on('confirm',async(ev)=>{
-    const name=document.getElementById('i-name').value.trim()||window.userName||'';
-    const email=ev.billingDetails?.email||window.userEmail||'';
-    if(name) window._userName=name;
-    try{
-      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:599})});
-      const d=await r.json();
-      if(!d.clientSecret) throw new Error(d.error||'Klaida');
-      _savePhotos();
-      const {error}=await stripeInstance.confirmPayment({
-        elements,clientSecret:d.clientSecret,
-        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
-        redirect:'if_required'
-      });
-      if(error) console.error('Express klaida:',error.message);
-      else location.href='/?session_id='+d.sessionId;
-    }catch(e){console.error(e);}
-  });
+  // Express Checkout (Apple Pay / Google Pay) - viršuje
+  const eceDiv=document.getElementById('express-checkout-element');
+  if(eceDiv){
+    const ece=elements.create('expressCheckout',{
+      buttonHeight:44,
+      buttonType:{applePay:'plain',googlePay:'plain'},
+      layout:{maxColumns:2,maxRows:1,overflow:'never'}
+    });
+    ece.mount('#express-checkout-element');
+    ece.on('confirm',async(ev)=>{
+      try{
+        const name=ev.billingDetails?.name||window._userName||'';
+        const email=ev.billingDetails?.email||window._userEmail||'';
+        window._userName=name;window._userEmail=email;
+        const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:599})});
+        const d=await r.json();
+        if(!d.clientSecret) throw new Error(d.error||'Klaida');
+        _savePhotos();
+        const {error}=await stripeInstance.confirmPayment({
+          elements,clientSecret:d.clientSecret,
+          confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
+          redirect:'if_required'
+        });
+        if(error){console.error(error.message);}
+        else{location.href=location.origin+'/?session_id='+d.sessionId;}
+      }catch(e){console.error(e);}
+    });
+  }
 
-  // Payment Element (Card, Revolut, Klarna)
+  // Payment Element - Card, Revolut, Klarna (be Link, be wallets duplikato)
   const pe=elements.create('payment',{
     layout:{type:'tabs',defaultCollapsed:false},
-    fields:{billingDetails:{address:'never',phone:'never',email:'never',name:'never'}}
+    fields:{billingDetails:{address:'never',phone:'never'}},
+    wallets:{link:'never',applePay:'never',googlePay:'never'}
   });
   pe.mount('#stripe-payment-element');
   window._paymentElement=pe;
+
   // Aktyvuoti mygtuką kai forma užpildyta
   pe.on('change',function(ev){
     const btn=document.getElementById('pay-btn');
     if(!btn) return;
     if(ev.complete){
-      btn.disabled=false;
-      btn.style.opacity='1';
-      btn.style.cursor='pointer';
+      btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
     } else {
-      btn.disabled=true;
-      btn.style.opacity='.45';
+      btn.disabled=true;btn.style.opacity='.45';
     }
   });
 }
+
 
 function _savePhotos(){
   sessionStorage.setItem('photoLeft',photoLeft||window._savedPhotoLeft||'');
