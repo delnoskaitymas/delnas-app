@@ -349,7 +349,10 @@ app.post('/analyze-palm', async (req, res) => {
 
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
-    if (tokenEntry.used) return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
+    // Leisti pakartotinį kvietimą jei yra sessionId cache arba photos
+    if (tokenEntry.used && !sessionId && (!photos || photos.length === 0)) {
+      return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
+    }
 
     const userName = name || tokenEntry.name || '';
     let result = null;
