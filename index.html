@@ -360,7 +360,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <!-- Payment Element (Card, Revolut, Klarna) -->
       <div id="stripe-payment-element" style="min-height:40px"></div>
       <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:6px"></div>
-      <button onclick="initiatePayment()" id="pay-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);margin-top:10px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
+      <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);margin-top:10px;opacity:.45;transition:opacity .3s">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
     </div>
       <div id="card-fields" style="display:none;margin-top:10px">
         <div id="stripe-payment-element"></div>
@@ -390,7 +390,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 
-<div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
+<div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
   
   
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
@@ -1147,6 +1147,9 @@ function capturePhoto(){
     frozen.style.display='block';
     video.style.display='none';
   }
+  // Rodyti 'Tikriname...' ant frozen
+  const camTitle=document.getElementById('cam-title');
+  if(camTitle) camTitle.textContent='Tikriname...';
 
   // Paslėpti mygtuką per tikrinimą
   shutterWrap.style.visibility='hidden';
@@ -1762,6 +1765,7 @@ function initQuickPay(){
     amount:599,
     currency:'eur',
     paymentMethodCreation:'manual',
+    paymentMethodTypes:['card','revolut_pay','klarna'],
     appearance:{
       theme:'night',
       variables:{
@@ -1810,6 +1814,19 @@ function initQuickPay(){
   });
   pe.mount('#stripe-payment-element');
   window._paymentElement=pe;
+  // Aktyvuoti mygtuką kai forma užpildyta
+  pe.on('change',function(ev){
+    const btn=document.getElementById('pay-btn');
+    if(!btn) return;
+    if(ev.complete){
+      btn.disabled=false;
+      btn.style.opacity='1';
+      btn.style.cursor='pointer';
+    } else {
+      btn.disabled=true;
+      btn.style.opacity='.45';
+    }
+  });
 }
 
 function _savePhotos(){
