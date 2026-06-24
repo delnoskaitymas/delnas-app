@@ -356,7 +356,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <input type="text" id="i-name" name="name" placeholder="Vardas" autocomplete="name" oninput="validatePayForm();updatePayBtn()" onblur="updatePersonalTxt()" style="background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
     </div>
     <div id="quick-pay-wrap" style="margin-bottom:8px"></div>
-    <div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:8px 12px;margin-bottom:4px">
+    <div id="price-info-block" style="margin-bottom:6px">
+<div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5;white-space:nowrap">12,99 €</span>
+        <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);white-space:nowrap">5,99<span style="font-size:16px;vertical-align:super;margin-left:2px">€</span></span>
+        <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.04em;margin-top:2px;animation:pulse3 2s ease-in-out infinite">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Tik vienkartinis mokėjimas. Jokių prenumeratų. Gausite pilną ataskaitą.</div>
+  </div>
+<div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
+</div>
+<div id="card-section" style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:8px 12px;margin-bottom:4px">
       <div style="font-size:13px;color:var(--gold2);font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer;letter-spacing:.04em" onclick="toggleCard()">💳 Kortele <span id="card-toggle-arrow" style="margin-left:auto;font-size:10px;color:var(--gold)">▼</span></div>
       <div id="card-fields" style="display:none;margin-top:8px">
         <input type="text" id="card-holder" placeholder="Kortelės savininko vardas" autocomplete="cc-name" style="width:100%;background:rgba(255,255,255,.05);border:.5px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;box-sizing:border-box">
@@ -371,17 +384,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div id="sticky-cta" style="position:fixed;bottom:0;left:0;right:0;padding:6px 16px 10px;background:linear-gradient(transparent,#07040f 20%);z-index:50;display:none">
-  <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5;white-space:nowrap">12,99 €</span>
-        <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);white-space:nowrap">5,99<span style="font-size:16px;vertical-align:super;margin-left:2px">€</span></span>
-        <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.04em;margin-top:2px;animation:pulse3 2s ease-in-out infinite">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Tik vienkartinis mokėjimas. Jokių prenumeratų. Gausite pilną ataskaitą.</div>
-  </div>
-  <div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
+  
+  
   <button class="btn btn-gold" id="pay-btn" onclick="initiatePayment()" disabled style="font-size:15px;padding:12px;border-radius:14px;opacity:.45;transition:opacity .2s;letter-spacing:.06em;font-weight:700;width:100%;margin-bottom:3px">ATRAKINTI GYVENIMO ŽEMĖLAPĮ →</button>
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu</div>
 </div>
@@ -673,6 +677,14 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function verifyAndProceed(sessionId){
+  // Išsaugoti nuotraukas KAI TINKLALAPIS ĮKELIAMAS - prieš bet ką
+  const _pl=sessionStorage.getItem('photoLeft')||photoLeft||window._savedPhotoLeft;
+  const _pr=sessionStorage.getItem('photoRight')||photoRight||window._savedPhotoRight;
+  const _bgId=sessionStorage.getItem('bgSessionId')||window.bgSessionId;
+  if(_pl) window._savedPhotoLeft=_pl;
+  if(_pr) window._savedPhotoRight=_pr;
+  if(_bgId) window.bgSessionId=_bgId;
+
   go('s-loading');
   try{
     const res=await fetch(`/verify-payment?session_id=${sessionId}`);
@@ -684,14 +696,6 @@ async function verifyAndProceed(sessionId){
       window._userName=data.name;
       window.palmToken=data.token;
       window.history.replaceState({},'','/');
-
-      // Išsaugoti nuotraukas prieš valant sessionStorage
-      const pl=sessionStorage.getItem('photoLeft')||photoLeft||window._savedPhotoLeft;
-      const pr=sessionStorage.getItem('photoRight')||photoRight||window._savedPhotoRight;
-      window._savedPhotoLeft=pl;
-      window._savedPhotoRight=pr;
-      const storedBgId=sessionStorage.getItem('bgSessionId');
-      if(storedBgId) window.bgSessionId=storedBgId;
       sessionStorage.removeItem('photoLeft');
       sessionStorage.removeItem('photoRight');
       sessionStorage.removeItem('bgSessionId');
@@ -715,8 +719,11 @@ async function verifyAndProceed(sessionId){
 
       // Siųsti analizės užklausą
       const photoData=[];
-      if(window._savedPhotoLeft) photoData.push({type:'image/jpeg',data:window._savedPhotoLeft.includes(',')?window._savedPhotoLeft.split(',')[1]:window._savedPhotoLeft});
-      if(window._savedPhotoRight) photoData.push({type:'image/jpeg',data:window._savedPhotoRight.includes(',')?window._savedPhotoRight.split(',')[1]:window._savedPhotoRight});
+      const _ph1=window._savedPhotoLeft||photoLeft||sessionStorage.getItem('photoLeft');
+      const _ph2=window._savedPhotoRight||photoRight||sessionStorage.getItem('photoRight');
+      if(_ph1){const d1=_ph1.includes(',')?_ph1.split(',')[1]:_ph1;if(d1&&d1.length>100) photoData.push({type:'image/jpeg',data:d1});}
+      if(_ph2){const d2=_ph2.includes(',')?_ph2.split(',')[1]:_ph2;if(d2&&d2.length>100) photoData.push({type:'image/jpeg',data:d2});}
+      console.log('Photos siunciama:',photoData.length,'token:',window.palmToken?'OK':'NERA','bgId:',window.bgSessionId||'nera');
 
       console.log('Siunčiama analizė, photos:',photoData.length,'token:',window.palmToken?'OK':'NERA','bgSessionId:',window.bgSessionId||'nera');
 
@@ -1111,29 +1118,28 @@ function capturePhoto(){
           showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
           return;
         }
+        // Sustabdyti video iš karto
+        video.style.display='none';
         // Rodyti sėkmės ekraną
         const scanOk=document.getElementById('cam-scan-ok');
-        if(scanOk){
-          scanOk.style.display='flex';
-          setTimeout(()=>scanOk.style.display='none',1500);
-        }
-        document.getElementById('cam-title').textContent='Delnas nufotografuotas!';
-        const camSubEl=document.getElementById('cam-sub');if(camSubEl)camSubEl.style.display='none';
-        const cl=document.getElementById('cam-loader');if(cl)cl.style.display='none';
-        const shutterWrapEl=document.querySelector('.cam-shutter-wrap');if(shutterWrapEl)shutterWrapEl.style.visibility='hidden';
+        if(scanOk){scanOk.style.display='flex';}
         if(isLeftHand){
+          photoLeft=dataURL;
           setTimeout(function(){
+            if(scanOk) scanOk.style.display='none';
+            video.style.display='block';
             shutterWrap.style.visibility='';
             const prEl=document.getElementById('cam-progress');if(prEl)prEl.style.visibility='';
             document.getElementById('cam-sub').style.display='';
-            handVisible=false;shutter.style.pointerEvents='none';shutter.style.opacity='.35';
-            setTimeout(function(){shutter.style.opacity='1';shutter.style.pointerEvents='auto';},1500);
-            photoLeft=dataURL;camHand='right';updateCameraUI();
-          },800);
+            document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
+            handVisible=false;shutter.disabled=false;
+            shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+            camHand='right';updateCameraUI();
+          },1200);
         } else {
+          photoRight=dataURL;
           setTimeout(function(){
-            frozen.classList.remove('active');frozen.style.backgroundImage='';
-            photoRight=dataURL;
+            if(scanOk) scanOk.style.display='none';
             stopCamera();
             startBackgroundAnalysis();
             go('s-loading');
@@ -1245,10 +1251,11 @@ function animateLoading(){
     pct=Math.min(pct,85);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';
-    const processMsg=['Analizuojami charakterio bruožai...','Nustatoma gyvenimo kryptis...','Vertinami bendravimo dėsningumai...','Vertinamas finansinio potencialo augimas...','Atrandamas unikalus sėkmės raktas...','Apžvelgiami artėjantys gyvenimo pokyčiai...','Identifikuojamos pažangą stabdančios kliūtys...'];
+    const processMsg=['Identifikuojamos prigimtinės stiprybės...','Gryninama gyvenimo kryptis ir tikslai...','Analizuojamas bendravimo būdas...','Skaičiuojamas finansinis potencialas...','Atrandamas unikalus sėkmės raktas...','Apžvelgiami artėjantys pokyčiai...','Identifikuojamos pažangą stabdančios kliūtys...'];
     // Tekstas keičiasi kartu su varnele (kas 15s, sinchronizuota su activateStep)
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
-    if(ptime) ptime.textContent=processMsg[msgIdx];
+    const stepIdx=window._currentStep>0?window._currentStep-1:msgIdx;
+if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
     if(elapsed>=totalSec){
       clearInterval(t);if(ppct) ppct.textContent='85%';window._currentProgress=85;
       loadScreen.style.transition='opacity 1.2s ease';loadScreen.style.opacity='0';
@@ -1265,6 +1272,7 @@ function animateLoading(){
 }
 
 function activateStep(n,done){
+  window._currentStep=n;
   // Paskutinis punktas - ypatingas pulsavimas
   if(!done && n===7){
     const el7=document.getElementById('ls7');
