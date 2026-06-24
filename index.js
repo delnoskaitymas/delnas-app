@@ -465,15 +465,14 @@ function pills(arr) {
 app.post('/create-payment', async (req, res) => {
   try {
     const { name, email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Trūksta el. pašto' });
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 599,
       currency: 'eur',
-      metadata: { name: name || '', email },
-      receipt_email: email,
+      metadata: { name: name || '', email: email || '' },
+      ...(email ? {receipt_email: email} : {}),
       automatic_payment_methods: { enabled: true }
     });
-    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
