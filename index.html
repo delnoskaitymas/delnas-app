@@ -1147,9 +1147,16 @@ function capturePhoto(){
     frozen.style.display='block';
     video.style.display='none';
   }
-  // Rodyti 'Tikriname...' ant frozen
-  const camTitle=document.getElementById('cam-title');
-  if(camTitle) camTitle.textContent='Tikriname...';
+  // Rodyti 'Tikriname...' ant frozen kadro
+  let tikrLabel=document.getElementById('tikr-label');
+  if(!tikrLabel){
+    tikrLabel=document.createElement('div');
+    tikrLabel.id='tikr-label';
+    tikrLabel.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'+'color:rgba(212,168,67,.95);font-size:17px;font-weight:600;letter-spacing:.08em;'+'font-family:DM Sans,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.8);z-index:10;'+'white-space:nowrap;pointer-events:none';
+    tikrLabel.textContent='Tikriname...';
+    if(frozen) frozen.appendChild(tikrLabel);
+  }
+  if(tikrLabel) tikrLabel.style.display='block';
 
   // Paslėpti mygtuką per tikrinimą
   shutterWrap.style.visibility='hidden';
@@ -1166,6 +1173,7 @@ function capturePhoto(){
     }).then(r=>r.json()).then(v=>{
       // Visada grąžinti video
       if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+      const tl=document.getElementById('tikr-label');if(tl) tl.style.display='none';
       video.style.display='block';
 
       if(!v.valid){
@@ -1212,6 +1220,7 @@ function capturePhoto(){
       }
     }).catch(()=>{
       if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+      const tl=document.getElementById('tikr-label');if(tl) tl.style.display='none';
       video.style.display='block';
       shutterWrap.style.visibility='';
       if(camSub) camSub.style.display='';
