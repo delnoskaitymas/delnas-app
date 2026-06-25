@@ -71,7 +71,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
 .load-wrap{padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden}
-.load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:18px}
+.load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:8px}
 .load-sub{font-size:13px;color:rgba(245,238,216,.82);font-weight:400;letter-spacing:.01em}
 .oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .oracle-ring{position:absolute;border-radius:50%;border:1.5px solid}
@@ -435,14 +435,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-loading">
-  <div class="load-wrap" style="padding:52px 16px 0;gap:12px;justify-content:flex-start">
+  <div class="load-wrap" style="padding:20px 16px 0;gap:8px;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0">
       <div class="load-title" style="font-size:15px;margin-bottom:16px;letter-spacing:.08em">Generuojame tavo gyvenimo žemėlapį...</div>
       <div class="load-sub" style="font-size:13px;font-weight:500;color:rgba(245,238,216,.9);letter-spacing:.01em">Šiuo metu gilinamės į tavo unikalų potencialą.</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
-    <div style="position:relative;width:min(24vh,140px);height:min(24vh,140px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto" id="hand-container">
+    <div style="position:relative;width:min(22vh,130px);height:min(22vh,130px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto" id="hand-container">
       <!-- Išoriniai žiedai -->
       <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:sp 22s linear infinite"></div>
       <div style="position:absolute;inset:5%;border-radius:50%;border:1.5px solid rgba(212,168,67,.35);animation:sp 14s linear infinite reverse"></div>
@@ -468,7 +468,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="font-size:11px;color:rgba(212,168,67,.45);text-align:center;min-height:16px;font-style:italic;letter-spacing:.02em;opacity:1;transition:opacity .5s ease;margin-top:3px;padding:0 20px"></div>
+      <div id="micro-text" style="font-size:11px;color:rgba(212,168,67,.45);text-align:center;height:16px;font-style:italic;letter-spacing:.02em;opacity:1;transition:opacity .5s ease;margin-top:2px;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -1343,7 +1343,7 @@ function animateLoading(){
     else pct=98+(elapsed-110)/20*1; // 98→99% labai lėtai99%
     pct=Math.min(pct,99);
     const pctRound=Math.round(pct);
-    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';
+    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
     // Mikrotekstas pagal žingsnį
     const microTexts=[
       ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
@@ -1358,15 +1358,26 @@ function animateLoading(){
     function updateMicroText(step){
       const mt=document.getElementById('micro-text');
       if(!mt) return;
+      if(step>6) return; // Baigta
       const stepMsgs=microTexts[Math.min(step,6)];
+      // Lėtinti kai ties 95%+
+      const currentPct=window._currentProgress||0;
+      const interval=currentPct>=98?8000:currentPct>=95?4500:2500;
       if(step!==lastMicroStep){
         lastMicroStep=step;microIdx=0;
         if(microTimer) clearInterval(microTimer);
+        mt.textContent=stepMsgs[0];mt.style.opacity='1';
         microTimer=setInterval(()=>{
+          const curPct=window._currentProgress||0;
+          const curInterval=curPct>=98?8000:curPct>=95?4500:2500;
           microIdx=(microIdx+1)%stepMsgs.length;
           mt.style.opacity='0';
-          setTimeout(()=>{mt.textContent=stepMsgs[microIdx];mt.style.opacity='1';},250);
-        },2500);
+          setTimeout(()=>{
+            if(document.getElementById('micro-text')){
+              mt.textContent=stepMsgs[microIdx];mt.style.opacity='1';
+            }
+          },300);
+        },interval);
       }
       if(!mt.textContent) mt.textContent=stepMsgs[0];
     }
@@ -1379,7 +1390,11 @@ function animateLoading(){
     if(elapsed>=totalSec){
       clearInterval(t);if(microTimer)clearInterval(microTimer);
       if(ppct) ppct.textContent='99%';window._currentProgress=99;
-      // 1s pause - vartotojas pasidžiaugia pilnu sąrašu
+      // Sustabdyti mikro tekstus ir paskutinį žingsnį pažymėti varnele
+      const mt=document.getElementById('micro-text');
+      if(mt){mt.style.opacity='0';}
+      activateStep(7,true);
+      // 1.5s pause - vartotojas džiaugiasi pilnu sąrašu
       setTimeout(()=>{
         loadScreen.style.transition='opacity 1.4s ease';
         loadScreen.style.opacity='0';
@@ -1387,14 +1402,13 @@ function animateLoading(){
           loadScreen.style.opacity='';
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-          // Eiti į s-order (vardas/paštas) arba tiesiai į s-info jei jau žinomas
           if(window._userName&&window._userEmail){
             go('s-info');initQuickPay();requestWakeLock();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
         },1400);
-      },1000);
+      },1500);
     }
   },250);
   setTimeout(()=>activateStep(1,false),500);
@@ -1431,7 +1445,7 @@ function activateStep(n,done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
       // n=1→35vh, n=2→33vh, n=3→30vh, n=4→28vh, n=5→25vh, n=6→23vh, n=7→21vh
-      const sizes=['28vh','26vh','24vh','22vh','20vh','18vh','16vh'];
+      const sizes=['22vh','20vh','18vh','16vh','14vh','12vh','10vh'];
       const idx=Math.min(n-1,sizes.length-1);
       handEl.style.transition='all 1.6s cubic-bezier(0.4,0,0.2,1)';
       handEl.style.width='min('+sizes[idx]+',170px)';
