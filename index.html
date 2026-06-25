@@ -176,7 +176,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
 }
-@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}</style>
+@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(245,238,216,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}</style>
 </head>
 <body>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
@@ -412,8 +412,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <!-- Laukeliai -->
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
-      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" style="background:rgba(255,255,255,.05);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
-      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" style="background:rgba(255,255,255,.05);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
+      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
+      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
     </div>
     <!-- Privatumo blokas -->
     <div style="background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.12);border-radius:12px;padding:14px 16px;margin-bottom:28px">
@@ -428,7 +428,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
     <!-- Mygtukas -->
-    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.3);opacity:.45;transition:opacity .3s">Analizuoti mano delnus</button>
+    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.3);opacity:.45;transition:opacity .3s">Generuoti ataskaitą</button>
     <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 </div>
@@ -1915,4 +1915,39 @@ async function quickPay(method){
 }
 
 
+
+
+function checkOrderForm(){
+  const n=document.getElementById('o-name');
+  const e=document.getElementById('o-email');
+  const btn=document.getElementById('order-btn');
+  if(!n||!e||!btn) return;
+  const ok=n.value.trim().length>0&&e.value.trim().includes('@');
+  btn.disabled=!ok;
+  btn.style.opacity=ok?'1':'.45';
+  btn.style.cursor=ok?'pointer':'not-allowed';
+}
+
+function initOrderScreen(){
+  const n=document.getElementById('o-name');
+  const e=document.getElementById('o-email');
+  if(n) n.value='';
+  if(e) e.value='';
+  checkOrderForm();
+}
+
+function proceedToPayment(){
+  const name=document.getElementById('o-name').value.trim();
+  const email=document.getElementById('o-email').value.trim();
+  const err=document.getElementById('order-err');
+  if(!name||!email||!email.includes('@')){
+    if(err){err.textContent='Užpildyk abu laukelius';err.style.display='block';}
+    return;
+  }
+  if(err) err.style.display='none';
+  window._userName=name;window.userName=name;
+  window._userEmail=email;window.userEmail=email;
+  go('s-loading');
+  setTimeout(()=>animateLoading(),100);
+}
 </script>
