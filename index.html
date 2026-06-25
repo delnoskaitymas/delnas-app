@@ -347,6 +347,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="info-err" class="err"></div>
+    <div id="price-info-block" style="margin-bottom:6px">
+<div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5;white-space:nowrap">12,99 €</span>
+        <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);white-space:nowrap">5,99<span style="font-size:16px;vertical-align:super;margin-left:2px">€</span></span>
+        <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.04em;margin-top:2px;animation:pulse3 2s ease-in-out infinite">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Tik vienkartinis mokėjimas. Jokių prenumeratų. Gausite pilną ataskaitą.</div>
+  </div>
+<div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
+</div>
     <div id="payment-element-wrap" style="display:flex;flex-direction:column;gap:8px">
       <!-- Express Checkout: Apple/Google Pay viršuje -->
       <div id="express-checkout-element"></div>
@@ -368,19 +381,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         </div>
       </div>
     </div>
-    <div id="price-info-block" style="margin-bottom:6px">
-<div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:13px;color:var(--muted);text-decoration:line-through;opacity:.5;white-space:nowrap">12,99 €</span>
-        <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);white-space:nowrap">5,99<span style="font-size:16px;vertical-align:super;margin-left:2px">€</span></span>
-        <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.04em;margin-top:2px;animation:pulse3 2s ease-in-out infinite">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:rgba(245,238,216,.5);line-height:1.5">Tik vienkartinis mokėjimas. Jokių prenumeratų. Gausite pilną ataskaitą.</div>
-  </div>
-<div style="text-align:center;margin-bottom:6px;font-size:11px;color:rgba(245,238,216,.5)">★★★★★ <span style="color:rgba(245,238,216,.4)">Jau <span id="pay-count">2 847</span> žmonės sužinojo savo atsakymus</span></div>
-</div>
 
     <div id="order-err" class="err"></div>
     <div style="height:100px"></div>
