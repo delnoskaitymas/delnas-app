@@ -392,6 +392,17 @@ async function sendResultEmail(email, name, result) {
   } catch(e) { console.error('Email queue klaida:', e); }
 }
 
+// Atnaujinti sesijos vardą ir el. paštą
+app.post('/update-session-name', (req, res) => {
+  const { sessionId, name, email } = req.body;
+  if (sessionId && analysisCache.has(sessionId)) {
+    const entry = analysisCache.get(sessionId);
+    entry.name = name || entry.name;
+    entry.email = email || entry.email;
+  }
+  res.json({ ok: true });
+});
+
 app.post('/analyze-palm', async (req, res) => {
   try {
     const { photos, name, email, token, sessionId } = req.body;
