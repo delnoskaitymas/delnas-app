@@ -1445,18 +1445,32 @@ function activateStep(n,done){
     st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
     st.textContent='✓';st.style.color='var(--gold2)';st.style.fontSize='15px';st.style.textShadow='0 0 8px rgba(212,168,67,.8)';
     st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
+    // Glow efektas
+    el.style.boxShadow='0 0 18px rgba(212,168,67,.35)';
+    setTimeout(()=>{el.style.boxShadow='0 0 6px rgba(212,168,67,.15)';},800);
+    const doneTxt=el.querySelector('.ls-text');
+    if(doneTxt){doneTxt.style.color='rgba(212,168,67,.7)';doneTxt.style.fontWeight='500';}
   }else{
     el.classList.add('active');el.classList.remove('done');
     el.style.animation='none';
+    el.style.boxShadow='none';
+    // Aktyvus - ryškiausias ekrane
+    const actTxt=el.querySelector('.ls-text');
+    if(actTxt){actTxt.style.color='rgba(245,238,216,.95)';actTxt.style.fontWeight='600';}
+    const actIcon=el.querySelector('.ls-icon');
+    if(actIcon){actIcon.style.borderColor='rgba(212,168,67,.6)';actIcon.style.background='rgba(212,168,67,.08)';}
+    // Sinchronizuoti mikrotekstą su šiuo žingsniu
+    window._currentStep=n;
+    if(typeof updateMicroText==='function') updateMicroText(n-1);
     st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
     st.style.border='2px solid rgba(212,168,67,.2)';st.style.borderTopColor='var(--gold2)';
     st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';
     st.style.fontSize='0';st.style.flexShrink='0';
     // Aktyvus žingsnis - ryškiausias ekrane
-    const actTxt=el.querySelector('.ls-text');
-    if(actTxt){actTxt.style.color='rgba(245,238,216,.95)';actTxt.style.fontWeight='600';}
-    const actIcon=el.querySelector('.ls-icon');
-    if(actIcon){actIcon.style.borderColor='rgba(212,168,67,.6)';actIcon.style.background='rgba(212,168,67,.08)';}
+    const actTxtEl=el.querySelector('.ls-text');
+    if(actTxtEl){actTxtEl.style.color='rgba(245,238,216,.95)';actTxtEl.style.fontWeight='600';}
+    const actIconEl=el.querySelector('.ls-icon');
+    if(actIconEl){actIconEl.style.borderColor='rgba(212,168,67,.6)';actIconEl.style.background='rgba(212,168,67,.08)';}
   }
 }
 
@@ -1997,7 +2011,12 @@ function proceedToPayment(){
   if(err) err.style.display='none';
   window._userName=name;window.userName=name;
   window._userEmail=email;window.userEmail=email;
-  // Eiti į analizės ekraną (analizė jau vyksta fone)
+  // Atnaujinti bgSessionId su vardu (analizė jau vyksta fone)
+  if(window.bgSessionId){
+    fetch('/update-session-name',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sessionId:window.bgSessionId,name,email})}).catch(()=>{});
+  }
+  // Eiti į analizės ekraną
   go('s-loading');
   setTimeout(()=>animateLoading(),100);
 }
