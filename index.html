@@ -1997,8 +1997,8 @@ function proceedToPayment(){
   if(err) err.style.display='none';
   window._userName=name;window.userName=name;
   window._userEmail=email;window.userEmail=email;
-  // Analizė jau atlikta - eiti tiesiai į mokėjimą
-  go('s-info');
-  setTimeout(()=>{initQuickPay();requestWakeLock();},300);
+  // Eiti į analizės ekraną (analizė jau vyksta fone)
+  go('s-loading');
+  setTimeout(()=>animateLoading(),100);
 }
 </script>
