@@ -375,9 +375,26 @@ app.post('/create-checkout', async (req, res) => {
   }
 });
 
+// El. pašto siuntimas su rezultatais
+async function sendResultEmail(email, name, result) {
+  // Naudoti nodemailer jei sukonfigūruotas, arba išsaugoti queue
+  const emailData = { email, name, result, sentAt: new Date().toISOString() };
+  // Išsaugoti į failą kaip eilę (jei nėra SMTP)
+  try {
+    const queueFile = path.join(__dirname, 'email_queue.json');
+    let queue = [];
+    if (fs.existsSync(queueFile)) {
+      queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));
+    }
+    queue.push(emailData);
+    fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2));
+    console.log(`Email eilė: ${email} (${name})`);
+  } catch(e) { console.error('Email queue klaida:', e); }
+}
+
 app.post('/analyze-palm', async (req, res) => {
   try {
-    const { photos, name, token, sessionId } = req.body;
+    const { photos, name, email, token, sessionId } = req.body;
 
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
