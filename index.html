@@ -237,6 +237,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-progress" id="cam-progress">
     <div class="cam-dot" id="cam-dot1"></div>
     <div class="cam-dot inactive" id="cam-dot2"></div>
+    <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
@@ -399,7 +400,36 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="font-size:9px;color:rgba(245,238,216,.2);text-align:center">🔒 256-bit šifruotas · 100% konfidencialu</div>
 </div>
 
-<div class="screen" id="s-order" style="display:none"></div>
+<div class="screen" id="s-order">
+  <!-- Delno linijų fonas -->
+  <div style="position:fixed;inset:0;opacity:.06;pointer-events:none;z-index:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><path d="M100 280 C80 200 60 150 70 80 M100 280 C110 200 130 160 120 80 M100 280 C95 210 85 170 100 90 M100 280 C105 210 115 170 100 90 M70 80 C65 40 75 20 80 10 M120 80 C125 40 115 20 110 10 M100 90 C100 50 102 25 100 10 M85 170 C70 160 55 155 40 160 M115 170 C130 160 145 155 160 160" stroke="%23d4a843" stroke-width="1.5" fill="none" opacity="0.4"/></svg>') center/cover no-repeat"></div>
+  <div style="padding:32px 24px 24px;display:flex;flex-direction:column;min-height:100dvh;position:relative;z-index:1">
+    <!-- Progreso taškeliai -->
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:32px">
+      <div style="width:8px;height:8px;border-radius:50%;background:rgba(212,168,67,.3)"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:rgba(212,168,67,.3)"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4a843"></div>
+    </div>
+    <!-- Antraštė -->
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px">Personalizuokime žemėlapį</div>
+      <div style="font-size:13px;color:rgba(245,238,216,.55);line-height:1.5">Kad rezultatai atspindėtų būtent Tave ir galėtume atsiųsti analizę el. paštu</div>
+    </div>
+    <!-- Laukeliai -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" style="background:rgba(255,255,255,.05);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
+      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" style="background:rgba(255,255,255,.05);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
+    </div>
+    <!-- Privatumo tekstas -->
+    <div style="background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.12);border-radius:10px;padding:12px 14px;margin-bottom:24px;font-size:11px;color:rgba(245,238,216,.5);line-height:1.6">
+      🔒 <strong style="color:rgba(212,168,67,.7)">Kodėl reikalingi šie duomenys?</strong><br>
+      Vardas naudojamas analizės personalizavimui — kad žemėlapis atspindėtų būtent Tave. El. paštu atsiųsime pilną gyvenimo žemėlapio ataskaitą. Duomenys saugomi ir niekada nėra perduodami trečiosioms šalims.
+    </div>
+    <!-- Mygtukas -->
+    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.3);opacity:.45;transition:opacity .3s">Analizuoti mano delnus</button>
+    <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+</div>
 
 
 <div class="screen" id="s-loading">
@@ -956,7 +986,7 @@ function startApp(){
 function openCameraScreen(){startApp();}
 
 function updateCameraUI(){
-  const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');
+  const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');const dot3=document.getElementById('cam-dot3');if(dot3) dot3.classList.add('inactive');
   const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
     title.textContent='Nufotografuokite kairįjį delną';dot1.classList.remove('inactive');dot2.classList.add('inactive');
@@ -1144,16 +1174,19 @@ function capturePhoto(){
     frozen.style.display='block';
     video.style.display='none';
   }
-  // Rodyti 'Tikriname...' ant frozen kadro
-  let tikrLabel=document.getElementById('tikr-label');
-  if(!tikrLabel){
-    tikrLabel=document.createElement('div');
-    tikrLabel.id='tikr-label';
-    tikrLabel.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'+'color:rgba(212,168,67,.95);font-size:17px;font-weight:600;letter-spacing:.08em;'+'font-family:DM Sans,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.8);z-index:10;'+'white-space:nowrap;pointer-events:none';
-    tikrLabel.textContent='Tikriname...';
-    if(frozen) frozen.appendChild(tikrLabel);
+  // Tikriname overlay su ratuku ant frozen
+  let tikrOvl=document.getElementById('tikr-ovl');
+  if(!tikrOvl){
+    tikrOvl=document.createElement('div');
+    tikrOvl.id='tikr-ovl';
+    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10;background:rgba(7,4,15,.5)';
+    tikrOvl.innerHTML='<div id="tikr-spinner" style="position:relative;width:48px;height:48px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div style="color:rgba(212,168,67,.95);font-size:15px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif">Tikriname...</div>';
+    if(frozen) frozen.appendChild(tikrOvl);
+  } else {
+    const sp=tikrOvl.querySelector('#tikr-spinner');
+    if(sp){sp.style.animation='spin2 .8s linear infinite';sp.style.borderTopColor='#d4a843';sp.innerHTML='';}
   }
-  if(tikrLabel) tikrLabel.style.display='block';
+  if(tikrOvl) tikrOvl.style.display='flex';
 
   // Paslėpti mygtuką per tikrinimą
   shutterWrap.style.visibility='hidden';
@@ -1170,9 +1203,17 @@ function capturePhoto(){
     }).then(r=>r.json()).then(v=>{
       // Visada grąžinti video
       if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
-      const tl=document.getElementById('tikr-label');if(tl) tl.style.display='none';
+      const tl=document.getElementById('tikr-ovl');if(tl) tl.style.display='none';
       video.style.display='block';
 
+      // Pakeisti ratuką į varnelę
+      const tikrSpinner=document.getElementById('tikr-spinner');
+      if(tikrSpinner){
+        tikrSpinner.style.animation='none';
+        tikrSpinner.style.border='3px solid #d4a843';
+        tikrSpinner.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><polyline points="20 6 9 17 4 12"/></svg>';
+        tikrSpinner.style.position='relative';
+      }
       if(!v.valid){
         // Klaida - grąžinti tą patį ekraną
         shutterWrap.style.visibility='';
@@ -1217,7 +1258,7 @@ function capturePhoto(){
       }
     }).catch(()=>{
       if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
-      const tl=document.getElementById('tikr-label');if(tl) tl.style.display='none';
+      const tl=document.getElementById('tikr-ovl');if(tl) tl.style.display='none';
       video.style.display='block';
       shutterWrap.style.visibility='';
       if(camSub) camSub.style.display='';
@@ -1331,7 +1372,7 @@ if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
     if(elapsed>=totalSec){
       clearInterval(t);if(ppct) ppct.textContent='85%';window._currentProgress=85;
       loadScreen.style.transition='opacity 1.2s ease';loadScreen.style.opacity='0';
-      setTimeout(()=>{loadScreen.style.opacity='';loadScreen.style.transition='';if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}go('s-info');initQuickPay();initStripeElements();requestWakeLock();startPayPbar();},1200);
+      setTimeout(()=>{loadScreen.style.opacity='';loadScreen.style.transition='';if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}go('s-order');initOrderScreen();requestWakeLock();},1200);
     }
   },250);
   setTimeout(()=>activateStep(1,false),500);
