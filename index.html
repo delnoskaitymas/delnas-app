@@ -1411,7 +1411,7 @@ function animateLoading(){
       const mt=document.getElementById('micro-text');
       if(mt){mt.style.opacity='0';}
       activateStep(7,true);
-      // 1.5s pause - vartotojas džiaugiasi pilnu sąrašu
+      // 2s pause - vartotojas džiaugiasi pilnu sąrašu su varnelėmis
       setTimeout(()=>{
         loadScreen.style.transition='opacity 1.4s ease';
         loadScreen.style.opacity='0';
@@ -1439,72 +1439,66 @@ function animateLoading(){
 
 function activateStep(n,done){
   window._currentStep=n;
-  // Paskutinis punktas - ypatingas pulsavimas
-  if(!done && n===7){
-    const el7=document.getElementById('ls7');
-    if(el7){
-      el7.style.animation='lastStepPulse 1.5s ease-in-out infinite';
-      el7.style.borderLeftWidth='3px';
-      const txt7=el7.querySelector('.ls-text');
-      if(txt7){txt7.style.color='#fff0a0';txt7.style.fontWeight='700';}
-      const icon7=el7.querySelector('.ls-icon');
-      if(icon7){icon7.style.background='rgba(212,168,67,.3)';icon7.style.borderColor='var(--gold2)';}
-    }
-  }
-  // Sustabdyti pulsavimą kai baigta
-  if(done && n===7){
-    const el7=document.getElementById('ls7');
-    if(el7){el7.style.animation='';}
-  }
-  
-  // Collapse efektas — ranka mažėja po kiekvieno BAIGTO žingsniu (varnelė)
+
+  // Ranka mažėja KAI ŽINGSNIS BAIGIAMAS (done=true)
   if(done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
-      // n=1→35vh, n=2→33vh, n=3→30vh, n=4→28vh, n=5→25vh, n=6→23vh, n=7→21vh
-      const sizes=['20vh','17vh','15vh','13vh','11vh','9vh','8vh'];
-      const idx=Math.min(n-1,sizes.length-1);
-      handEl.style.transition='all 1.6s cubic-bezier(0.4,0,0.2,1)';
-      handEl.style.width='min('+sizes[idx]+',170px)';
-      handEl.style.height='min('+sizes[idx]+',170px)';
+      const sizes=['20vh','18vh','16vh','14vh','12vh','10vh','8vh'];
+      const s=sizes[Math.min(n-1,sizes.length-1)];
+      handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
+      handEl.style.width='min('+s+',120px)';
+      handEl.style.height='min('+s+',120px)';
     }
   }
-  
-  const el=document.getElementById('ls'+n);const st=document.getElementById('ls'+n+'-status');
+
+  const el=document.getElementById('ls'+n);
+  const st=document.getElementById('ls'+n+'-status');
   if(!el||!st) return;
+
   if(done){
+    // Baigtas žingsnis - varnelė + glow
     el.classList.remove('active');el.classList.add('done');
-    st.style.animation='none';st.style.border='none';st.style.width='18px';st.style.height='18px';
-    st.textContent='✓';st.style.color='var(--gold2)';st.style.fontSize='15px';st.style.textShadow='0 0 8px rgba(212,168,67,.8)';
-    st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
-    // Glow efektas
-    el.style.boxShadow='0 0 18px rgba(212,168,67,.35)';
-    setTimeout(()=>{el.style.boxShadow='0 0 6px rgba(212,168,67,.15)';},800);
-    const doneTxt=el.querySelector('.ls-text');
-    if(doneTxt){doneTxt.style.color='rgba(212,168,67,.7)';doneTxt.style.fontWeight='500';}
-  }else{
-    el.classList.add('active');el.classList.remove('done');
     el.style.animation='none';
-    el.style.boxShadow='none';
-    // Aktyvus - ryškiausias ekrane
-    const actTxt=el.querySelector('.ls-text');
-    if(actTxt){actTxt.style.color='rgba(245,238,216,.95)';actTxt.style.fontWeight='600';}
-    const actIcon=el.querySelector('.ls-icon');
-    if(actIcon){actIcon.style.borderColor='rgba(212,168,67,.6)';actIcon.style.background='rgba(212,168,67,.08)';}
-    // Sinchronizuoti mikrotekstą su šiuo žingsniu
-    window._currentStep=n;
-    if(typeof updateMicroText==='function') updateMicroText(n-1);
-    st.textContent='';st.style.display='inline-block';st.style.width='16px';st.style.height='16px';
-    st.style.border='2px solid rgba(212,168,67,.2)';st.style.borderTopColor='var(--gold2)';
-    st.style.borderRadius='50%';st.style.animation='spinStep .7s linear infinite';
+    st.style.animation='none';st.style.border='none';
+    st.style.width='18px';st.style.height='18px';
+    st.textContent='✓';st.style.color='var(--gold2)';
+    st.style.fontSize='15px';st.style.textShadow='0 0 8px rgba(212,168,67,.8)';
+    st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
+    // Glow
+    el.style.boxShadow='0 0 20px rgba(212,168,67,.4)';
+    setTimeout(()=>{if(el) el.style.boxShadow='0 0 6px rgba(212,168,67,.15)';},900);
+    const dTxt=el.querySelector('.ls-text');
+    if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';}
+    // Paskutinis punktas - sustabdyti pulsavimą
+    if(n===7){el.style.animation='';}
+  } else {
+    // Aktyvus žingsnis - ratukас + ryškus tekstas
+    el.classList.add('active');el.classList.remove('done');
+    el.style.boxShadow='none';el.style.animation='none';
+    st.textContent='';st.style.display='inline-block';
+    st.style.width='16px';st.style.height='16px';
+    st.style.border='2px solid rgba(212,168,67,.25)';
+    st.style.borderTopColor='var(--gold2)';
+    st.style.borderRadius='50%';
+    st.style.animation='spinStep .7s linear infinite';
     st.style.fontSize='0';st.style.flexShrink='0';
-    // Aktyvus žingsnis - ryškiausias ekrane
-    const actTxtEl=el.querySelector('.ls-text');
-    if(actTxtEl){actTxtEl.style.color='rgba(245,238,216,.95)';actTxtEl.style.fontWeight='600';}
-    const actIconEl=el.querySelector('.ls-icon');
-    if(actIconEl){actIconEl.style.borderColor='rgba(212,168,67,.6)';actIconEl.style.background='rgba(212,168,67,.08)';}
+    // Ryškus tekstas
+    const aTxt=el.querySelector('.ls-text');
+    if(aTxt){aTxt.style.color='rgba(245,238,216,.95)';aTxt.style.fontWeight='600';}
+    const aIcon=el.querySelector('.ls-icon');
+    if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
+    // Mikrotekstas sinchronizuotas
+    if(typeof updateMicroText==='function') updateMicroText(n-1);
+    // 7 punkto pulsavimas
+    if(n===7){
+      el.style.animation='lastStepPulse 1.5s ease-in-out infinite';
+      if(aTxt){aTxt.style.color='#fff0a0';aTxt.style.fontWeight='700';}
+      if(aIcon){aIcon.style.background='rgba(212,168,67,.3)';aIcon.style.borderColor='var(--gold2)';}
+    }
   }
 }
+
 
 async function callClaude(){
   const photoData=[];
