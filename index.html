@@ -1115,29 +1115,23 @@ function checkSkinArea(dataURL, minRatio){
 }
 
 function showCamError(title, msg){
-  // Pašalinti seną
   const old=document.getElementById('cam-err-overlay');
   if(old) old.remove();
-  // Sukurti naują - viduje kameros viewport
   const vp=document.querySelector('.cam-viewport');
   if(!vp) return;
   const errDiv=document.createElement('div');
   errDiv.id='cam-err-overlay';
-  errDiv.style.cssText='position:absolute;bottom:8px;left:8px;right:8px;background:rgba(7,4,15,.92);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:10px 12px;z-index:20;display:flex;align-items:center;gap:8px';
-  const icon=document.createElement('div');
-  icon.textContent='\u270b';
-  icon.style.cssText='font-size:18px;flex-shrink:0';
-  const txt=document.createElement('div');
+  errDiv.style.cssText='position:absolute;bottom:8px;left:8px;right:8px;background:rgba(7,4,15,.92);border:.5px solid rgba(212,168,67,.3);border-radius:10px;padding:10px 12px;z-index:20;text-align:center';
   const t=document.createElement('div');
   t.style.cssText='font-size:13px;font-weight:600;color:#f0c96a;margin-bottom:2px';
   t.textContent=title;
-  const s=document.createElement('div');
-  s.style.cssText='font-size:11px;color:rgba(245,238,216,.6)';
-  s.textContent=msg||'';
-  txt.appendChild(t);
-  if(msg) txt.appendChild(s);
-  errDiv.appendChild(icon);
-  errDiv.appendChild(txt);
+  errDiv.appendChild(t);
+  if(msg){
+    const s=document.createElement('div');
+    s.style.cssText='font-size:11px;color:rgba(245,238,216,.6)';
+    s.textContent=msg;
+    errDiv.appendChild(s);
+  }
   vp.style.position='relative';
   vp.appendChild(errDiv);
   setTimeout(()=>{if(errDiv.parentNode)errDiv.remove();},2000);
@@ -1206,16 +1200,9 @@ function capturePhoto(){
       const tl=document.getElementById('tikr-ovl');if(tl) tl.style.display='none';
       video.style.display='block';
 
-      // Pakeisti ratuką į varnelę
-      const tikrSpinner=document.getElementById('tikr-spinner');
-      if(tikrSpinner){
-        tikrSpinner.style.animation='none';
-        tikrSpinner.style.border='3px solid #d4a843';
-        tikrSpinner.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><polyline points="20 6 9 17 4 12"/></svg>';
-        tikrSpinner.style.position='relative';
-      }
       if(!v.valid){
-        // Klaida - grąžinti tą patį ekraną
+        // Klaida - slėpti tikrOvl ir grąžinti ekraną
+        const tikrOvlErr=document.getElementById('tikr-ovl');if(tikrOvlErr) tikrOvlErr.style.display='none';
         shutterWrap.style.visibility='';
         if(camSub) camSub.style.display='';
         document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
@@ -1226,7 +1213,21 @@ function capturePhoto(){
         return;
       }
 
-      // Sėkmė - rodyti sėkmės ekraną
+      // Sėkmė - rodyti varnelę ant frozen, tada sėkmės ekraną
+      const tikrSpinner=document.getElementById('tikr-spinner');
+      if(tikrSpinner){
+        tikrSpinner.style.animation='none';
+        tikrSpinner.style.border='3px solid #d4a843';
+        tikrSpinner.style.position='relative';
+        tikrSpinner.style.display='flex';
+        tikrSpinner.style.alignItems='center';
+        tikrSpinner.style.justifyContent='center';
+        tikrSpinner.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      }
+      // Po 600ms rodyti sėkmės ekraną
+      setTimeout(()=>{
+        const tikrOvlEl=document.getElementById('tikr-ovl');if(tikrOvlEl) tikrOvlEl.style.display='none';
+      },600);
       const scanOk=document.getElementById('cam-scan-ok');
       const okText=document.getElementById('scan-ok-text');
       if(okText) okText.textContent='Delnas nufotografuotas!';
