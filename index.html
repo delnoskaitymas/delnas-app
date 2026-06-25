@@ -820,7 +820,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
 
     const ar=await fetch('/analyze-palm',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:photoData,name:userName,token:window.palmToken,sessionId:window.bgSessionId||''})
+      body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
     });
     const ad=await ar.json();
 
@@ -1338,7 +1338,8 @@ function animateLoading(){
     else if(elapsed<=50) pct=48+(elapsed-35)/15*17;
     else if(elapsed<=65) pct=65+(elapsed-50)/15*6;
     else if(elapsed<=85) pct=71+(elapsed-65)/20*9;
-    else pct=80+(elapsed-85)/25*19;
+    else if(elapsed<=100) pct=80+(elapsed-85)/15*17; // iki 97%
+    else pct=97+(elapsed-100)/25*2; // lėtai 97→99%
     pct=Math.min(pct,99);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';
@@ -1375,9 +1376,24 @@ function animateLoading(){
     if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
     updateMicroText(stepIdx);
     if(elapsed>=totalSec){
-      clearInterval(t);if(microTimer)clearInterval(microTimer);if(ppct) ppct.textContent='99%';window._currentProgress=99;
-      loadScreen.style.transition='opacity 1.2s ease';loadScreen.style.opacity='0';
-      setTimeout(()=>{loadScreen.style.opacity='';loadScreen.style.transition='';if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}go('s-info');initQuickPay();requestWakeLock();startPayPbar();},1200);
+      clearInterval(t);if(microTimer)clearInterval(microTimer);
+      if(ppct) ppct.textContent='99%';window._currentProgress=99;
+      // 1s pause - vartotojas pasidžiaugia pilnu sąrašu
+      setTimeout(()=>{
+        loadScreen.style.transition='opacity 1.4s ease';
+        loadScreen.style.opacity='0';
+        setTimeout(()=>{
+          loadScreen.style.opacity='';
+          loadScreen.style.transition='';
+          if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
+          // Eiti į s-order (vardas/paštas) arba tiesiai į s-info jei jau žinomas
+          if(window._userName&&window._userEmail){
+            go('s-info');initQuickPay();requestWakeLock();
+          } else {
+            go('s-order');initOrderScreen();requestWakeLock();
+          }
+        },1400);
+      },1000);
     }
   },250);
   setTimeout(()=>activateStep(1,false),500);
@@ -1981,7 +1997,8 @@ function proceedToPayment(){
   if(err) err.style.display='none';
   window._userName=name;window.userName=name;
   window._userEmail=email;window.userEmail=email;
-  go('s-loading');
-  setTimeout(()=>animateLoading(),100);
+  // Analizė jau atlikta - eiti tiesiai į mokėjimą
+  go('s-info');
+  setTimeout(()=>{initQuickPay();requestWakeLock();},300);
 }
 </script>
