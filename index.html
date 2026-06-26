@@ -435,14 +435,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-loading">
-  <div class="load-wrap" style="padding:32px 16px 0;gap:6px;justify-content:flex-start">
-    <div style="text-align:center;flex-shrink:0">
-      <div class="load-title" style="font-size:15px;margin-bottom:16px;letter-spacing:.08em">Generuojame tavo gyvenimo žemėlapį...</div>
-      <div class="load-sub" style="font-size:13px;font-weight:500;color:rgba(245,238,216,.9);letter-spacing:.01em">Šiuo metu gilinamės į tavo unikalų potencialą.</div>
+  <div class="load-wrap" style="padding:52px 16px 0;gap:0;justify-content:flex-start">
+    <div style="text-align:center;flex-shrink:0;margin-bottom:18px">
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:.03em;line-height:1.3">Generuojame tavo gyvenimo žemėlapį...</div>
+      <div class="load-sub" style="font-size:13px;font-weight:400;color:rgba(245,238,216,.82);letter-spacing:.01em">Šiuo metu gilinamės į tavo unikalų potencialą.</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
-    <div style="position:relative;width:min(20vh,120px);height:min(20vh,120px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto" id="hand-container">
+    <div style="position:relative;width:min(28vh,150px);height:min(28vh,150px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto 22px auto" id="hand-container">
       <!-- Išoriniai žiedai -->
       <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:sp 22s linear infinite"></div>
       <div style="position:absolute;inset:5%;border-radius:50%;border:1.5px solid rgba(212,168,67,.35);animation:sp 14s linear infinite reverse"></div>
@@ -462,13 +462,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Progress bar -->
-    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%">
+    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-bottom:12px">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="font-size:11px;color:rgba(212,168,67,.45);text-align:center;height:16px;font-style:italic;letter-spacing:.02em;opacity:1;transition:opacity .5s ease;margin-top:2px;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      <div id="micro-text" style="font-size:12px;color:rgba(212,168,67,.85);text-align:center;min-height:18px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.8s ease;margin-top:4px;padding:0 16px;line-height:1.4;word-break:break-word"></div>
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -1330,6 +1330,63 @@ function animateLoading(){
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
   const totalSec=110;let elapsed=0;let pct=0;
+  // Mikroteksto būsena — PRIVALOMA už intervalo ribų
+  const microTexts=[
+    ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
+    ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinę motyvaciją...','Aptinkame paslėptus tavo tikslų orientyrus...','Vertiname tavo asmeninio augimo kryptį...'],
+    ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame socialinio bendravimo dėsningumus...'],
+    ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus\"...','Analizuojame tavo ryšį su materialiu pasauliu...'],
+    ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
+    ['Prognozuojame artėjančius gyvenimo posūkius...','Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
+    ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...','Šaliname kliūtis tavo sėkmės kelyje...']
+  ];
+  let microIdx=0;let lastMicroStep=-1;let microTimer=null;
+  function getMicroInterval(){
+    const p=window._currentProgress||0;
+    if(p>=99) return null;
+    if(p>=98) return 7000;
+    if(p>=95) return 4000;
+    if(p>=92) return 3000;
+    return 3000;
+  }
+  function showNextMicro(stepMsgs){
+    const interval=getMicroInterval();
+    if(interval===null) return;
+    microTimer=setTimeout(()=>{
+      const mt=document.getElementById('micro-text');
+      if(!mt) return;
+      microIdx=(microIdx+1)%stepMsgs.length;
+      mt.style.transition='opacity 0.9s ease';
+      mt.style.opacity='0';
+      setTimeout(()=>{
+        mt.textContent=stepMsgs[microIdx];
+        mt.style.opacity='1';
+        showNextMicro(stepMsgs);
+      },900);
+    },interval);
+  }
+  function updateMicroText(step){
+    const mt=document.getElementById('micro-text');
+    if(!mt) return;
+    if(step>6){
+      mt.style.transition='opacity 0.9s ease';
+      mt.style.opacity='0';
+      if(microTimer){clearTimeout(microTimer);microTimer=null;}
+      return;
+    }
+    const stepMsgs=microTexts[Math.min(step,6)];
+    if(step!==lastMicroStep){
+      lastMicroStep=step;microIdx=0;
+      if(microTimer){clearTimeout(microTimer);microTimer=null;}
+      mt.style.transition='opacity 0.9s ease';
+      mt.style.opacity='0';
+      setTimeout(()=>{
+        mt.textContent=stepMsgs[0];
+        mt.style.opacity='1';
+        showNextMicro(stepMsgs);
+      },900);
+    }
+  }
   const t=setInterval(()=>{
     elapsed+=0.25;
     if(elapsed<=8) pct=(elapsed/8)*18;
@@ -1338,66 +1395,12 @@ function animateLoading(){
     else if(elapsed<=50) pct=48+(elapsed-35)/15*17;
     else if(elapsed<=65) pct=65+(elapsed-50)/15*6;
     else if(elapsed<=85) pct=71+(elapsed-65)/20*9;
-    else if(elapsed<=95) pct=80+(elapsed-85)/10*15; // iki 95%
-    else if(elapsed<=110) pct=95+(elapsed-95)/15*3; // 95→98% lėtai
-    else pct=98+(elapsed-110)/20*1; // 98→99% labai lėtai99%
+    else if(elapsed<=95) pct=80+(elapsed-85)/10*15;
+    else if(elapsed<=110) pct=95+(elapsed-95)/15*3;
+    else pct=98+(elapsed-110)/20*1;
     pct=Math.min(pct,99);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
-    // Mikrotekstas pagal žingsnį
-    const microTexts=[
-      ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
-      ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinę motyvaciją...','Aptinkame paslėptus tavo tikslų orientyrus...','Vertiname tavo asmeninio augimo kryptį...'],
-      ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame socialinio bendravimo dėsningumus...'],
-      ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus"...','Analizuojame tavo ryšį su materialiu pasauliu...'],
-      ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
-      ['Prognozuojame artėjančius gyvenimo posūkius...','Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
-      ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...','Šaliname kliūtis tavo sėkmės kelyje...']
-    ];
-    let microIdx=0;let lastMicroStep=-1;let microTimer=null;
-    function updateMicroText(step){
-      const mt=document.getElementById('micro-text');
-      if(!mt) return;
-      if(step>6){mt.style.opacity='0';if(microTimer){clearTimeout(microTimer);microTimer=null;}return;}
-      const stepMsgs=microTexts[Math.min(step,6)];
-      function getMicroInterval(){
-        const p=window._currentProgress||0;
-        if(p>=99) return null; // sustoti
-        if(p>=98) return 7000; // beveik sustoti
-        if(p>=95) return 4000; // labai lėtai
-        if(p>=92) return 3000; // lėtai
-        if(p>=90) return 2800; // pradeda lėteti
-        return 2500; // normalus
-      }
-      function showNextMicro(){
-        const interval=getMicroInterval();
-        if(interval===null){mt.style.opacity='0';return;}
-        microTimer=setTimeout(()=>{
-          microIdx=(microIdx+1)%stepMsgs.length;
-          mt.style.transition='opacity .6s ease';
-          mt.style.opacity='0';
-          setTimeout(()=>{
-            mt.textContent=stepMsgs[microIdx];
-            mt.style.opacity='1';
-            showNextMicro();
-          },600);
-        },interval);
-      }
-      if(step!==lastMicroStep){
-        lastMicroStep=step;microIdx=0;
-        if(microTimer) clearTimeout(microTimer);
-        mt.style.transition='opacity .6s ease';
-        mt.style.opacity='0';
-        setTimeout(()=>{
-          mt.textContent=stepMsgs[0];
-          mt.style.opacity='1';
-          showNextMicro();
-        },600);
-      } else if(!mt.textContent){
-        mt.textContent=stepMsgs[0];mt.style.opacity='1';
-        showNextMicro();
-      }
-    }
     const processMsg=['Atrandamos prigimtinės stiprybės...','Nubrėžiama gyvenimo kryptis...','Analizuojamas bendravimo stilius...','Atskleidžiamas finansinio klestėjimo potencialas...','Atrandamas unikalus sėkmės raktas...','Numatomi ateities pokyčiai ir galimybės...','Identifikuojamos pažangą stabdančios kliūtys...'];
     // Tekstas keičiasi kartu su varnele (kas 15s, sinchronizuota su activateStep)
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
@@ -1444,11 +1447,11 @@ function activateStep(n,done){
   if(done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
-      const sizes=['20vh','18vh','16vh','14vh','12vh','10vh','8vh'];
+      const sizes=['28vh','25vh','22vh','19vh','16vh','13vh','10vh'];
       const s=sizes[Math.min(n-1,sizes.length-1)];
       handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
-      handEl.style.width='min('+s+',120px)';
-      handEl.style.height='min('+s+',120px)';
+      handEl.style.width='min('+s+',150px)';
+      handEl.style.height='min('+s+',150px)';
     }
   }
 
