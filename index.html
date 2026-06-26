@@ -428,20 +428,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
     <!-- Mygtukas -->
-    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.3);opacity:.45;transition:opacity .3s">Generuoti ataskaitą</button>
+    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f7df88,#e8b840,#b8841a);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#07040f;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Generuoti ataskaitą</button>
     <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 </div>
 
 
 <div class="screen" id="s-loading">
-  <div class="load-wrap" style="padding:64px 16px 0;gap:0;justify-content:flex-start">
+  <div class="load-wrap" style="padding:76px 16px 0;gap:0;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0;margin-bottom:20px">
-      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.2;white-space:nowrap">Generuojame tavo gyvenimo žemėlapį...</div>
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.2;white-space:nowrap;color:#fff;text-shadow:0 1px 8px rgba(212,168,67,.25)">Generuojame tavo gyvenimo žemėlapį...</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
-    <div style="position:relative;width:min(28vh,150px);height:min(28vh,150px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto 0 auto" id="hand-container">
+    <div style="position:relative;width:140px;height:140px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto 0 auto" id="hand-container">
       <!-- Išoriniai žiedai -->
       <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:sp 22s linear infinite"></div>
       <div style="position:absolute;inset:5%;border-radius:50%;border:1.5px solid rgba(212,168,67,.35);animation:sp 14s linear infinite reverse"></div>
@@ -1442,17 +1442,7 @@ function animateLoading(){
 function activateStep(n,done){
   window._currentStep=n;
 
-  // Ranka mažėja KAI ŽINGSNIS BAIGIAMAS (done=true)
-  if(done){
-    const handEl=document.getElementById('hand-container');
-    if(handEl){
-      const sizes=['28vh','24vh','20vh','17vh','14vh','11vh','8vh'];
-      const s=sizes[Math.min(n-1,sizes.length-1)];
-      handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
-      handEl.style.width='min('+s+',150px)';
-      handEl.style.height='min('+s+',150px)';
-    }
-  }
+  // Ranka fiksuoto dydžio — nesitraukia
 
   const el=document.getElementById('ls'+n);
   const st=document.getElementById('ls'+n+'-status');
