@@ -1432,12 +1432,13 @@ function animateLoading(){
       clearInterval(t);stopMicro();
       if(ppct) ppct.textContent='99%';window._currentProgress=99;
       activateStep(7,true);
-      // Final Glow — delnas šviečia iki ekrano išnykimo
+      // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
       const handFinal=document.getElementById('hand-container');
       if(handFinal){
-        handFinal.style.transition='filter 0.4s ease, transform 0.4s ease';
-        handFinal.style.filter='brightness(1.4) drop-shadow(0 0 22px rgba(212,168,67,.95))';
-        handFinal.style.transform='scale(1.06)';
+        handFinal.style.transition='filter 0.6s ease, transform 0.5s ease';
+        // sepia+saturate "sušildo" spalvą į gyvą auksinę, brightness padidina spindesį
+        handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
+        handFinal.style.transform='scale(1.05)';
       }
       // 2.5s pause, tada fade kartu su delno glow
       setTimeout(()=>{
