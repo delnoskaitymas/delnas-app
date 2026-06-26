@@ -1328,7 +1328,7 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
-  const totalSec=110;let elapsed=0;let pct=0;
+  const totalSec=145;let elapsed=0;let pct=0;
   // Mikroteksto būsena — PRIVALOMA už intervalo ribų
   const microTexts=[
     ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
@@ -1393,20 +1393,18 @@ function animateLoading(){
     // 0-50%: greitas (pirmos 60s iš 110s)
     // 50-90%: vidutinis
     // 90-99%: labai lėtas — sinchronizuotas su mikrotekstais (300ms intervalas)
-    if(elapsed<=12) pct=(elapsed/12)*30;                          // 0→30% per 12s (greita)
-    else if(elapsed<=28) pct=30+(elapsed-12)/16*25;               // 30→55% per 16s
-    else if(elapsed<=45) pct=55+(elapsed-28)/17*15;               // 55→70% per 17s
-    else if(elapsed<=62) pct=70+(elapsed-45)/17*12;               // 70→82% per 17s
-    else if(elapsed<=78) pct=82+(elapsed-62)/16*8;                // 82→90% per 16s (pradeda lėtėti)
-    else if(elapsed<=90) pct=90+(elapsed-78)/12*4;                // 90→94% per 12s (lėtai)
-    else if(elapsed<=100) pct=94+(elapsed-90)/10*3;               // 94→97% per 10s (labai lėtai)
-    else if(elapsed<=110) pct=97+(elapsed-100)/10*2;              // 97→99% per 10s (ties finalu)
-    else pct=99;
-    pct=Math.min(pct,99);
+    if(elapsed<=20) pct=(elapsed/20)*30;                   // 0→30% per 20s (greita)
+    else if(elapsed<=40) pct=30+(elapsed-20)/20*20;        // 30→50% per 20s
+    else if(elapsed<=65) pct=50+(elapsed-40)/25*22;        // 50→72% per 25s (vidutinis)
+    else if(elapsed<=85) pct=72+(elapsed-65)/20*10;        // 72→82% per 20s
+    else if(elapsed<=100) pct=82+(elapsed-85)/15*8;        // 82→90% per 15s (lėtėja)
+    else if(elapsed<=115) pct=90+(elapsed-100)/15*4;       // 90→94% per 15s (lėtai)
+    else if(elapsed<=127) pct=94+(elapsed-115)/12*3;       // 94→97% per 12s (labai lėtai)
+    else if(elapsed<=135) pct=97+(elapsed-127)/8*1;        // 97→98% per 8s (ties finalu)
+    else pct=98;                                            // sustoja ties 98% — 99% su varnele
+    pct=Math.min(pct,98);  // max 98% čia — 99% rodomas tik su paskutine varnele
     const pctRound=Math.round(pct);
-    // 99% rodomas TIK kai activateStep(7,true) — ne čia
-    const displayPct=pctRound>=99?98:pctRound;
-    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=displayPct+'%';window._currentProgress=pctRound;
+    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
     const processMsg=['Atrandamos prigimtinės stiprybės...','Nubrėžiama gyvenimo kryptis...','Analizuojamas bendravimo stilius...','Atskleidžiamas finansinio klestėjimo potencialas...','Atrandamas unikalus sėkmės raktas...','Numatomi ateities pokyčiai ir galimybės...','Identifikuojamos pažangą stabdančios kliūtys...'];
     // Tekstas keičiasi kartu su varnele (kas 15s, sinchronizuota su activateStep)
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
@@ -1451,6 +1449,7 @@ function animateLoading(){
   setTimeout(()=>{activateStep(4,true);activateStep(5,false);},60000);
   setTimeout(()=>{activateStep(5,true);activateStep(6,false);},75000);
   setTimeout(()=>{activateStep(6,true);activateStep(7,false);},90000);
+  // 7-as žingsnis lieka aktyvus iki elapsed>=145s (55s lėto finalo su 97→98%)
 }
 
 function activateStep(n,done){
