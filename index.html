@@ -1342,11 +1342,12 @@ function animateLoading(){
   let microIdx=0;let lastMicroStep=-1;let microTimer=null;
   function getMicroInterval(){
     const p=window._currentProgress||0;
-    if(p>=99) return null;
-    if(p>=98) return 2000;
-    if(p>=95) return 700;
-    if(p>=90) return 450;
-    return 300;
+    if(p>=99) return null;    // sustoja — 99% rodomas su varnele
+    if(p>=97) return 3500;    // 97-99%: labai lėtai
+    if(p>=94) return 2500;    // 94-97%: lėtai
+    if(p>=90) return 1500;    // 90-94%: pradeda sunkėti
+    if(p>=70) return 800;     // 70-90%: vidutiniškai
+    return 500;               // 0-70%: greičiau
   }
   function showNextMicro(stepMsgs){
     const interval=getMicroInterval();
@@ -1388,18 +1389,24 @@ function animateLoading(){
   }
   const t=setInterval(()=>{
     elapsed+=0.25;
-    if(elapsed<=8) pct=(elapsed/8)*18;
-    else if(elapsed<=20) pct=18+(elapsed-8)/12*22;
-    else if(elapsed<=35) pct=40+(elapsed-20)/15*8;
-    else if(elapsed<=50) pct=48+(elapsed-35)/15*17;
-    else if(elapsed<=65) pct=65+(elapsed-50)/15*6;
-    else if(elapsed<=85) pct=71+(elapsed-65)/20*9;
-    else if(elapsed<=95) pct=80+(elapsed-85)/10*15;
-    else if(elapsed<=110) pct=95+(elapsed-95)/15*3;
-    else pct=98+(elapsed-110)/20*1;
+    // Ease-out progresija: greita pradžia, sinchronizuotas lėtėjimas nuo 90%
+    // 0-50%: greitas (pirmos 60s iš 110s)
+    // 50-90%: vidutinis
+    // 90-99%: labai lėtas — sinchronizuotas su mikrotekstais (300ms intervalas)
+    if(elapsed<=12) pct=(elapsed/12)*30;                          // 0→30% per 12s (greita)
+    else if(elapsed<=28) pct=30+(elapsed-12)/16*25;               // 30→55% per 16s
+    else if(elapsed<=45) pct=55+(elapsed-28)/17*15;               // 55→70% per 17s
+    else if(elapsed<=62) pct=70+(elapsed-45)/17*12;               // 70→82% per 17s
+    else if(elapsed<=78) pct=82+(elapsed-62)/16*8;                // 82→90% per 16s (pradeda lėtėti)
+    else if(elapsed<=90) pct=90+(elapsed-78)/12*4;                // 90→94% per 12s (lėtai)
+    else if(elapsed<=100) pct=94+(elapsed-90)/10*3;               // 94→97% per 10s (labai lėtai)
+    else if(elapsed<=110) pct=97+(elapsed-100)/10*2;              // 97→99% per 10s (ties finalu)
+    else pct=99;
     pct=Math.min(pct,99);
     const pctRound=Math.round(pct);
-    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
+    // 99% rodomas TIK kai activateStep(7,true) — ne čia
+    const displayPct=pctRound>=99?98:pctRound;
+    if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=displayPct+'%';window._currentProgress=pctRound;
     const processMsg=['Atrandamos prigimtinės stiprybės...','Nubrėžiama gyvenimo kryptis...','Analizuojamas bendravimo stilius...','Atskleidžiamas finansinio klestėjimo potencialas...','Atrandamas unikalus sėkmės raktas...','Numatomi ateities pokyčiai ir galimybės...','Identifikuojamos pažangą stabdančios kliūtys...'];
     // Tekstas keičiasi kartu su varnele (kas 15s, sinchronizuota su activateStep)
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
@@ -1413,7 +1420,14 @@ function animateLoading(){
       const mt=document.getElementById('micro-text');
       if(mt){mt.style.opacity='0';}
       activateStep(7,true);
-      // 2s pause - vartotojas džiaugiasi pilnu sąrašu su varnelėmis
+      // Final Glow — delnas šviečia iki ekrano išnykimo
+      const handFinal=document.getElementById('hand-container');
+      if(handFinal){
+        handFinal.style.transition='filter 0.4s ease, transform 0.4s ease';
+        handFinal.style.filter='brightness(1.4) drop-shadow(0 0 22px rgba(212,168,67,.95))';
+        handFinal.style.transform='scale(1.06)';
+      }
+      // 2.5s pause, tada fade kartu su delno glow
       setTimeout(()=>{
         loadScreen.style.transition='opacity 1.4s ease';
         loadScreen.style.opacity='0';
@@ -1427,7 +1441,7 @@ function animateLoading(){
             go('s-order');initOrderScreen();requestWakeLock();
           }
         },1400);
-      },2000);
+      },2500);
     }
   },250);
   setTimeout(()=>activateStep(1,false),500);
@@ -1460,8 +1474,7 @@ function activateStep(n,done){
     // Glow removed
     const dTxt=el.querySelector('.ls-text');
     if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';}
-    // Paskutinis punktas - sustabdyti pulsavimą
-    if(n===7){el.style.animation='';}
+    // Paskutinis punktas — švytėjimas perkeliamas į delną (Final Glow)
   } else {
     // Aktyvus žingsnis - ratukас + ryškus tekstas
     el.classList.add('active');el.classList.remove('done');
@@ -1480,11 +1493,10 @@ function activateStep(n,done){
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
     if(typeof updateMicroText==='function') updateMicroText(n-1);
-    // 7 punkto pulsavimas
+    // 7 punktas — tas pats kaip ir kiti (ratuko + tekstas), be papildomo pulsavimo
     if(n===7){
-      el.style.animation='lastStepPulse 1.5s ease-in-out infinite';
-      if(aTxt){aTxt.style.color='#fff0a0';aTxt.style.fontWeight='700';}
-      if(aIcon){aIcon.style.background='rgba(212,168,67,.3)';aIcon.style.borderColor='var(--gold2)';}
+      if(aTxt){aTxt.style.color='rgba(245,238,216,.95)';aTxt.style.fontWeight='600';}
+      if(aIcon){aIcon.style.background='rgba(212,168,67,.1)';aIcon.style.borderColor='rgba(212,168,67,.6)';}
     }
   }
 }
