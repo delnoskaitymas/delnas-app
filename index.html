@@ -1347,53 +1347,63 @@ function animateLoading(){
     ['Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
     ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...']
   ];
-  let microIdx=0;let lastMicroStep=-1;let microTimer=null;
+  let microTimer=null;
+  let microCurrentStep=-1;
+  let microCurrentIdx=0;
+
   function getMicroInterval(){
     const p=window._currentProgress||0;
-    if(p>=99) return null;    // sustoja — 99% rodomas su varnele
-    if(p>=97) return 3500;    // 97-99%: labai lėtai
-    if(p>=94) return 2500;    // 94-97%: lėtai
-    if(p>=90) return 1500;    // 90-94%: pradeda sunkėti
-    if(p>=70) return 800;     // 70-90%: vidutiniškai
-    return 500;               // 0-70%: greičiau
+    if(p>=99) return null;
+    if(p>=97) return 3500;
+    if(p>=94) return 2500;
+    if(p>=90) return 1500;
+    if(p>=70) return 800;
+    return 500;
   }
-  function showNextMicro(stepMsgs){
-    const interval=getMicroInterval();
-    if(interval===null) return;
-    microTimer=setTimeout(()=>{
-      const mt=document.getElementById('micro-text');
-      if(!mt) return;
-      microIdx=(microIdx+1)%stepMsgs.length;
-      mt.style.transition='opacity 0.15s ease';
-      mt.style.opacity='0';
-      setTimeout(()=>{
-        mt.textContent=stepMsgs[microIdx];
-        mt.style.opacity='1';
-        showNextMicro(stepMsgs);
-      },150);
-    },interval);
-  }
-  function updateMicroText(step,force){
+
+  function microShowCurrent(){
+    // Parodo dabartinį tekstą ir užsiprogramuoja kitą
     const mt=document.getElementById('micro-text');
-    if(!mt) return;
-    if(step>6){
-      mt.style.transition='opacity 0.5s ease';
-      mt.style.opacity='0';
-      if(microTimer){clearTimeout(microTimer);microTimer=null;}
-      return;
-    }
-    const stepMsgs=microTexts[Math.min(step,6)];
-    if(step!==lastMicroStep||force){
-      lastMicroStep=step;microIdx=0;
-      if(microTimer){clearTimeout(microTimer);microTimer=null;}
-      mt.style.transition='opacity 0.15s ease';
-      mt.style.opacity='0';
-      setTimeout(()=>{
-        mt.textContent=stepMsgs[0];
-        mt.style.opacity='1';
-        showNextMicro(stepMsgs);
-      },150);
-    }
+    if(!mt||microCurrentStep<0||microCurrentStep>6) return;
+    const msgs=microTexts[microCurrentStep];
+    if(!msgs||!msgs.length) return;
+    const txt=msgs[microCurrentIdx%msgs.length];
+    // Rodyti tekstą
+    mt.style.transition='opacity 0.15s ease';
+    mt.style.opacity='0';
+    setTimeout(()=>{
+      if(microCurrentStep<0) return;
+      mt.textContent=txt;
+      mt.style.opacity='1';
+      // Planuoti kitą
+      const interval=getMicroInterval();
+      if(interval===null) return;
+      microTimer=setTimeout(()=>{
+        microCurrentIdx++;
+        microShowCurrent();
+      },interval);
+    },150);
+  }
+
+  function startMicroForStep(step){
+    // Iškarto perjungti į naują žingsnį
+    if(microTimer){clearTimeout(microTimer);microTimer=null;}
+    microCurrentStep=step;
+    microCurrentIdx=0;
+    microShowCurrent();
+  }
+
+  function stopMicro(){
+    if(microTimer){clearTimeout(microTimer);microTimer=null;}
+    microCurrentStep=-1;
+    const mt=document.getElementById('micro-text');
+    if(mt){mt.style.transition='opacity 0.3s ease';mt.style.opacity='0';}
+  }
+
+  // Backward compat wrapper
+  function updateMicroText(step,force){
+    if(step>6){stopMicro();return;}
+    if(step!==microCurrentStep||force) startMicroForStep(step);
   }
   const t=setInterval(()=>{
     elapsed+=0.25;
@@ -1420,11 +1430,8 @@ function animateLoading(){
     if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
     updateMicroText(stepIdx);
     if(elapsed>=totalSec){
-      clearInterval(t);if(microTimer){clearTimeout(microTimer);microTimer=null;}
+      clearInterval(t);stopMicro();
       if(ppct) ppct.textContent='99%';window._currentProgress=99;
-      // Sustabdyti mikro tekstus ir paskutinį žingsnį pažymėti varnele
-      const mt=document.getElementById('micro-text');
-      if(mt){mt.style.opacity='0';}
       activateStep(7,true);
       // Final Glow — delnas šviečia iki ekrano išnykimo
       const handFinal=document.getElementById('hand-container');
