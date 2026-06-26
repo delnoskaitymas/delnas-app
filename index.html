@@ -1342,7 +1342,7 @@ function animateLoading(){
     ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
     ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinę motyvaciją...','Aptinkame paslėptus tavo tikslų orientyrus...','Vertiname tavo asmeninio augimo kryptį...'],
     ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame socialinio bendravimo dėsningumus...'],
-    ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus\"...','Analizuojame tavo ryšį su materialiu pasauliu...'],
+    ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo magnetus...','Analizuojame tavo ryšį su materialiu pasauliu...'],
     ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
     ['Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
     ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...']
@@ -1350,6 +1350,7 @@ function animateLoading(){
   let microTimer=null;
   let microCurrentStep=-1;
   let microCurrentIdx=0;
+  let microGen=0; // generation counter — užkerta kelią race condition
 
   function getMicroInterval(){
     const p=window._currentProgress||0;
@@ -1361,46 +1362,44 @@ function animateLoading(){
     return 500;
   }
 
-  function microShowCurrent(){
-    // Parodo dabartinį tekstą ir užsiprogramuoja kitą
+  function microShowCurrent(gen,step,idx){
+    // gen — generation ID, jei pasikeitė, šis ciklas ignoruojamas
+    if(gen!==microGen) return;
     const mt=document.getElementById('micro-text');
-    if(!mt||microCurrentStep<0||microCurrentStep>6) return;
-    const msgs=microTexts[microCurrentStep];
+    if(!mt||step<0||step>6) return;
+    const msgs=microTexts[step];
     if(!msgs||!msgs.length) return;
-    const txt=msgs[microCurrentIdx%msgs.length];
-    // Rodyti tekstą
+    const txt=msgs[idx%msgs.length];
     mt.style.transition='opacity 0.15s ease';
     mt.style.opacity='0';
     setTimeout(()=>{
-      if(microCurrentStep<0) return;
+      if(gen!==microGen) return; // pasitikriname po fade
       mt.textContent=txt;
       mt.style.opacity='1';
-      // Planuoti kitą
       const interval=getMicroInterval();
       if(interval===null) return;
       microTimer=setTimeout(()=>{
-        microCurrentIdx++;
-        microShowCurrent();
+        microShowCurrent(gen,step,idx+1);
       },interval);
     },150);
   }
 
   function startMicroForStep(step){
-    // Iškarto perjungti į naują žingsnį
+    microGen++; // naujas generation — sustabdo visus senus ciklus
     if(microTimer){clearTimeout(microTimer);microTimer=null;}
     microCurrentStep=step;
     microCurrentIdx=0;
-    microShowCurrent();
+    microShowCurrent(microGen,step,0);
   }
 
   function stopMicro(){
+    microGen++;
     if(microTimer){clearTimeout(microTimer);microTimer=null;}
     microCurrentStep=-1;
     const mt=document.getElementById('micro-text');
     if(mt){mt.style.transition='opacity 0.3s ease';mt.style.opacity='0';}
   }
 
-  // Backward compat wrapper
   function updateMicroText(step,force){
     if(step>6){stopMicro();return;}
     if(step!==microCurrentStep||force) startMicroForStep(step);
@@ -1457,14 +1456,13 @@ function animateLoading(){
       },2500);
     }
   },250);
-  setTimeout(()=>activateStep(1,false),500);
-  setTimeout(()=>{activateStep(1,true);activateStep(2,false);},15000);
-  setTimeout(()=>{activateStep(2,true);activateStep(3,false);},30000);
-  setTimeout(()=>{activateStep(3,true);activateStep(4,false);},45000);
-  setTimeout(()=>{activateStep(4,true);activateStep(5,false);},60000);
-  setTimeout(()=>{activateStep(5,true);activateStep(6,false);},75000);
-  setTimeout(()=>{activateStep(6,true);activateStep(7,false);},90000);
-  // 7-as žingsnis lieka aktyvus iki elapsed>=145s (55s lėto finalo su 97→98%)
+  setTimeout(()=>{activateStep(1,false);},500);
+  setTimeout(()=>{activateStep(1,true);setTimeout(()=>{activateStep(2,false);},50);},15000);
+  setTimeout(()=>{activateStep(2,true);setTimeout(()=>{activateStep(3,false);},50);},30000);
+  setTimeout(()=>{activateStep(3,true);setTimeout(()=>{activateStep(4,false);},50);},45000);
+  setTimeout(()=>{activateStep(4,true);setTimeout(()=>{activateStep(5,false);},50);},60000);
+  setTimeout(()=>{activateStep(5,true);setTimeout(()=>{activateStep(6,false);},50);},75000);
+  setTimeout(()=>{activateStep(6,true);setTimeout(()=>{activateStep(7,false);},50);},90000);
 }
 
 function activateStep(n,done){
