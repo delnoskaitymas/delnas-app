@@ -1418,9 +1418,7 @@ function animateLoading(){
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
     const stepIdx=window._currentStep>0?window._currentStep-1:msgIdx;
     if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
-    // updateMicroText kviečiamas tiesiogiai iš activateStep — nereikia kartoti kas 250ms
-    // Tik inicializuojame pirmą kartą kai žingsnis dar nepradėtas
-    if(window._currentStep===0) updateMicroText(0);
+    updateMicroText(stepIdx);
     if(elapsed>=totalSec){
       clearInterval(t);if(microTimer){clearTimeout(microTimer);microTimer=null;}
       if(ppct) ppct.textContent='99%';window._currentProgress=99;
