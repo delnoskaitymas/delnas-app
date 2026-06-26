@@ -468,7 +468,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="font-size:11px;color:rgba(212,168,67,.8);text-align:center;min-height:16px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.7s ease;margin-top:3px;padding:0 12px;line-height:1.35;word-break:break-word"></div>
+      <div id="micro-text" style="font-size:10px;color:rgba(212,168,67,.8);text-align:center;height:14px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.5s ease;margin-top:3px;padding:0 8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -1332,22 +1332,22 @@ function animateLoading(){
   const totalSec=110;let elapsed=0;let pct=0;
   // Mikroteksto būsena — PRIVALOMA už intervalo ribų
   const microTexts=[
-    ['Lyginame tavo delno linijas su archetipais...','Atrandame unikalų tavo asmenybės kodą...','Identifikuojame pamatinius tavo charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
-    ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinę motyvaciją...','Aptinkame paslėptus tavo tikslų orientyrus...','Vertiname tavo asmeninio augimo kryptį...'],
-    ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame socialinio bendravimo dėsningumus...'],
-    ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus\"...','Analizuojame tavo ryšį su materialiu pasauliu...'],
-    ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
-    ['Prognozuojame artėjančius gyvenimo posūkius...','Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
-    ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...','Šaliname kliūtis tavo sėkmės kelyje...']
+    ['Lyginame delno linijas su archetipais...','Atrandame tavo asmenybės kodą...','Identifikuojame charakterio bruožus...','Sudarome tavo psichologinį portretą...'],
+    ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinę motyvaciją...','Aptinkame paslėptus tikslų orientyrus...','Vertiname asmeninio augimo kryptį...'],
+    ['Nagrinėjame emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame bendravimo dėsningumus...'],
+    ['Vertiname finansinės sėkmės galimybes...','Skaičiuojame gerovės potencialą...','Aptinkame pinigų pritraukimo magnetus...','Analizuojame ryšį su materialiu pasauliu...'],
+    ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
+    ['Analizuojame ateities galimybių langus...','Vertiname transformacijos etapus...','Skenuojame artėjančias permainų bangas...','Numatome artimiausius gyvenimo posūkius...'],
+    ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia atsiskleisti...','Šaliname kliūtis tavo sėkmės kelyje...']
   ];
   let microIdx=0;let lastMicroStep=-1;let microTimer=null;
   function getMicroInterval(){
     const p=window._currentProgress||0;
     if(p>=99) return null;
-    if(p>=98) return 5000;
-    if(p>=95) return 3000;
-    if(p>=90) return 2000;
-    return 1800;
+    if(p>=98) return 4000;
+    if(p>=95) return 2500;
+    if(p>=90) return 1700;
+    return 1400;
   }
   function showNextMicro(stepMsgs){
     const interval=getMicroInterval();
@@ -1468,9 +1468,7 @@ function activateStep(n,done){
     st.textContent='✓';st.style.color='var(--gold2)';
     st.style.fontSize='15px';st.style.textShadow='0 0 8px rgba(212,168,67,.8)';
     st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
-    // Glow
-    el.style.boxShadow='0 0 20px rgba(212,168,67,.4)';
-    setTimeout(()=>{if(el) el.style.boxShadow='0 0 6px rgba(212,168,67,.15)';},900);
+    // Glow removed
     const dTxt=el.querySelector('.ls-text');
     if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';}
     // Paskutinis punktas - sustabdyti pulsavimą
