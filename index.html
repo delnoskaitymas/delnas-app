@@ -435,14 +435,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-loading">
-  <div class="load-wrap" style="padding:52px 16px 0;gap:0;justify-content:flex-start">
-    <div style="text-align:center;flex-shrink:0;margin-bottom:18px">
-      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:.03em;line-height:1.3">Generuojame tavo gyvenimo žemėlapį...</div>
+  <div class="load-wrap" style="padding:44px 16px 0;gap:0;justify-content:flex-start">
+    <div style="text-align:center;flex-shrink:0;margin-bottom:12px">
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.2;white-space:nowrap">Generuojame tavo gyvenimo žemėlapį...</div>
       <div class="load-sub" style="font-size:13px;font-weight:400;color:rgba(245,238,216,.82);letter-spacing:.01em">Šiuo metu gilinamės į tavo unikalų potencialą.</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
-    <div style="position:relative;width:min(28vh,150px);height:min(28vh,150px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto 22px auto" id="hand-container">
+    <div style="position:relative;width:min(22vh,120px);height:min(22vh,120px);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto" id="hand-container">
       <!-- Išoriniai žiedai -->
       <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.2);animation:sp 22s linear infinite"></div>
       <div style="position:absolute;inset:5%;border-radius:50%;border:1.5px solid rgba(212,168,67,.35);animation:sp 14s linear infinite reverse"></div>
@@ -462,13 +462,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Progress bar -->
-    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-bottom:12px">
+    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-bottom:8px">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="font-size:12px;color:rgba(212,168,67,.85);text-align:center;min-height:18px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.8s ease;margin-top:4px;padding:0 16px;line-height:1.4;word-break:break-word"></div>
+      <div id="micro-text" style="font-size:11px;color:rgba(212,168,67,.8);text-align:center;min-height:16px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.7s ease;margin-top:3px;padding:0 12px;line-height:1.35;word-break:break-word"></div>
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -1344,10 +1344,10 @@ function animateLoading(){
   function getMicroInterval(){
     const p=window._currentProgress||0;
     if(p>=99) return null;
-    if(p>=98) return 7000;
-    if(p>=95) return 4000;
-    if(p>=92) return 3000;
-    return 3000;
+    if(p>=98) return 5000;
+    if(p>=95) return 3000;
+    if(p>=90) return 2000;
+    return 1800;
   }
   function showNextMicro(stepMsgs){
     const interval=getMicroInterval();
@@ -1356,20 +1356,20 @@ function animateLoading(){
       const mt=document.getElementById('micro-text');
       if(!mt) return;
       microIdx=(microIdx+1)%stepMsgs.length;
-      mt.style.transition='opacity 0.9s ease';
+      mt.style.transition='opacity 0.5s ease';
       mt.style.opacity='0';
       setTimeout(()=>{
         mt.textContent=stepMsgs[microIdx];
         mt.style.opacity='1';
         showNextMicro(stepMsgs);
-      },900);
+      },500);
     },interval);
   }
   function updateMicroText(step){
     const mt=document.getElementById('micro-text');
     if(!mt) return;
     if(step>6){
-      mt.style.transition='opacity 0.9s ease';
+      mt.style.transition='opacity 0.5s ease';
       mt.style.opacity='0';
       if(microTimer){clearTimeout(microTimer);microTimer=null;}
       return;
@@ -1378,13 +1378,13 @@ function animateLoading(){
     if(step!==lastMicroStep){
       lastMicroStep=step;microIdx=0;
       if(microTimer){clearTimeout(microTimer);microTimer=null;}
-      mt.style.transition='opacity 0.9s ease';
+      mt.style.transition='opacity 0.5s ease';
       mt.style.opacity='0';
       setTimeout(()=>{
         mt.textContent=stepMsgs[0];
         mt.style.opacity='1';
         showNextMicro(stepMsgs);
-      },900);
+      },500);
     }
   }
   const t=setInterval(()=>{
@@ -1447,11 +1447,11 @@ function activateStep(n,done){
   if(done){
     const handEl=document.getElementById('hand-container');
     if(handEl){
-      const sizes=['28vh','25vh','22vh','19vh','16vh','13vh','10vh'];
+      const sizes=['22vh','19vh','16vh','14vh','12vh','10vh','8vh'];
       const s=sizes[Math.min(n-1,sizes.length-1)];
       handEl.style.transition='all 1.8s cubic-bezier(0.4,0,0.2,1)';
-      handEl.style.width='min('+s+',150px)';
-      handEl.style.height='min('+s+',150px)';
+      handEl.style.width='min('+s+',120px)';
+      handEl.style.height='min('+s+',120px)';
     }
   }
 
