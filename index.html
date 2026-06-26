@@ -176,6 +176,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
 }
+@keyframes ls7glow{
+  0%,100%{box-shadow:0 0 8px rgba(212,168,67,.15),0 0 0 rgba(212,168,67,0);opacity:1}
+  50%{box-shadow:0 0 22px rgba(212,168,67,.6),0 0 40px rgba(212,168,67,.2);opacity:.85}
+}
+@keyframes ls7textblink{
+  0%,100%{color:rgba(245,238,216,.95)}
+  50%{color:#fce97a}
+}
 @keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(245,238,216,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}</style>
 </head>
 <body>
@@ -1336,8 +1344,8 @@ function animateLoading(){
     ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia kitus...','Šifruojame socialinio bendravimo dėsningumus...'],
     ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus\"...','Analizuojame tavo ryšį su materialiu pasauliu...'],
     ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo pergalės strategiją...','Išskiriame tai, kas tave daro nepakartojamu...'],
-    ['Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...','Analizuojame tavo ateities galimybių langus...'],
-    ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...','Identifikuojame pasąmoninius stabdžius...']
+    ['Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias permainų bangas...'],
+    ['Identifikuojame pasąmoninius stabdžius...','Atrandame kasdienybės trikdžius...','Išryškiname tai, kas neleidžia tau atsiskleisti...']
   ];
   let microIdx=0;let lastMicroStep=-1;let microTimer=null;
   function getMicroInterval(){
@@ -1365,7 +1373,7 @@ function animateLoading(){
       },150);
     },interval);
   }
-  function updateMicroText(step){
+  function updateMicroText(step,force){
     const mt=document.getElementById('micro-text');
     if(!mt) return;
     if(step>6){
@@ -1375,7 +1383,7 @@ function animateLoading(){
       return;
     }
     const stepMsgs=microTexts[Math.min(step,6)];
-    if(step!==lastMicroStep){
+    if(step!==lastMicroStep||force){
       lastMicroStep=step;microIdx=0;
       if(microTimer){clearTimeout(microTimer);microTimer=null;}
       mt.style.transition='opacity 0.15s ease';
@@ -1410,7 +1418,9 @@ function animateLoading(){
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
     const stepIdx=window._currentStep>0?window._currentStep-1:msgIdx;
     if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
-    updateMicroText(stepIdx);
+    // updateMicroText kviečiamas tiesiogiai iš activateStep — nereikia kartoti kas 250ms
+    // Tik inicializuojame pirmą kartą kai žingsnis dar nepradėtas
+    if(window._currentStep===0) updateMicroText(0);
     if(elapsed>=totalSec){
       clearInterval(t);if(microTimer){clearTimeout(microTimer);microTimer=null;}
       if(ppct) ppct.textContent='99%';window._currentProgress=99;
@@ -1473,7 +1483,12 @@ function activateStep(n,done){
     // Glow removed
     const dTxt=el.querySelector('.ls-text');
     if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';}
-    // Paskutinis punktas — švytėjimas perkeliamas į delną (Final Glow)
+    // Paskutinis punktas — išjungti švytėjimą ir mirksėjimą
+    if(n===7){
+      el.style.animation='none';
+      const dTxt7=el.querySelector('.ls-text');
+      if(dTxt7) dTxt7.style.animation='none';
+    }
   } else {
     // Aktyvus žingsnis - ratukас + ryškus tekstas
     el.classList.add('active');el.classList.remove('done');
@@ -1491,11 +1506,12 @@ function activateStep(n,done){
     const aIcon=el.querySelector('.ls-icon');
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
-    if(typeof updateMicroText==='function') updateMicroText(n-1);
-    // 7 punktas — tas pats kaip ir kiti (ratuko + tekstas), be papildomo pulsavimo
+    if(typeof updateMicroText==='function') updateMicroText(n-1,true);
+    // 7 punktas — švytėjimas ir mirksėjimas
     if(n===7){
-      if(aTxt){aTxt.style.color='rgba(245,238,216,.95)';aTxt.style.fontWeight='600';}
-      if(aIcon){aIcon.style.background='rgba(212,168,67,.1)';aIcon.style.borderColor='rgba(212,168,67,.6)';}
+      el.style.animation='ls7glow 1.2s ease-in-out infinite';
+      if(aTxt){aTxt.style.animation='ls7textblink 1.2s ease-in-out infinite';aTxt.style.fontWeight='700';}
+      if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
     }
   }
 }
