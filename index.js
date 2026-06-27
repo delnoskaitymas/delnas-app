@@ -262,7 +262,7 @@ app.post('/validate-palm', async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
-    const promptText = 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off at frame edges), fingers are spread open, and the palm faces the camera directly. Answer NO if: any fingertips are cut off at the frame edge, fewer than 5 fingers visible, fingers are closed or bent, only part of palm visible, back of hand shown, wrist/arm only shown, or palm is at a sharp sideways angle. Answer only YES or NO.';
+    const promptText = 'Analyze this image and respond with exactly one code: YES=full palm visible, all 5 fingers present and spread, fingertips not cut off, palm facing camera. TOO_CLOSE=hand too close, fills entire frame. FINGERS_MISSING=fewer than 5 fingers visible or fingertips cut off at frame edges. SIDEWAYS=hand at angle, not facing camera. NO_HAND=no hand visible. Reply with only the code word.';
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
@@ -292,7 +292,16 @@ app.post('/validate-palm', async (req, res) => {
 
     const data = await response.json();
     const answer = (data.content?.[0]?.text || '').trim().toUpperCase();
-    res.json({ valid: answer.startsWith('YES') });
+    const code=answer.trim();
+    const valid=code==='YES';
+    let reason=null;
+    if(!valid){
+      if(code==='TOO_CLOSE') reason='too_close';
+      else if(code==='FINGERS_MISSING') reason='fingers_missing';
+      else if(code==='SIDEWAYS') reason='sideways';
+      else reason='no_hand';
+    }
+    res.json({valid,reason});
   } catch(e) {
     console.error('validate-palm klaida:', e.message);
     res.json({ valid: false });
