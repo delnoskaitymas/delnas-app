@@ -1274,24 +1274,26 @@ function capturePhoto(){
         const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
         // Palikti frozen nuotrauką kaip "šešėlį" — vartotojas mato savo klaidą
         if(tikrOvl) tikrOvl.style.display='none';
-        // frozen lieka matomas su paskutine nuotrauka
         shutterWrap.style.visibility='';
         if(camSub) camSub.style.display='';
         document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
-        shutter.disabled=false;
-        shutter.style.opacity='1';
-        shutter.style.pointerEvents='auto';
         // Toast virš mygtuko
         showCamToast(title,msg);
-        // Po 3s — išvalyti frozen ir grąžinti gyvą kamerą
+        // Po 2.5s — grąžinti gyvą kamerą (be startSkinDetection - kamera jau veikia)
         setTimeout(()=>{
-          if(frozen){frozen.style.transition='opacity 0.5s ease';frozen.style.opacity='0';}
+          if(frozen){frozen.style.transition='opacity 0.4s ease';frozen.style.opacity='0';}
           setTimeout(()=>{
             if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';}
             video.style.display='block';
-            startSkinDetection(shutter,document.getElementById('cam-hint-txt'));
-          },500);
-        },3000);
+            // Aktyvuoti mygtuką su breathing
+            shutter.disabled=false;
+            shutter.style.opacity='1';
+            shutter.style.pointerEvents='auto';
+            shutter.style.animation='camBreathing 2s ease-in-out infinite';
+            const vp=document.getElementById('cam-viewport');
+            if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+          },400);
+        },2500);
         return;
       }
 
@@ -1335,9 +1337,16 @@ function capturePhoto(){
             document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
             camHand='right';
             updateCameraUI();
-            // Toks pats dizainas kaip kairiojo delno ekrane
-            const hintElR=document.getElementById('cam-hint-txt');
-            startSkinDetection(shutter,hintElR);
+            // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
+            const shutterR=document.getElementById('cam-shutter');
+            if(shutterR){
+              shutterR.disabled=false;
+              shutterR.style.opacity='1';
+              shutterR.style.pointerEvents='auto';
+              shutterR.style.animation='camBreathing 2s ease-in-out infinite';
+            }
+            const vpR=document.getElementById('cam-viewport');
+            if(vpR) vpR.style.animation='camGoldGlow 2.5s ease-in-out infinite';
           },400);
         },900);
       } else {
