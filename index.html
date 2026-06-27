@@ -963,13 +963,29 @@ function startApp(){
   const video=document.getElementById('cam-video');if(video) video.style.display='block';
   updateCameraUI();go('s-camera');
   // fullscreen disabled
-  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
+  navigator.mediaDevices.getUserMedia({
+    video:{
+      facingMode:{ideal:'environment'},
+      focusMode:{ideal:'macro'},
+      focusDistance:{ideal:0.15, min:0.05, max:0.4},
+      width:{ideal:1280},
+      height:{ideal:720}
+    },
+    audio:false
+  })
   .then(stream=>{
     camStream=stream;const video=document.getElementById('cam-video');
     video.srcObject=stream;video.onloadedmetadata=()=>{
       video.play();cameraReady=true;
       // Cross-fade: video švelniai atsiranda
       setTimeout(()=>{video.style.opacity='1';},50);
+      // Bandyti nustatyti macro/close focus
+      try{
+        const track=stream.getVideoTracks()[0];
+        if(track&&track.applyConstraints){
+          track.applyConstraints({advanced:[{focusMode:'macro'},{focusDistance:0.15}]}).catch(()=>{});
+        }
+      }catch(e){}
       const shutter=document.getElementById('cam-shutter');
       if(shutter){shutter.disabled=true;shutter.style.opacity='0.35';}
       startSkinDetection(shutter, document.getElementById('cam-hint-txt'));
@@ -1030,67 +1046,68 @@ function startSkinDetection(shutter,hintTxt){
 
   function analyseSkin(){
     if(!video||!video.videoWidth) return;
-    // Naudojame 3x3 zonas — centrinė zona privalo turėti odą
-    const W=64,H=64;
+    const W=80,H=80;
+    ctx.canvas.width=W;ctx.canvas.height=H;
     ctx.drawImage(video,0,0,W,H);
     const data=ctx.getImageData(0,0,W,H).data;
 
-    // Skaičiuojame odą 9 zonose (3x3)
-    const zones=Array(9).fill(0);
-    const zoneTotal=Array(9).fill(0);
+    function isSkin(r,g,b){
+      return r>80&&g>40&&b>15&&r>g&&r>b&&(r-g)>12&&(r-b)>18&&r<253;
+    }
+
+    // 4x4 zonų tinklelis
+    const GX=4,GY=4;
+    const zones=Array(GX*GY).fill(0);
+    const zoneTotal=Array(GX*GY).fill(0);
     for(let y=0;y<H;y++){
       for(let x=0;x<W;x++){
         const i=(y*W+x)*4;
         const r=data[i],g=data[i+1],b=data[i+2];
-        const zx=Math.floor(x/(W/3));
-        const zy=Math.floor(y/(H/3));
-        const z=zy*3+zx;
+        const zx=Math.floor(x/(W/GX));
+        const zy=Math.floor(y/(H/GY));
+        const z=zy*GX+zx;
         zoneTotal[z]++;
-        // Odos spalvos kriterijus — reikalauja ir centro zonoje
-        if(r>85&&g>45&&b>20&&r>g&&r>b&&(r-g)>18&&(r-b)>25&&r<252){
-          zones[z]++;
-        }
+        if(isSkin(r,g,b)) zones[z]++;
       }
     }
-    const zoneRatio=zones.map((s,i)=>s/zoneTotal[i]);
-    // Centrinės 4 zonos (1,2,4,5 iš 3x3)
-    const centerRatio=(zoneRatio[1]+zoneRatio[2]+zoneRatio[4]+zoneRatio[5])/4;
-    // Visa oda
+    const zr=zones.map((s,i)=>s/zoneTotal[i]);
+
+    const rowAvg=ri=>(zr[ri*GX]+zr[ri*GX+1]+zr[ri*GX+2]+zr[ri*GX+3])/GX;
+    const colAvg=ci=>(zr[ci]+zr[ci+GX]+zr[ci+2*GX]+zr[ci+3*GX])/GY;
+
+    const topRow=rowAvg(0);   // pirštų galiukai
+    const midTop=rowAvg(1);   // pirštų vidurinė dalis
+    const midBot=rowAvg(2);   // delno vidurys
+    const botRow=rowAvg(3);   // delno pagrindas
+    const leftCol=colAvg(0);
+    const rightCol=colAvg(3);
+
     const totalSkin=zones.reduce((a,b)=>a+b,0)/(W*H);
-    // Apatinė zona — ar tik apačioje oda (pirštų galiukai)
-    const bottomOnly=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
-    const topCenter=(zoneRatio[1]+zoneRatio[4])/2;
+    const activeZones=zr.filter(r=>r>0.12).length;
 
-    const leftRatio=(zoneRatio[0]+zoneRatio[3]+zoneRatio[6])/3;
-    const rightRatio=(zoneRatio[2]+zoneRatio[5]+zoneRatio[8])/3;
-    const topRatio=(zoneRatio[0]+zoneRatio[1]+zoneRatio[2])/3;
-    const midRatio=(zoneRatio[3]+zoneRatio[4]+zoneRatio[5])/3;
-    const botRatio=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
-
-    // Kiek zonų turi bent 18% odos
-    const activeZones=zoneRatio.filter(r=>r>0.18).length;
-
-    // Kiekviena iš 9 zonų turi turėti bent kažkiek odos (>8%)
-    // Tai užtikrina kad delnas matomas visame kadre
-    const allZonesCovered=zoneRatio.every(r=>r>0.08);
+    // Išskėsti pirštai: tarpai tarp jų — viršuje mažiau odos nei viduryje
+    // Suspausti/nukirpti: viršuje daug odos be tarpų
+    const fingersSpread=(topRow<midTop*1.25)&&topRow>0.08;
+    // Delno pagrindas matomas (ne nukirptas apačioje)
+    const palmBase=botRow>0.08;
+    // Abu šonai matomi (ne tik centras)
+    const bothSides=leftCol>0.10&&rightCol>0.10;
 
     let newState;
-    if(totalSkin>0.62){
-      // Per daug odos — per arti
+    if(totalSkin>0.60){
       newState='too_close';
     } else if(
-      totalSkin>0.35&&       // pakankamas bendras odos plotas
-      activeZones>=7&&       // oda bent 7 iš 9 zonų
-      allZonesCovered&&      // VISOS zonos turi odą (visas delnas+pirštai matomi)
-      topRatio>0.20&&        // pirštų galiukai viršuje
-      midRatio>0.28&&        // delno vidurys
-      botRatio>0.18&&        // delno pagrindas
-      leftRatio>0.18&&       // kairė pusė (nykštys arba mažasis pirštas)
-      rightRatio>0.18        // dešinė pusė
+      totalSkin>0.26&&
+      activeZones>=10&&
+      topRow>0.08&&
+      midTop>0.18&&
+      midBot>0.20&&
+      palmBase&&
+      bothSides&&
+      fingersSpread
     ){
       newState='ready';
-    } else if(totalSkin>0.25&&activeZones>=4){
-      // Delnas matomas iš dalies — nurodyti atitraukti/perstatyti
+    } else if(totalSkin>0.15&&activeZones>=5){
       newState='partial';
     } else {
       newState='none';
