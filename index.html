@@ -1013,7 +1013,20 @@ function startSkinDetection(shutter,hintTxt){
   canvas.width=64;canvas.height=64;
   const ctx=canvas.getContext('2d');
   let skinLoop=null;
-  let lastState='none'; // 'none'|'too_close'|'ready'
+  let lastState='none'; // 'none'|'too_close'|'partial'|'ready'
+  let hintFadeTimer=null;
+  function setHintText(el,text,color){
+    if(!el) return;
+    if(el.textContent===text) return; // nekeisti jei tas pats
+    // Fade out → keisti → fade in
+    el.style.opacity='0';
+    clearTimeout(hintFadeTimer);
+    hintFadeTimer=setTimeout(()=>{
+      el.textContent=text;
+      el.style.color=color;
+      el.style.opacity='1';
+    },200);
+  }
 
   function analyseSkin(){
     if(!video||!video.videoWidth) return;
@@ -1048,28 +1061,37 @@ function startSkinDetection(shutter,hintTxt){
     const bottomOnly=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
     const topCenter=(zoneRatio[1]+zoneRatio[4])/2;
 
-    // Kairė/dešinė pusės
     const leftRatio=(zoneRatio[0]+zoneRatio[3]+zoneRatio[6])/3;
     const rightRatio=(zoneRatio[2]+zoneRatio[5]+zoneRatio[8])/3;
     const topRatio=(zoneRatio[0]+zoneRatio[1]+zoneRatio[2])/3;
     const midRatio=(zoneRatio[3]+zoneRatio[4]+zoneRatio[5])/3;
     const botRatio=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
 
-    // Kiek zonų turi bent 20% odos (rodo tolygų pasiskirstymą)
-    const activeZones=zoneRatio.filter(r=>r>0.20).length;
+    // Kiek zonų turi bent 18% odos
+    const activeZones=zoneRatio.filter(r=>r>0.18).length;
+
+    // Kiekviena iš 9 zonų turi turėti bent kažkiek odos (>8%)
+    // Tai užtikrina kad delnas matomas visame kadre
+    const allZonesCovered=zoneRatio.every(r=>r>0.08);
 
     let newState;
-    if(totalSkin>0.65){
+    if(totalSkin>0.62){
+      // Per daug odos — per arti
       newState='too_close';
     } else if(
-      totalSkin>0.30&&          // pakankamai odos iš viso
-      activeZones>=5&&          // oda bent 5 iš 9 zonų (tolygus pasiskirstymas)
-      topRatio>0.18&&           // oda viršuje (pirštų galiukai)
-      midRatio>0.25&&           // oda viduryje (delno vidurys)
-      botRatio>0.15&&           // oda apačioje (delno pagrindas)
-      (leftRatio>0.15||rightRatio>0.15) // oda bent vienoje šoninėje zonoje
+      totalSkin>0.35&&       // pakankamas bendras odos plotas
+      activeZones>=7&&       // oda bent 7 iš 9 zonų
+      allZonesCovered&&      // VISOS zonos turi odą (visas delnas+pirštai matomi)
+      topRatio>0.20&&        // pirštų galiukai viršuje
+      midRatio>0.28&&        // delno vidurys
+      botRatio>0.18&&        // delno pagrindas
+      leftRatio>0.18&&       // kairė pusė (nykštys arba mažasis pirštas)
+      rightRatio>0.18        // dešinė pusė
     ){
       newState='ready';
+    } else if(totalSkin>0.25&&activeZones>=4){
+      // Delnas matomas iš dalies — nurodyti atitraukti/perstatyti
+      newState='partial';
     } else {
       newState='none';
     }
@@ -1078,18 +1100,23 @@ function startSkinDetection(shutter,hintTxt){
     lastState=newState;
 
     if(newState==='too_close'){
-      if(hintTxt){hintTxt.textContent='Atitraukite delną — per arti';hintTxt.style.color='rgba(255,180,80,.95)';}
+      setHintText(hintTxt,'Atitraukite delną — per arti','rgba(255,180,80,.95)');
+      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
+      handVisible=false;
+    } else if(newState==='partial'){
+      setHintText(hintTxt,'Delnas matomas iš dalies. Išskėskite pirštus ir įtraukite visą delną.','rgba(255,200,80,.9)');
       shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
       const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
       handVisible=false;
     } else if(newState==='ready'){
-      if(hintTxt){hintTxt.textContent='Sistema paruošta — spauskite užfiksuoti';hintTxt.style.color='rgba(212,168,67,.95)';}
+      setHintText(hintTxt,'Sistema paruošta — spauskite užfiksuoti','rgba(212,168,67,.95)');
       shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
       shutter.style.animation='camBreathing 2s ease-in-out infinite';
       const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
       if(!handVisible){handVisible=true;const guide=document.getElementById('cam-guide');if(guide) guide.style.opacity='0';}
     } else {
-      if(hintTxt){hintTxt.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';hintTxt.style.color='rgba(212,168,67,.5)';}
+      setHintText(hintTxt,camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną','rgba(212,168,67,.5)');
       shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
       const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
       handVisible=false;
@@ -1117,7 +1144,7 @@ function setHandDetected(detected,shutter,hintTxt){
     const vp=document.getElementById('cam-viewport');
     if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
     // Hint tekstas
-    if(hintTxt){hintTxt.textContent='Sistema paruošta — spauskite užfiksuoti';hintTxt.style.color='rgba(212,168,67,.9)';}
+    setHintText(hintTxt,'Sistema paruošta — spauskite užfiksuoti','rgba(212,168,67,.9)');
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
