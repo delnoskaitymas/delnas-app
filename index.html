@@ -1011,27 +1011,15 @@ async function startHandDetection(){
 }
 
 function startSkinDetection(shutter,hintTxt){
-  const video=document.getElementById('cam-video');
-  const canvas2=document.createElement('canvas');
-  canvas2.width=64;canvas2.height=64;
-  const ctx2=canvas2.getContext('2d');
-  let lastMsg='';
-  let liveLoop=null;
-
-  function setHint(txt,color,enable){
-    const el=document.getElementById('cam-hint-txt');
-    if(!el||el.textContent===txt) return;
-    el.style.opacity='0';
-    setTimeout(()=>{el.textContent=txt;el.style.color=color;el.style.opacity='1';},200);
-    if(enable){
-      shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+  setHandDetected(true,shutter,hintTxt);
+  setTimeout(()=>{
+    if(shutter&&!shutter.disabled){
       shutter.style.animation='camBreathing 2s ease-in-out infinite';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-    } else {
-      shutter.disabled=true;shutter.style.opacity='0.4';shutter.style.animation='none';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
     }
-  }
+    const vp=document.getElementById('cam-viewport');
+    if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+  },500);
+
 
   function analyse(){
     if(!video||!video.videoWidth) return;
@@ -1075,10 +1063,7 @@ function startSkinDetection(shutter,hintTxt){
     });
   }
 
-  liveLoop=setInterval(analyse,2500);
-  window._liveLoop=liveLoop;
-  // Pradinis tikrinimas
-  setTimeout(analyse,1000);
+
 }
 
 function setHandDetected(detected,shutter,hintTxt){
