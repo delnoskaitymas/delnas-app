@@ -998,9 +998,10 @@ function updateCameraUI(){
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
   if(hint) hint.textContent='';
-  // Sustabdyti breathing kai perjungiama tarp delno
+  // Resetinti būseną perjungiant tarp delno
+  handVisible=false;
   const shutterEl=document.getElementById('cam-shutter');
-  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';}
+  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';shutterEl.disabled=true;}
   const vpEl=document.getElementById('cam-viewport');if(vpEl) vpEl.style.animation='none';
 }
 
@@ -1215,7 +1216,6 @@ function capturePhoto(){
   flash.style.opacity='1';
   setTimeout(()=>{flash.style.opacity='0';},100);
   shutterSound();
-  if(navigator.vibrate) navigator.vibrate([30,20,10]);
 
   // Nufotografuoti
   canvas.width=video.videoWidth||640;
@@ -1287,8 +1287,6 @@ function capturePhoto(){
       // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
       const sp=document.getElementById('tikr-spinner');
       const tikrLabel=document.getElementById('tikr-label');
-      // Haptic varnelei
-      try{navigator.vibrate&&navigator.vibrate([20,40,20]);}catch(e){}
       // Vizualinis mirksnys — mygtukas trumpam nušvinta
       const shutterFlash=document.getElementById('cam-shutter');
       if(shutterFlash){
@@ -1307,6 +1305,7 @@ function capturePhoto(){
           sp.style.alignItems='center';
           sp.style.justifyContent='center';
           sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
         }
       },300);
       // Dummy — toliau vykdomas originalus perėjimas
