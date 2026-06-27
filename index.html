@@ -1208,16 +1208,20 @@ function capturePhoto(){
       // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
       const sp=document.getElementById('tikr-spinner');
       const tikrLabel=document.getElementById('tikr-label');
-      if(sp){
-        sp.style.animation='none';
-        sp.style.border='3px solid #d4a843';
-        sp.style.display='flex';
-        sp.style.alignItems='center';
-        sp.style.justifyContent='center';
-        sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-      }
-      // "Tikriname..." švelniai dingsta kartu su varnele
-      if(tikrLabel){tikrLabel.style.opacity='0';}
+      // Pirma — "Tikriname..." švelniai dingsta
+      if(tikrLabel){tikrLabel.style.transition='opacity 0.3s ease';tikrLabel.style.opacity='0';}
+      // Po 300ms — ratukas tampa varnele
+      setTimeout(()=>{
+        if(sp){
+          sp.style.animation='none';
+          sp.style.border='3px solid #d4a843';
+          sp.style.display='flex';
+          sp.style.alignItems='center';
+          sp.style.justifyContent='center';
+          sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        }
+      },300);
+      // Dummy — toliau vykdomas originalus perėjimas
 
       // Po 0.9s — švelniai pereiti į kitą ekraną
       if(isLeftHand){
