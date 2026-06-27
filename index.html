@@ -1017,26 +1017,46 @@ function startSkinDetection(shutter,hintTxt){
 
   function analyseSkin(){
     if(!video||!video.videoWidth) return;
-    ctx.drawImage(video,0,0,64,64);
-    const data=ctx.getImageData(0,0,64,64).data;
-    let skinPixels=0;let totalPixels=64*64;
-    for(let i=0;i<data.length;i+=4){
-      const r=data[i],g=data[i+1],b=data[i+2];
-      // Odos spalvos heuristika: šilta, r>g>b, tam tikri santykiai
-      if(r>80&&g>40&&b>20&&r>g&&r>b&&(r-g)>15&&r<250){
-        skinPixels++;
+    // Naudojame 3x3 zonas — centrinė zona privalo turėti odą
+    const W=64,H=64;
+    ctx.drawImage(video,0,0,W,H);
+    const data=ctx.getImageData(0,0,W,H).data;
+
+    // Skaičiuojame odą 9 zonose (3x3)
+    const zones=Array(9).fill(0);
+    const zoneTotal=Array(9).fill(0);
+    for(let y=0;y<H;y++){
+      for(let x=0;x<W;x++){
+        const i=(y*W+x)*4;
+        const r=data[i],g=data[i+1],b=data[i+2];
+        const zx=Math.floor(x/(W/3));
+        const zy=Math.floor(y/(H/3));
+        const z=zy*3+zx;
+        zoneTotal[z]++;
+        // Odos spalvos kriterijus — reikalauja ir centro zonoje
+        if(r>85&&g>45&&b>20&&r>g&&r>b&&(r-g)>18&&(r-b)>25&&r<252){
+          zones[z]++;
+        }
       }
     }
-    const ratio=skinPixels/totalPixels;
+    const zoneRatio=zones.map((s,i)=>s/zoneTotal[i]);
+    // Centrinės 4 zonos (1,2,4,5 iš 3x3)
+    const centerRatio=(zoneRatio[1]+zoneRatio[2]+zoneRatio[4]+zoneRatio[5])/4;
+    // Visa oda
+    const totalSkin=zones.reduce((a,b)=>a+b,0)/(W*H);
+    // Apatinė zona — ar tik apačioje oda (pirštų galiukai)
+    const bottomOnly=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
+    const topCenter=(zoneRatio[1]+zoneRatio[4])/2;
+
     let newState;
-    if(ratio>0.72){
-      // Per daug odos — delnas per arti
+    if(totalSkin>0.68){
+      // Per daug odos visur — per arti
       newState='too_close';
-    } else if(ratio>0.22){
-      // Geras kiekis odos — pozicija tinkama
+    } else if(centerRatio>0.30&&topCenter>0.15&&totalSkin>0.25&&!(bottomOnly>0.4&&centerRatio<0.2)){
+      // Oda centrinėje ir viršutinėje zonoje — visas delnas matomas
       newState='ready';
     } else {
-      // Per mažai odos — delno nėra arba per toli
+      // Per mažai odos centrinėje srityje — delno nėra arba tik pirštų galiukai
       newState='none';
     }
 
