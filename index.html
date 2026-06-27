@@ -962,7 +962,7 @@ function startApp(){
   if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
   // cam-guide pašalintas
   const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
-  const video=document.getElementById('cam-video');if(video) video.style.display='block';
+  const video=document.getElementById('cam-video');if(video){video.style.display='block';video.style.opacity='0';}
   updateCameraUI();go('s-camera');
   // fullscreen disabled
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
@@ -975,7 +975,8 @@ function startApp(){
 
       const shutter=document.getElementById('cam-shutter');
       if(shutter){shutter.disabled=true;shutter.style.opacity='0.35';}
-      startSkinDetection(shutter, document.getElementById('cam-hint-txt'));
+      // Pradėti skin detection po 1s kad kamera stabilizuotusi
+      setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
     };
   })
   .catch(()=>{document.getElementById('cam-error').style.display='flex';});
@@ -1053,14 +1054,16 @@ function startSkinDetection(shutter,hintTxt){
     }
     // AI tikrinimas per serverį
     const checkCanvas=document.createElement('canvas');
-    checkCanvas.width=640;checkCanvas.height=480;
-    checkCanvas.getContext('2d').drawImage(video,0,0,640,480);
-    const imgData=checkCanvas.toDataURL('image/jpeg',0.8).split(',')[1];
+    const vw=video.videoWidth||1280;
+    const vh=video.videoHeight||720;
+    checkCanvas.width=vw;checkCanvas.height=vh;
+    checkCanvas.getContext('2d').drawImage(video,0,0,vw,vh);
+    const imgData=checkCanvas.toDataURL('image/jpeg',0.92).split(',')[1];
     setHint('Analizuojame poziciją...','rgba(212,168,67,.6)',false);
     fetch('/validate-palm',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}],livePreview:true})
+      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}]})
     }).then(r=>r.json()).then(v=>{
       if(v.valid){
         setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
@@ -1068,7 +1071,6 @@ function startSkinDetection(shutter,hintTxt){
         setHint('Išskėskite pirštus ir įtraukite visą delną','rgba(255,180,60,.9)',false);
       }
     }).catch(()=>{
-      // Klaida — leisti fotografuoti
       setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
     });
   }
