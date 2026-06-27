@@ -1046,17 +1046,17 @@ function startSkinDetection(shutter,hintTxt){
 
   function analyseSkin(){
     if(!video||!video.videoWidth) return;
-    const W=80,H=80;
+    const W=96,H=96;
     ctx.canvas.width=W;ctx.canvas.height=H;
     ctx.drawImage(video,0,0,W,H);
     const data=ctx.getImageData(0,0,W,H).data;
 
     function isSkin(r,g,b){
-      return r>80&&g>40&&b>15&&r>g&&r>b&&(r-g)>12&&(r-b)>18&&r<253;
+      return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;
     }
 
-    // 4x4 zonų tinklelis
-    const GX=4,GY=4;
+    // 6x6 tinklelis — tikslesnė horizontali analizė
+    const GX=6,GY=6;
     const zones=Array(GX*GY).fill(0);
     const zoneTotal=Array(GX*GY).fill(0);
     for(let y=0;y<H;y++){
@@ -1072,42 +1072,56 @@ function startSkinDetection(shutter,hintTxt){
     }
     const zr=zones.map((s,i)=>s/zoneTotal[i]);
 
-    const rowAvg=ri=>(zr[ri*GX]+zr[ri*GX+1]+zr[ri*GX+2]+zr[ri*GX+3])/GX;
-    const colAvg=ci=>(zr[ci]+zr[ci+GX]+zr[ci+2*GX]+zr[ci+3*GX])/GY;
+    // Eilutės (0=viršus pirštų galiukai, 5=apačia delno pagrindas)
+    const rowAvg=ri=>{let s=0;for(let c=0;c<GX;c++) s+=zr[ri*GX+c];return s/GX;};
+    // Stulpeliai (0=kairė, 5=dešinė)
+    const colAvg=ci=>{let s=0;for(let r=0;r<GY;r++) s+=zr[ci+r*GX];return s/GY;};
 
-    const topRow=rowAvg(0);   // pirštų galiukai
-    const midTop=rowAvg(1);   // pirštų vidurinė dalis
-    const midBot=rowAvg(2);   // delno vidurys
-    const botRow=rowAvg(3);   // delno pagrindas
-    const leftCol=colAvg(0);
-    const rightCol=colAvg(3);
+    const row0=rowAvg(0); // pirštų galiukai viršuje
+    const row1=rowAvg(1);
+    const row2=rowAvg(2); // delno vidurys
+    const row3=rowAvg(3);
+    const row4=rowAvg(4);
+    const row5=rowAvg(5); // delno pagrindas
+
+    // Visi 6 stulpeliai
+    const cols=Array.from({length:GX},(_,i)=>colAvg(i));
 
     const totalSkin=zones.reduce((a,b)=>a+b,0)/(W*H);
-    const activeZones=zr.filter(r=>r>0.12).length;
+    const activeZones=zr.filter(r=>r>0.10).length;
 
-    // Išskėsti pirštai: tarpai tarp jų — viršuje mažiau odos nei viduryje
-    // Suspausti/nukirpti: viršuje daug odos be tarpų
-    const fingersSpread=(topRow<midTop*1.25)&&topRow>0.08;
-    // Delno pagrindas matomas (ne nukirptas apačioje)
-    const palmBase=botRow>0.08;
-    // Abu šonai matomi (ne tik centras)
-    const bothSides=leftCol>0.10&&rightCol>0.10;
+    // Horizontalus padengimas: kiek stulpelių turi odą (pirštai per visą plotį)
+    const activeCols=cols.filter(c=>c>0.12).length;
+
+    // Pirštų tarpai viršuje: tarp pirštų yra tamsos tarpai
+    // Tikrinti ar viršutinėje eilutėje yra bent 1 zona su mažai odos (tarpas tarp pirštų)
+    const topZones=Array.from({length:GX},(_,c)=>zr[0*GX+c]);
+    const topGaps=topZones.filter(z=>z<0.12).length; // tarpai tarp pirštų
+    const topCoverage=topZones.filter(z=>z>0.15).length; // pirštų galiukai
+
+    // Delno pagrindas matomas
+    const palmBase=(row4+row5)/2>0.10;
+    // Delno vidurys
+    const palmMid=(row2+row3)/2>0.22;
+    // Pirštai išskėsti: turi būti tarpai viršuje IR platus horizontalus padengimas
+    const fingersVisible=activeCols>=5&&topCoverage>=3&&topGaps>=1;
+    // Nenukirpta: visos eilutės turi kažkiek odos
+    const notCropped=row0>0.06&&row5>0.06;
 
     let newState;
-    if(totalSkin>0.60){
+    if(totalSkin>0.62){
       newState='too_close';
     } else if(
-      totalSkin>0.26&&
-      activeZones>=10&&
-      topRow>0.08&&
-      midTop>0.18&&
-      midBot>0.20&&
-      palmBase&&
-      bothSides&&
-      fingersSpread
+      totalSkin>0.24&&
+      activeZones>=20&&       // dauguma iš 36 zonų turi odą
+      activeCols>=5&&         // oda per visą plotį (visi pirštai)
+      fingersVisible&&        // pirštai matomi su tarpais
+      palmMid&&               // delno vidurys matomas
+      palmBase&&              // delno pagrindas matomas
+      notCropped              // nei viršus nei apačia nukirpta
     ){
       newState='ready';
-    } else if(totalSkin>0.15&&activeZones>=5){
+    } else if(totalSkin>0.14&&activeZones>=8){
       newState='partial';
     } else {
       newState='none';
