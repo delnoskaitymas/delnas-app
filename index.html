@@ -1170,8 +1170,8 @@ function capturePhoto(){
   if(!tikrOvl){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10;background:rgba(7,4,15,.5)';
-    tikrOvl.innerHTML='<div id="tikr-spinner" style="position:relative;width:48px;height:48px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div style="color:rgba(212,168,67,.95);font-size:15px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif">Tikriname...</div>';
+    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;background:transparent;';
+    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);border-radius:16px;padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:10px"><div id="tikr-spinner" style="position:relative;width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif;transition:opacity 0.4s ease">Tikriname...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
     const sp=document.getElementById('tikr-spinner');
@@ -1201,8 +1201,9 @@ function capturePhoto(){
         return;
       }
 
-      // Sėkmė - ratukas → auksinė varnelė
+      // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
       const sp=document.getElementById('tikr-spinner');
+      const tikrLabel=document.getElementById('tikr-label');
       if(sp){
         sp.style.animation='none';
         sp.style.border='3px solid #d4a843';
@@ -1211,35 +1212,42 @@ function capturePhoto(){
         sp.style.justifyContent='center';
         sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
       }
+      // "Tikriname..." švelniai dingsta kartu su varnele
+      if(tikrLabel){tikrLabel.style.opacity='0';}
 
-      // Po 1.2s - tęsti
+      // Po 0.9s — švelniai pereiti į kitą ekraną
       if(isLeftHand){
         photoLeft=dataURL;
         setTimeout(()=>{
-          if(tikrOvl) tikrOvl.style.display='none';
-          if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
-          video.style.display='block';
-          shutterWrap.style.visibility='';
-          if(camSub) camSub.style.display='';
-          document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
-          handVisible=false;
-          shutter.disabled=false;
-          shutter.style.opacity='1';
-          shutter.style.pointerEvents='auto';
-          camHand='right';
-          updateCameraUI();
-        },1200);
+          if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';}
+          setTimeout(()=>{
+            if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
+            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+            video.style.display='block';
+            shutterWrap.style.visibility='';
+            if(camSub) camSub.style.display='';
+            document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
+            handVisible=false;
+            shutter.disabled=false;
+            shutter.style.opacity='1';
+            shutter.style.pointerEvents='auto';
+            camHand='right';
+            updateCameraUI();
+          },400);
+        },900);
       } else {
         photoRight=dataURL;
         setTimeout(()=>{
-          if(tikrOvl) tikrOvl.style.display='none';
-          if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
-          stopCamera();
-          startBackgroundAnalysis();
-          // Pirma - vardo/el.pašto ekranas
-          go('s-order');
-          initOrderScreen();
-        },1200);
+          if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';}
+          setTimeout(()=>{
+            if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
+            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+            stopCamera();
+            startBackgroundAnalysis();
+            go('s-order');
+            initOrderScreen();
+          },400);
+        },900);
       }
     }).catch(()=>{
       if(tikrOvl) tikrOvl.style.display='none';
