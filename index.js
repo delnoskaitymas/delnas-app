@@ -262,7 +262,7 @@ app.post('/validate-palm', async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
-    const promptText = 'Analyze this image and respond with exactly one code: YES=full palm visible, all 5 fingers present and spread, fingertips not cut off, palm facing camera. TOO_CLOSE=hand too close, fills entire frame. FINGERS_MISSING=fewer than 5 fingers visible or fingertips cut off at frame edges. SIDEWAYS=hand at angle, not facing camera. NO_HAND=no hand visible. Reply with only the code word.';
+    const promptText = 'Analyze this palm photo strictly. Reply with ONLY one word - no explanation. Use: YES only if ALL conditions met: (1) full inner palm surface visible, (2) exactly 5 fingers all fully visible with fingertips NOT cut off at any edge, (3) fingers spread apart, (4) palm facing camera directly. Use TOO_CLOSE if hand fills entire frame with no background visible. Use FINGERS_MISSING if any finger is missing, cut off, or fewer than 5 fingers visible. Use SIDEWAYS if hand is angled sideways. Use NO_HAND if no clear hand visible. Be strict - reply with only one word.';
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
@@ -291,17 +291,19 @@ app.post('/validate-palm', async (req, res) => {
     });
 
     const data = await response.json();
-    const answer = (data.content?.[0]?.text || '').trim().toUpperCase();
-    const code=answer.trim();
-    const valid=code==='YES';
-    let reason=null;
+    const rawAnswer = (data.content?.[0]?.text || '').trim().toUpperCase();
+    // Ištraukti pirmą žodį (AI gali pridėti papildomą tekstą)
+    const code = rawAnswer.split(/[\s\n\r.,!?]/)[0].trim();
+    console.log('validate-palm AI atsakas:', rawAnswer, '-> kodas:', code);
+    const valid = code === 'YES';
+    let reason = null;
     if(!valid){
       if(code==='TOO_CLOSE') reason='too_close';
       else if(code==='FINGERS_MISSING') reason='fingers_missing';
       else if(code==='SIDEWAYS') reason='sideways';
       else reason='no_hand';
     }
-    res.json({valid,reason});
+    res.json({valid, reason});
   } catch(e) {
     console.error('validate-palm klaida:', e.message);
     res.json({ valid: false });
