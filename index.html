@@ -1259,7 +1259,14 @@ function capturePhoto(){
       body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})
     }).then(r=>r.json()).then(v=>{
       if(!v.valid){
-        // Klaida - slėpti overlay, grąžinti ekraną
+        // Konkreti klaidos žinutė pagal priežastį
+        const msgs={
+          'too_close':['Delnas per arti.','Atitraukite ranką toliau nuo kameros.'],
+          'fingers_missing':['Nematyti visi pirštai.','Išskėskite visus 5 pirštus ir įtraukite visą delną.'],
+          'sideways':['Delnas neteisingai nukreiptas.','Pasukite delną tiesiai į kamerą.'],
+          'no_hand':['Delnas neaptiktas.','Laikykite atvirą delną tiesiai prieš kamerą.']
+        };
+        const [title,msg]=msgs[v.reason]||['Nepavyko aptikti delno.','Išskėskite pirštus ir bandykite dar kartą.'];
         if(tikrOvl) tikrOvl.style.display='none';
         if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
         video.style.display='block';
@@ -1269,7 +1276,8 @@ function capturePhoto(){
         shutter.disabled=false;
         shutter.style.opacity='1';
         shutter.style.pointerEvents='auto';
-        showCamError('Delnas neaptiktas.','Prašome bandyti dar kartą.');
+        startSkinDetection(shutter,document.getElementById('cam-hint-txt'));
+        showCamError(title,msg);
         return;
       }
 
