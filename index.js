@@ -104,7 +104,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Look at this image. Is this a photo of a human palm (inner side of hand) suitable for palm reading analysis? Answer YES if: the palm/inner hand is clearly visible, most fingers are visible (at least 3-4), and palm lines are readable. Answer NO if: it shows only fingertips with no palm, shows the back of hand, shows only wrist/arm with no palm, shows a completely different object, or the hand is sideways showing only the edge. Answer only YES or NO.'
+            text: 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off), the palm is facing the camera directly (not at a sharp angle). Answer NO if: any fingers are missing or cut off at frame edge, fewer than 5 fingers visible, only part of palm visible, palm is sideways or angled, back of hand shown, wrist only shown. Answer only YES or NO.'
           }
         ]
       }]
@@ -283,7 +283,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Look at this image. Is this a photo of a human palm (inner side of hand) suitable for palm reading analysis? Answer YES if: the palm/inner hand is clearly visible, most fingers are visible (at least 3-4), and palm lines are readable. Answer NO if: it shows only fingertips with no palm, shows the back of hand, shows only wrist/arm with no palm, shows a completely different object, or the hand is sideways showing only the edge. Answer only YES or NO.' }
+            { type: 'text', text: 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off), the palm is facing the camera directly (not at a sharp angle). Answer NO if: any fingers are missing or cut off at frame edge, fewer than 5 fingers visible, only part of palm visible, palm is sideways or angled, back of hand shown, wrist only shown. Answer only YES or NO.' }
           ]
         }]
       })
