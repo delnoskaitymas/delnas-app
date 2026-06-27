@@ -1055,73 +1055,74 @@ function startSkinDetection(shutter,hintTxt){
       return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;
     }
 
-    // 6x6 tinklelis — tikslesnė horizontali analizė
-    const GX=6,GY=6;
-    const zones=Array(GX*GY).fill(0);
-    const zoneTotal=Array(GX*GY).fill(0);
+    // 8x8 tinklelis
+    const G=8;
+    const zones=Array(G*G).fill(0);
+    const zoneTotal=Array(G*G).fill(0);
     for(let y=0;y<H;y++){
       for(let x=0;x<W;x++){
         const i=(y*W+x)*4;
         const r=data[i],g=data[i+1],b=data[i+2];
-        const zx=Math.floor(x/(W/GX));
-        const zy=Math.floor(y/(H/GY));
-        const z=zy*GX+zx;
-        zoneTotal[z]++;
-        if(isSkin(r,g,b)) zones[z]++;
+        const zx=Math.floor(x/(W/G));
+        const zy=Math.floor(y/(H/G));
+        zones[zy*G+zx]+=(isSkin(r,g,b)?1:0);
+        zoneTotal[zy*G+zx]++;
       }
     }
     const zr=zones.map((s,i)=>s/zoneTotal[i]);
 
-    // Eilutės (0=viršus pirštų galiukai, 5=apačia delno pagrindas)
-    const rowAvg=ri=>{let s=0;for(let c=0;c<GX;c++) s+=zr[ri*GX+c];return s/GX;};
-    // Stulpeliai (0=kairė, 5=dešinė)
-    const colAvg=ci=>{let s=0;for(let r=0;r<GY;r++) s+=zr[ci+r*GX];return s/GY;};
+    const rowAvg=ri=>{let s=0;for(let c=0;c<G;c++)s+=zr[ri*G+c];return s/G;};
+    const colAvg=ci=>{let s=0;for(let r=0;r<G;r++)s+=zr[ci+r*G];return s/G;};
+    const rowZones=ri=>Array.from({length:G},(_,c)=>zr[ri*G+c]);
 
-    const row0=rowAvg(0); // pirštų galiukai viršuje
-    const row1=rowAvg(1);
-    const row2=rowAvg(2); // delno vidurys
-    const row3=rowAvg(3);
-    const row4=rowAvg(4);
-    const row5=rowAvg(5); // delno pagrindas
-
-    // Visi 6 stulpeliai
-    const cols=Array.from({length:GX},(_,i)=>colAvg(i));
+    // Eilutės
+    const rows=Array.from({length:G},(_,i)=>rowAvg(i));
+    // Stulpeliai
+    const cols=Array.from({length:G},(_,i)=>colAvg(i));
 
     const totalSkin=zones.reduce((a,b)=>a+b,0)/(W*H);
-    const activeZones=zr.filter(r=>r>0.10).length;
 
-    // Horizontalus padengimas: kiek stulpelių turi odą (pirštai per visą plotį)
-    const activeCols=cols.filter(c=>c>0.12).length;
+    // PIRŠTŲ GALIUKAI: viršutinės 2 eilutės kiekviename stulpelyje
+    // Visi 5 pirštai išskėsti => KIEKVIENAS stulpelis turi turėti odą viršuje
+    const top2=Array.from({length:G},(_,c)=>(zr[0*G+c]+zr[1*G+c])/2);
+    // Kiek stulpelių turi pirštų galiukus viršuje
+    const topColsWithSkin=top2.filter(v=>v>0.15).length;
+    // Turi būti oda VISUOSE 8 stulpeliuose viršuje (visi pirštai matomi)
+    // Bet leidžiame 1 tarpą (tarp nykščio ir kitų)
+    const topFullCoverage=topColsWithSkin>=7;
 
-    // Pirštų tarpai viršuje: tarp pirštų yra tamsos tarpai
-    // Tikrinti ar viršutinėje eilutėje yra bent 1 zona su mažai odos (tarpas tarp pirštų)
-    const topZones=Array.from({length:GX},(_,c)=>zr[0*GX+c]);
-    const topGaps=topZones.filter(z=>z<0.12).length; // tarpai tarp pirštų
-    const topCoverage=topZones.filter(z=>z>0.15).length; // pirštų galiukai
+    // Delno plotis viduryje — turi užimti visus stulpelius
+    const mid2=Array.from({length:G},(_,c)=>(zr[3*G+c]+zr[4*G+c])/2);
+    const midColsWithSkin=mid2.filter(v=>v>0.15).length;
 
-    // Delno pagrindas matomas
-    const palmBase=(row4+row5)/2>0.10;
+    // Delno pagrindas
+    const palmBase=(rows[6]+rows[7])/2>0.10;
     // Delno vidurys
-    const palmMid=(row2+row3)/2>0.22;
-    // Pirštai išskėsti: turi būti tarpai viršuje IR platus horizontalus padengimas
-    const fingersVisible=activeCols>=5&&topCoverage>=3&&topGaps>=1;
-    // Nenukirpta: visos eilutės turi kažkiek odos
-    const notCropped=row0>0.06&&row5>0.06;
+    const palmMid=(rows[3]+rows[4])/2>0.20;
+    // Pirštai (viršus)
+    const palmTop=(rows[0]+rows[1])/2>0.10;
+
+    // Pirštų tarpai: viršutinėje eilutėje kintamumas (išskėsti pirštai turi tarpsnius)
+    const topRow0=rowZones(0);
+    const topVariance=topRow0.reduce((acc,v)=>{
+      const diff=v-top2.reduce((a,b)=>a+b,0)/G;
+      return acc+diff*diff;
+    },0)/G;
+    const hasFingerGaps=topVariance>0.008; // išskėsti pirštai turi variaciją
 
     let newState;
     if(totalSkin>0.62){
       newState='too_close';
     } else if(
-      totalSkin>0.24&&
-      activeZones>=20&&       // dauguma iš 36 zonų turi odą
-      activeCols>=5&&         // oda per visą plotį (visi pirštai)
-      fingersVisible&&        // pirštai matomi su tarpais
-      palmMid&&               // delno vidurys matomas
-      palmBase&&              // delno pagrindas matomas
-      notCropped              // nei viršus nei apačia nukirpta
+      totalSkin>0.22&&
+      topFullCoverage&&        // visi pirštai matomi viršuje (≥7/8 stulpelių)
+      midColsWithSkin>=7&&     // delnas užima visą plotį viduryje
+      palmTop&&                // pirštų galiukai matomi
+      palmMid&&                // delno vidurys matomas
+      palmBase                 // delno pagrindas matomas
     ){
       newState='ready';
-    } else if(totalSkin>0.14&&activeZones>=8){
+    } else if(totalSkin>0.14){
       newState='partial';
     } else {
       newState='none';
