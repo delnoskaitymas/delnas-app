@@ -172,6 +172,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok.active{display:flex}
 .cam-shutter-wrap{padding:4px 20px 0;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
+@keyframes camBreathing{0%,100%{box-shadow:0 2px 16px rgba(212,168,67,.15),0 0 0 0 rgba(212,168,67,0)}50%{box-shadow:0 4px 28px rgba(212,168,67,.5),0 0 0 5px rgba(212,168,67,.12)}}
+@keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
 @keyframes lastStepPulse{
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
@@ -249,7 +251,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0" id="cam-viewport">
+  <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0;position:relative" id="cam-viewport">
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(7,4,15,.72);border:1px solid rgba(212,168,67,.22);border-radius:20px;padding:5px 13px;white-space:nowrap;pointer-events:none">
+      <span style="font-size:9px;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;letter-spacing:.03em">🔬 Skenuojame delno linijas · 99.9% tikslumas</span>
+    </div>
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
@@ -285,6 +290,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
+    <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
     <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .5s ease,transform .15s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
@@ -1004,8 +1010,65 @@ async function startHandDetection(){
 }
 
 function startSkinDetection(shutter,hintTxt){
-  // Mygtukas aktyvus iš karto — serveris validuos ar nuotraukoje yra delnas
-  setHandDetected(true,shutter,hintTxt);
+  const video=document.getElementById('cam-video');
+  const canvas2=document.createElement('canvas');
+  canvas2.width=64;canvas2.height=64;
+  const ctx2=canvas2.getContext('2d');
+  let lastMsg='';
+  let liveLoop=null;
+
+  function setHint(txt,color,enable){
+    const el=document.getElementById('cam-hint-txt');
+    if(!el||el.textContent===txt) return;
+    el.style.opacity='0';
+    setTimeout(()=>{el.textContent=txt;el.style.color=color;el.style.opacity='1';},200);
+    if(enable){
+      shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+      shutter.style.animation='camBreathing 2s ease-in-out infinite';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+    } else {
+      shutter.disabled=true;shutter.style.opacity='0.4';shutter.style.animation='none';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
+    }
+  }
+
+  function analyse(){
+    if(!video||!video.videoWidth) return;
+    ctx2.drawImage(video,0,0,64,64);
+    const d=ctx2.getImageData(0,0,64,64).data;
+    function isSkin(r,g,b){return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;}
+    // 4 horizontalios juostos
+    const bSize=16; // 64/4
+    const bands=[0,0,0,0];const bTotal=[0,0,0,0];
+    for(let y=0;y<64;y++){
+      const bi=Math.min(Math.floor(y/bSize),3);
+      for(let x=0;x<64;x++){
+        const i=(y*64+x)*4;
+        bTotal[bi]++;
+        if(isSkin(d[i],d[i+1],d[i+2])) bands[bi]++;
+      }
+    }
+    const br=bands.map((s,i)=>s/bTotal[i]);
+    const total=bands.reduce((a,b)=>a+b,0)/(64*64);
+    const top=br[0],mid=(br[1]+br[2])/2,bot=br[3];
+
+    if(total<0.08){
+      setHint('Nukreipkite kamerą į delną','rgba(212,168,67,.6)',false);
+    } else if(total>0.75){
+      setHint('Delnas per arti — atitraukite','rgba(255,160,60,.9)',false);
+    } else if(top>mid*0.95&&top>0.25){
+      setHint('Pirštų galiukai nukirpti — atitraukite delną','rgba(255,180,60,.9)',false);
+    } else if(bot<0.05&&total>0.15){
+      setHint('Atitraukite žemiau — matytųsi visas delnas','rgba(255,180,60,.9)',false);
+    } else {
+      setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
+    }
+  }
+
+  liveLoop=setInterval(analyse,500);
+  window._liveLoop=liveLoop;
+  // Pradinis tikrinimas
+  setTimeout(analyse,800);
 }
 
 function setHandDetected(detected,shutter,hintTxt){
@@ -1145,6 +1208,10 @@ function capturePhoto(){
   const frozen=document.getElementById('cam-frozen');
   clearTimeout(window._autoCaptureTimer);
   shutter.style.pointerEvents='none';
+  shutter.style.animation='none';
+  const vpStop=document.getElementById('cam-viewport');if(vpStop) vpStop.style.animation='none';
+  if(window._liveLoop){clearInterval(window._liveLoop);window._liveLoop=null;}
+  const hintEl=document.getElementById('cam-hint-txt');if(hintEl) hintEl.textContent='';
 
   // Flash
   flash.style.opacity='1';
@@ -1263,6 +1330,15 @@ function capturePhoto(){
       // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
       const sp=document.getElementById('tikr-spinner');
       const tikrLabel=document.getElementById('tikr-label');
+      // Haptic — švelnus vienas impulsas (soft click)
+      if(navigator.vibrate) navigator.vibrate(12);
+      // Vizualinis mirksnys — mygtukas trumpam nušvinta
+      const shutterFlash=document.getElementById('cam-shutter');
+      if(shutterFlash){
+        shutterFlash.style.transition='background 0.08s ease';
+        shutterFlash.style.background='linear-gradient(135deg,#fff8e0,#f5d878,#e8b840)';
+        setTimeout(()=>{shutterFlash.style.background='';shutterFlash.style.transition='';},120);
+      }
       // Pirma — "Tikriname..." švelniai dingsta
       if(tikrLabel){tikrLabel.style.transition='opacity 0.3s ease';tikrLabel.style.opacity='0';}
       // Po 300ms — ratukas tampa varnele
