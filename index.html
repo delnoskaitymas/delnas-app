@@ -1023,88 +1023,13 @@ async function startHandDetection(){
 }
 
 function startSkinDetection(shutter,hintTxt){
-  // Realaus laiko odos spalvos analizė per canvas kas 400ms
-  const video=document.getElementById('cam-video');
-  const canvas=document.createElement('canvas');
-  canvas.width=64;canvas.height=64;
-  const ctx=canvas.getContext('2d');
-  let skinLoop=null;
-  let lastState='none'; // 'none'|'too_close'|'partial'|'ready'
-  let hintFadeTimer=null;
-  function setHintText(el,text,color){
-    if(!el) return;
-    if(el.textContent===text) return; // nekeisti jei tas pats
-    // Fade out → keisti → fade in
-    el.style.opacity='0';
-    clearTimeout(hintFadeTimer);
-    hintFadeTimer=setTimeout(()=>{
-      el.textContent=text;
-      el.style.color=color;
-      el.style.opacity='1';
-    },200);
-  }
-
-  function analyseSkin(){
-    if(!video||!video.videoWidth) return;
-    const W=64,H=64;
-    ctx.canvas.width=W;ctx.canvas.height=H;
-    ctx.drawImage(video,0,0,W,H);
-    const data=ctx.getImageData(0,0,W,H).data;
-
-    function isSkin(r,g,b){
-      return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;
-    }
-
-    let skinTotal=0;
-    for(let i=0;i<data.length;i+=4){
-      if(isSkin(data[i],data[i+1],data[i+2])) skinTotal++;
-    }
-    const totalSkin=skinTotal/(W*H);
-
-    let newState;
-    if(totalSkin>0.65){
-      // Per daug odos — per arti
-      newState='too_close';
-    } else if(totalSkin>0.20){
-      // Pakankamai odos — leisti fotografuoti
-      // Serveris /validate-palm patikrins tiksliai
-      newState='ready';
-    } else if(totalSkin>0.06){
-      newState='partial';
-    } else {
-      newState='none';
-    }
-
-    if(newState===lastState) return;
-    lastState=newState;
-
-    if(newState==='too_close'){
-      setHintText(hintTxt,'Atitraukite delną — per arti','rgba(255,180,80,.95)');
-      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
-      handVisible=false;
-    } else if(newState==='partial'){
-      setHintText(hintTxt,'Priartinkite delną prie kameros','rgba(255,200,80,.9)');
-      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
-      handVisible=false;
-    } else if(newState==='ready'){
-      setHintText(hintTxt,'Sistema paruošta — spauskite užfiksuoti','rgba(212,168,67,.95)');
-      shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-      shutter.style.animation='camBreathing 2s ease-in-out infinite';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
-      if(!handVisible){handVisible=true;const guide=document.getElementById('cam-guide');if(guide) guide.style.opacity='0';}
-    } else {
-      setHintText(hintTxt,camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną','rgba(212,168,67,.5)');
-      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
-      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
-      handVisible=false;
-    }
-  }
-
-  // Pradėti kas 400ms
-  skinLoop=setInterval(analyseSkin,400);
-  window._skinLoop=skinLoop;
+  // Iškarto aktyvuoti mygtuką — serveris patikrins kokybę
+  shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+  shutter.style.animation='camBreathing 2s ease-in-out infinite';
+  const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
+  const guide=document.getElementById('cam-guide');if(guide) guide.style.opacity='0';
+  if(hintTxt){hintTxt.textContent='Išskėskite pirštus ir nufotografuokite delną';hintTxt.style.color='rgba(212,168,67,.85)';}
+  handVisible=true;
 }
 
 function setHandDetected(detected,shutter,hintTxt){
