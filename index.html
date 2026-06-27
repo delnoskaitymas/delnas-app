@@ -1048,15 +1048,29 @@ function startSkinDetection(shutter,hintTxt){
     const bottomOnly=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
     const topCenter=(zoneRatio[1]+zoneRatio[4])/2;
 
+    // Kairė/dešinė pusės
+    const leftRatio=(zoneRatio[0]+zoneRatio[3]+zoneRatio[6])/3;
+    const rightRatio=(zoneRatio[2]+zoneRatio[5]+zoneRatio[8])/3;
+    const topRatio=(zoneRatio[0]+zoneRatio[1]+zoneRatio[2])/3;
+    const midRatio=(zoneRatio[3]+zoneRatio[4]+zoneRatio[5])/3;
+    const botRatio=(zoneRatio[6]+zoneRatio[7]+zoneRatio[8])/3;
+
+    // Kiek zonų turi bent 20% odos (rodo tolygų pasiskirstymą)
+    const activeZones=zoneRatio.filter(r=>r>0.20).length;
+
     let newState;
-    if(totalSkin>0.68){
-      // Per daug odos visur — per arti
+    if(totalSkin>0.65){
       newState='too_close';
-    } else if(centerRatio>0.30&&topCenter>0.15&&totalSkin>0.25&&!(bottomOnly>0.4&&centerRatio<0.2)){
-      // Oda centrinėje ir viršutinėje zonoje — visas delnas matomas
+    } else if(
+      totalSkin>0.30&&          // pakankamai odos iš viso
+      activeZones>=5&&          // oda bent 5 iš 9 zonų (tolygus pasiskirstymas)
+      topRatio>0.18&&           // oda viršuje (pirštų galiukai)
+      midRatio>0.25&&           // oda viduryje (delno vidurys)
+      botRatio>0.15&&           // oda apačioje (delno pagrindas)
+      (leftRatio>0.15||rightRatio>0.15) // oda bent vienoje šoninėje zonoje
+    ){
       newState='ready';
     } else {
-      // Per mažai odos centrinėje srityje — delno nėra arba tik pirštų galiukai
       newState='none';
     }
 
