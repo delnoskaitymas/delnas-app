@@ -283,12 +283,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-frozen" id="cam-frozen"></div>
     <div class="cam-rescan" id="cam-rescan"></div>
     
-    <div class="cam-error" id="cam-error">
-      <div class="cam-error-ico">📷</div>
-      <div class="cam-error-title">Nepavyko pasiekti kameros</div>
-      <div class="cam-error-sub">Nustatymuose leiskite programėlei naudoti kamerą ir bandykite dar kartą.</div>
-      <button class="cam-retry-btn" onclick="startApp()">Bandyti dar kartą</button>
-    </div>
+    <div class="cam-error" id="cam-error" style="display:none!important"></div>
   </div>
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
@@ -1343,6 +1338,9 @@ function capturePhoto(){
               shutterR.disabled=false;
               shutterR.style.opacity='1';
               shutterR.style.pointerEvents='auto';
+              shutterR.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
+              shutterR.style.boxShadow='0 2px 16px rgba(212,168,67,.2)';
+              shutterR.style.color='#07040f';
               shutterR.style.animation='camBreathing 2s ease-in-out infinite';
             }
             const vpR=document.getElementById('cam-viewport');
