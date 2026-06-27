@@ -1060,7 +1060,7 @@ function startSkinDetection(shutter,hintTxt){
     fetch('/validate-palm',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}]})
+      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}],livePreview:true})
     }).then(r=>r.json()).then(v=>{
       if(v.valid){
         setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
