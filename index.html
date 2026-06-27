@@ -1006,7 +1006,7 @@ function updateCameraUI(){
     title.textContent='Nufotografuokite dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
-  if(hint&&!handVisible){hint.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';hint.style.color='rgba(212,168,67,.5)';}
+  if(hint) hint.textContent='';
   // Sustabdyti breathing kai perjungiama tarp delno
   const shutterEl=document.getElementById('cam-shutter');
   if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';}
