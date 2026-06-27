@@ -1023,13 +1023,8 @@ async function startHandDetection(){
 }
 
 function startSkinDetection(shutter,hintTxt){
-  // Iškarto aktyvuoti mygtuką — serveris patikrins kokybę
-  shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-  shutter.style.animation='camBreathing 2s ease-in-out infinite';
-  const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
-  const guide=document.getElementById('cam-guide');if(guide) guide.style.opacity='0';
-  if(hintTxt){hintTxt.textContent='Išskėskite pirštus ir nufotografuokite delną';hintTxt.style.color='rgba(212,168,67,.85)';}
-  handVisible=true;
+  // Mygtukas aktyvus iš karto — serveris validuos ar nuotraukoje yra delnas
+  setHandDetected(true,shutter,hintTxt);
 }
 
 function setHandDetected(detected,shutter,hintTxt){
