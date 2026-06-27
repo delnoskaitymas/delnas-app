@@ -988,7 +988,7 @@ function startApp(){
       setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
     };
   })
-  .catch(()=>{document.getElementById('cam-error').style.display='flex';});
+  .catch(()=>{/* kameros klaida ignoruojama */});
 }
 
 function openCameraScreen(){startApp();}
@@ -1247,13 +1247,13 @@ function capturePhoto(){
     tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);border-radius:16px;padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:10px"><div id="tikr-spinner" style="position:relative;width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
-    // Atstatyti overlay į pradinę būseną su ratuku ir "Tikriname..."
+    // Atstatyti overlay
     tikrOvl.style.opacity='1';
     tikrOvl.style.display='flex';
     const sp=document.getElementById('tikr-spinner');
     if(sp){sp.style.animation='spin2 .8s linear infinite';sp.style.borderTopColor='#d4a843';sp.style.border='3px solid rgba(212,168,67,.2)';sp.style.borderTopColor='#d4a843';sp.innerHTML='';}
     const tikrLbl=document.getElementById('tikr-label');
-    if(tikrLbl){tikrLbl.style.opacity='1';tikrLbl.textContent='Tikriname...';}
+    if(tikrLbl){tikrLbl.style.opacity='1';tikrLbl.textContent='Analizuojame detales...';}
   }
 
   // Po 500ms - tikrinti
@@ -1297,7 +1297,7 @@ function capturePhoto(){
         return;
       }
 
-      // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
+      // Sėkmė - ratukas → auksinė varnelė
       const sp=document.getElementById('tikr-spinner');
       const tikrLabel=document.getElementById('tikr-label');
       // Vizualinis mirksnys — mygtukas trumpam nušvinta
@@ -1307,7 +1307,7 @@ function capturePhoto(){
         shutterFlash.style.background='linear-gradient(135deg,#fff8e0,#f5d878,#e8b840)';
         setTimeout(()=>{shutterFlash.style.background='';shutterFlash.style.transition='';},120);
       }
-      // Pirma — "Tikriname..." švelniai dingsta
+      // Pirma — tekstas švelniai dingsta
       if(tikrLabel){tikrLabel.style.transition='opacity 0.3s ease';tikrLabel.style.opacity='0';}
       // Po 300ms — ratukas tampa varnele
       setTimeout(()=>{
