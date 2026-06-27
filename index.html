@@ -172,6 +172,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok.active{display:flex}
 .cam-shutter-wrap{padding:4px 20px 0;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
+@keyframes encPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 @keyframes camBreathing{0%,100%{box-shadow:0 2px 16px rgba(212,168,67,.15),0 0 0 0 rgba(212,168,67,0)}50%{box-shadow:0 4px 28px rgba(212,168,67,.5),0 0 0 5px rgba(212,168,67,.12)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
 @keyframes lastStepPulse{
@@ -291,10 +292,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .5s ease,transform .15s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 6px rgba(212,168,67,.15)'" onpointerup="this.style.transform='';this.style.boxShadow=''" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
-    <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
+    <div style="font-size:10px;color:rgba(212,168,67,.4);text-align:center;letter-spacing:.04em;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px">
+      <span style="display:inline-flex;align-items:center;gap:3px">
+        <span style="width:6px;height:6px;border-radius:50%;background:rgba(80,220,120,.7);animation:encPulse 2s ease-in-out infinite;display:inline-block"></span>
+        <span style="font-size:9px;color:rgba(80,220,120,.8);font-family:'DM Sans',sans-serif;letter-spacing:.03em">Šifruojama</span>
+      </span>
+      <span style="color:rgba(212,168,67,.3)">·</span>
+      <span>🔒 Privatumas garantuojamas</span>
+    </div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -972,6 +980,8 @@ function startApp(){
       video.play();cameraReady=true;
       // Cross-fade: video švelniai atsiranda
       setTimeout(()=>{video.style.opacity='1';},50);
+      // Wake lock — ekranas nemiega
+      navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
 
       const shutter=document.getElementById('cam-shutter');
       if(shutter){shutter.disabled=true;shutter.style.opacity='0.35';}
@@ -1284,8 +1294,8 @@ function capturePhoto(){
       // Sėkmė - ratukas → auksinė varnelė, "Tikriname..." dingsta švelniai
       const sp=document.getElementById('tikr-spinner');
       const tikrLabel=document.getElementById('tikr-label');
-      // Haptic — švelnus vienas impulsas (soft click)
-      if(navigator.vibrate) navigator.vibrate(12);
+      // Haptic — du impulsai: patvirtinimas + sėkmė
+      if(navigator.vibrate) navigator.vibrate([15,50,30]);
       // Vizualinis mirksnys — mygtukas trumpam nušvinta
       const shutterFlash=document.getElementById('cam-shutter');
       if(shutterFlash){
