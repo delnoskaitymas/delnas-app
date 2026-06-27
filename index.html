@@ -1053,9 +1053,9 @@ function startSkinDetection(shutter,hintTxt){
     }
     // AI tikrinimas per serverį
     const checkCanvas=document.createElement('canvas');
-    checkCanvas.width=320;checkCanvas.height=240;
-    checkCanvas.getContext('2d').drawImage(video,0,0,320,240);
-    const imgData=checkCanvas.toDataURL('image/jpeg',0.5).split(',')[1];
+    checkCanvas.width=640;checkCanvas.height=480;
+    checkCanvas.getContext('2d').drawImage(video,0,0,640,480);
+    const imgData=checkCanvas.toDataURL('image/jpeg',0.8).split(',')[1];
     setHint('Analizuojame poziciją...','rgba(212,168,67,.6)',false);
     fetch('/validate-palm',{
       method:'POST',
