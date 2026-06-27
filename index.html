@@ -1223,15 +1223,18 @@ function capturePhoto(){
 
   // Analizė jau atlikta liveLoop — jei mygtukas pasiekiamas, tęsiame
 
-  // Rodyti sustingusį kadrą
+  // Sklandus perėjimas: frozen uždengia video
   if(frozen){
+    frozen.style.transition='none';
+    frozen.style.opacity='1';
     frozen.style.backgroundImage='url('+dataURL+')';
     frozen.style.display='block';
-    video.style.display='none';
   }
-  shutterWrap.style.visibility='hidden';
+  setTimeout(()=>{video.style.display='none';},50);
+  if(shutterWrap){shutterWrap.style.transition='opacity 0.3s ease';shutterWrap.style.opacity='0';setTimeout(()=>{shutterWrap.style.visibility='hidden';shutterWrap.style.opacity='1';shutterWrap.style.transition='';},300);}
   if(camSub) camSub.style.display='none';
-  document.getElementById('cam-title').textContent='';
+  const titleEl2=document.getElementById('cam-title');
+  if(titleEl2){titleEl2.style.transition='opacity 0.3s ease';titleEl2.style.opacity='0';setTimeout(()=>{titleEl2.textContent='';titleEl2.style.opacity='1';titleEl2.style.transition='';},300);}
 
   // Rodyti tikrOvl su ratuku
   let tikrOvl=document.getElementById('tikr-ovl');
@@ -1274,21 +1277,36 @@ function capturePhoto(){
         document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
         // Toast virš mygtuko
         showCamToast(title,msg);
-        // Po 2.5s — grąžinti gyvą kamerą (be startSkinDetection - kamera jau veikia)
+        // Po 2s — sklandus grįžimas į kamerą
         setTimeout(()=>{
-          if(frozen){frozen.style.transition='opacity 0.4s ease';frozen.style.opacity='0';}
+          // tikrOvl išnyksta
+          if(tikrOvl){tikrOvl.style.transition='opacity 0.5s ease';tikrOvl.style.opacity='0';}
+          // frozen sklandžiai išnyksta, video atsiranda
+          video.style.display='block';
+          video.style.opacity='0';
           setTimeout(()=>{
-            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';}
-            video.style.display='block';
-            // Aktyvuoti mygtuką su breathing
-            shutter.disabled=false;
-            shutter.style.opacity='1';
-            shutter.style.pointerEvents='auto';
-            shutter.style.animation='camBreathing 2s ease-in-out infinite';
-            const vp=document.getElementById('cam-viewport');
-            if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-          },400);
-        },2500);
+            if(frozen){frozen.style.transition='opacity 0.5s ease';frozen.style.opacity='0';}
+            video.style.transition='opacity 0.5s ease';video.style.opacity='1';
+            setTimeout(()=>{
+              if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';frozen.style.transition='';}
+              if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
+              video.style.transition='';video.style.opacity='1';
+              // Grąžinti UI elementus
+              const titleEl=document.getElementById('cam-title');
+              if(titleEl){titleEl.style.opacity='0';titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';titleEl.style.transition='opacity 0.3s ease';requestAnimationFrame(()=>requestAnimationFrame(()=>{titleEl.style.opacity='1';setTimeout(()=>{titleEl.style.transition='';},300);}));}
+              shutterWrap.style.visibility='';
+              shutterWrap.style.opacity='0';
+              shutterWrap.style.transition='opacity 0.3s ease';
+              requestAnimationFrame(()=>requestAnimationFrame(()=>{shutterWrap.style.opacity='1';setTimeout(()=>{shutterWrap.style.transition='';},300);}));
+              // Aktyvuoti mygtuką
+              shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+              shutter.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
+              shutter.style.animation='camBreathing 2s ease-in-out infinite';
+              const vp=document.getElementById('cam-viewport');
+              if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+            },500);
+          },100);
+        },2000);
         return;
       }
 
