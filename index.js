@@ -262,7 +262,7 @@ app.post('/validate-palm', async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
-    const promptText = 'You are analyzing a palm photo for a palm reading app. Reply with ONLY one of these exact words - nothing else:\n\nYES - if the full inner palm is clearly visible, all 5 fingers are present and spread, fingertips are not cut off at frame edges, and palm faces camera directly.\nTOO_CLOSE - if the hand fills the entire frame too closely.\nFINGERS_MISSING - if fewer than 5 fingers are visible or fingertips are cut off at edges.\nSIDEWAYS - if the hand is clearly rotated sideways showing mostly the side/edge of the hand.\nNO_HAND - if there is no hand visible at all, or only objects are shown.\n\nImportant: reply with exactly one word only.';
+    const promptText = 'Count the fingers carefully in this image. Reply with exactly one word only:\nYES - ONLY if: you can clearly count exactly 5 fingers all fully visible, the complete palm surface is visible, fingertips are not cut off at any edge of the frame, and palm faces camera.\nFINGERS_MISSING - if you cannot count 5 fingers, or any fingertips are cut off at frame edges, or fingers are closed/bent, or only part of palm visible.\nTOO_CLOSE - hand fills entire frame with no background.\nSIDEWAYS - hand is rotated showing side/edge.\nNO_HAND - no hand visible.\nIf in doubt, reply FINGERS_MISSING. Reply with one word only.';
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
