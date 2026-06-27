@@ -1159,6 +1159,34 @@ function capturePhoto(){
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
   const isLeftHand=camHand==='left';
 
+  // Greita odos analizė prieš tikrinimą
+  (()=>{
+    const ctx2=canvas.getContext('2d');
+    const W=64,H=64;
+    const small=document.createElement('canvas');small.width=W;small.height=H;
+    const sc=small.getContext('2d');sc.drawImage(canvas,0,0,W,H);
+    const d=sc.getImageData(0,0,W,H).data;
+    let skin=0;
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i],g=d[i+1],b=d[i+2];
+      if(r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254) skin++;
+    }
+    const ratio=skin/(W*H);
+    // Per mažai odos — delnas nematomas arba per toli
+    if(ratio<0.08){
+      shutter.style.pointerEvents='auto';
+      showCamError('Delnas neaptiktas.','Priartinkite delną ir bandykite dar kartą.');
+      return;
+    }
+    // Per daug odos — per arti, matoma tik dalis
+    if(ratio>0.75){
+      shutter.style.pointerEvents='auto';
+      showCamError('Delnas per arti.','Atitraukite ranką kad matytųsi visas delnas.');
+      return;
+    }
+  })();
+  if(shutter.style.pointerEvents==='auto') return; // klaida — stabdome
+
   // Rodyti sustingusį kadrą
   if(frozen){
     frozen.style.backgroundImage='url('+dataURL+')';
