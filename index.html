@@ -259,7 +259,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
-    <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .3s ease">
+    <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .3s ease;display:none">
       
       <svg id="cam-guide-svg" width="150" height="195" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.30;transition:opacity .4s,filter .4s;display:block;margin:35% auto 0;">
         
@@ -960,7 +960,7 @@ function startApp(){
   const cs=document.getElementById('cam-sub');if(cs) cs.style.display='';
   const sh=document.getElementById('cam-shutter');
   if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
-  const guide=document.getElementById('cam-guide');if(guide){guide.style.display='';guide.style.opacity='1';}
+  // cam-guide pašalintas
   const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
   const video=document.getElementById('cam-video');if(video) video.style.display='block';
   updateCameraUI();go('s-camera');
@@ -1034,72 +1034,49 @@ function startSkinDetection(shutter,hintTxt){
 
   function analyse(){
     if(!video||!video.videoWidth) return;
-    // 8x8 tinklelis — tikslesnė analizė
-    const W=96,H=96;
+    // Greita canvas patikra — tik akivaizdžios klaidos
+    const W=48,H=48;
     const sm=document.createElement('canvas');sm.width=W;sm.height=H;
     const sc=sm.getContext('2d');sc.drawImage(video,0,0,W,H);
     const d=sc.getImageData(0,0,W,H).data;
     function isSkin(r,g,b){return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;}
-    const G=8;
-    const zones=Array(G*G).fill(0);
-    const zt=Array(G*G).fill(0);
-    for(let y=0;y<H;y++){
-      for(let x=0;x<W;x++){
-        const i=(y*W+x)*4;
-        const z=Math.min(Math.floor(y/(H/G)),G-1)*G+Math.min(Math.floor(x/(W/G)),G-1);
-        zt[z]++;if(isSkin(d[i],d[i+1],d[i+2])) zones[z]++;
-      }
-    }
-    const zr=zones.map((s,i)=>s/zt[i]);
-    const rowAvg=ri=>{let s=0;for(let c=0;c<G;c++)s+=zr[ri*G+c];return s/G;};
-    const colAvg=ci=>{let s=0;for(let r=0;r<G;r++)s+=zr[ci+r*G];return s/G;};
-    const rows=Array.from({length:G},(_,i)=>rowAvg(i));
-    const cols=Array.from({length:G},(_,i)=>colAvg(i));
-    const total=zones.reduce((a,b)=>a+b,0)/(W*H);
-    // Pirštų galiukai viršuje (1-2 eilutė)
-    const topRow=(rows[0]+rows[1])/2;
-    // Pirštų kūnai (3-4 eilutė)
-    const midTop=(rows[2]+rows[3])/2;
-    // Delno vidurys (5-6 eilutė)
-    const midBot=(rows[4]+rows[5])/2;
-    // Delno pagrindas (7-8 eilutė)
-    const botRow=(rows[6]+rows[7])/2;
-    // Šonai
-    const leftCol=(cols[0]+cols[1])/2;
-    const rightCol=(cols[6]+cols[7])/2;
-    // Pirštų galiukai nenukirpti: viršus MAŽIAU odos nei pirštų kūnai
-    const tipsOk=topRow<midTop*1.1&&topRow>0.06;
-    // Visi pirštai matomi: kiekvienas stulpelis turi odą viršuje
-    const topCols=Array.from({length:G},(_,c)=>(zr[0*G+c]+zr[1*G+c])/2);
-    const activeTopCols=topCols.filter(v=>v>0.08).length;
-    // Abu šonai matomi (nykštys + mažasis pirštas)
-    const sidesOk=leftCol>0.08&&rightCol>0.08;
-    // Delno vidurys matomas
-    const palmOk=midBot>0.18;
-    // Delno pagrindas matomas
-    const baseOk=botRow>0.06;
-
-    if(total<0.08){
+    let skin=0;
+    for(let i=0;i<d.length;i+=4) if(isSkin(d[i],d[i+1],d[i+2])) skin++;
+    const total=skin/(W*H);
+    if(total<0.06){
       setHint('Nukreipkite kamerą į delną','rgba(212,168,67,.6)',false);
-    } else if(total>0.72){
-      setHint('Delnas per arti — atitraukite','rgba(255,160,60,.9)',false);
-    } else if(!tipsOk&&topRow>0.22){
-      setHint('Pirštų galiukai nukirpti — atitraukite','rgba(255,180,60,.9)',false);
-    } else if(activeTopCols<6){
-      setHint('Išskėskite pirštus — ne visi matomi','rgba(255,180,60,.9)',false);
-    } else if(!sidesOk){
-      setHint('Įtraukite visą delną — nykštys ar mažasis pirštas nematomas','rgba(255,180,60,.9)',false);
-    } else if(!palmOk||!baseOk){
-      setHint('Atitraukite žemiau — matytųsi visas delnas','rgba(255,180,60,.9)',false);
-    } else {
-      setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
+      return;
     }
+    if(total>0.78){
+      setHint('Delnas per arti — atitraukite','rgba(255,160,60,.9)',false);
+      return;
+    }
+    // AI tikrinimas per serverį
+    const checkCanvas=document.createElement('canvas');
+    checkCanvas.width=320;checkCanvas.height=240;
+    checkCanvas.getContext('2d').drawImage(video,0,0,320,240);
+    const imgData=checkCanvas.toDataURL('image/jpeg',0.5).split(',')[1];
+    setHint('Analizuojame poziciją...','rgba(212,168,67,.6)',false);
+    fetch('/validate-palm',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}]})
+    }).then(r=>r.json()).then(v=>{
+      if(v.valid){
+        setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
+      } else {
+        setHint('Išskėskite pirštus ir įtraukite visą delną','rgba(255,180,60,.9)',false);
+      }
+    }).catch(()=>{
+      // Klaida — leisti fotografuoti
+      setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
+    });
   }
 
-  liveLoop=setInterval(analyse,300);
+  liveLoop=setInterval(analyse,2500);
   window._liveLoop=liveLoop;
-  // Pradinis tikrinimas iš karto
-  setTimeout(analyse,300);
+  // Pradinis tikrinimas
+  setTimeout(analyse,1000);
 }
 
 function setHandDetected(detected,shutter,hintTxt){
