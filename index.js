@@ -104,7 +104,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Look at this image carefully. Answer YES only if ALL of these conditions are met: 1) It shows the INNER side (palm side) of a human hand, 2) ALL 5 fingers are clearly visible and spread apart, 3) The COMPLETE palm including fingertips, palm center, and wrist area are all visible in frame, 4) No fingers or fingertips are cut off at the edges. Answer NO if: fingers are cut off or partially outside frame, fewer than 5 fingers visible, only fingertips shown, back of hand shown, wrist/arm only shown, hand is at an angle showing mostly side view, any other object or body part. Answer only YES or NO.'
+            text: 'Look at this image. Is this a photo of a human palm (inner side of hand) suitable for palm reading analysis? Answer YES if: the palm/inner hand is clearly visible, most fingers are visible (at least 3-4), and palm lines are readable. Answer NO if: it shows only fingertips with no palm, shows the back of hand, shows only wrist/arm with no palm, shows a completely different object, or the hand is sideways showing only the edge. Answer only YES or NO.'
           }
         ]
       }]
@@ -283,7 +283,7 @@ app.post('/validate-palm', async (req, res) => {
           role: 'user',
           content: [
             ...imageBlocks,
-            { type: 'text', text: 'Look at this image carefully. Answer YES only if ALL of these conditions are met: 1) It shows the INNER side (palm side) of a human hand, 2) ALL 5 fingers are clearly visible and spread apart, 3) The COMPLETE palm including fingertips, palm center, and wrist area are all visible in frame, 4) No fingers or fingertips are cut off at the edges. Answer NO if: fingers are cut off or partially outside frame, fewer than 5 fingers visible, only fingertips shown, back of hand shown, wrist/arm only shown, hand is at an angle showing mostly side view, any other object or body part. Answer only YES or NO.' }
+            { type: 'text', text: 'Look at this image. Is this a photo of a human palm (inner side of hand) suitable for palm reading analysis? Answer YES if: the palm/inner hand is clearly visible, most fingers are visible (at least 3-4), and palm lines are readable. Answer NO if: it shows only fingertips with no palm, shows the back of hand, shows only wrist/arm with no palm, shows a completely different object, or the hand is sideways showing only the edge. Answer only YES or NO.' }
           ]
         }]
       })
