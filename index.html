@@ -158,6 +158,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
 .cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
+@keyframes camBreathing{0%,100%{box-shadow:0 2px 16px rgba(212,168,67,.2),0 0 0 0 rgba(212,168,67,0)}50%{box-shadow:0 4px 28px rgba(212,168,67,.5),0 0 0 6px rgba(212,168,67,.15)}}
+@keyframes camGoldGlow{0%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.6),0 0 24px rgba(212,168,67,.3)}100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0)}}
+#cam-hint-txt{font-size:11px;font-weight:600;letter-spacing:.06em;text-align:center;transition:color 0.4s ease,opacity 0.4s ease;font-family:'DM Sans',sans-serif;margin-bottom:6px;min-height:16px}
 .cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:16px;overflow:hidden;background:#0a0a0a;z-index:10;border:1px solid rgba(212,168,67,.35);box-shadow:0 0 0 1px rgba(212,168,67,.1),0 0 24px rgba(212,168,67,.08)}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
@@ -249,8 +252,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0">
-    <video id="cam-video" autoplay playsinline muted></video>
+  <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0" id="cam-viewport">
+    <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
@@ -285,11 +288,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
   </div>
   <div class="cam-shutter-wrap">
-    <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:8px">🔒 Privatumas garantuojamas</div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .5s ease,transform .15s ease,background .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <div id="cam-hint-txt" style="color:rgba(212,168,67,.5)">Nukreipkite kamerą į kairįjį delną</div>
+    <button id="cam-shutter" onclick="capturePhoto()" disabled style="opacity:.4;transition:opacity .5s ease,transform .15s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
-    
+    <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
 </div>
@@ -965,10 +968,10 @@ function startApp(){
     camStream=stream;const video=document.getElementById('cam-video');
     video.srcObject=stream;video.onloadedmetadata=()=>{
       video.play();cameraReady=true;
+      // Cross-fade: video švelniai atsiranda
+      setTimeout(()=>{video.style.opacity='1';},50);
       const shutter=document.getElementById('cam-shutter');
-      // Mygtukas VISADA lieka disabled — tik skin detection jį aktyvuoja
       if(shutter){shutter.disabled=true;shutter.style.opacity='0.35';}
-      // Gidas išlieka matomas kol nėra delno
       startSkinDetection(shutter, document.getElementById('cam-hint-txt'));
     };
   })
@@ -987,7 +990,11 @@ function updateCameraUI(){
     title.textContent='Nufotografuokite dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
-  if(hint&&!handVisible) hint.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';
+  if(hint&&!handVisible){hint.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';hint.style.color='rgba(212,168,67,.5)';}
+  // Sustabdyti breathing kai perjungiama tarp delno
+  const shutterEl=document.getElementById('cam-shutter');
+  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';}
+  const vpEl=document.getElementById('cam-viewport');if(vpEl) vpEl.style.animation='none';
 }
 
 let handDetector=null;let handDetectLoop=null;
@@ -1000,8 +1007,64 @@ async function startHandDetection(){
 }
 
 function startSkinDetection(shutter,hintTxt){
-  // Mygtukas aktyvus iš karto — serveris validuos ar nuotraukoje yra delnas
-  setHandDetected(true,shutter,hintTxt);
+  // Realaus laiko odos spalvos analizė per canvas kas 400ms
+  const video=document.getElementById('cam-video');
+  const canvas=document.createElement('canvas');
+  canvas.width=64;canvas.height=64;
+  const ctx=canvas.getContext('2d');
+  let skinLoop=null;
+  let lastState='none'; // 'none'|'too_close'|'ready'
+
+  function analyseSkin(){
+    if(!video||!video.videoWidth) return;
+    ctx.drawImage(video,0,0,64,64);
+    const data=ctx.getImageData(0,0,64,64).data;
+    let skinPixels=0;let totalPixels=64*64;
+    for(let i=0;i<data.length;i+=4){
+      const r=data[i],g=data[i+1],b=data[i+2];
+      // Odos spalvos heuristika: šilta, r>g>b, tam tikri santykiai
+      if(r>80&&g>40&&b>20&&r>g&&r>b&&(r-g)>15&&r<250){
+        skinPixels++;
+      }
+    }
+    const ratio=skinPixels/totalPixels;
+    let newState;
+    if(ratio>0.72){
+      // Per daug odos — delnas per arti
+      newState='too_close';
+    } else if(ratio>0.22){
+      // Geras kiekis odos — pozicija tinkama
+      newState='ready';
+    } else {
+      // Per mažai odos — delno nėra arba per toli
+      newState='none';
+    }
+
+    if(newState===lastState) return;
+    lastState=newState;
+
+    if(newState==='too_close'){
+      if(hintTxt){hintTxt.textContent='Atitraukite delną — per arti';hintTxt.style.color='rgba(255,180,80,.95)';}
+      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
+      handVisible=false;
+    } else if(newState==='ready'){
+      if(hintTxt){hintTxt.textContent='Sistema paruošta — spauskite užfiksuoti';hintTxt.style.color='rgba(212,168,67,.95)';}
+      shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+      shutter.style.animation='camBreathing 2s ease-in-out infinite';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
+      if(!handVisible){handVisible=true;const guide=document.getElementById('cam-guide');if(guide) guide.style.opacity='0';}
+    } else {
+      if(hintTxt){hintTxt.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';hintTxt.style.color='rgba(212,168,67,.5)';}
+      shutter.disabled=true;shutter.style.opacity='0.35';shutter.style.animation='none';
+      const vp=document.getElementById('cam-viewport');if(vp) vp.style.animation='none';
+      handVisible=false;
+    }
+  }
+
+  // Pradėti kas 400ms
+  skinLoop=setInterval(analyseSkin,400);
+  window._skinLoop=skinLoop;
 }
 
 function setHandDetected(detected,shutter,hintTxt){
@@ -1010,36 +1073,45 @@ function setHandDetected(detected,shutter,hintTxt){
   const guideTxt=document.getElementById('cam-guide-txt');
   const guide=document.getElementById('cam-guide');
   if(detected){
-    // Siluetas dingsta kai delnas aptiktas
     if(guide) guide.style.opacity='0';
     shutter.disabled=false;
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
-
+    // Breathing animacija — kviečia paspausti
+    shutter.style.animation='camBreathing 2s ease-in-out infinite';
+    // Viewport auksinis glow
+    const vp=document.getElementById('cam-viewport');
+    if(vp) vp.style.animation='camGoldGlow 2s ease-in-out infinite';
+    // Hint tekstas
+    if(hintTxt){hintTxt.textContent='Sistema paruošta — spauskite užfiksuoti';hintTxt.style.color='rgba(212,168,67,.9)';}
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
       guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
     }
-
   }else{
-    // Siluetas grįžta kai delno nėra
     if(guide) guide.style.opacity='1';
     shutter.disabled=true;
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
-
+    shutter.style.animation='none';
+    const vp=document.getElementById('cam-viewport');
+    if(vp) vp.style.animation='none';
+    if(hintTxt){
+      hintTxt.textContent=camHand==='left'?'Nukreipkite kamerą į kairįjį delną':'Nukreipkite kamerą į dešinįjį delną';
+      hintTxt.style.color='rgba(212,168,67,.5)';
+    }
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}});
       guideSvg.style.opacity='.18';
       guideSvg.style.filter='none';
     }
-
   }
 }
 
 function stopHandDetection(){
   clearTimeout(window._handAutoTimer);
+  if(window._skinLoop){clearInterval(window._skinLoop);window._skinLoop=null;}
   if(handDetector){try{handDetector.stop();}catch(e){}handDetector=null;}
   if(handDetectLoop){clearInterval(handDetectLoop);handDetectLoop=null;}
   handVisible=false;
