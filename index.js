@@ -262,10 +262,7 @@ app.post('/validate-palm', async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
-    // Live preview tikrinimas — švelnesnis
-    const promptText = livePreview
-      ? 'Look at this image. Can you see a human palm (inner side of hand) with fingers visible? Answer YES if a palm is clearly present in the frame with most fingers visible. Answer NO only if there is clearly no palm, or it shows a completely different object. Answer only YES or NO.'
-      : 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off), the palm is facing the camera directly (not at a sharp angle). Answer NO if: any fingers are missing or cut off at frame edge, fewer than 5 fingers visible, only part of palm visible, palm is sideways or angled, back of hand shown, wrist only shown. Answer only YES or NO.';
+    const promptText = 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off), the palm is facing the camera directly (not at a sharp angle). Answer NO if: any fingers are missing or cut off at frame edge, fewer than 5 fingers visible, only part of palm visible, palm is sideways or angled, back of hand shown, wrist only shown. Answer only YES or NO.';
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
