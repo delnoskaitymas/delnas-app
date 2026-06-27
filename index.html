@@ -260,9 +260,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
-    <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .3s ease;display:none">
+    <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .5s ease;opacity:1">
       
-      <svg id="cam-guide-svg" width="150" height="195" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.30;transition:opacity .4s,filter .4s;display:block;margin:35% auto 0;">
+      <svg id="cam-guide-svg" width="160" height="210" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2))">
         
         <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
         
@@ -961,7 +961,9 @@ function startApp(){
   const cs=document.getElementById('cam-sub');if(cs) cs.style.display='';
   const sh=document.getElementById('cam-shutter');
   if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
-  // cam-guide pašalintas
+  // Rodyti siluetą kol kamera neaktyvi
+  const guideEl=document.getElementById('cam-guide');
+  if(guideEl){guideEl.style.display='flex';guideEl.style.opacity='1';}
   const frozen=document.getElementById('cam-frozen');if(frozen){frozen.classList.remove('active');frozen.style.backgroundImage='';}
   const video=document.getElementById('cam-video');if(video){video.style.display='block';video.style.opacity='0';}
   updateCameraUI();go('s-camera');
@@ -971,8 +973,12 @@ function startApp(){
     camStream=stream;const video=document.getElementById('cam-video');
     video.srcObject=stream;video.onloadedmetadata=()=>{
       video.play();cameraReady=true;
-      // Cross-fade: video švelniai atsiranda
-      setTimeout(()=>{video.style.opacity='1';},50);
+      // Cross-fade: video švelniai atsiranda, siluetas išnyksta
+      setTimeout(()=>{
+        video.style.opacity='1';
+        const guide=document.getElementById('cam-guide');
+        if(guide){guide.style.opacity='0';setTimeout(()=>{guide.style.display='none';},500);}
+      },50);
       // Wake lock — ekranas nemiega
       navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
 
@@ -1016,13 +1022,6 @@ async function startHandDetection(){
 
 function startSkinDetection(shutter,hintTxt){
   setHandDetected(true,shutter,hintTxt);
-  setTimeout(()=>{
-    if(shutter&&!shutter.disabled){
-      shutter.style.animation='camBreathing 2s ease-in-out infinite';
-    }
-    const vp=document.getElementById('cam-viewport');
-    if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-  },500);
 
 
   function analyse(){
@@ -1076,31 +1075,32 @@ function setHandDetected(detected,shutter,hintTxt){
   const guideTxt=document.getElementById('cam-guide-txt');
   const guide=document.getElementById('cam-guide');
   if(detected){
-    // Siluetas dingsta kai delnas aptiktas
     if(guide) guide.style.opacity='0';
     shutter.disabled=false;
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
-
+    // Breathing animacija + glow — toks pats abiejuose ekranuose
+    shutter.style.animation='camBreathing 2s ease-in-out infinite';
+    const vp=document.getElementById('cam-viewport');
+    if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
       guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
     }
-
   }else{
-    // Siluetas grįžta kai delno nėra
     if(guide) guide.style.opacity='1';
     shutter.disabled=true;
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
-
+    shutter.style.animation='none';
+    const vp=document.getElementById('cam-viewport');
+    if(vp) vp.style.animation='none';
     if(guideSvg){
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#888');el.setAttribute('fill','rgba(136,136,136,0.06)');}});
       guideSvg.style.opacity='.18';
       guideSvg.style.filter='none';
     }
-
   }
 }
 
