@@ -1203,7 +1203,7 @@ function showCamToast(title, msg){
   const container=vp||document.body;
   const toast=document.createElement('div');
   toast.id='cam-toast';
-  toast.style.cssText='position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(20px);width:calc(100vw - 40px);max-width:320px;background:rgba(7,4,15,.88);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:12px 16px;text-align:center;z-index:20;opacity:0;transition:opacity 0.35s ease,transform 0.35s ease;box-shadow:0 8px 28px rgba(0,0,0,.5)';
+  toast.style.cssText='position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);width:calc(100vw - 40px);max-width:320px;background:rgba(7,4,15,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:11px 16px;text-align:center;z-index:10001;opacity:0;transition:opacity 0.35s ease,transform 0.35s ease;box-shadow:0 4px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)';
   toast.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.45">'+msg+'</div>';
   if(container.style) container.style.position='relative';
   container.appendChild(toast);
@@ -1268,8 +1268,8 @@ function capturePhoto(){
   if(!tikrOvl){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;background:transparent;pointer-events:none;opacity:1';
-    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.92);border:1px solid rgba(212,168,67,.45);border-radius:18px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(0,0,0,.7)"><div id="tikr-spinner" style="width:48px;height:48px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.06em;font-family:DM Sans,sans-serif;text-align:center">Analizuojame detales...</div></div>';
+    tikrOvl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;background:rgba(7,4,15,.25);pointer-events:none;opacity:1';
+    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(212,168,67,.3);border-radius:20px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)"><div id="tikr-spinner" style="width:48px;height:48px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.06em;font-family:DM Sans,sans-serif;text-align:center">Analizuojame detales...</div></div>';
     document.body.appendChild(tikrOvl);
     // Iš karto matomas
     requestAnimationFrame(()=>{tikrOvl.style.opacity='1';});
@@ -1280,7 +1280,7 @@ function capturePhoto(){
     if(sp){sp.style.animation='spin2 .8s linear infinite';sp.style.border='3px solid rgba(212,168,67,.2)';sp.style.borderTopColor='#d4a843';sp.innerHTML='';}
     const tikrLbl=document.getElementById('tikr-label');
     if(tikrLbl){tikrLbl.style.opacity='1';tikrLbl.textContent='Analizuojame detales...';}
-    tikrOvl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;background:transparent;pointer-events:none;opacity:1';
+    tikrOvl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;background:rgba(7,4,15,.25);pointer-events:none;opacity:1';
   }
 
   // Po 500ms - tikrinti
@@ -1326,8 +1326,12 @@ function capturePhoto(){
       }
       // Pirma — tekstas švelniai dingsta
       if(tikrLabel){tikrLabel.style.transition='opacity 0.3s ease';tikrLabel.style.opacity='0';}
-      // Po 300ms — ratukas tampa varnele
+      // Po 300ms — fonas tamsėja (sertifikavimo jausmas), varnelė
       setTimeout(()=>{
+        // Fonas tamsėja kai sėkmė
+        if(tikrOvl) tikrOvl.style.background='rgba(7,4,15,.75)';
+        const panelDiv=tikrOvl?tikrOvl.querySelector('div'):null;
+        if(panelDiv){panelDiv.style.background='rgba(7,4,15,.92)';panelDiv.style.backdropFilter='none';}
         if(sp){
           sp.style.animation='none';
           sp.style.border='3px solid #d4a843';
