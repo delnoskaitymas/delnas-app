@@ -254,7 +254,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0;position:relative;overflow:visible" id="cam-viewport">
+  <div style="position:relative;margin-top:6px;margin-bottom:4px;flex:1;min-height:0"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0" id="cam-viewport">
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
