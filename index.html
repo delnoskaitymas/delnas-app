@@ -1269,7 +1269,7 @@ function capturePhoto(){
   if(!tikrOvl){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:10%;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
+    tikrOvl.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
     tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.82);border:1px solid rgba(212,168,67,.35);border-radius:18px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4)"><div id="tikr-spinner" style="width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.9);font-size:13px;font-weight:600;letter-spacing:.06em;font-family:DM Sans,sans-serif;text-align:center;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
@@ -1298,45 +1298,34 @@ function capturePhoto(){
           'no_hand':['Sistema nematė delno.','Įsitikinkite, kad esate gerai apšviestoje vietoje ir delnas yra vaizdo centre.']
         };
         const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
-        // Palikti frozen nuotrauką kaip "šešėlį" — vartotojas mato savo klaidą
-        if(tikrOvl) tikrOvl.style.display='none';
-        shutterWrap.style.visibility='';
-        if(camSub) camSub.style.display='';
-        document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
-        // tikrOvl → pasitraukia, bet frozen lieka su patamsinimu
+        // tikrOvl išnyksta švelniai — frozen nuotrauka lieka matoma
         if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';setTimeout(()=>{if(tikrOvl) tikrOvl.style.display='none';},400);}
-        // Frozen lieka matomas originaliu ryškumu
-        // Toast virš mygtuko
+        // Toast ant frozen nuotraukos — vartotojas mato klaidą ir savo delną
         showCamToast(title,msg);
-        // Po 5s — sklandus grįžimas į kamerą
+        // Po 5s — grįžimas į kamerą
         setTimeout(()=>{
-          // frozen išnyksta
-          // frozen sklandžiai išnyksta, video atsiranda
+          // Frozen išnyksta, video atsiranda cross-fade
           video.style.display='block';
           video.style.opacity='0';
+          if(frozen){frozen.style.transition='opacity 0.5s ease';frozen.style.opacity='0';}
+          video.style.transition='opacity 0.5s ease';
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{video.style.opacity='1';}));
           setTimeout(()=>{
-            if(frozen){frozen.style.transition='opacity 0.5s ease';frozen.style.opacity='0';}
-            video.style.transition='opacity 0.5s ease';video.style.opacity='1';
-            setTimeout(()=>{
-              if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';frozen.style.transition='';}
-              if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
-              video.style.transition='';video.style.opacity='1';
-              // Grąžinti UI elementus
-              const titleEl=document.getElementById('cam-title');
-              if(titleEl){titleEl.style.opacity='0';titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';titleEl.style.transition='opacity 0.3s ease';requestAnimationFrame(()=>requestAnimationFrame(()=>{titleEl.style.opacity='1';setTimeout(()=>{titleEl.style.transition='';},300);}));}
-              shutterWrap.style.visibility='';
-              shutterWrap.style.opacity='0';
-              shutterWrap.style.transition='opacity 0.3s ease';
-              requestAnimationFrame(()=>requestAnimationFrame(()=>{shutterWrap.style.opacity='1';setTimeout(()=>{shutterWrap.style.transition='';},300);}));
-              // Aktyvuoti mygtuką
-              shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
-              shutter.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
-              shutter.style.animation='camBreathing 2s ease-in-out infinite';
-              const vp=document.getElementById('cam-viewport');
-              if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-            },500);
-          },100);
-        },2000);
+            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';frozen.style.transition='';}
+            video.style.transition='';
+            // Grąžinti antraštę
+            const titleEl=document.getElementById('cam-title');
+            if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';}
+            if(camSub) camSub.style.display='';
+            // Grąžinti mygtuką
+            shutterWrap.style.visibility='';
+            shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+            shutter.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
+            shutter.style.animation='camBreathing 2s ease-in-out infinite';
+            const vp=document.getElementById('cam-viewport');
+            if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+          },550);
+        },5000);
         return;
       }
 
