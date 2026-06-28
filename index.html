@@ -160,7 +160,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
 .cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
-.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:16px;overflow:visible;background:#0a0a0a;z-index:10;border:1px solid rgba(212,168,67,.35);box-shadow:0 0 0 1px rgba(212,168,67,.1),0 0 24px rgba(212,168,67,.08)}
+.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#0a0a0a;z-index:10;border:2px solid rgba(212,168,67,.7);box-shadow:0 0 0 1px rgba(212,168,67,.2),0 0 28px rgba(212,168,67,.15)}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
@@ -293,6 +293,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
+  <div id="cam-msg-bar" style="display:none;position:absolute;bottom:8px;left:8px;right:8px;z-index:20;border:1px solid rgba(212,168,67,.6);border-radius:14px;background:rgba(7,4,15,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px 16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)"></div>
 </div>
 
 
@@ -1191,7 +1192,20 @@ function checkSkinArea(dataURL, minRatio){
 }
 
 function showCamError(title, msg){
-  showCamToast(title, msg);
+  const bar=document.getElementById('cam-msg-bar');
+  if(!bar) return;
+  bar.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.4">'+msg+'</div>';
+  bar.style.display='block';
+  bar.style.opacity='0';
+  bar.style.transform='translateY(8px)';
+  bar.style.transition='opacity 0.35s ease,transform 0.35s ease';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.opacity='1';bar.style.transform='translateY(0)';}));
+  clearTimeout(bar._timer);
+  bar._timer=setTimeout(()=>{bar.style.opacity='0';bar.style.transform='translateY(8px)';setTimeout(()=>{bar.style.display='none';},350);},6000);
+}
+function hideCamMsgBar(){
+  const bar=document.getElementById('cam-msg-bar');
+  if(bar){bar.style.opacity='0';bar.style.transform='translateY(8px)';setTimeout(()=>{bar.style.display='none';bar.style.opacity='';bar.style.transform='';},350);}
 }
 
 function showCamToast(title, msg){
@@ -1271,9 +1285,10 @@ function capturePhoto(){
     tikrOvl.id='tikr-ovl';
     tikrOvl.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:100;opacity:0;transform:translateY(100%);transition:opacity 0.4s ease,transform 0.4s ease;border-radius:0 0 16px 16px;overflow:hidden';
     tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(212,168,67,.3);padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center"><div id="tikr-spinner" style="width:36px;height:36px;border:2.5px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:13px;font-weight:600;letter-spacing:.04em;font-family:DM Sans,sans-serif;transition:opacity 0.4s ease;text-align:center">Analizuojame detales...</div></div>';
-    const camVpEl=document.querySelector('.cam-viewport');
-    if(camVpEl) camVpEl.appendChild(tikrOvl);
-    else document.body.appendChild(tikrOvl);
+    // cam-msg-bar rodo analizę
+    const bar2=document.getElementById('cam-msg-bar');
+    if(bar2){bar2.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div id="tikr-spinner" style="width:20px;height:20px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Analizuojame detales...</div></div>';bar2.style.display='block';bar2.style.opacity='0';bar2.style.transform='translateY(8px)';bar2.style.transition='opacity 0.35s ease,transform 0.35s ease';requestAnimationFrame(()=>requestAnimationFrame(()=>{bar2.style.opacity='1';bar2.style.transform='translateY(0)';}));}
+    document.body.appendChild(tikrOvl);tikrOvl.style.display='none';
   } else {
     // Atstatyti overlay
     tikrOvl.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:100;opacity:0;transform:translateY(100%);transition:opacity 0.4s ease,transform 0.4s ease;border-radius:0 0 16px 16px;overflow:hidden';
@@ -1350,8 +1365,10 @@ function capturePhoto(){
           sp.style.display='flex';
           sp.style.alignItems='center';
           sp.style.justifyContent='center';
-          sp.style.cssText='width:52px;height:52px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);box-shadow:0 0 20px rgba(212,168,67,.4);flex-shrink:0;margin:0 auto';
-          sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:auto;animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;filter:drop-shadow(0 0 5px rgba(212,168,67,.8))"><polyline points="20 6 9 17 4 12"/></svg>';
+          // Sėkmė — cam-msg-bar rodo varnelę
+          const barOk=document.getElementById('cam-msg-bar');
+          if(barOk){barOk.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</div></div>';barOk.style.display='block';barOk.style.opacity='0';barOk.style.transform='translateY(8px)';requestAnimationFrame(()=>requestAnimationFrame(()=>{barOk.style.opacity='1';barOk.style.transform='translateY(0)';}));}
+          if(sp){sp.style.cssText='display:none';}
 
         }
       },300);
