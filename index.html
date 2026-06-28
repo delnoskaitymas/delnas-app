@@ -1215,7 +1215,7 @@ function showCamToast(title, msg){
     toast.style.opacity='0';
     toast.style.transform='translateX(-50%) translateY(8px)';
     setTimeout(()=>{if(toast.parentNode) toast.remove();},350);
-  },3500);
+  },6000);
 }
 
 
@@ -1251,13 +1251,14 @@ function capturePhoto(){
 
   // Sklandus perėjimas: frozen uždengia video
   if(frozen){
+    frozen.style.transition='none';
     frozen.style.backgroundImage='url('+dataURL+')';
-    frozen.style.opacity='0';
+    frozen.style.backgroundSize='cover';
+    frozen.style.backgroundPosition='center';
     frozen.style.display='block';
-    frozen.style.transition='opacity 0.25s ease';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{frozen.style.opacity='1';}));
+    frozen.style.opacity='1';
+    video.style.display='none';
   }
-  setTimeout(()=>{video.style.display='none';},260);
   if(shutterWrap){shutterWrap.style.transition='opacity 0.3s ease';shutterWrap.style.opacity='0';setTimeout(()=>{shutterWrap.style.visibility='hidden';shutterWrap.style.opacity='1';shutterWrap.style.transition='';},300);}
   if(camSub) camSub.style.display='none';
   const titleEl2=document.getElementById('cam-title');
@@ -1268,7 +1269,7 @@ function capturePhoto(){
   if(!tikrOvl){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
+    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:10%;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
     tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.82);border:1px solid rgba(212,168,67,.35);border-radius:18px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4)"><div id="tikr-spinner" style="width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.9);font-size:13px;font-weight:600;letter-spacing:.06em;font-family:DM Sans,sans-serif;text-align:center;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
@@ -1307,7 +1308,7 @@ function capturePhoto(){
         // Frozen lieka matomas originaliu ryškumu
         // Toast virš mygtuko
         showCamToast(title,msg);
-        // Po 2s — sklandus grįžimas į kamerą
+        // Po 5s — sklandus grįžimas į kamerą
         setTimeout(()=>{
           // frozen išnyksta
           // frozen sklandžiai išnyksta, video atsiranda
