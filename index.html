@@ -160,7 +160,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
 .cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
-.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#0a0a0a;z-index:10;border:2px solid rgba(212,168,67,.7);box-shadow:0 0 0 1px rgba(212,168,67,.2),0 0 28px rgba(212,168,67,.15)}
+.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:16px;overflow:hidden;background:#0a0a0a;z-index:10;border:1px solid rgba(30,20,5,.8);box-shadow:0 0 24px rgba(212,168,67,.06)}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
@@ -255,6 +255,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
   <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0;position:relative;overflow:visible" id="cam-viewport">
+  <!-- Gold kampai -->
+  <div style="position:absolute;top:0;left:0;width:22px;height:22px;border-top:2.5px solid rgba(212,168,67,.85);border-left:2.5px solid rgba(212,168,67,.85);border-radius:16px 0 0 0;z-index:11;pointer-events:none"></div>
+  <div style="position:absolute;top:0;right:0;width:22px;height:22px;border-top:2.5px solid rgba(212,168,67,.85);border-right:2.5px solid rgba(212,168,67,.85);border-radius:0 16px 0 0;z-index:11;pointer-events:none"></div>
+  <div style="position:absolute;bottom:0;left:0;width:22px;height:22px;border-bottom:2.5px solid rgba(212,168,67,.85);border-left:2.5px solid rgba(212,168,67,.85);border-radius:0 0 0 16px;z-index:11;pointer-events:none"></div>
+  <div style="position:absolute;bottom:0;right:0;width:22px;height:22px;border-bottom:2.5px solid rgba(212,168,67,.85);border-right:2.5px solid rgba(212,168,67,.85);border-radius:0 0 16px 0;z-index:11;pointer-events:none"></div>
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
@@ -280,7 +285,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
-    <div class="cam-frozen" id="cam-frozen"></div>
+    <div class="cam-frozen" id="cam-frozen">
+      <div id="cam-msg-bar" style="display:none;position:absolute;bottom:10px;left:10px;right:10px;z-index:20;border:1px solid rgba(212,168,67,.55);border-radius:14px;background:rgba(7,4,15,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px 16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)"></div>
+    </div>
     <div class="cam-rescan" id="cam-rescan"></div>
     
     <div class="cam-error" id="cam-error" style="display:none!important"></div>
@@ -293,7 +300,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
   </div>
   <canvas id="cam-canvas" style="display:none"></canvas>
-  <div id="cam-msg-bar" style="display:none;position:absolute;bottom:8px;left:8px;right:8px;z-index:20;border:1px solid rgba(212,168,67,.6);border-radius:14px;background:rgba(7,4,15,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px 16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)"></div>
+
 </div>
 
 
@@ -1278,25 +1285,31 @@ function capturePhoto(){
   const titleEl2=document.getElementById('cam-title');
   if(titleEl2){titleEl2.style.transition='opacity 0.3s ease';titleEl2.style.opacity='0';setTimeout(()=>{titleEl2.textContent='';titleEl2.style.opacity='1';titleEl2.style.transition='';},300);}
 
-  // Rodyti tikrOvl su ratuku
-  let tikrOvl=document.getElementById('tikr-ovl');
-  if(!tikrOvl){
-    tikrOvl=document.createElement('div');
-    tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:100;opacity:0;transform:translateY(100%);transition:opacity 0.4s ease,transform 0.4s ease;border-radius:0 0 16px 16px;overflow:hidden';
-    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(212,168,67,.3);padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center"><div id="tikr-spinner" style="width:36px;height:36px;border:2.5px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:13px;font-weight:600;letter-spacing:.04em;font-family:DM Sans,sans-serif;transition:opacity 0.4s ease;text-align:center">Analizuojame detales...</div></div>';
-    // cam-msg-bar rodo analizę
-    const bar2=document.getElementById('cam-msg-bar');
-    if(bar2){bar2.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div id="tikr-spinner" style="width:20px;height:20px;border:2px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Analizuojame detales...</div></div>';bar2.style.display='block';bar2.style.opacity='0';bar2.style.transform='translateY(8px)';bar2.style.transition='opacity 0.35s ease,transform 0.35s ease';requestAnimationFrame(()=>requestAnimationFrame(()=>{bar2.style.opacity='1';bar2.style.transform='translateY(0)';}));}
-    document.body.appendChild(tikrOvl);tikrOvl.style.display='none';
-  } else {
-    // Atstatyti overlay
-    tikrOvl.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:100;opacity:0;transform:translateY(100%);transition:opacity 0.4s ease,transform 0.4s ease;border-radius:0 0 16px 16px;overflow:hidden';
-    const sp=document.getElementById('tikr-spinner');
-    if(sp){sp.style.animation='spin2 .8s linear infinite';sp.style.borderTopColor='#d4a843';sp.style.border='3px solid rgba(212,168,67,.2)';sp.style.borderTopColor='#d4a843';sp.innerHTML='';}
-    const tikrLbl=document.getElementById('tikr-label');
-    if(tikrLbl){tikrLbl.style.opacity='1';tikrLbl.textContent='Analizuojame detales...';}
+  // Rodyti "Analizuojame" laukelį frozen apačioje
+  function showMsgBar(html){
+    const bar=document.getElementById('cam-msg-bar');
+    if(!bar) return;
+    bar.innerHTML=html;
+    bar.style.display='block';
+    bar.style.opacity='0';
+    bar.style.transform='translateY(12px)';
+    bar.style.transition='opacity 0.35s ease,transform 0.35s ease';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      bar.style.opacity='1';
+      bar.style.transform='translateY(0)';
+    }));
   }
+  function hideMsgBar(){
+    const bar=document.getElementById('cam-msg-bar');
+    if(!bar) return;
+    bar.style.transition='opacity 0.3s ease,transform 0.3s ease';
+    bar.style.opacity='0';
+    bar.style.transform='translateY(12px)';
+    setTimeout(()=>{bar.style.display='none';},300);
+  }
+  const SPINNER='<div id="tikr-spinner" style="width:22px;height:22px;border:2.5px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div>';
+  showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px">'+SPINNER+'<span id="tikr-label" style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif;letter-spacing:.03em">Analizuojame detales...</span></div>');
+  let tikrOvl=null; // legacy compat
 
   // Po 500ms - tikrinti
   setTimeout(()=>{
@@ -1314,10 +1327,11 @@ function capturePhoto(){
           'no_hand':['Sistema nematė delno.','Įsitikinkite, kad esate gerai apšviestoje vietoje ir delnas yra vaizdo centre.']
         };
         const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
-        // tikrOvl išnyksta švelniai — frozen nuotrauka lieka matoma
-        if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';setTimeout(()=>{if(tikrOvl) tikrOvl.style.display='none';},400);}
-        // Toast ant frozen nuotraukos — vartotojas mato klaidą ir savo delną
-        showCamToast(title,msg);
+        // Rodyti klaidos laukelį frozen apačioje
+        hideMsgBar();
+        setTimeout(()=>{
+          showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.4">'+msg+'</div></div>');
+        },350);
         // Po 5s — grįžimas į kamerą
         setTimeout(()=>{
           // Frozen išnyksta, video atsiranda cross-fade
@@ -1355,24 +1369,11 @@ function capturePhoto(){
         shutterFlash.style.background='linear-gradient(135deg,#fff8e0,#f5d878,#e8b840)';
         setTimeout(()=>{shutterFlash.style.background='';shutterFlash.style.transition='';},120);
       }
-      // Pirma — tekstas švelniai dingsta
-      if(tikrLabel){tikrLabel.style.transition='opacity 0.3s ease';tikrLabel.style.opacity='0';}
-      // Po 300ms — ratukas tampa varnele
+      // Sėkmė — rodyti varnelę laukelyje
+      hideMsgBar();
       setTimeout(()=>{
-        if(sp){
-          sp.style.animation='none';
-          sp.style.border='3px solid #d4a843';
-          sp.style.display='flex';
-          sp.style.alignItems='center';
-          sp.style.justifyContent='center';
-          // Sėkmė — cam-msg-bar rodo varnelę
-          const barOk=document.getElementById('cam-msg-bar');
-          if(barOk){barOk.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</div></div>';barOk.style.display='block';barOk.style.opacity='0';barOk.style.transform='translateY(8px)';requestAnimationFrame(()=>requestAnimationFrame(()=>{barOk.style.opacity='1';barOk.style.transform='translateY(0)';}));}
-          if(sp){sp.style.cssText='display:none';}
-
-        }
+        showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</span></div>');
       },300);
-      // Dummy — toliau vykdomas originalus perėjimas
 
       // Po 0.9s — švelniai pereiti į kitą ekraną
       if(isLeftHand){
@@ -1381,7 +1382,8 @@ function capturePhoto(){
           if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';}
           setTimeout(()=>{
             if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
-            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+            hideMsgBar();
+          if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
             video.style.display='block';
             shutterWrap.style.visibility='';
             if(camSub) camSub.style.display='';
