@@ -970,12 +970,26 @@ function startApp(){
     camStream=stream;const video=document.getElementById('cam-video');
     video.srcObject=stream;video.onloadedmetadata=()=>{
       video.play();cameraReady=true;
-      // Cross-fade: video švelniai atsiranda, siluetas išnyksta
+      // Cross-fade: video švelniai atsiranda
+      setTimeout(()=>{video.style.opacity='1';},50);
+      // Siluetas: 1s su kamera, tada švelniai išblėsta per 0.5s
       setTimeout(()=>{
-        video.style.opacity='1';
         const guide=document.getElementById('cam-guide');
-        if(guide){guide.style.opacity='0';setTimeout(()=>{guide.style.display='none';},500);}
-      },50);
+        if(guide){
+          guide.style.transition='opacity 0.5s ease';
+          guide.style.opacity='0';
+          setTimeout(()=>{guide.style.display='none';},500);
+        }
+        // Tuo pačiu metu — hint tekstas "Sistema paruošta"
+        const hint=document.getElementById('cam-hint-txt');
+        if(hint){
+          hint.style.opacity='0';
+          hint.textContent='Sistema paruošta – spauskite fotografuoti';
+          hint.style.color='rgba(212,168,67,.85)';
+          hint.style.transition='opacity 0.5s ease';
+          setTimeout(()=>{hint.style.opacity='1';},200);
+        }
+      },1000);
       // Wake lock — ekranas nemiega
       navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
 
