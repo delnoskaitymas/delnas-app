@@ -175,7 +175,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-shutter-wrap{padding:4px 20px 0;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes encPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
-@keyframes camBreathing{0%,100%{box-shadow:0 2px 16px rgba(212,168,67,.15),0 0 0 0 rgba(212,168,67,0)}50%{box-shadow:0 4px 28px rgba(212,168,67,.5),0 0 0 5px rgba(212,168,67,.12)}}
+@keyframes camBreathing{0%,100%{box-shadow:0 2px 12px rgba(212,168,67,.2),0 0 0 0 rgba(212,168,67,0);transform:scale(1);border:none}50%{box-shadow:0 6px 32px rgba(212,168,67,.6),0 0 0 4px rgba(212,168,67,.2),0 0 0 1px rgba(212,168,67,.4);transform:scale(1.02);border:none}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
 @keyframes lastStepPulse{
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
@@ -287,7 +287,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 6px rgba(212,168,67,.15)'" onpointerup="this.style.transform='';this.style.boxShadow=''" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow=''" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
@@ -974,9 +974,18 @@ function startApp(){
       setTimeout(()=>{
         const guide=document.getElementById('cam-guide');
         if(guide){
-          guide.style.transition='opacity 0.5s ease';
-          guide.style.opacity='0';
-          setTimeout(()=>{guide.style.display='none';},500);
+          // Pulsavimas prieš išnykimą
+          const guideSvgEl=document.getElementById('cam-guide-svg');
+          if(guideSvgEl){
+            guideSvgEl.style.transition='filter 0.3s ease, opacity 0.3s ease';
+            guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(212,168,67,.9)) drop-shadow(0 0 6px rgba(212,168,67,.6))';
+            guideSvgEl.style.opacity='0.85';
+          }
+          setTimeout(()=>{
+            guide.style.transition='opacity 0.5s ease';
+            guide.style.opacity='0';
+            setTimeout(()=>{guide.style.display='none';},500);
+          },400);
         }
         // Tuo pačiu metu — hint tekstas "Sistema paruošta"
         const hint=document.getElementById('cam-hint-txt');
@@ -1343,8 +1352,8 @@ function capturePhoto(){
           sp.style.display='flex';
           sp.style.alignItems='center';
           sp.style.justifyContent='center';
-          sp.style.cssText='width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;border-radius:50%';
-          sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg>';
+          sp.style.cssText='width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:2.5px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.12);box-shadow:0 0 16px rgba(212,168,67,.4)';
+          sp.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;filter:drop-shadow(0 0 4px rgba(212,168,67,.8))"><polyline points="20 6 9 17 4 12"/></svg>';
 
         }
       },300);
