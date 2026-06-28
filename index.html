@@ -255,7 +255,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div style="position:relative;margin-top:6px;margin-bottom:8px;flex:1;min-height:0;width:calc(100vw - 16px);max-width:380px"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
+  <div style="position:relative;margin-top:6px;margin-bottom:8px;flex:1;min-height:0;width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
@@ -291,7 +291,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /cam-viewport -->
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
-    <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
+    <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:18px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4">Sistema paruošta – spauskite fotografuoti</div>
     <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(!this.disabled) this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
@@ -1330,7 +1330,7 @@ function capturePhoto(){
         setTimeout(()=>{
           showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.4">'+msg+'</div></div>');
         },350);
-        // Po 5s — grįžimas į kamerą
+        // Po 2.5s — grįžimas į kamerą
         setTimeout(()=>{
           // Frozen išnyksta, video atsiranda cross-fade
           video.style.display='block';
@@ -1353,7 +1353,7 @@ function capturePhoto(){
             const vp=document.getElementById('cam-viewport');
             if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
           },550);
-        },5000);
+        },2500);
         return;
       }
 
