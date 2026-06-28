@@ -255,16 +255,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
   <div class="cam-viewport" style="margin-top:6px;margin-bottom:4px;flex:1;min-height:0;position:relative" id="cam-viewport">
-    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(7,4,15,.72);border:1px solid rgba(212,168,67,.22);border-radius:20px;padding:5px 13px;white-space:nowrap;pointer-events:none">
-      <span style="font-size:9px;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;letter-spacing:.03em">🔬 Skenuojame delno linijas · 99.9% tikslumas</span>
-    </div>
+
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
     <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .5s ease;opacity:1">
       
-      <svg id="cam-guide-svg" width="160" height="210" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2))">
+      <svg id="cam-guide-svg" width="120" height="158" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2))">
         
         <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
         
@@ -1255,7 +1253,7 @@ function capturePhoto(){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
     tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
-    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);border-radius:16px;padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:10px"><div id="tikr-spinner" style="position:relative;width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
+    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);border-radius:16px;padding:18px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px"><div id="tikr-spinner" style="width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif;text-align:center;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
     // Atstatyti overlay
@@ -1345,6 +1343,7 @@ function capturePhoto(){
           sp.style.display='flex';
           sp.style.alignItems='center';
           sp.style.justifyContent='center';
+          sp.style.cssText='width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;border-radius:50%';
           sp.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg>';
 
         }
