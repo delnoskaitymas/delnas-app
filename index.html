@@ -287,7 +287,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:11px;font-weight:600;letter-spacing:.04em;text-align:center;color:rgba(212,168,67,.7);font-family:'DM Sans',sans-serif;min-height:16px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow=''" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(!this.disabled) this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#07040f;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
@@ -1197,18 +1197,24 @@ function showCamError(title, msg){
 function showCamToast(title, msg){
   const old=document.getElementById('cam-toast');
   if(old) old.remove();
-  const wrap=document.querySelector('.cam-shutter-wrap');
-  if(!wrap) return;
+  // Toast rodomas ANT frozen nuotraukos apačioje
+  const frozen=document.getElementById('cam-frozen');
+  const vp=document.querySelector('.cam-viewport');
+  const container=frozen&&frozen.style.display!=='none'?frozen:(vp||document.body);
   const toast=document.createElement('div');
   toast.id='cam-toast';
-  toast.style.cssText='width:calc(100vw - 40px);max-width:320px;background:linear-gradient(135deg,rgba(20,12,4,.97),rgba(30,18,6,.97));border:1px solid rgba(212,168,67,.5);border-radius:14px;padding:12px 16px;text-align:center;animation:toastSlideUp 0.35s ease forwards;box-shadow:0 4px 24px rgba(212,168,67,.2)';
-  toast.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:4px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.75);line-height:1.45">'+msg+'</div>';
-  const btn=document.getElementById('cam-shutter');
-  wrap.insertBefore(toast,btn);
+  toast.style.cssText='position:absolute;bottom:14px;left:50%;transform:translateX(-50%) translateY(20px);width:calc(100% - 28px);max-width:300px;background:rgba(7,4,15,.88);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:12px 16px;text-align:center;z-index:20;opacity:0;transition:opacity 0.35s ease,transform 0.35s ease;box-shadow:0 8px 28px rgba(0,0,0,.5)';
+  toast.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.45">'+msg+'</div>';
+  if(container.style) container.style.position='relative';
+  container.appendChild(toast);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    toast.style.opacity='1';
+    toast.style.transform='translateX(-50%) translateY(0)';
+  }));
   setTimeout(()=>{
-    toast.style.transition='opacity 0.3s ease,transform 0.3s ease';
-    toast.style.opacity='0';toast.style.transform='translateY(8px)';
-    setTimeout(()=>{if(toast.parentNode) toast.remove();},300);
+    toast.style.opacity='0';
+    toast.style.transform='translateX(-50%) translateY(8px)';
+    setTimeout(()=>{if(toast.parentNode) toast.remove();},350);
   },3500);
 }
 
@@ -1245,12 +1251,13 @@ function capturePhoto(){
 
   // Sklandus perėjimas: frozen uždengia video
   if(frozen){
-    frozen.style.transition='none';
-    frozen.style.opacity='1';
     frozen.style.backgroundImage='url('+dataURL+')';
+    frozen.style.opacity='0';
     frozen.style.display='block';
+    frozen.style.transition='opacity 0.25s ease';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{frozen.style.opacity='1';}));
   }
-  setTimeout(()=>{video.style.display='none';},50);
+  setTimeout(()=>{video.style.display='none';},260);
   if(shutterWrap){shutterWrap.style.transition='opacity 0.3s ease';shutterWrap.style.opacity='0';setTimeout(()=>{shutterWrap.style.visibility='hidden';shutterWrap.style.opacity='1';shutterWrap.style.transition='';},300);}
   if(camSub) camSub.style.display='none';
   const titleEl2=document.getElementById('cam-title');
@@ -1261,8 +1268,8 @@ function capturePhoto(){
   if(!tikrOvl){
     tikrOvl=document.createElement('div');
     tikrOvl.id='tikr-ovl';
-    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
-    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.55);border-radius:16px;padding:18px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px"><div id="tikr-spinner" style="width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.95);font-size:14px;font-weight:600;letter-spacing:.08em;font-family:DM Sans,sans-serif;text-align:center;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
+    tikrOvl.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:transparent;opacity:0;transition:opacity 0.4s ease';
+    tikrOvl.innerHTML='<div style="background:rgba(7,4,15,.82);border:1px solid rgba(212,168,67,.35);border-radius:18px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4)"><div id="tikr-spinner" style="width:44px;height:44px;border:3px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div><div id="tikr-label" style="color:rgba(212,168,67,.9);font-size:13px;font-weight:600;letter-spacing:.06em;font-family:DM Sans,sans-serif;text-align:center;transition:opacity 0.4s ease">Analizuojame detales...</div></div>';
     if(frozen) frozen.appendChild(tikrOvl);
   } else {
     // Atstatyti overlay
