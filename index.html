@@ -1027,7 +1027,7 @@ function updateCameraUI(){
     title.textContent='Nufotografuokite dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
-  if(hint) hint.textContent='';
+  if(hint){hint.textContent='Sistema paruošta – spauskite fotografuoti';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
   // Resetinti būseną perjungiant tarp delno
   handVisible=false;
   const shutterEl=document.getElementById('cam-shutter');
@@ -1252,7 +1252,7 @@ function capturePhoto(){
   shutter.style.animation='none';
   const vpStop=document.getElementById('cam-viewport');if(vpStop) vpStop.style.animation='none';
   if(window._liveLoop){clearInterval(window._liveLoop);window._liveLoop=null;}
-  const hintEl=document.getElementById('cam-hint-txt');if(hintEl) hintEl.textContent='';
+  // hint tekstas lieka
 
   // Flash
   flash.style.opacity='1';
