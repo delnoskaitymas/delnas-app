@@ -454,7 +454,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-loading">
   <div class="load-wrap" style="padding:76px 16px 0;gap:0;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0;margin-bottom:20px">
-      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.2;white-space:nowrap;color:#fff;text-shadow:0 1px 8px rgba(212,168,67,.25)">Generuojame tavo gyvenimo žemėlapį...</div>
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.35;color:#fff;text-shadow:0 1px 8px rgba(212,168,67,.25)">Generuojame<br><span style="color:var(--gold2)">tavo</span> gyvenimo žemėlapį...</div>
     </div>
 
     <!-- RANKA su auksiniais žiedais — max 38vh -->
@@ -2003,14 +2003,13 @@ function startStaticCountGrowth(){
     if(n>=1000){const t=Math.floor(n/1000);const h=String(n%1000).padStart(3,'0');return t+'\u00a0'+h;}
     return String(n);
   }
-  // Lithuanian: paskutinis skaitmuo nulemia galūnę
-  // 1 (bet ne 11) -> žmogus atliko
-  // 0, 10-20, ir kiti -> žmonės atliko
+  // Lietuviška gramatika pagal skaičių
   function word(n){
     const last=n%10;
     const last2=n%100;
     if(last===1&&last2!==11)return'žmogus';
-    return'žmonės';
+    if(last>=2&&last<=9&&(last2<10||last2>20))return'žmonės';
+    return'žmonių';
   }
   function updateAll(){
     const s=fmt(val);
@@ -2021,9 +2020,13 @@ function startStaticCountGrowth(){
     wordIds.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=w;});
   }
   updateAll();
-  setInterval(()=>{
-    if(Math.random()<0.25){val+=1;updateAll();}
-  },7000);
+  // Skaičius visada tik auga — kas 8–20 sek. po 1
+  function tick(){
+    val+=1;
+    updateAll();
+    setTimeout(tick, 8000+Math.random()*12000);
+  }
+  setTimeout(tick, 8000+Math.random()*12000);
 }
 
 // Sample report modal — full realistic preview matching actual report design
