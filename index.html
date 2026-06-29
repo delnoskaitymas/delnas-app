@@ -29,13 +29,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
 .screen{display:none;position:relative;z-index:1;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
-.screen.active{display:block;animation:fu .3s ease}
+.screen.active{display:block;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
 @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
 @keyframes scanGlow{0%,100%{transform:translateY(-18px);opacity:0}30%{opacity:.5}55%{transform:translateY(18px);opacity:.5}80%{opacity:0}}
 .gold-icon{stroke:#D4AF37;transition:0.3s;fill:none;stroke-width:20px;stroke-linecap:round;stroke-linejoin:round}
 @keyframes bulletIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fuOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px)}}
 .serif{font-family:'Playfair Display',serif}
 .gold{color:var(--gold2)}
 .wrap{padding:32px 20px 24px}
@@ -154,7 +155,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
 #s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;height:100dvh;max-height:100dvh;overflow:hidden;justify-content:space-between;box-sizing:border-box}
-#s-camera.active{display:flex;animation:fu .3s ease}
+#s-camera.active{display:flex;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 .cam-progress{display:flex;gap:10px;margin-top:max(24px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
@@ -661,17 +662,27 @@ function go(id){
       });
     },50);
   }
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
-  requestWakeLock();
-  const cam=document.getElementById('s-camera');
-  cam.classList.remove('active');
-  if(id==='s-camera'){cam.classList.add('active');}
-  else{const el=document.getElementById(id);if(el)el.classList.add('active');}
-  if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
-  window.scrollTo(0,0);
-  const cta=document.getElementById('sticky-cta');
-  if(cta) cta.style.display=id==='s-info'?'block':'none';
+  // Fade out current active screen, then switch
+  const current=document.querySelector('.screen.active,[id="s-camera"].active');
+  const doSwitch=()=>{
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
+    requestWakeLock();
+    const cam=document.getElementById('s-camera');
+    cam.classList.remove('active');
+    if(id==='s-camera'){cam.classList.add('active');}
+    else{const el=document.getElementById(id);if(el)el.classList.add('active');}
+    if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
+    window.scrollTo(0,0);
+    const cta=document.getElementById('sticky-cta');
+    if(cta) cta.style.display=id==='s-info'?'block':'none';
+  };
+  if(current){
+    current.style.animation='fuOut .25s ease forwards';
+    setTimeout(()=>{current.style.animation='';doSwitch();},220);
+  } else {
+    doSwitch();
+  }
 }
 
 window.addEventListener('DOMContentLoaded',async()=>{
