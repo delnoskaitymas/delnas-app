@@ -646,18 +646,25 @@ function go(id){
     const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
     requestWakeLock();
     const cam=document.getElementById('s-camera');
+    // Pilnai nuvalyti s-camera inline stilius
+    cam.style.opacity='';
+    cam.style.display='';
+    cam.style.transition='';
+    cam.style.animation='';
     cam.classList.remove('active');
     if(id==='s-camera'){cam.classList.add('active');}
-    else{const el=document.getElementById(id);if(el){el.style.opacity='';el.classList.add('active');}}
+    else{const el=document.getElementById(id);if(el){el.style.opacity='';el.style.animation='';el.classList.add('active');}}
     if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
   };
-  // Nerodyti fuOut jei loading ekranas jau daro savo fade
-  const current=document.querySelector('.screen.active,[id="s-camera"].active');
-  const currentIsLoading=current&&current.id==='s-loading';
-  if(current&&!currentIsLoading){
+  // Praleisti fuOut animaciją jei einamas ekranas yra kamera arba loading
+  // (jie turi savo vizualinius perėjimus arba jau yra tamsinami)
+  const current=document.querySelector('.screen.active');
+  const camActive=document.getElementById('s-camera').classList.contains('active');
+  const skipFadeOut=camActive||(current&&(current.id==='s-loading'||current.id==='s-camera'));
+  if(current&&!skipFadeOut){
     current.style.animation='fuOut .25s ease forwards';
     setTimeout(()=>{doSwitch();},220);
   } else {
@@ -1402,11 +1409,14 @@ function capturePhoto(){
           if(tikrOvl){tikrOvl.style.transition='opacity 0.4s ease';tikrOvl.style.opacity='0';}
           setTimeout(()=>{
             if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
-            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
+            if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';}
             stopCamera();
-            startBackgroundAnalysis();
-            go('s-order');
-            initOrderScreen();
+            // Trumpa pauzė kad naršyklė apdorotų kameros sustabdymą
+            setTimeout(()=>{
+              startBackgroundAnalysis();
+              go('s-order');
+              initOrderScreen();
+            },80);
           },400);
         },900);
       }
