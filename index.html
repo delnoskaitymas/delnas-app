@@ -370,8 +370,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="price-info-block" style="margin-bottom:8px">
       <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:7px 12px">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:11px;color:var(--muted);text-decoration:line-through;opacity:.5">12,99 €</span>
-          <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">5,99<span style="font-size:13px;vertical-align:super;margin-left:1px">€</span></span>
+          <span style="font-size:11px;color:var(--muted);text-decoration:line-through;opacity:.5">15,99 €</span>
+          <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">9,99<span style="font-size:13px;vertical-align:super;margin-left:1px">€</span></span>
           <div id="countdown-wrap" style="font-size:10px;color:rgba(220,80,80,.9);font-weight:600;letter-spacing:.03em;animation:pulse3 2s ease-in-out infinite;white-space:nowrap">⏱ Nuolaida galioja dar <span id="countdown-timer">4:59</span></div>
         </div>
       </div>
@@ -777,17 +777,19 @@ async function initiatePayment(){
     const email=window._userEmail||'';
     const res=await fetch('/create-payment',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,amount:599})
+      body:JSON.stringify({name,email,amount:999})
     });
     const data=await res.json();
     if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
     _savePhotos();
     window._paymentSessionId=data.sessionId||data.paymentIntentId;
-    // Patvirtinti su redirect:'if_required'
     const {paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
-      confirmParams:{return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)},
+      confirmParams:{
+        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId),
+        payment_method_data:{billing_details:{name,email,phone:''}}
+      },
       redirect:'if_required'
     });
     if(error){
@@ -2166,7 +2168,7 @@ function toggleCard(){
     if(!window._paymentElements&&window._stripeKey){
       if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
       const els=stripeInstance.elements({
-        mode:'payment',amount:599,currency:'eur',
+        mode:'payment',amount:999,currency:'eur',
         appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8',fontFamily:'DM Sans,sans-serif',borderRadius:'8px'}}
       });
       const pe=els.create('payment');
@@ -2195,12 +2197,10 @@ function initQuickPay(){
   wrap.dataset.init='1';
   if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
 
-  // Elements su el. pašto surinkimu Stripe formoje
   const elements=stripeInstance.elements({
     mode:'payment',
-    amount:599,
+    amount:999,
     currency:'eur',
-    paymentMethodCreation:'manual',
     appearance:{
       theme:'night',
       variables:{
@@ -2216,7 +2216,7 @@ function initQuickPay(){
   });
   window._stripeElements=elements;
 
-  // Express Checkout (Apple Pay / Google Pay) - viršuje
+  // Express Checkout (Apple Pay / Google Pay)
   const eceDiv=document.getElementById('express-checkout-element');
   if(eceDiv){
     const ece=elements.create('expressCheckout',{
@@ -2230,13 +2230,16 @@ function initQuickPay(){
         const name=ev.billingDetails?.name||window._userName||'';
         const email=ev.billingDetails?.email||window._userEmail||'';
         window._userName=name;window._userEmail=email;
-        const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:599})});
+        const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
         const d=await r.json();
         if(!d.clientSecret) throw new Error(d.error||'Klaida');
         _savePhotos();
         const {error}=await stripeInstance.confirmPayment({
           elements,clientSecret:d.clientSecret,
-          confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
+          confirmParams:{
+            return_url:location.origin+'/?session_id='+d.sessionId,
+            payment_method_data:{billing_details:{name,email,phone:''}}
+          },
           redirect:'if_required'
         });
         if(error){console.error(error.message);}
@@ -2245,10 +2248,10 @@ function initQuickPay(){
     });
   }
 
-  // Payment Element - Card, Revolut, Klarna (be Link, be wallets duplikato)
+  // Payment Element - Card, Klarna ir kt.
   const pe=elements.create('payment',{
     layout:{type:'tabs',defaultCollapsed:false},
-    fields:{billingDetails:{address:'never',phone:'never'}},
+    fields:{billingDetails:{address:'never',phone:'never',name:'never',email:'never'}},
     wallets:{link:'never',applePay:'never',googlePay:'never'}
   });
   pe.mount('#stripe-payment-element');
@@ -2289,7 +2292,7 @@ async function quickPay(method){
   }
   if(err) err.style.display='none';
   try{
-    const r=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,method,amount:599,currency:'eur'})});
+    const r=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,method,amount:999,currency:'eur'})});
     const d=await r.json();
     if(d.url) window.location.href=d.url;
     else if(err){err.textContent=d.error||'Klaida';err.style.display='block';}
@@ -2315,7 +2318,7 @@ async function quickPay(method){
     try{
       const res=await fetch('/create-checkout',{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method,amount:599,currency:'eur'})
+        body:JSON.stringify({email,name,method,amount:999,currency:'eur'})
       });
       const data=await res.json();
       if(data.url) window.location.href=data.url;
