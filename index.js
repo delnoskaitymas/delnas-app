@@ -368,7 +368,7 @@ app.post('/create-checkout', async (req, res) => {
         price_data: {
           currency: currency || 'eur',
           product_data: { name: 'Gyvenimo žemėlapis — Delnų analizė' },
-          unit_amount: amount || 599
+          unit_amount: amount || 999
         },
         quantity: 1
       }],
@@ -505,7 +505,7 @@ app.post('/create-payment', async (req, res) => {
   try {
     const { name, email } = req.body;
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 599,
+      amount: 999,
       currency: 'eur',
       metadata: { name: name || '', email: email || '' },
       ...(email ? {receipt_email: email} : {}),
