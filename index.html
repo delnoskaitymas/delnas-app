@@ -780,23 +780,27 @@ async function initiatePayment(){
     if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
     _savePhotos();
     window._paymentSessionId=data.sessionId||data.paymentIntentId;
+    // Visi metodai: redirect='always' kad Klarna, Revolut ir kt. veiktų teisingai
     const {paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
       confirmParams:{
         return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)
-      },
-      redirect:'if_required'
+      }
+      // Nenurodyti redirect:'if_required' — Stripe pats nusprendžia pagal metodą
     });
     if(error){
-      if(err){err.textContent=error.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+      if(error.type==='validation_error'||error.code==='incomplete_number'||error.code==='incomplete_expiry'||error.code==='incomplete_cvc'){
+        if(err){err.textContent=error.message;err.style.display='block';}
+        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+      } else {
+        if(err){err.textContent=error.message;err.style.display='block';}
+        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+      }
       return;
     }
     if(paymentIntent&&paymentIntent.status==='succeeded'){
       await fetchResultsAndNavigate(data.sessionId||data.paymentIntentId,paymentIntent);
-    } else {
-      location.href=location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId);
     }
   }catch(e){
     if(err){err.textContent=e.message||'Klaida';err.style.display='block';}
@@ -2197,6 +2201,7 @@ function initQuickPay(){
     mode:'payment',
     amount:999,
     currency:'eur',
+    locale:'lt',
     appearance:{
       theme:'night',
       variables:{
@@ -2277,50 +2282,24 @@ function toggleCard(){
 
 
 async function quickPay(method){
-  const email=document.getElementById('i-email').value.trim();
-  const name=document.getElementById('i-name').value.trim();
+  const email=document.getElementById('i-email')?.value.trim()||window._userEmail||'';
+  const name=document.getElementById('i-name')?.value.trim()||window._userName||'';
   const err=document.getElementById('info-err');
   if(!email||!email.includes('@')){
     if(err){err.textContent='Įvesk el. paštą';err.style.display='block';}
-    document.getElementById('i-email').focus();
     return;
   }
   if(err) err.style.display='none';
   try{
-    const r=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,method,amount:999,currency:'eur'})});
-    const d=await r.json();
-    if(d.url) window.location.href=d.url;
-    else if(err){err.textContent=d.error||'Klaida';err.style.display='block';}
+    const res=await fetch('/create-checkout',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,name,method,amount:999,currency:'eur'})
+    });
+    const data=await res.json();
+    if(data.url) window.location.href=data.url;
+    else throw new Error(data.error||'Klaida');
   }catch(e){
-    if(err){err.textContent='Ryšio klaida';err.style.display='block';}
-  }
-}
-
-
-async function quickPay(method){
-  const email=document.getElementById('i-email').value.trim();
-  const name=document.getElementById('i-name').value.trim();
-  const err=document.getElementById('info-err');
-  if(!email||!email.includes('@')){
-    if(err){err.textContent='Įvesk el. paštą';err.style.display='block';}
-    document.getElementById('i-email').focus();
-    return;
-  }
-  if(err){err.style.display='none';}
-  
-  if(method==='revolut'||method==='klarna'){
-    // Per Stripe Payment Links arba redirect
-    try{
-      const res=await fetch('/create-checkout',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method,amount:999,currency:'eur'})
-      });
-      const data=await res.json();
-      if(data.url) window.location.href=data.url;
-      else throw new Error(data.error||'Klaida');
-    }catch(e){
-      if(err){err.textContent='Nepavyko: '+e.message;err.style.display='block';}
-    }
+    if(err){err.textContent='Nepavyko: '+e.message;err.style.display='block';}
   }
 }
 
