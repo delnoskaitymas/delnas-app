@@ -785,9 +785,9 @@ async function initiatePayment(){
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
       confirmParams:{
-        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)
+        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId),
+        payment_method_data:{billing_details:{address:{country:'LT'}}}
       }
-      // Nenurodyti redirect:'if_required' — Stripe pats nusprendžia pagal metodą
     });
     if(error){
       if(error.type==='validation_error'||error.code==='incomplete_number'||error.code==='incomplete_expiry'||error.code==='incomplete_cvc'){
@@ -2249,9 +2249,24 @@ function initQuickPay(){
     });
   }
 
-  // Payment Element - Card, Klarna ir kt. - be apribojimų
+  // Payment Element - accordion layout sutaupo vietos, kortelės laukai atsiskleidžia
   const pe=elements.create('payment',{
-    layout:{type:'tabs',defaultCollapsed:false},
+    layout:{
+      type:'accordion',
+      defaultCollapsed:false,
+      radios:true,
+      spacedAccordionItems:false
+    },
+    defaultValues:{
+      billingDetails:{
+        address:{country:'LT'}
+      }
+    },
+    fields:{
+      billingDetails:{
+        address:{country:'never'}
+      }
+    },
     wallets:{link:'never',applePay:'never',googlePay:'never'}
   });
   pe.mount('#stripe-payment-element');
