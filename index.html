@@ -635,24 +635,31 @@ function go(id){
       });
     },50);
   }
-  // Fade out current active screen, then switch
-  const current=document.querySelector('.screen.active,[id="s-camera"].active');
   const doSwitch=()=>{
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    // Grąžinti opacity visiems ekranams prieš perjungiant
+    document.querySelectorAll('.screen').forEach(s=>{
+      s.style.opacity='';
+      s.style.transition='';
+      s.style.animation='';
+      s.classList.remove('active');
+    });
     const aw=document.getElementById('app-wrap');if(aw)aw.scrollTop=0;
     requestWakeLock();
     const cam=document.getElementById('s-camera');
     cam.classList.remove('active');
     if(id==='s-camera'){cam.classList.add('active');}
-    else{const el=document.getElementById(id);if(el)el.classList.add('active');}
+    else{const el=document.getElementById(id);if(el){el.style.opacity='';el.classList.add('active');}}
     if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
-    if(cta) cta.style.display=id==='s-info'?'block':'none';
+    if(cta) cta.style.display='none';
   };
-  if(current){
+  // Nerodyti fuOut jei loading ekranas jau daro savo fade
+  const current=document.querySelector('.screen.active,[id="s-camera"].active');
+  const currentIsLoading=current&&current.id==='s-loading';
+  if(current&&!currentIsLoading){
     current.style.animation='fuOut .25s ease forwards';
-    setTimeout(()=>{current.style.animation='';doSwitch();},220);
+    setTimeout(()=>{doSwitch();},220);
   } else {
     doSwitch();
   }
