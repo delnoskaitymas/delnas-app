@@ -388,8 +388,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div id="sticky-cta" style="display:none"></div>
 
 <div class="screen" id="s-order">
-  <!-- Delno linijų fonas -->
-  <div style="position:fixed;inset:0;opacity:.07;pointer-events:none;z-index:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><path d="M100 280 C80 200 60 150 70 80 M100 280 C110 200 130 160 120 80 M100 280 C95 210 85 170 100 90 M100 280 C105 210 115 170 100 90 M70 80 C65 40 75 20 80 10 M120 80 C125 40 115 20 110 10 M100 90 C100 50 102 25 100 10 M85 170 C70 160 55 155 40 160 M115 170 C130 160 145 155 160 160" stroke="%23d4a843" stroke-width="1.5" fill="none"/></svg>') center/cover no-repeat"></div>
   <div style="padding:36px 24px 32px;display:flex;flex-direction:column;min-height:100dvh;position:relative;z-index:1">
     <!-- Progreso taškeliai -->
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:36px">
@@ -1412,7 +1410,6 @@ function capturePhoto(){
             if(tikrOvl){tikrOvl.style.display='none';tikrOvl.style.opacity='';}
             if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';}
             stopCamera();
-            // Trumpa pauzė kad naršyklė apdorotų kameros sustabdymą
             setTimeout(()=>{
               startBackgroundAnalysis();
               go('s-order');
