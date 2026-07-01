@@ -760,19 +760,16 @@ async function initiatePayment(){
   if(err){err.style.display='none';err.textContent='';}
   const btn=document.getElementById('pay-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.6';btn.textContent='Apdorojama...';}
-  
   try{
     if(!stripeInstance||!window._stripeElements){
       throw new Error('Mokėjimo sistema neparuošta. Perkraukite puslapį.');
     }
-    // Pateikti formą
     const {error:submitErr}=await window._stripeElements.submit();
     if(submitErr){
       if(err){err.textContent=submitErr.message;err.style.display='block';}
       if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
       return;
     }
-    // Sukurti PaymentIntent
     const name=window._userName||'';
     const email=window._userEmail||'';
     const res=await fetch('/create-payment',{
@@ -787,8 +784,7 @@ async function initiatePayment(){
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
       confirmParams:{
-        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId),
-        payment_method_data:{billing_details:{name,email,phone:''}}
+        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)
       },
       redirect:'if_required'
     });
@@ -2248,10 +2244,9 @@ function initQuickPay(){
     });
   }
 
-  // Payment Element - Card, Klarna ir kt.
+  // Payment Element - Card, Klarna ir kt. - be apribojimų
   const pe=elements.create('payment',{
     layout:{type:'tabs',defaultCollapsed:false},
-    fields:{billingDetails:{address:'never',phone:'never',name:'never',email:'never'}},
     wallets:{link:'never',applePay:'never',googlePay:'never'}
   });
   pe.mount('#stripe-payment-element');
