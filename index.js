@@ -359,11 +359,8 @@ app.post('/create-checkout', async (req, res) => {
   try {
     const { email, name, method, amount, currency } = req.body;
     
-    const paymentMethodTypes = method === 'klarna' ? ['klarna'] : 
-                               method === 'revolut' ? ['revolut_pay'] : ['card'];
-    
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: paymentMethodTypes,
+      payment_method_types: ['card','klarna','revolut_pay','amazon_pay','bancontact','eps','mb_way','billie'],
       line_items: [{
         price_data: {
           currency: currency || 'eur',
@@ -373,6 +370,7 @@ app.post('/create-checkout', async (req, res) => {
         quantity: 1
       }],
       mode: 'payment',
+      locale: 'lt',
       customer_email: email,
       metadata: { name: name || '', email },
       success_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/?session_id={CHECKOUT_SESSION_ID}`,
