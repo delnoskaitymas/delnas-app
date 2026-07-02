@@ -367,8 +367,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Kaina + laikmatis vienoje eilutėje -->
-    <div id="price-info-block" style="margin-bottom:8px">
-      <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:7px 12px">
+    <div id="price-info-block" style="margin-bottom:6px">
+      <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:6px 12px">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:11px;color:var(--muted);text-decoration:line-through;opacity:.5">15,99 €</span>
           <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">9,99<span style="font-size:13px;vertical-align:super;margin-left:1px">€</span></span>
@@ -377,17 +377,72 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Mokėjimo elementai -->
-    <div id="payment-element-wrap" style="display:flex;flex-direction:column;gap:8px">
-      <div id="express-checkout-element"></div>
-      <div id="stripe-payment-element" style="min-height:40px"></div>
-      <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-top:2px;display:none"></div>
-      <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);opacity:.45;transition:opacity .3s ease">Gauti mano asmeninį žemėlapį →</button>
+    <!-- Express checkout (Apple/Google Pay) -->
+    <div id="express-checkout-element" style="margin-bottom:5px"></div>
+
+    <!-- Custom mokėjimo metodų pasirinkimas -->
+    <div style="margin-bottom:6px">
+      <!-- Pagrindiniai: Kortelė + Revolut + Kiti -->
+      <div style="display:flex;gap:5px;margin-bottom:5px">
+        <button onclick="selectPayMethod('card')" id="pm-card" class="pm-btn" style="flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid rgba(212,168,67,.6);background:rgba(212,168,67,.15);color:var(--gold2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Kortelė
+        </button>
+        <button onclick="selectPayMethod('revolut')" id="pm-revolut" class="pm-btn" style="flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:11px;font-weight:800;color:#fff;background:#191c20;padding:1px 4px;border-radius:3px">R</span>
+          Revolut Pay
+        </button>
+        <button onclick="toggleMoreMethods()" id="pm-more" class="pm-btn" style="flex:0 0 52px;padding:7px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.5);font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+          <svg id="pm-more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          Kiti
+        </button>
+      </div>
+
+      <!-- Papildomi metodai: Klarna, Amazon, Billie (paslėpti) -->
+      <div id="pay-methods-more" style="display:none;flex-direction:column;gap:4px;margin-bottom:4px">
+        <button onclick="selectPayMethod('klarna')" id="pm-klarna" class="pm-btn" style="width:100%;padding:7px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;text-align:left">
+          <span style="font-size:14px;font-weight:900;color:#ff69b4;width:20px;text-align:center">K</span>
+          <span>Klarna</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(245,238,216,.35)">Mokėk dalimis</span>
+        </button>
+        <button onclick="selectPayMethod('amazon')" id="pm-amazon" class="pm-btn" style="width:100%;padding:7px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;text-align:left">
+          <span style="font-size:11px;font-weight:700;color:#ff9900;width:20px;text-align:center">▶</span>
+          <span>Amazon Pay</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(245,238,216,.35)">Amazon paskyra</span>
+        </button>
+        <button onclick="selectPayMethod('billie')" id="pm-billie" class="pm-btn" style="width:100%;padding:7px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;text-align:left">
+          <span style="font-size:12px;font-weight:700;color:#7b68ee;width:20px;text-align:center">B</span>
+          <span>Billie</span>
+          <span style="margin-left:auto;font-size:9px;color:rgba(245,238,216,.35)">Sąskaita faktūra</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Saugumo žyma apačioje -->
-    <div style="text-align:center;margin-top:8px;font-size:10px;color:rgba(245,238,216,.3)">🔒 256-bit šifruotas · Vienkartinis mokėjimas · Jokių prenumeratų</div>
-    <div style="height:12px"></div>
+    <!-- Kortelės laukai (Stripe CardElement) -->
+    <div id="card-fields-wrap" style="margin-bottom:6px">
+      <div style="margin-bottom:4px">
+        <div id="stripe-card-number" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:10px 12px;font-size:14px"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1">
+          <div id="stripe-card-expiry" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:10px 12px"></div>
+        </div>
+        <div style="flex:1">
+          <div id="stripe-card-cvc" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:10px 12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Redirect metodų info -->
+    <div id="redirect-method-info" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:12px;color:rgba(245,238,216,.7);display:flex;align-items:center;gap:8px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <span id="redirect-method-txt">Po patvirtinimo būsite nukreipti į saugų apmokėjimo puslapį.</span>
+    </div>
+
+    <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
+    <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);opacity:.45;transition:opacity .3s ease">Gauti mano asmeninį žemėlapį →</button>
+    <div style="text-align:center;margin-top:6px;font-size:10px;color:rgba(245,238,216,.3)">🔒 256-bit šifruotas · Vienkartinis mokėjimas · Jokių prenumeratų</div>
+    <div style="height:8px"></div>
   </div>
 </div>
 
@@ -760,47 +815,32 @@ async function initiatePayment(){
   if(err){err.style.display='none';err.textContent='';}
   const btn=document.getElementById('pay-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.6';btn.textContent='Apdorojama...';}
+  const name=window._userName||'';
+  const email=window._userEmail||'';
   try{
-    if(!stripeInstance||!window._stripeElements){
-      throw new Error('Mokėjimo sistema neparuošta. Perkraukite puslapį.');
-    }
-    const {error:submitErr}=await window._stripeElements.submit();
-    if(submitErr){
-      if(err){err.textContent=submitErr.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
-      return;
-    }
-    const name=window._userName||'';
-    const email=window._userEmail||'';
-    const res=await fetch('/create-payment',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,amount:999})
-    });
-    const data=await res.json();
-    if(!data.clientSecret) throw new Error(data.error||'Serverio klaida');
-    _savePhotos();
-    window._paymentSessionId=data.sessionId||data.paymentIntentId;
-    // Visi metodai: redirect='always' kad Klarna, Revolut ir kt. veiktų teisingai
-    const {paymentIntent,error}=await stripeInstance.confirmPayment({
-      elements:window._stripeElements,
-      clientSecret:data.clientSecret,
-      confirmParams:{
-        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId),
-        payment_method_data:{billing_details:{address:{country:'LT'}}}
-      }
-    });
-    if(error){
-      if(error.type==='validation_error'||error.code==='incomplete_number'||error.code==='incomplete_expiry'||error.code==='incomplete_cvc'){
+    if(currentPayMethod==='card'){
+      if(!stripeInstance||!window._cardNumber)throw new Error('Mokėjimo sistema neparuošta.');
+      const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
+      const data=await res.json();
+      if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
+      _savePhotos();
+      const{paymentIntent,error}=await stripeInstance.confirmCardPayment(data.clientSecret,{
+        payment_method:{card:window._cardNumber,billing_details:{name,email}}
+      });
+      if(error){
         if(err){err.textContent=error.message;err.style.display='block';}
         if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
-      } else {
-        if(err){err.textContent=error.message;err.style.display='block';}
-        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+        return;
       }
-      return;
-    }
-    if(paymentIntent&&paymentIntent.status==='succeeded'){
-      await fetchResultsAndNavigate(data.sessionId||data.paymentIntentId,paymentIntent);
+      if(paymentIntent&&paymentIntent.status==='succeeded'){
+        await fetchResultsAndNavigate(data.sessionId||data.paymentIntentId,paymentIntent);
+      }
+    } else {
+      const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email,name,method:currentPayMethod,amount:999,currency:'eur'})});
+      const data=await res.json();
+      if(data.url){_savePhotos();window.location.href=data.url;}
+      else throw new Error(data.error||'Klaida');
     }
   }catch(e){
     if(err){err.textContent=e.message||'Klaida';err.style.display='block';}
@@ -1634,7 +1674,7 @@ function animateLoading(){
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
           if(window._userName&&window._userEmail){
-            go('s-info');initQuickPay();requestWakeLock();
+            go('s-info');initCustomPayment();requestWakeLock();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
@@ -2190,100 +2230,128 @@ function toggleCard(){
   }
 }
 
-function initQuickPay(){
-  if(!window._stripeKey){setTimeout(initQuickPay,500);return;}
-  const wrap=document.getElementById('payment-element-wrap');
-  if(!wrap||wrap.dataset.init) return;
-  wrap.dataset.init='1';
-  if(!stripeInstance) stripeInstance=Stripe(window._stripeKey);
+let currentPayMethod='card';
 
-  const elements=stripeInstance.elements({
-    mode:'payment',
-    amount:999,
-    currency:'eur',
-    locale:'lt',
-    appearance:{
-      theme:'night',
-      variables:{
-        colorPrimary:'#d4a843',
-        colorBackground:'#1a1625',
-        colorText:'#f5eed8',
-        colorDanger:'#ff6b6b',
-        fontFamily:'DM Sans,sans-serif',
-        borderRadius:'8px',
-        spacingUnit:'4px'
-      }
-    }
+function selectPayMethod(method){
+  currentPayMethod=method;
+  // Nuvalyti visų mygtukų stilius
+  document.querySelectorAll('.pm-btn').forEach(b=>{
+    b.style.border='1.5px solid rgba(255,255,255,.1)';
+    b.style.background='rgba(255,255,255,.04)';
+    b.style.color='rgba(245,238,216,.7)';
   });
-  window._stripeElements=elements;
-
-  // Express Checkout (Apple Pay / Google Pay)
-  const eceDiv=document.getElementById('express-checkout-element');
-  if(eceDiv){
-    const ece=elements.create('expressCheckout',{
-      buttonHeight:44,
-      buttonType:{applePay:'plain',googlePay:'plain'},
-      layout:{maxColumns:2,maxRows:1,overflow:'never'}
-    });
-    ece.mount('#express-checkout-element');
-    ece.on('confirm',async(ev)=>{
-      try{
-        const name=ev.billingDetails?.name||window._userName||'';
-        const email=ev.billingDetails?.email||window._userEmail||'';
-        window._userName=name;window._userEmail=email;
-        const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
-        const d=await r.json();
-        if(!d.clientSecret) throw new Error(d.error||'Klaida');
-        _savePhotos();
-        const {error}=await stripeInstance.confirmPayment({
-          elements,clientSecret:d.clientSecret,
-          confirmParams:{
-            return_url:location.origin+'/?session_id='+d.sessionId,
-            payment_method_data:{billing_details:{name,email,phone:''}}
-          },
-          redirect:'if_required'
-        });
-        if(error){console.error(error.message);}
-        else{location.href=location.origin+'/?session_id='+d.sessionId;}
-      }catch(e){console.error(e);}
-    });
+  // Aktyvus mygtukas
+  const active=document.getElementById('pm-'+method);
+  if(active){
+    active.style.border='1.5px solid rgba(212,168,67,.6)';
+    active.style.background='rgba(212,168,67,.15)';
+    active.style.color='var(--gold2)';
   }
-
-  // Payment Element - accordion layout sutaupo vietos, kortelės laukai atsiskleidžia
-  const pe=elements.create('payment',{
-    layout:{
-      type:'accordion',
-      defaultCollapsed:false,
-      radios:true,
-      spacedAccordionItems:false
-    },
-    defaultValues:{
-      billingDetails:{
-        address:{country:'LT'}
-      }
-    },
-    fields:{
-      billingDetails:{
-        address:{country:'never'}
-      }
-    },
-    wallets:{link:'never',applePay:'never',googlePay:'never'}
-  });
-  pe.mount('#stripe-payment-element');
-  window._paymentElement=pe;
-
-  // Aktyvuoti mygtuką kai forma užpildyta
-  pe.on('change',function(ev){
-    const btn=document.getElementById('pay-btn');
-    if(!btn) return;
-    if(ev.complete){
-      btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
-    } else {
-      btn.disabled=true;btn.style.opacity='.45';
-    }
-  });
+  // Rodyti/slėpti atitinkamus laukus
+  const cardWrap=document.getElementById('card-fields-wrap');
+  const redirectInfo=document.getElementById('redirect-method-info');
+  const redirectTxt=document.getElementById('redirect-method-txt');
+  if(method==='card'){
+    if(cardWrap)cardWrap.style.display='block';
+    if(redirectInfo)redirectInfo.style.display='none';
+  } else {
+    if(cardWrap)cardWrap.style.display='none';
+    if(redirectInfo){redirectInfo.style.display='flex';}
+    const names={'klarna':'Klarna','revolut':'Revolut Pay','amazon':'Amazon Pay','billie':'Billie'};
+    if(redirectTxt)redirectTxt.textContent='Pasirinktas '+names[method]+'. Po patvirtinimo būsite nukreipti į saugų apmokėjimo puslapį.';
+  }
+  // Aktyvuoti mygtuką redirect metodams
+  const btn=document.getElementById('pay-btn');
+  if(btn){btn.disabled=false;btn.style.opacity='1';}
 }
 
+function toggleMoreMethods(){
+  const more=document.getElementById('pay-methods-more');
+  const arrow=document.getElementById('pm-more-arrow');
+  if(!more)return;
+  const shown=more.style.display==='flex';
+  more.style.display=shown?'none':'flex';
+  more.style.flexDirection='column';
+  if(arrow){
+    arrow.setAttribute('points', shown ? '6 9 12 15 18 9' : '6 15 12 9 18 15');
+  }
+}
+
+function initCustomPayment(){
+  if(!window._stripeKey){setTimeout(initCustomPayment,500);return;}
+  const wrap=document.getElementById('card-fields-wrap');
+  if(!wrap||wrap.dataset.init)return;
+  wrap.dataset.init='1';
+  if(!stripeInstance)stripeInstance=Stripe(window._stripeKey);
+
+  const cardStyle={
+    style:{
+      base:{
+        color:'#f5eed8',
+        fontFamily:'DM Sans,sans-serif',
+        fontSize:'14px',
+        '::placeholder':{color:'rgba(245,238,216,.35)'},
+        iconColor:'#d4a843'
+      },
+      invalid:{color:'#ff6b6b'}
+    }
+  };
+
+  const elements=stripeInstance.elements({locale:'lt'});
+  window._cardElements=elements;
+
+  const cardNum=elements.create('cardNumber',{...cardStyle,showIcon:true});
+  cardNum.mount('#stripe-card-number');
+
+  const cardExp=elements.create('cardExpiry',cardStyle);
+  cardExp.mount('#stripe-card-expiry');
+
+  const cardCvc=elements.create('cardCvc',cardStyle);
+  cardCvc.mount('#stripe-card-cvc');
+
+  window._cardNumber=cardNum;
+  window._cardExpiry=cardExp;
+  window._cardCvc=cardCvc;
+
+  // Aktyvuoti mygtuką kai kortelės numeris užpildytas
+  cardNum.on('change',e=>{
+    const btn=document.getElementById('pay-btn');
+    const err=document.getElementById('stripe-card-errors');
+    if(e.error){if(err){err.textContent=e.error.message;err.style.display='block';}}
+    else{if(err)err.style.display='none';}
+    if(btn){btn.disabled=!e.complete;btn.style.opacity=e.complete?'1':'.45';}
+  });
+
+  // Express Checkout (Apple/Google Pay)
+  const eceElements=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',
+    appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#1a1625',colorText:'#f5eed8'}}
+  });
+  window._eceElements=eceElements;
+  const ece=eceElements.create('expressCheckout',{
+    buttonHeight:40,
+    buttonType:{applePay:'plain',googlePay:'plain'},
+    layout:{maxColumns:2,maxRows:1,overflow:'never'}
+  });
+  ece.mount('#express-checkout-element');
+  ece.on('confirm',async(ev)=>{
+    try{
+      const name=ev.billingDetails?.name||window._userName||'';
+      const email=ev.billingDetails?.email||window._userEmail||'';
+      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
+      const d=await r.json();
+      if(!d.clientSecret)throw new Error(d.error||'Klaida');
+      _savePhotos();
+      const{error}=await stripeInstance.confirmPayment({
+        elements:eceElements,clientSecret:d.clientSecret,
+        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
+        redirect:'if_required'
+      });
+      if(error)console.error(error.message);
+      else location.href=location.origin+'/?session_id='+d.sessionId;
+    }catch(e){console.error(e);}
+  });
+}
 
 function _savePhotos(){
   sessionStorage.setItem('photoLeft',photoLeft||window._savedPhotoLeft||'');
