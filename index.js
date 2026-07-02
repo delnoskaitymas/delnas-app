@@ -507,7 +507,10 @@ app.post('/create-payment', async (req, res) => {
       currency: 'eur',
       metadata: { name: name || '', email: email || '' },
       ...(email ? {receipt_email: email} : {}),
-      automatic_payment_methods: { enabled: true }
+      automatic_payment_methods: { enabled: true },
+      payment_method_options: {
+        link: { display_preference: { preference: 'none' } }
+      }
     });
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
