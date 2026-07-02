@@ -2215,8 +2215,41 @@ function initPaymentElement(){
     }
   };
 
-  // Vienas Elements instance visiems
-  const elements=stripeInstance.elements({
+  // --- 1. Express Checkout: Apple Pay / Google Pay (atskiras instance) ---
+  const eceElements=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',appearance
+  });
+  window._eceElements=eceElements;
+
+  const ece=eceElements.create('expressCheckout',{
+    buttonHeight:44,
+    buttonType:{applePay:'plain',googlePay:'plain'},
+    layout:{maxColumns:2,maxRows:1,overflow:'never'},
+    paymentMethods:{link:'never',amazonPay:'never'}
+  });
+  ece.mount('#express-checkout-element');
+
+  ece.on('confirm',async(ev)=>{
+    try{
+      const name=ev.billingDetails?.name||window._userName||'';
+      const email=ev.billingDetails?.email||window._userEmail||'';
+      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,amount:999})});
+      const d=await r.json();
+      if(!d.clientSecret)throw new Error(d.error||'Klaida');
+      _savePhotos();
+      const{error}=await stripeInstance.confirmPayment({
+        elements:eceElements,clientSecret:d.clientSecret,
+        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
+        redirect:'if_required'
+      });
+      if(error)throw new Error(error.message);
+      await fetchResultsAndNavigate(d.sessionId,null);
+    }catch(e){console.error('ECE klaida:',e);}
+  });
+
+  // --- 2. Payment Element: Kortelė + Revolut Pay (accordion, be Link) ---
+  const peElements=stripeInstance.elements({
     mode:'payment',
     amount:999,
     currency:'eur',
@@ -2224,49 +2257,26 @@ function initPaymentElement(){
     appearance,
     paymentMethodTypes:['card','revolut_pay']
   });
-  window._stripeElements=elements;
+  window._stripeElements=peElements;
 
-  // Express Checkout: Apple Pay / Google Pay — vienu paspaudimu, neišeinant iš puslapio
-  const ece=elements.create('expressCheckout',{
-    buttonHeight:42,
-    buttonType:{applePay:'plain',googlePay:'plain'},
-    layout:{maxColumns:2,maxRows:1,overflow:'never'},
-    paymentMethods:{link:'never',amazonPay:'never'}
-  });
-  ece.mount('#express-checkout-element');
-  ece.on('confirm',async(ev)=>{
-    try{
-      const name=ev.billingDetails?.name||window._userName||'';
-      const email=ev.billingDetails?.email||window._userEmail||'';
-      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
-      const d=await r.json();
-      if(!d.clientSecret)throw new Error(d.error||'Klaida');
-      _savePhotos();
-      const{error}=await stripeInstance.confirmPayment({
-        elements,clientSecret:d.clientSecret,
-        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
-        redirect:'if_required'
-      });
-      if(error)throw new Error(error.message);
-      await fetchResultsAndNavigate(d.sessionId,null);
-    }catch(e){console.error(e);}
-  });
-
-  // Payment Element: Kortelė + Revolut Pay — be redirect, tiesiai šiame ekrane
-  const pe=elements.create('payment',{
-    layout:{type:'tabs',defaultCollapsed:false},
+  const pe=peElements.create('payment',{
+    layout:{
+      type:'accordion',
+      defaultCollapsed:false,
+      radios:true,
+      spacedAccordionItems:false
+    },
     paymentMethodOrder:['card','revolut_pay'],
     wallets:{applePay:'never',googlePay:'never',link:'never'}
   });
   pe.mount('#stripe-payment-element');
 
-  // Aktyvuoti mygtuką kai forma užpildyta
   pe.on('change',ev=>{
     const btn=document.getElementById('pay-btn');
     if(btn){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
     const err=document.getElementById('stripe-card-errors');
-    if(ev.value?.type)window._selectedPayMethod=ev.value.type;
-    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
+    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}
+    else err.style.display='none';}
   });
 }
 
