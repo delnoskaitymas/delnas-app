@@ -377,9 +377,24 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Stripe Payment Element — automatiškai rodo Apple/Google Pay → Revolut → Kortelę -->
+    <!-- Stripe Payment Element: Apple Pay, Google Pay, Revolut Pay -->
     <div id="stripe-payment-wrap" style="margin-bottom:6px">
       <div id="stripe-payment-element" style="min-height:44px"></div>
+    </div>
+
+    <!-- Custom kortelės laukai: Numeris + Expiry|CVC vienoje eilutėje -->
+    <div id="card-fields-wrap" style="display:none;margin-bottom:6px;animation:fu .3s ease">
+      <div style="margin-bottom:5px">
+        <div id="stripe-card-number" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1">
+          <div id="stripe-card-expiry" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
+        </div>
+        <div style="flex:1">
+          <div id="stripe-card-cvc" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
+        </div>
+      </div>
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
@@ -760,40 +775,52 @@ async function initiatePayment(){
   if(btn){btn.disabled=true;btn.style.opacity='.6';btn.textContent='Apdorojama...';}
   const name=window._userName||'';
   const email=window._userEmail||'';
+  const sessionSuffix=()=>location.origin+'/?session_id=';
   try{
-    if(!stripeInstance||!window._stripeElements)throw new Error('Mokėjimo sistema neparuošta. Perkraukite puslapį.');
-    // 1. Pateikti formą (validacija)
-    const{error:submitErr}=await window._stripeElements.submit();
-    if(submitErr){
-      if(err){err.textContent=submitErr.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
-      return;
-    }
-    // 2. Sukurti PaymentIntent serveryje
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,email,amount:999})});
     const data=await res.json();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
-    // 3. Patvirtinti — Stripe tvarko viską tiesiai šiame puslapyje
-    const{paymentIntent,error}=await stripeInstance.confirmPayment({
-      elements:window._stripeElements,
-      clientSecret:data.clientSecret,
-      confirmParams:{
-        return_url:location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId)
-      },
-      redirect:'if_required'
-    });
-    if(error){
-      if(err){err.textContent=error.message;err.style.display='block';}
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
-      return;
-    }
-    if(paymentIntent&&paymentIntent.status==='succeeded'){
-      await fetchResultsAndNavigate(data.sessionId||data.paymentIntentId,paymentIntent);
-    } else if(paymentIntent&&paymentIntent.status==='requires_action'){
-      // 3DS autentifikacija — Stripe tvarko automatiškai
-      location.href=location.origin+'/?session_id='+(data.sessionId||data.paymentIntentId);
+    const sid=data.sessionId||data.paymentIntentId;
+
+    if(window._selectedPayMethod==='card'){
+      // Kortelė — naudojame atskirus Card elementus
+      if(!stripeInstance||!window._cardNumber)throw new Error('Kortelės sistema neparuošta.');
+      const{paymentIntent,error}=await stripeInstance.confirmCardPayment(data.clientSecret,{
+        payment_method:{card:window._cardNumber,billing_details:{name,email}}
+      });
+      if(error){
+        if(err){err.textContent=error.message;err.style.display='block';}
+        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+        return;
+      }
+      if(paymentIntent&&paymentIntent.status==='succeeded'){
+        await fetchResultsAndNavigate(sid,paymentIntent);
+      }
+    } else {
+      // Apple Pay / Google Pay / Revolut — Payment Element
+      if(!stripeInstance||!window._peElements)throw new Error('Mokėjimo sistema neparuošta.');
+      const{error:submitErr}=await window._peElements.submit();
+      if(submitErr){
+        if(err){err.textContent=submitErr.message;err.style.display='block';}
+        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+        return;
+      }
+      const{paymentIntent,error}=await stripeInstance.confirmPayment({
+        elements:window._peElements,
+        clientSecret:data.clientSecret,
+        confirmParams:{return_url:sessionSuffix()+sid},
+        redirect:'if_required'
+      });
+      if(error){
+        if(err){err.textContent=error.message;err.style.display='block';}
+        if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
+        return;
+      }
+      if(paymentIntent&&paymentIntent.status==='succeeded'){
+        await fetchResultsAndNavigate(sid,paymentIntent);
+      }
     }
   }catch(e){
     if(err){err.textContent=e.message||'Klaida';err.style.display='block';}
@@ -2212,40 +2239,99 @@ function initPaymentElement(){
     }
   };
 
-  // Vienas Elements instance — Stripe automatiškai aptinka įrenginį ir rodo tinkamus metodus
-  const elements=stripeInstance.elements({
+  // --- Payment Element: tik Apple Pay, Google Pay, Revolut Pay ---
+  // Stripe automatiškai rodo tik metodus kuriuos vartotojo įrenginys palaiko
+  const peElements=stripeInstance.elements({
     mode:'payment',
     amount:999,
     currency:'eur',
     locale:'lt',
     appearance
   });
-  window._stripeElements=elements;
+  window._peElements=peElements;
 
-  // Payment Element: Stripe automatiškai rodo Apple/Google Pay viršuje pagal įrenginį,
-  // po to Revolut Pay, po to Kortelę. Accordion — Kortelės laukai atsiskleidžia TIK pasirinkus kortelę.
-  const pe=elements.create('payment',{
-    layout:{
-      type:'accordion',
-      defaultCollapsed:false,
-      radios:true,
-      spacedAccordionItems:false
-    },
-    paymentMethodOrder:['apple_pay','google_pay','revolut_pay','card'],
+  const pe=peElements.create('payment',{
+    layout:{type:'accordion',defaultCollapsed:false,radios:true,spacedAccordionItems:false},
+    paymentMethodOrder:['google_pay','apple_pay','revolut_pay'],
     wallets:{link:'never'}
   });
   pe.mount('#stripe-payment-element');
-  window._paymentElement=pe;
 
   pe.on('change',ev=>{
+    window._selectedPayMethod=ev.value?.type||null;
+    const cardWrap=document.getElementById('card-fields-wrap');
     const btn=document.getElementById('pay-btn');
+    // Jei pasirinktas metodas PE viduje — slėpti kortelės laukus
+    if(cardWrap)cardWrap.style.display='none';
     if(btn){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
     const err=document.getElementById('stripe-card-errors');
-    if(err){
-      if(ev.error){err.textContent=ev.error.message;err.style.display='block';}
-      else err.style.display='none';
-    }
+    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
   });
+
+  // --- Atskiri Card elementai: Numeris + Expiry/CVC vienoje eilutėje ---
+  // Naudojame atskirus elementus kad galėtume kontroliuoti išdėstymą
+  const cardStyle={style:{base:{
+    color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px',
+    '::placeholder':{color:'rgba(245,238,216,.35)'},iconColor:'#d4a843'
+  },invalid:{color:'#ff6b6b'}}};
+
+  const cardElements=stripeInstance.elements({locale:'lt'});
+  window._cardElements=cardElements;
+
+  const cardNum=cardElements.create('cardNumber',{...cardStyle,showIcon:true,placeholder:'1234 1234 1234 1234'});
+  cardNum.mount('#stripe-card-number');
+  window._cardNumber=cardNum;
+
+  const cardExp=cardElements.create('cardExpiry',{...cardStyle,placeholder:'MM/MM'});
+  cardExp.mount('#stripe-card-expiry');
+
+  const cardCvc=cardElements.create('cardCvc',{...cardStyle,placeholder:'CVC'});
+  cardCvc.mount('#stripe-card-cvc');
+
+  // Kortelės mygtukas — aktyvuoti kai visi laukai užpildyti
+  let numOk=false,expOk=false,cvcOk=false;
+  const updateCardBtn=()=>{
+    const btn=document.getElementById('pay-btn');
+    const ok=numOk&&expOk&&cvcOk;
+    if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'.45';}
+  };
+  const handleCardChange=(field,setter)=>ev=>{
+    setter(ev.complete);
+    const err=document.getElementById('stripe-card-errors');
+    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
+    updateCardBtn();
+  };
+  cardNum.on('change',handleCardChange('num',v=>numOk=v));
+  cardExp.on('change',handleCardChange('exp',v=>expOk=v));
+  cardCvc.on('change',handleCardChange('cvc',v=>cvcOk=v));
+
+  // Kortelės pasirinkimo mygtukas mokėjimo ekrane
+  // (rodomas po PE elementų sąrašo)
+  setupCardTab();
+}
+
+function setupCardTab(){
+  // Sukurti "Kortelė" pasirinktą mygtukėlį po PE
+  const wrap=document.getElementById('stripe-payment-wrap');
+  if(!wrap||document.getElementById('card-tab-btn'))return;
+  const btn=document.createElement('div');
+  btn.id='card-tab-btn';
+  btn.innerHTML=`<button onclick="showCardFields()" style="width:100%;margin-top:5px;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,67,.2);border-radius:8px;color:rgba(245,238,216,.75);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Kortelė<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto;opacity:.4"><polyline points="9 18 15 12 9 6"/></svg></button>`;
+  wrap.appendChild(btn);
+}
+
+function showCardFields(){
+  const cardWrap=document.getElementById('card-fields-wrap');
+  const cardTab=document.getElementById('card-tab-btn');
+  const btn=document.getElementById('pay-btn');
+  window._selectedPayMethod='card';
+  if(cardWrap){cardWrap.style.display='block';}
+  // Pakeisti mygtuko išvaizdą į aktyvų
+  if(cardTab){
+    const inner=cardTab.querySelector('button');
+    if(inner){inner.style.border='1.5px solid rgba(212,168,67,.6)';inner.style.background='rgba(212,168,67,.1)';inner.style.color='var(--gold2)';}
+  }
+  if(btn){btn.disabled=true;btn.style.opacity='.45';}
 }
 
 function selectPayMethod(){}
