@@ -377,11 +377,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Stripe Payment Element — viskas viename, be redirect -->
+    <!-- Stripe Payment Element — automatiškai rodo Apple/Google Pay → Revolut → Kortelę -->
     <div id="stripe-payment-wrap" style="margin-bottom:6px">
-      <!-- Express Checkout: Apple Pay / Google Pay vienu paspaudimu -->
-      <div id="express-checkout-element" style="margin-bottom:6px"></div>
-      <!-- Payment Element: Kortelė, Revolut Pay ir kt. -->
       <div id="stripe-payment-element" style="min-height:44px"></div>
     </div>
 
@@ -2215,68 +2212,39 @@ function initPaymentElement(){
     }
   };
 
-  // --- 1. Express Checkout: Apple Pay / Google Pay (atskiras instance) ---
-  const eceElements=stripeInstance.elements({
-    mode:'payment',amount:999,currency:'eur',locale:'lt',appearance
-  });
-  window._eceElements=eceElements;
-
-  const ece=eceElements.create('expressCheckout',{
-    buttonHeight:44,
-    buttonType:{applePay:'plain',googlePay:'plain'},
-    layout:{maxColumns:2,maxRows:1,overflow:'never'},
-    paymentMethods:{link:'never',amazonPay:'never'}
-  });
-  ece.mount('#express-checkout-element');
-
-  ece.on('confirm',async(ev)=>{
-    try{
-      const name=ev.billingDetails?.name||window._userName||'';
-      const email=ev.billingDetails?.email||window._userEmail||'';
-      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name,email,amount:999})});
-      const d=await r.json();
-      if(!d.clientSecret)throw new Error(d.error||'Klaida');
-      _savePhotos();
-      const{error}=await stripeInstance.confirmPayment({
-        elements:eceElements,clientSecret:d.clientSecret,
-        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
-        redirect:'if_required'
-      });
-      if(error)throw new Error(error.message);
-      await fetchResultsAndNavigate(d.sessionId,null);
-    }catch(e){console.error('ECE klaida:',e);}
-  });
-
-  // --- 2. Payment Element: Kortelė + Revolut Pay (accordion, be Link) ---
-  const peElements=stripeInstance.elements({
+  // Vienas Elements instance — Stripe automatiškai aptinka įrenginį ir rodo tinkamus metodus
+  const elements=stripeInstance.elements({
     mode:'payment',
     amount:999,
     currency:'eur',
     locale:'lt',
-    appearance,
-    paymentMethodTypes:['card','revolut_pay']
+    appearance
   });
-  window._stripeElements=peElements;
+  window._stripeElements=elements;
 
-  const pe=peElements.create('payment',{
+  // Payment Element: Stripe automatiškai rodo Apple/Google Pay viršuje pagal įrenginį,
+  // po to Revolut Pay, po to Kortelę. Accordion — Kortelės laukai atsiskleidžia TIK pasirinkus kortelę.
+  const pe=elements.create('payment',{
     layout:{
       type:'accordion',
       defaultCollapsed:false,
       radios:true,
       spacedAccordionItems:false
     },
-    paymentMethodOrder:['card','revolut_pay'],
-    wallets:{applePay:'never',googlePay:'never',link:'never'}
+    paymentMethodOrder:['apple_pay','google_pay','revolut_pay','card'],
+    wallets:{link:'never'}
   });
   pe.mount('#stripe-payment-element');
+  window._paymentElement=pe;
 
   pe.on('change',ev=>{
     const btn=document.getElementById('pay-btn');
     if(btn){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
     const err=document.getElementById('stripe-card-errors');
-    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}
-    else err.style.display='none';}
+    if(err){
+      if(ev.error){err.textContent=ev.error.message;err.style.display='block';}
+      else err.style.display='none';
+    }
   });
 }
 
