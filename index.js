@@ -507,10 +507,7 @@ app.post('/create-payment', async (req, res) => {
       currency: 'eur',
       metadata: { name: name || '', email: email || '' },
       ...(email ? {receipt_email: email} : {}),
-      payment_method_types: ['card', 'revolut_pay', 'apple_pay', 'google_pay'],
-      payment_method_options: {
-        link: { display_preference: { preference: 'none' } }
-      }
+      automatic_payment_methods: { enabled: true, allow_redirects: 'always' }
     });
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
