@@ -377,7 +377,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Stripe Payment Element — Apple/Google Pay + Revolut + Kortelė -->
+    <!-- Express Checkout: Apple Pay / Google Pay (automatinis, pagal įrenginį) -->
+    <div id="express-checkout-element" style="margin-bottom:5px"></div>
+    <!-- Payment Element: Revolut Pay + Kortelė -->
     <div id="stripe-payment-element" style="margin-bottom:6px"></div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
@@ -762,16 +764,20 @@ async function initiatePayment(){
   };
   try{
     if(!stripeInstance||!window._stripeElements)throw new Error('Mokėjimo sistema neparuošta.');
+    // 1. Validuoti formą
     const{error:submitErr}=await window._stripeElements.submit();
     if(submitErr){showErr(submitErr.message);return;}
+    // 2. Sukurti PaymentIntent
     const name=window._userName||'';
     const email=window._userEmail||'';
-    const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
+    const res=await fetch('/create-payment',{method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,email,amount:999})});
     const data=await res.json();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
     const sid=data.sessionId||data.paymentIntentId;
+    // 3. Patvirtinti — Stripe tvarko Revolut redirect, Kortelė — tiesiai
     const{paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
@@ -2137,79 +2143,75 @@ function _savePhotos(){
 
 function initPayment(){
   if(!window._stripeKey){setTimeout(initPayment,400);return;}
-  const el=document.getElementById('stripe-payment-element');
-  if(!el||el.dataset.init)return;
-  el.dataset.init='1';
+  if(window._paymentInited)return;
+  window._paymentInited=true;
   if(!stripeInstance)stripeInstance=Stripe(window._stripeKey);
 
-  const elements=stripeInstance.elements({
-    mode:'payment',
-    amount:999,
-    currency:'eur',
-    locale:'lt',
-    paymentMethodTypes:['card','revolut_pay'],
-    appearance:{
-      theme:'night',
-      variables:{
-        colorPrimary:'#d4a843',
-        colorBackground:'#12101a',
-        colorText:'#f5eed8',
-        colorDanger:'#ff6b6b',
-        fontFamily:'DM Sans,sans-serif',
-        borderRadius:'10px'
-      },
-      rules:{
-        '.Tab':{border:'1px solid rgba(212,168,67,.2)',background:'rgba(255,255,255,.03)'},
-        '.Tab--selected':{border:'1.5px solid rgba(212,168,67,.6)',background:'rgba(212,168,67,.1)'},
-        '.Tab:hover':{background:'rgba(212,168,67,.06)'},
-        '.Input':{background:'rgba(255,255,255,.06)',border:'1px solid rgba(212,168,67,.2)',color:'#f5eed8','font-size':'15px'},
-        '.Input:focus':{border:'1.5px solid rgba(212,168,67,.6)','box-shadow':'0 0 0 2px rgba(212,168,67,.12)'},
-        '.Label':{color:'rgba(245,238,216,.55)','font-size':'11px','letter-spacing':'.04em'}
-      }
+  const appearance={
+    theme:'night',
+    variables:{
+      colorPrimary:'#d4a843',
+      colorBackground:'#12101a',
+      colorText:'#f5eed8',
+      colorDanger:'#ff6b6b',
+      fontFamily:'DM Sans,sans-serif',
+      borderRadius:'10px',
+      spacingUnit:'4px'
+    },
+    rules:{
+      '.Tab':{border:'1px solid rgba(212,168,67,.2)',background:'rgba(255,255,255,.03)'},
+      '.Tab--selected':{border:'1.5px solid rgba(212,168,67,.6)',background:'rgba(212,168,67,.1)'},
+      '.Tab:hover':{background:'rgba(212,168,67,.06)'},
+      '.Input':{background:'rgba(255,255,255,.06)',border:'1px solid rgba(212,168,67,.2)',color:'#f5eed8','font-size':'15px'},
+      '.Input:focus':{border:'1.5px solid rgba(212,168,67,.6)','box-shadow':'0 0 0 2px rgba(212,168,67,.12)'},
+      '.Label':{color:'rgba(245,238,216,.55)','font-size':'11px'}
     }
-  });
-  window._stripeElements=elements;
+  };
 
-  // Express Checkout: Apple Pay / Google Pay (atskiras — Stripe automatiškai rodo tik tinkamą)
-  const eceEl=document.createElement('div');
-  eceEl.id='express-checkout-element';
-  eceEl.style.cssText='margin-bottom:6px';
-  const peContainer=document.getElementById('stripe-payment-element');
-  peContainer.parentNode.insertBefore(eceEl,peContainer);
-
-  const eceElements=stripeInstance.elements({
-    mode:'payment',amount:999,currency:'eur',locale:'lt',
-    appearance:{theme:'night',variables:{colorPrimary:'#d4a843',colorBackground:'#12101a',colorText:'#f5eed8'}}
+  // ── 1. Express Checkout: Apple Pay / Google Pay ──────────────────────
+  const eceEls=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',appearance
   });
-  window._eceElements=eceElements;
-  const ece=eceElements.create('expressCheckout',{
+  window._eceElements=eceEls;
+
+  const ece=eceEls.create('expressCheckout',{
     buttonHeight:44,
     buttonType:{applePay:'plain',googlePay:'plain'},
-    layout:{maxColumns:1,maxRows:2,overflow:'never'},
-    paymentMethods:{link:'never',amazonPay:'never'}
+    layout:{maxColumns:2,maxRows:1,overflow:'never'},
+    paymentMethods:{link:'never',amazonPay:'never',klarna:'never',billie:'never'}
   });
   ece.mount('#express-checkout-element');
+
   ece.on('confirm',async(ev)=>{
     try{
       const name=ev.billingDetails?.name||window._userName||'';
       const email=ev.billingDetails?.email||window._userEmail||'';
-      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,amount:999})});
+      const r=await fetch('/create-payment',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,amount:999})});
       const d=await r.json();
       if(!d.clientSecret)throw new Error(d.error||'Klaida');
       _savePhotos();
       const{error}=await stripeInstance.confirmPayment({
-        elements:eceElements,clientSecret:d.clientSecret,
+        elements:eceEls,clientSecret:d.clientSecret,
         confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
         redirect:'if_required'
       });
       if(error)throw new Error(error.message);
       await fetchResultsAndNavigate(d.sessionId,null);
-    }catch(e){console.error('Express Pay:',e);}
+    }catch(e){console.error('ECE klaida:',e);}
   });
 
-  // Payment Element: tik Kortelė + Revolut Pay
-  const pe=elements.create('payment',{
-    layout:{type:'tabs',defaultCollapsed:false},
+  // ── 2. Payment Element: Revolut Pay + Kortelė ─────────────────────────
+  const peEls=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',
+    paymentMethodTypes:['revolut_pay','card'],
+    appearance
+  });
+  window._stripeElements=peEls;
+
+  const pe=peEls.create('payment',{
+    layout:{type:'accordion',defaultCollapsed:false,radios:true,spacedAccordionItems:false},
     paymentMethodOrder:['revolut_pay','card'],
     wallets:{link:'never',applePay:'never',googlePay:'never'}
   });
@@ -2226,7 +2228,6 @@ function initPayment(){
   });
 }
 
-// Alias funkcijos — naudojamos kitur kode
 function initPaymentElement(){initPayment();}
 function pmSelect(){}
 function selectPayMethod(){}
@@ -2238,11 +2239,10 @@ function initStripeElements(){}
 function toggleCard(){}
 
 async function quickPay(method){
-  const email=window._userEmail||'';
-  const name=window._userName||'';
   try{
-    const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,name,method,amount:999,currency:'eur'})});
+    const res=await fetch('/create-checkout',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,amount:999,currency:'eur'})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
