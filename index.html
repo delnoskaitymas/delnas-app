@@ -779,7 +779,10 @@ async function initiatePayment(){
     const{paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
-      confirmParams:{return_url:location.origin+'/?session_id='+sid},
+      confirmParams:{
+        return_url:location.origin+'/?session_id='+sid,
+        payment_method_data:{billing_details:{address:{country:'LT'}}}
+      },
       redirect:'if_required'
     });
     if(error){restore(error.message);return;}
@@ -2146,49 +2149,37 @@ function initPayment(){
   window._paymentInited=true;
   if(!stripeInstance)stripeInstance=Stripe(window._stripeKey);
 
-  // Vienas Elements instance — Stripe pats aptinka įrenginį ir rodo
-  // Apple Pay (iOS) arba Google Pay (Android) automatiškai viršuje,
-  // tada Revolut Pay, tada Kortelę (laukai atsiskleidžia tik ją pasirinkus)
-  const elements=stripeInstance.elements({
-    mode:'payment',
-    amount:999,
-    currency:'eur',
-    locale:'lt',
-    appearance:{
-      theme:'night',
-      variables:{
-        colorPrimary:'#d4a843',
-        colorBackground:'#12101a',
-        colorText:'#f5eed8',
-        colorDanger:'#ff6b6b',
-        fontFamily:'DM Sans,sans-serif',
-        borderRadius:'10px',
-        spacingUnit:'4px'
-      },
-      rules:{
-        '.Tab':{border:'1px solid rgba(212,168,67,.2)',background:'rgba(255,255,255,.03)'},
-        '.Tab--selected':{border:'1.5px solid rgba(212,168,67,.6)',background:'rgba(212,168,67,.1)'},
-        '.Tab:hover':{background:'rgba(212,168,67,.06)'},
-        '.Input':{background:'rgba(255,255,255,.06)',border:'1px solid rgba(212,168,67,.2)',color:'#f5eed8','font-size':'15px'},
-        '.Input:focus':{border:'1.5px solid rgba(212,168,67,.6)','box-shadow':'0 0 0 2px rgba(212,168,67,.12)'},
-        '.Label':{color:'rgba(245,238,216,.55)','font-size':'11px'}
-      }
+  const appearance={
+    theme:'night',
+    variables:{
+      colorPrimary:'#d4a843',colorBackground:'#12101a',colorText:'#f5eed8',
+      colorDanger:'#ff6b6b',fontFamily:'DM Sans,sans-serif',
+      borderRadius:'10px',spacingUnit:'4px'
+    },
+    rules:{
+      '.Tab':{border:'1px solid rgba(212,168,67,.2)',background:'rgba(255,255,255,.03)'},
+      '.Tab--selected':{border:'1.5px solid rgba(212,168,67,.6)',background:'rgba(212,168,67,.1)'},
+      '.Tab:hover':{background:'rgba(212,168,67,.06)'},
+      '.Input':{background:'rgba(255,255,255,.06)',border:'1px solid rgba(212,168,67,.2)',color:'#f5eed8','font-size':'15px'},
+      '.Input:focus':{border:'1.5px solid rgba(212,168,67,.6)','box-shadow':'0 0 0 2px rgba(212,168,67,.12)'},
+      '.Label':{color:'rgba(245,238,216,.55)','font-size':'11px'}
     }
+  };
+
+  // Tiksliai 4 metodai — paymentMethodTypes užrakina sąrašą, jokie kiti neatsiranda
+  const elements=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',
+    paymentMethodTypes:['card','revolut_pay','apple_pay','google_pay'],
+    appearance
   });
   window._stripeElements=elements;
 
-  // Vieningas Payment Element — Stripe automatiškai:
-  // • Rodo Apple Pay / Google Pay viršuje (pagal įrenginį)
-  // • Kortelės laukus generuoja pats, tik pasirinkus Kortelę
-  // • Revolut Pay tvarko be papildomų formų
   const pe=elements.create('payment',{
-    layout:{
-      type:'accordion',
-      defaultCollapsed:false,
-      radios:true,
-      spacedAccordionItems:false
-    },
+    layout:{type:'accordion',defaultCollapsed:false,radios:true,spacedAccordionItems:false},
     paymentMethodOrder:['apple_pay','google_pay','revolut_pay','card'],
+    // Pašalinti šalies laukelį — rodyti tik kortelės nr, datą, CVC
+    fields:{billingDetails:{address:{country:'never'}}},
+    defaultValues:{billingDetails:{address:{country:'LT'}}},
     wallets:{link:'never'}
   });
   pe.mount('#stripe-payment-element');
