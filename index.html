@@ -2166,10 +2166,11 @@ function initPayment(){
     }
   };
 
-  // Tiksliai 4 metodai — paymentMethodTypes užrakina sąrašą, jokie kiti neatsiranda
+  // paymentMethodTypes negalima nurodyti apple_pay/google_pay tiesiogiai
+  // Stripe juos rodo automatiškai per wallets
   const elements=stripeInstance.elements({
     mode:'payment',amount:999,currency:'eur',locale:'lt',
-    paymentMethodTypes:['card','revolut_pay','apple_pay','google_pay'],
+    paymentMethodTypes:['card','revolut_pay'],
     appearance
   });
   window._stripeElements=elements;
