@@ -357,10 +357,10 @@ app.get('/analysis-status', async (req, res) => {
 // --- Checkout sesija Revolut/Klarna ---
 app.post('/create-checkout', async (req, res) => {
   try {
-    const { email, name, method, amount, currency } = req.body;
+    const { email, name, amount, currency } = req.body;
     
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card','klarna','revolut_pay','amazon_pay','bancontact','eps','mb_way','billie'],
+      payment_method_types: ['revolut_pay'],
       line_items: [{
         price_data: {
           currency: currency || 'eur',
