@@ -410,7 +410,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </button>
     <div id="pm-card-wrap" style="display:none;margin-bottom:4px">
       <div style="margin-bottom:4px">
-        <div id="pm-card-number" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
+        <div id="pm-card-number" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px" autocomplete="off"></div>
       </div>
       <div style="display:flex;gap:6px">
         <div style="flex:1"><div id="pm-card-expiry" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div></div>
@@ -2261,7 +2261,8 @@ function initPayment(){
       const pr=stripeInstance.paymentRequest({
         country:'LT',currency:'eur',
         total:{label:'Gyvenimo žemėlapis',amount:999},
-        requestPayerName:false,requestPayerEmail:false
+        requestPayerName:false,requestPayerEmail:false,
+        disableWallets:['link','browserCard']
       });
       const btn=document.getElementById('pay-btn');
       const canPay=await pr.canMakePayment();
@@ -2296,7 +2297,8 @@ function initPayment(){
       const pr=stripeInstance.paymentRequest({
         country:'LT',currency:'eur',
         total:{label:'Gyvenimo žemėlapis',amount:999},
-        requestPayerName:false,requestPayerEmail:false
+        requestPayerName:false,requestPayerEmail:false,
+        disableWallets:['link','browserCard']
       });
       const canPay=await pr.canMakePayment();
       if(!canPay){alert('Apple Pay šiame įrenginyje neprieinamas.');return;}
