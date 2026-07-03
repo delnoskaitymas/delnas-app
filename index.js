@@ -507,10 +507,7 @@ app.post('/create-payment', async (req, res) => {
       currency: 'eur',
       metadata: { name: name || '', email: email || '' },
       ...(email ? {receipt_email: email} : {}),
-      payment_method_types: ['card', 'revolut_pay'],
-      payment_method_options: {
-        card: { request_three_d_secure: 'automatic' }
-      }
+      payment_method_types: ['card', 'revolut_pay']
     });
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
