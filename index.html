@@ -389,19 +389,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="express-checkout-element" style="margin-bottom:5px"></div>
 
     <!-- Revolut Pay -->
-    <button id="pm-revolut-btn" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid rgba(212,168,67,.6);background:rgba(212,168,67,.1);color:var(--gold2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:5px;text-align:left">
+    <button id="pm-revolut-btn" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid rgba(212,168,67,.6);background:rgba(212,168,67,.1);color:var(--gold2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:4px;text-align:left">
       <span style="font-size:14px;font-weight:900;color:#fff;background:#191c20;padding:2px 7px;border-radius:4px">R</span>
       Revolut Pay
     </button>
+    <div id="pm-revolut-wrap" style="display:none;margin-bottom:4px">
+      <div id="pm-revolut-element"></div>
+    </div>
 
     <!-- Kortelė -->
-    <button id="pm-card-btn" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:5px;text-align:left">
+    <button id="pm-card-btn" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(245,238,216,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:4px;text-align:left">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
       Kortelė
     </button>
-
-    <!-- Kortelės laukai (paslėpti pagal nutylėjimą) -->
-    <div id="pm-card-wrap" style="display:none;margin-bottom:5px">
+    <div id="pm-card-wrap" style="display:none;margin-bottom:4px">
       <div style="margin-bottom:4px">
         <div id="pm-card-number" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
       </div>
@@ -795,14 +796,28 @@ async function initiatePayment(){
   const email=window._userEmail||'';
   try{
     if(window._payMethod==='revolut'){
-      // Revolut — per Stripe Checkout (redirect)
-      const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',amount:999,currency:'eur'})});
+      // Revolut — per Payment Element (ne Checkout — be redirect į išorinį puslapį)
+      if(!stripeInstance||!window._revElements)throw new Error('Revolut sistema neparuošta.');
+      const{error:subErr}=await window._revElements.submit();
+      if(subErr){restore(subErr.message);return;}
+      const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,amount:999})});
       const data=await res.json();
-      if(data.url){_savePhotos();window.location.href=data.url;}
-      else throw new Error(data.error||'Klaida');
+      if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
+      _savePhotos();
+      const sid=data.sessionId||data.paymentIntentId;
+      const{paymentIntent,error}=await stripeInstance.confirmPayment({
+        elements:window._revElements,
+        clientSecret:data.clientSecret,
+        confirmParams:{return_url:location.origin+'/?session_id='+sid},
+        redirect:'if_required'
+      });
+      if(error){restore(error.message);return;}
+      if(paymentIntent&&(paymentIntent.status==='succeeded'||paymentIntent.status==='processing')){
+        await fetchResultsAndNavigate(sid,paymentIntent);
+      }
     } else {
-      // Kortelė — tiesiai per confirmCardPayment
+      // Kortelė — confirmCardPayment
       if(!stripeInstance||!window._cardNumber)throw new Error('Kortelės sistema neparuošta.');
       const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name,email,amount:999})});
@@ -2178,42 +2193,50 @@ function initPayment(){
   window._paymentInited=true;
   if(!stripeInstance)stripeInstance=Stripe(window._stripeKey);
 
-  const appearance={
-    theme:'night',
-    variables:{
-      colorPrimary:'#d4a843',colorBackground:'#12101a',colorText:'#f5eed8',
-      colorDanger:'#ff6b6b',fontFamily:'DM Sans,sans-serif',
-      borderRadius:'10px',spacingUnit:'3px'
-    },
-    rules:{
-      '.Tab':{border:'1px solid rgba(212,168,67,.2)',background:'rgba(255,255,255,.03)'},
-      '.Tab--selected':{border:'1.5px solid rgba(212,168,67,.6)',background:'rgba(212,168,67,.1)'},
-      '.Tab:hover':{background:'rgba(212,168,67,.06)'},
-      '.Input':{background:'rgba(255,255,255,.06)',border:'1px solid rgba(212,168,67,.2)',color:'#f5eed8','font-size':'15px'},
-      '.Input:focus':{border:'1.5px solid rgba(212,168,67,.6)','box-shadow':'0 0 0 2px rgba(212,168,67,.12)'},
-      '.Label':{color:'rgba(245,238,216,.55)','font-size':'11px'},
-      '.p-BankRedirectSection':{display:'none'},
-      '.p-RedirectToMethods':{display:'none'}
-    }
-  };
+  const cardStyle={style:{base:{
+    color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px',
+    '::placeholder':{color:'rgba(245,238,216,.35)'},iconColor:'#d4a843'
+  },invalid:{color:'#ff6b6b'}}};
 
-  // ── 1. Express Checkout: Apple Pay + Google Pay ────────────────────
+  // ── 1. Express Checkout: Google Pay (Android) / Apple Pay (iOS) ──────
+  // automatic_payment_methods būtinas kad Stripe atpažintų įrenginį
   const eceEls=stripeInstance.elements({
-    mode:'payment',amount:999,currency:'eur',locale:'lt',appearance
+    mode:'payment',
+    amount:999,
+    currency:'eur',
+    locale:'lt'
   });
   window._eceElements=eceEls;
+
   const ece=eceEls.create('expressCheckout',{
     buttonHeight:44,
     buttonType:{applePay:'plain',googlePay:'plain'},
     layout:{maxColumns:2,maxRows:1,overflow:'never'},
-    paymentMethods:{link:'never',amazonPay:'never',klarna:'never'}
+    paymentMethods:{
+      applePay:'auto',
+      googlePay:'auto',
+      link:'never',
+      amazonPay:'never',
+      klarna:'never'
+    }
   });
   ece.mount('#express-checkout-element');
+
+  // Jei Express Checkout nepalaikomas — paslėpti tuščią erdvę
+  ece.on('ready',({availablePaymentMethods})=>{
+    const wrap=document.getElementById('express-checkout-element');
+    if(!availablePaymentMethods||Object.keys(availablePaymentMethods).length===0){
+      if(wrap)wrap.style.display='none';
+    }
+  });
+
   ece.on('confirm',async(ev)=>{
     try{
-      const n=ev.billingDetails?.name||window._userName||'';
-      const e=ev.billingDetails?.email||window._userEmail||'';
-      const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,amount:999})});
+      const name=ev.billingDetails?.name||window._userName||'';
+      const email=ev.billingDetails?.email||window._userEmail||'';
+      const r=await fetch('/create-payment',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,amount:999})});
       const d=await r.json();
       if(!d.clientSecret)throw new Error(d.error||'Klaida');
       _savePhotos();
@@ -2227,58 +2250,104 @@ function initPayment(){
     }catch(e){console.error('ECE:',e);}
   });
 
-  // ── 2. Custom Revolut + Card laukai ────────────────────────────────
-  // Vietoj Stripe Payment Element naudojame custom UI + atskirus Card elementus
-  // kad pilnai kontroliuotume išdėstymą ir paslėptume Stripe pranešimus
+  // ── 2. Revolut Pay — per Payment Element (be redirect į Checkout) ────
+  const revEls=stripeInstance.elements({
+    mode:'payment',
+    amount:999,
+    currency:'eur',
+    locale:'lt',
+    paymentMethodTypes:['revolut_pay']
+  });
+  window._revElements=revEls;
 
-  // Revolut mygtukas
+  const revPe=revEls.create('payment',{
+    layout:{type:'accordion',defaultCollapsed:false,radios:false},
+    paymentMethodOrder:['revolut_pay'],
+    wallets:{link:'never',applePay:'never',googlePay:'never'},
+    terms:{revolut_pay:'never'}
+  });
+
   const rBtn=document.getElementById('pm-revolut-btn');
   const cBtn=document.getElementById('pm-card-btn');
   const cWrap=document.getElementById('pm-card-wrap');
+  const revWrap=document.getElementById('pm-revolut-wrap');
 
   if(rBtn)rBtn.addEventListener('click',()=>{
-    rBtn.style.border='1.5px solid rgba(212,168,67,.6)';
-    rBtn.style.background='rgba(212,168,67,.1)';
-    rBtn.style.color='var(--gold2)';
-    if(cBtn){cBtn.style.border='1px solid rgba(255,255,255,.1)';cBtn.style.background='rgba(255,255,255,.04)';cBtn.style.color='rgba(245,238,216,.7)';}
-    if(cWrap){cWrap.style.display='none';}
+    setActive('revolut');
+    if(revWrap){
+      revWrap.style.display='block';
+      if(!revWrap.dataset.mounted){
+        revPe.mount('#pm-revolut-element');
+        revWrap.dataset.mounted='1';
+        revPe.on('change',ev=>{
+          const btn=document.getElementById('pay-btn');
+          if(btn&&window._payMethod==='revolut'){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
+        });
+      }
+    }
+    if(cWrap)cWrap.style.display='none';
     window._payMethod='revolut';
     const btn=document.getElementById('pay-btn');
-    if(btn){btn.disabled=false;btn.style.opacity='1';}
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
   });
 
   if(cBtn)cBtn.addEventListener('click',()=>{
-    cBtn.style.border='1.5px solid rgba(212,168,67,.6)';
-    cBtn.style.background='rgba(212,168,67,.1)';
-    cBtn.style.color='var(--gold2)';
-    if(rBtn){rBtn.style.border='1px solid rgba(255,255,255,.1)';rBtn.style.background='rgba(255,255,255,.04)';rBtn.style.color='rgba(245,238,216,.7)';}
+    setActive('card');
     if(cWrap){cWrap.style.display='block';cWrap.style.animation='fu .3s ease';}
+    if(revWrap)revWrap.style.display='none';
     window._payMethod='card';
     const btn=document.getElementById('pay-btn');
     if(btn){btn.disabled=true;btn.style.opacity='.45';}
   });
 
-  // Stripe Card elementai (atskiri — pilna kontrolė)
+  function setActive(m){
+    [rBtn,cBtn].forEach(b=>{
+      if(!b)return;
+      b.style.border='1px solid rgba(255,255,255,.1)';
+      b.style.background='rgba(255,255,255,.04)';
+      b.style.color='rgba(245,238,216,.7)';
+    });
+    const active=m==='revolut'?rBtn:cBtn;
+    if(active){
+      active.style.border='1.5px solid rgba(212,168,67,.6)';
+      active.style.background='rgba(212,168,67,.1)';
+      active.style.color='var(--gold2)';
+    }
+  }
+
+  // ── 3. Kortelės Card elementai ────────────────────────────────────
   const cardEls=stripeInstance.elements({locale:'lt'});
   window._cardElements=cardEls;
-  const cStyle={style:{base:{color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px','::placeholder':{color:'rgba(245,238,216,.35)'},iconColor:'#d4a843'},invalid:{color:'#ff6b6b'}}};
-  const num=cardEls.create('cardNumber',{...cStyle,showIcon:true});
+
+  const num=cardEls.create('cardNumber',{...cardStyle,showIcon:true});
   num.mount('#pm-card-number');
   window._cardNumber=num;
-  const exp=cardEls.create('cardExpiry',cStyle);
+
+  const exp=cardEls.create('cardExpiry',cardStyle);
   exp.mount('#pm-card-expiry');
-  const cvc=cardEls.create('cardCvc',cStyle);
+
+  const cvc=cardEls.create('cardCvc',cardStyle);
   cvc.mount('#pm-card-cvc');
 
   let nOk=false,eOk=false,vOk=false;
-  const upd=()=>{const btn=document.getElementById('pay-btn');const ok=nOk&&eOk&&vOk;if(btn&&window._payMethod==='card'){btn.disabled=!ok;btn.style.opacity=ok?'1':'.45';}};
-  const ch=(s)=>(ev)=>{s(ev.complete);const err=document.getElementById('stripe-card-errors');if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}upd();};
+  const upd=()=>{
+    const btn=document.getElementById('pay-btn');
+    const ok=nOk&&eOk&&vOk;
+    if(btn&&window._payMethod==='card'){btn.disabled=!ok;btn.style.opacity=ok?'1':'.45';}
+  };
+  const ch=(s)=>(ev)=>{
+    s(ev.complete);
+    const err=document.getElementById('stripe-card-errors');
+    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
+    upd();
+  };
   num.on('change',ch(v=>nOk=v));
   exp.on('change',ch(v=>eOk=v));
   cvc.on('change',ch(v=>vOk=v));
 
-  // Numatytasis — Revolut
+  // Numatytasis
   window._payMethod='revolut';
+  setActive('revolut');
 }
 
 function initPaymentElement(){initPayment();}
