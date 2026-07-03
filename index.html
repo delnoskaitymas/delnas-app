@@ -193,7 +193,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   0%,100%{color:rgba(245,238,216,.95)}
   50%{color:#fce97a}
 }
-@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(245,238,216,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}</style>
+@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(245,238,216,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}
+/* Slėpti Stripe generuojamus nukreipimo pranešimus iframe viduje */
+#stripe-payment-element .p-BankRedirectSection,
+#stripe-payment-element [class*="BankRedirect"],
+#stripe-payment-element [class*="redirect-text"],
+#stripe-payment-element [class*="RedirectText"],
+#stripe-payment-element [class*="nextStep"],
+#stripe-payment-element [class*="p-PaymentMethod-detail--redirect"]{display:none!important;}
+</style>
 </head>
 <body>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
@@ -377,7 +385,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Stripe Payment Element — vieningas komponentas visiems mokėjimo būdams -->
+    <!-- Apple Pay / Google Pay — automatinis pagal įrenginį -->
+    <div id="express-checkout-element" style="margin-bottom:5px"></div>
+    <!-- Revolut Pay + Kortelė -->
     <div id="stripe-payment-element" style="margin-bottom:6px"></div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
@@ -762,10 +772,8 @@ async function initiatePayment(){
   };
   try{
     if(!stripeInstance||!window._stripeElements)throw new Error('Mokėjimo sistema neparuošta.');
-    // Stripe Payment Element validuoja pats
     const{error:subErr}=await window._stripeElements.submit();
     if(subErr){restore(subErr.message);return;}
-    // Sukurti PaymentIntent
     const name=window._userName||'';
     const email=window._userEmail||'';
     const res=await fetch('/create-payment',{method:'POST',
@@ -775,7 +783,6 @@ async function initiatePayment(){
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
     const sid=data.sessionId||data.paymentIntentId;
-    // Stripe pats pasirenka: kortelė — tiesiai, Revolut/Apple/Google — redirect jei reikia
     const{paymentIntent,error}=await stripeInstance.confirmPayment({
       elements:window._stripeElements,
       clientSecret:data.clientSecret,
@@ -2166,22 +2173,57 @@ function initPayment(){
     }
   };
 
-  // paymentMethodTypes negalima nurodyti apple_pay/google_pay tiesiogiai
-  // Stripe juos rodo automatiškai per wallets
-  const elements=stripeInstance.elements({
+  // ── Express Checkout: Apple Pay / Google Pay (atskiras instance) ──────
+  // Jų negalima dėti į payment_method_types — jie veikia tik per expressCheckout
+  const eceEls=stripeInstance.elements({
+    mode:'payment',amount:999,currency:'eur',locale:'lt',appearance
+  });
+  window._eceElements=eceEls;
+
+  const ece=eceEls.create('expressCheckout',{
+    buttonHeight:44,
+    buttonType:{applePay:'plain',googlePay:'plain'},
+    layout:{maxColumns:2,maxRows:1,overflow:'never'},
+    paymentMethods:{link:'never',amazonPay:'never',klarna:'never',billie:'never'}
+  });
+  ece.mount('#express-checkout-element');
+
+  ece.on('confirm',async(ev)=>{
+    try{
+      const name=ev.billingDetails?.name||window._userName||'';
+      const email=ev.billingDetails?.email||window._userEmail||'';
+      const r=await fetch('/create-payment',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,amount:999})});
+      const d=await r.json();
+      if(!d.clientSecret)throw new Error(d.error||'Klaida');
+      _savePhotos();
+      const{error}=await stripeInstance.confirmPayment({
+        elements:eceEls,clientSecret:d.clientSecret,
+        confirmParams:{return_url:location.origin+'/?session_id='+d.sessionId},
+        redirect:'if_required'
+      });
+      if(error)throw new Error(error.message);
+      await fetchResultsAndNavigate(d.sessionId,null);
+    }catch(e){console.error('ECE:',e);}
+  });
+
+  // ── Payment Element: tik Revolut Pay + Kortelė ────────────────────────
+  // payment_method_types sutampa su serverio payment_method_types: ['card','revolut_pay']
+  const peEls=stripeInstance.elements({
     mode:'payment',amount:999,currency:'eur',locale:'lt',
     paymentMethodTypes:['card','revolut_pay'],
     appearance
   });
-  window._stripeElements=elements;
+  window._stripeElements=peEls;
 
-  const pe=elements.create('payment',{
+  const pe=peEls.create('payment',{
     layout:{type:'accordion',defaultCollapsed:false,radios:true,spacedAccordionItems:false},
-    paymentMethodOrder:['apple_pay','google_pay','revolut_pay','card'],
-    // Pašalinti šalies laukelį — rodyti tik kortelės nr, datą, CVC
+    paymentMethodOrder:['revolut_pay','card'],
     fields:{billingDetails:{address:{country:'never'}}},
     defaultValues:{billingDetails:{address:{country:'LT'}}},
-    wallets:{link:'never'}
+    wallets:{link:'never',applePay:'never',googlePay:'never'},
+    terms:{card:'never',revolut_pay:'never',applePay:'never',googlePay:'never'}
   });
   pe.mount('#stripe-payment-element');
 
