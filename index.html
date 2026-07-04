@@ -318,7 +318,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-info">
-  <div style="padding:18px 16px 16px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box">
+  <div style="padding:12px 16px 12px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box;justify-content:space-between;gap:0">
     <!-- Viršutinė dalis: progresija + klausimai -->
     <div>
     <div style="margin-bottom:12px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
@@ -381,8 +381,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     </div><!-- /viršutinė dalis -->
 
-    <!-- Mokėjimo blokas — flex-grow, įplaukia į ekraną, inkaras apačioje -->
-    <div id="pay-section" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:0;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease">
+    <!-- Mokėjimo blokas — įplaukia į ekraną -->
+    <div id="pay-section" style="display:flex;flex-direction:column;gap:0;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease">
 
     <!-- Kaina + laikmatis — sustiprinto konteinerio dizainas -->
     <div id="price-info-block" style="margin-bottom:6px">
@@ -983,7 +983,7 @@ async function onPaymentSuccess(name,email){
       }).catch(()=>{
         const errEl=document.getElementById('order-err');
         if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-        go('s-info');
+        go('s-info');startPayProgressBar();
       });
     },400);
   },2000);
@@ -2230,10 +2230,20 @@ function _savePhotos(){
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
 function startPayProgressBar(){
-  // Įėjimo animacija mokėjimo blokui
+  // Reset pay-section prieš animaciją
+  const ps=document.getElementById('pay-section');
+  if(ps){
+    ps.style.transition='none';
+    ps.style.opacity='0';
+    ps.style.transform='translateY(16px)';
+  }
+  // Įėjimo animacija — po 150ms kad ekranas spėtų atsidaryti
   setTimeout(()=>{
-    const ps=document.getElementById('pay-section');
-    if(ps){ps.style.opacity='1';ps.style.transform='translateY(0)';}
+    if(ps){
+      ps.style.transition='opacity .5s ease,transform .5s ease';
+      ps.style.opacity='1';
+      ps.style.transform='translateY(0)';
+    }
   },150);
   const bar=document.getElementById('pay-pbar');
   const pct=document.getElementById('pay-pct');
