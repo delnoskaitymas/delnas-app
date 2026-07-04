@@ -328,7 +328,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
-        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;transition:width 3.5s cubic-bezier(.25,.46,.45,.94);animation:payGlow 1.8s ease-in-out infinite"></div>
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;transition:width 12s cubic-bezier(.1,.0,.05,1);animation:payGlow 1.8s ease-in-out infinite"></div>
       </div>
     </div>
 
@@ -2254,7 +2254,7 @@ function startPayProgressBar(){
   if(pct)pct.textContent='99%';
   if(txt)txt.textContent='Žemėlapis paruoštas.';
   setTimeout(()=>{
-    bar.style.transition='width 3.5s cubic-bezier(.1,.0,.1,1)';
+    bar.style.transition='width 12s cubic-bezier(.1,.0,.1,1)';
     bar.style.width='100%';
     if(pct)pct.textContent='100%';
   },400);
