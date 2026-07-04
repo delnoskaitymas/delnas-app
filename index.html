@@ -317,12 +317,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="padding:18px 16px 16px">
     <div style="margin-bottom:12px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">85%</span>
-        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Žemėlapis sugeneruotas ✓</span>
+        <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">99%</span>
+        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Baigiame generuoti jūsų žemėlapį...</span>
         <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
-        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:85%;transition:width .8s linear;animation:payGlow 1.8s ease-in-out infinite"></div>
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;transition:width 3.5s cubic-bezier(.25,.46,.45,.94);animation:payGlow 1.8s ease-in-out infinite"></div>
       </div>
     </div>
 
@@ -1671,7 +1671,7 @@ function animateLoading(){
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
           if(window._userName&&window._userEmail){
-            go('s-info');initPayment();requestWakeLock();
+            go('s-info');initPayment();requestWakeLock();startPayProgressBar();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
@@ -2204,6 +2204,36 @@ function _savePhotos(){
 }
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
+function startPayProgressBar(){
+  const bar=document.getElementById('pay-pbar');
+  const pct=document.getElementById('pay-pct');
+  const txt=document.getElementById('pay-status-txt');
+  if(!bar)return;
+  // Pradėti nuo 99%, po 300ms pradėti lėtą užpildymą
+  bar.style.width='99%';
+  if(pct)pct.textContent='99%';
+  if(txt)txt.textContent='Baigiame generuoti jūsų žemėlapį...';
+  setTimeout(()=>{
+    // Lėtas užpildymas iki 100% per ~3.5s
+    bar.style.transition='width 3.5s cubic-bezier(.1,.0,.1,1)';
+    bar.style.width='100%';
+    if(pct)pct.textContent='100%';
+    // Po 3.5s — tekstas pasikeičia
+    setTimeout(()=>{
+      if(txt){
+        txt.style.transition='opacity .4s ease';
+        txt.style.opacity='0';
+        setTimeout(()=>{
+          txt.textContent='Žemėlapis paruoštas. Atrakinkite jį dabar.';
+          txt.style.color='rgba(212,168,67,1)';
+          txt.style.fontWeight='600';
+          txt.style.opacity='1';
+        },400);
+      }
+    },3500);
+  },300);
+}
+
 function initPayment(){
   if(!window._stripeKey){setTimeout(initPayment,400);return;}
   if(window._paymentInited)return;
