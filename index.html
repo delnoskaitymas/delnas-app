@@ -185,14 +185,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #s-info.active{background:var(--bg)}
 .pay-anim-item{opacity:0;transform:translateY(14px)}
 .pay-anim-item.in{opacity:1;transform:translateY(0);transition:opacity .55s cubic-bezier(.25,.46,.45,.94),transform .55s cubic-bezier(.25,.46,.45,.94)}
-.pm-card{width:100%;padding:14px 16px;border-radius:20px;border:none;background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.015));box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.03);color:rgba(245,238,216,.72);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:12px;margin-bottom:10px;text-align:left;transition:box-shadow .3s ease,background .3s ease,transform .15s ease}
-.pm-card:active{transform:scale(.98)}
-.pm-card .pm-ico{flex-shrink:0;width:32px;display:flex;align-items:center;justify-content:flex-start}
-.pm-card .pm-name{flex:1}
-.pm-card .pm-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(212,168,67,.22);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:all .25s ease}
-.pm-card.sel{background:linear-gradient(145deg,rgba(212,168,67,.16),rgba(212,168,67,.05));box-shadow:0 0 0 1px rgba(212,168,67,.3),0 4px 22px rgba(212,168,67,.2),inset 0 1px 0 rgba(255,255,255,.05);color:var(--gold2)}
-.pm-card.sel .pm-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.pm-card.sel .pm-check::after{content:'✓'}
+.pm-group{background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:.5px solid rgba(212,168,67,.2);border-radius:20px;box-shadow:0 4px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03);overflow:hidden;margin-bottom:0}
+.pm-row{width:100%;padding:14px 16px;border:none;background:transparent;color:rgba(245,238,216,.72);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:12px;text-align:left;transition:background .25s ease,color .25s ease}
+.pm-row+.pm-row{border-top:.5px solid rgba(212,168,67,.1)}
+.pm-row:active{background:rgba(212,168,67,.05)}
+.pm-row .pm-ico{flex-shrink:0;width:30px;display:flex;align-items:center;justify-content:flex-start}
+.pm-row .pm-name{flex:1}
+.pm-row .pm-radio{width:19px;height:19px;border-radius:50%;border:1.5px solid rgba(212,168,67,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .25s ease}
+.pm-row.sel{background:rgba(212,168,67,.08);color:var(--gold2)}
+.pm-row.sel .pm-radio{background:var(--gold);border-color:var(--gold);color:#07040f}
+.pm-row.sel .pm-radio::after{content:'✓'}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
@@ -412,39 +414,35 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <!-- Apple Pay (tik iOS Safari) -->
-    <button id="pm-apple-btn" class="pm-card pay-anim-item">
-      <span class="pm-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#fff;flex-shrink:0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
-      <span class="pm-name">Apple Pay</span>
-      <span class="pm-check"></span>
-    </button>
-
-    <!-- Google Pay (Android Chrome) -->
-    <button id="pm-google-btn" class="pm-card pay-anim-item">
-      <span class="pm-ico"><span style="font-size:13px;font-weight:800;letter-spacing:-1px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
-      <span class="pm-name">Google Pay</span>
-      <span class="pm-check"></span>
-    </button>
-
-    <!-- Revolut Pay -->
-    <button id="pm-revolut-btn" class="pm-card pay-anim-item sel">
-      <span class="pm-ico"><span style="font-size:14px;font-weight:900;color:#fff;background:#191c20;padding:2px 7px;border-radius:6px">R</span></span>
-      <span class="pm-name">Revolut Pay</span>
-      <span class="pm-check"></span>
-    </button>
-
-    <!-- Kortelė -->
-    <button id="pm-card-btn" class="pm-card pay-anim-item">
-      <span class="pm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
-      <span class="pm-name">Kortelė</span>
-      <span class="pm-check"></span>
-    </button>
-    <div id="pm-card-wrap" style="display:none;margin-bottom:10px">
-      <div id="pm-card-element" style="background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:none;border-radius:18px;padding:14px 16px;min-height:44px;box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04)"></div>
+    <!-- Vieninga mokėjimo būdo pasirinkimo zona -->
+    <div id="pm-group" class="pm-group pay-anim-item">
+      <button id="pm-apple-btn" class="pm-row">
+        <span class="pm-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#fff;flex-shrink:0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
+        <span class="pm-name">Apple Pay</span>
+        <span class="pm-radio"></span>
+      </button>
+      <button id="pm-google-btn" class="pm-row">
+        <span class="pm-ico"><span style="font-size:13px;font-weight:800;letter-spacing:-1px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
+        <span class="pm-name">Google Pay</span>
+        <span class="pm-radio"></span>
+      </button>
+      <button id="pm-revolut-btn" class="pm-row sel">
+        <span class="pm-ico"><span style="font-size:14px;font-weight:900;color:#fff;background:#191c20;padding:2px 7px;border-radius:6px">R</span></span>
+        <span class="pm-name">Revolut Pay</span>
+        <span class="pm-radio"></span>
+      </button>
+      <button id="pm-card-btn" class="pm-row">
+        <span class="pm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+        <span class="pm-name">Kortelė</span>
+        <span class="pm-radio"></span>
+      </button>
+      <div id="pm-card-wrap" style="display:none;padding:0 14px 14px">
+        <div id="pm-card-element" style="background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:none;border-radius:16px;padding:14px 16px;min-height:44px;box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04)"></div>
+      </div>
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
+    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease;margin-top:20px">Gauti mano asmeninį žemėlapį →</button>
     <div class="pay-anim-item" style="text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:10px;color:rgba(245,238,216,.28)">🔒 Mokėjimas apsaugotas ir šifruotas</span>
       <span style="display:flex;align-items:center;gap:5px;opacity:.25">
