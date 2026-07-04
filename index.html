@@ -374,17 +374,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent)"></div>
     </div>
 
-    <!-- Kaina + laikmatis vienoje eilutėje -->
+    <!-- Kaina + laikmatis — sustiprinto konteinerio dizainas -->
     <div id="price-info-block" style="margin-bottom:6px">
-      <div style="background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);border-radius:10px;padding:6px 12px">
+      <div style="background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(212,168,67,.04));border:1px solid rgba(212,168,67,.4);border-radius:10px;padding:8px 14px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.6),transparent)"></div>
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:11px;color:var(--muted);text-decoration:line-through;opacity:.5">15,99 €</span>
-          <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2)">9,99<span style="font-size:13px;vertical-align:super;margin-left:1px">€</span></span>
-          <div id="countdown-wrap" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
-            <span style="font-size:10px;color:rgba(245,238,216,.5);font-weight:400">Nuolaida galioja dar</span>
-            <span id="countdown-timer" style="font-size:13px;font-weight:600;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums">4:59</span>
+          <span style="font-size:11px;color:rgba(245,238,216,.4);text-decoration:line-through">15,99 €</span>
+          <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);line-height:1">9,99<span style="font-size:14px;vertical-align:super;margin-left:1px">€</span></span>
+          <div style="width:1px;height:24px;background:rgba(212,168,67,.2);flex-shrink:0"></div>
+          <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:1px;white-space:nowrap">
+            <span style="font-size:9px;color:rgba(245,238,216,.4);font-weight:400;letter-spacing:.04em;text-transform:uppercase">Nuolaida galioja dar</span>
+            <span id="countdown-timer" style="font-size:15px;font-weight:600;color:#fff;letter-spacing:.08em;font-variant-numeric:tabular-nums">04:59</span>
           </div>
         </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent)"></div>
       </div>
     </div>
 
