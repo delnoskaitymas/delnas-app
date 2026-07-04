@@ -178,6 +178,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes encPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 @keyframes camBreathing{0%,100%{box-shadow:0 2px 12px rgba(212,168,67,.2),0 0 0 0 rgba(212,168,67,0);transform:scale(1);border:none}50%{box-shadow:0 6px 32px rgba(212,168,67,.6),0 0 0 4px rgba(212,168,67,.2),0 0 0 1px rgba(212,168,67,.4);transform:scale(1.02);border:none}}
+@keyframes payBtnBreathing{
+  0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.35),0 0 0 0 rgba(212,168,67,0)}
+  50%{box-shadow:0 6px 32px rgba(212,168,67,.65),0 0 0 4px rgba(212,168,67,.12)}
+}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
@@ -314,11 +318,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-info">
-  <div style="padding:18px 16px 16px">
+  <div style="padding:18px 16px 16px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box">
+    <!-- Viršutinė dalis: progresija + klausimai -->
+    <div>
     <div style="margin-bottom:12px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">99%</span>
-        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Baigiame generuoti jūsų žemėlapį...</span>
+        <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Žemėlapis paruoštas.</span>
         <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
@@ -331,7 +337,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.5),transparent)"></div>
       <div style="font-size:9px;font-weight:700;color:var(--gold2);letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:8px">
         <span style="display:inline-block;width:14px;height:1px;background:var(--gold);opacity:.5"></span>
-        ATRAKINK SAVO ATSAKYMUS DABAR:
+        SUŽINOK SAVO ATSAKYMUS:
         <span style="display:inline-block;width:14px;height:1px;background:var(--gold);opacity:.5"></span>
       </div>
       <div style="display:flex;flex-direction:column;gap:0">
@@ -373,6 +379,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.3),transparent)"></div>
     </div>
+    </div><!-- /viršutinė dalis -->
+
+    <!-- Mokėjimo blokas — flex-grow, įplaukia į ekraną, inkaras apačioje -->
+    <div id="pay-section" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:0;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease">
 
     <!-- Kaina + laikmatis — sustiprinto konteinerio dizainas -->
     <div id="price-info-block" style="margin-bottom:6px">
@@ -415,25 +425,26 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       Kortelė
     </button>
     <div id="pm-card-wrap" style="display:none;margin-bottom:4px">
-      <div id="pm-card-element" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px"></div>
+      <div id="pm-card-element" style="background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:11px 12px;min-height:44px"></div>
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);opacity:.45;transition:opacity .3s ease">Atrakinti mano žemėlapį dabar →</button>
+    <button onclick="initiatePayment()" id="pay-btn" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
     <div style="text-align:center;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:10px;color:rgba(245,238,216,.3)">🔒 Mokėjimas apsaugotas ir šifruotas</span>
-      <span style="display:flex;align-items:center;gap:5px;opacity:.35">
-        <!-- Visa -->
+      <span style="font-size:10px;color:rgba(245,238,216,.25)">🔒 Mokėjimas apsaugotas ir šifruotas</span>
+      <span style="display:flex;align-items:center;gap:5px;opacity:.25">
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#1A1F71"/><text x="4" y="13" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">VISA</text></svg>
-        <!-- Mastercard -->
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#252525"/><circle cx="11" cy="9" r="6" fill="#EB001B"/><circle cx="17" cy="9" r="6" fill="#F79E1B"/><path d="M14 4.8a6 6 0 0 1 0 8.4A6 6 0 0 1 14 4.8z" fill="#FF5F00"/></svg>
-        <!-- Stripe -->
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#635BFF"/><text x="5" y="13" font-size="8" font-weight="700" fill="#fff" font-family="sans-serif">stripe</text></svg>
       </span>
     </div>
-    <div style="height:8px"></div>
+
+    </div><!-- /pay-section -->
   </div>
 </div>
+
+<!-- Fokuso overlay: pritumdo viršų kai vartotojas pildys kortelę -->
+<div id="focus-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,4,15,.5);z-index:50;pointer-events:none;transition:opacity .3s ease;opacity:0"></div>
 
 <div id="sticky-cta" style="display:none"></div>
 
@@ -806,7 +817,7 @@ async function initiatePayment(){
   if(btn){btn.disabled=true;btn.style.opacity='.6';btn.textContent='Apdorojama...';}
   const restore=msg=>{
     if(errEl&&msg){errEl.textContent=msg;errEl.style.display='block';}
-    if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Atrakinti mano žemėlapį dabar →';}
+    if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
   };
   const name=window._userName||'';
   const email=window._userEmail||'';
@@ -816,7 +827,7 @@ async function initiatePayment(){
       const pr=window._payMethod==='google'?window._googlePayPR:window._applePayPR;
       if(!pr){restore('Mokėjimas neprieinamas šiame įrenginyje.');return;}
       pr.show();
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Atrakinti mano žemėlapį dabar →';}
+      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Gauti mano asmeninį žemėlapį →';}
       return;
     }
     if(window._payMethod==='revolut'){
@@ -2156,7 +2167,21 @@ function showSampleReport(e){
 
 
 
-window.addEventListener('DOMContentLoaded',()=>{syncCounters();startLiveCounter();startStaticCountGrowth();});
+window.addEventListener('DOMContentLoaded',()=>{
+  syncCounters();startLiveCounter();startStaticCountGrowth();
+  // Stebėti pay-btn disabled atributą ir valdyti kvėpavimo animaciją
+  const obs=new MutationObserver(()=>{
+    const b=document.getElementById('pay-btn');
+    if(!b)return;
+    if(!b.disabled){
+      b.style.animation='payBtnBreathing 3s ease-in-out infinite';
+    } else {
+      b.style.animation='none';
+    }
+  });
+  const payBtn=document.getElementById('pay-btn');
+  if(payBtn)obs.observe(payBtn,{attributes:true,attributeFilter:['disabled']});
+});
 
 async function shareSection(){
   const hero=document.querySelector('.result-hero');
@@ -2205,33 +2230,24 @@ function _savePhotos(){
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
 function startPayProgressBar(){
+  // Įėjimo animacija mokėjimo blokui
+  setTimeout(()=>{
+    const ps=document.getElementById('pay-section');
+    if(ps){ps.style.opacity='1';ps.style.transform='translateY(0)';}
+  },150);
   const bar=document.getElementById('pay-pbar');
   const pct=document.getElementById('pay-pct');
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
-  // Pradėti nuo 99%, po 300ms pradėti lėtą užpildymą
+  bar.style.transition='none';
   bar.style.width='99%';
   if(pct)pct.textContent='99%';
-  if(txt)txt.textContent='Baigiame generuoti jūsų žemėlapį...';
+  if(txt)txt.textContent='Žemėlapis paruoštas.';
   setTimeout(()=>{
-    // Lėtas užpildymas iki 100% per ~3.5s
     bar.style.transition='width 3.5s cubic-bezier(.1,.0,.1,1)';
     bar.style.width='100%';
     if(pct)pct.textContent='100%';
-    // Po 3.5s — tekstas pasikeičia
-    setTimeout(()=>{
-      if(txt){
-        txt.style.transition='opacity .4s ease';
-        txt.style.opacity='0';
-        setTimeout(()=>{
-          txt.textContent='Žemėlapis paruoštas. Atrakinkite jį dabar.';
-          txt.style.color='rgba(212,168,67,1)';
-          txt.style.fontWeight='600';
-          txt.style.opacity='1';
-        },400);
-      }
-    },3500);
-  },300);
+  },400);
 }
 
 function initPayment(){
@@ -2250,21 +2266,35 @@ function initPayment(){
   const cardEls=stripeInstance.elements();
   window._cardElements=cardEls;
 
-  const card=cardEls.create('card',{
-    style:cardStyle.style,
-    hidePostalCode:true,
-    iconStyle:'solid'
+  // Card elementas montuojamas tik kai pasirenkama kortelė (lazy mount)
+  // Tai išvengia layout shift kai ekranas atsidaro
+  let cardMounted=false;
+  function mountCardIfNeeded(){
+    if(cardMounted)return;
+    cardMounted=true;
+    const card=cardEls.create('card',{
+      style:cardStyle.style,
+      hidePostalCode:true,
+      iconStyle:'solid'
+    });
+    card.mount('#pm-card-element');
+    window._cardElement=card;
+    card.on('focus',()=>{
+    const ov=document.getElementById('focus-overlay');
+    if(ov){ov.style.display='block';requestAnimationFrame(()=>ov.style.opacity='1');}
   });
-  card.mount('#pm-card-element');
-  window._cardElement=card;
-
+  card.on('blur',()=>{
+    const ov=document.getElementById('focus-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(()=>{ov.style.display='none';},300);}
+  });
   card.on('change',ev=>{
-    if(window._payMethod!=='card')return;
-    const btn=document.getElementById('pay-btn');
-    const err=document.getElementById('stripe-card-errors');
-    if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
-    if(btn){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
-  });
+      if(window._payMethod!=='card')return;
+      const btn=document.getElementById('pay-btn');
+      const err=document.getElementById('stripe-card-errors');
+      if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
+      if(btn){btn.disabled=!ev.complete;btn.style.opacity=ev.complete?'1':'.45';}
+    });
+  }
 
   // Mygtukų logika
   const rBtn=document.getElementById('pm-revolut-btn');
@@ -2300,6 +2330,7 @@ function initPayment(){
   if(cBtn)cBtn.onclick=()=>{
     setActive('card');window._payMethod='card';
     if(cWrap){cWrap.style.display='block';cWrap.style.animation='fu .3s ease';}
+    mountCardIfNeeded();
     const btn=document.getElementById('pay-btn');
     if(btn){btn.disabled=true;btn.style.opacity='.45';}
     upd();
