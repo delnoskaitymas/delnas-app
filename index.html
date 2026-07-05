@@ -780,7 +780,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   window.scrollTo(0,1);
   setTimeout(()=>window.scrollTo(0,1),300);
   setTimeout(()=>window.scrollTo(0,1),600);
-  requestWakeLock();startCountdown();
+  requestWakeLock();
   // Patikrinti ar tai shared nuoroda
   const sharedMatch = window.location.pathname.match(/^\/shared\/([a-f0-9]+)$/);
   if(sharedMatch){
@@ -1006,7 +1006,7 @@ async function onPaymentSuccess(name,email){
       }).catch(()=>{
         const errEl=document.getElementById('order-err');
         if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-        go('s-info');applyDefaultPayMethod();startPayProgressBar();
+        go('s-info');applyDefaultPayMethod();startCountdown();startPayProgressBar();
       });
     },400);
   },2000);
@@ -1705,7 +1705,7 @@ function animateLoading(){
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
           if(window._userName&&window._userEmail){
-            go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
+            go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startCountdown();startPayProgressBar();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
@@ -2050,16 +2050,22 @@ setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},4000
 function startCountdown(){
   const el=document.getElementById('countdown-timer');
   if(!el) return;
+  // Reset timer kiekvieną kartą iš naujo
+  if(window._countdownIv){clearInterval(window._countdownIv);window._countdownIv=null;}
+  const w0=document.getElementById('countdown-wrap');
+  if(w0){w0.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em">Speciali kaina tau galioja dar:</span><span id="countdown-timer" style="font-size:15px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">03:00</span>';}
+  const el2=document.getElementById('countdown-timer');
+  if(!el2) return;
   const dur=3*60*1000; // 3 minutės ms
   const end=Date.now()+dur;
   const fmt=n=>(n<10?'0':'')+n;
   el.textContent='03:00';
-  const iv=setInterval(()=>{
+  window._countdownIv=setInterval(()=>{
     const rem=Math.max(0,end-Date.now());
     const m=Math.floor(rem/60000);const s=Math.floor((rem%60000)/1000);
-    el.textContent=fmt(m)+':'+fmt(s);
+    el2.textContent=fmt(m)+':'+fmt(s);
     if(rem<=0){
-      clearInterval(iv);
+      clearInterval(window._countdownIv);window._countdownIv=null;
       const w=document.getElementById('countdown-wrap');
       if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.9);font-style:italic;font-weight:600;line-height:1.3">Paskutinė proga įsigyti už pradinę kainą</span>';}
     }
