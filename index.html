@@ -2542,11 +2542,17 @@ function initOrderScreen(){
 
 function openRefundPopup(){
   var p=document.getElementById('refund-popup');
-  if(p){p.style.display='flex';p.scrollTop=0;}
+  var aw=document.getElementById('app-wrap');
+  if(p){
+    if(aw){aw._savedScroll=aw.scrollTop;aw.scrollTop=0;}
+    p.style.display='flex';
+  }
 }
 function closeRefundPopup(){
   var p=document.getElementById('refund-popup');
+  var aw=document.getElementById('app-wrap');
   if(p){p.style.display='none';}
+  if(aw&&aw._savedScroll!==undefined){aw.scrollTop=aw._savedScroll;}
 }
 function proceedToPayment(){
   const name=document.getElementById('o-name').value.trim();
@@ -2569,7 +2575,7 @@ function proceedToPayment(){
   setTimeout(()=>animateLoading(),100);
 }
 </script>
-<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(7,4,15,.92);align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="closeRefundPopup()">
+<div id="refund-popup" style="display:none;position:absolute;top:0;left:0;right:0;min-height:100%;z-index:9999;background:rgba(7,4,15,.92);align-items:flex-start;justify-content:center;padding:16px;-webkit-overflow-scrolling:touch" onclick="closeRefundPopup()">
   <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:22px 18px;max-width:340px;width:100%;box-shadow:0 0 40px rgba(212,168,67,.15);margin:20px auto;" onclick="event.stopPropagation()">
     <div style="font-size:22px;margin-bottom:10px;text-align:center">🛡️</div>
     <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--gold2);text-align:center;margin:0 0 14px;line-height:1.4">Pasitenkinimo garantija ir grąžinimo politika</h3>
