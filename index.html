@@ -347,7 +347,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Žemėlapis paruoštas.</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
-        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;opacity:.25"></div>
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:72%;opacity:.3"></div>
       </div>
     </div>
 
@@ -421,7 +421,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Mokėjimo metodai — vienas blokas, mygtukai su tarpais -->
-    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:hidden;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:3px;padding:4px;position:relative;z-index:56">
+    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:visible;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:3px;padding:4px;position:relative;z-index:56">
 
       <!-- Apple Pay (slepiamas jei nepalaikomas) -->
       <button id="pm-apple-btn" class="pm-ls" style="display:none;width:100%;border-radius:7px">
@@ -2279,26 +2279,28 @@ function startPayProgressBar(){
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
 
+  // Reset
   bar.style.animation='none';
   bar.style.transition='none';
-  bar.style.width='99%';
-  bar.style.opacity='0.5';
+  bar.style.width='72%';
+  bar.style.opacity='0.4';
   if(pct)pct.textContent='99%';
   if(txt)txt.textContent='Žemėlapis paruoštas.';
 
   bar.getBoundingClientRect();
 
-  // Juosta ryškėja ir pildosi — kaip analizės ekrane
+  // Glow animacija — kaip analizės ekrane
   bar.style.animation='payGlow 1.4s ease-in-out infinite';
 
+  // Po 300ms — pildosi ir ryškėja per 15s
   setTimeout(()=>{
-    bar.style.transition='width 15s cubic-bezier(.04,0,.06,1), opacity 15s ease';
+    bar.style.transition='width 15s cubic-bezier(.04,0,.06,1), opacity 12s ease';
     bar.style.width='100%';
     bar.style.opacity='1';
     setTimeout(()=>{
       bar.style.animation='none';
       bar.style.opacity='1';
-      bar.style.boxShadow='0 0 10px rgba(240,201,106,.5)';
+      bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
       if(pct)pct.textContent='100%';
     },15000);
   },300);
