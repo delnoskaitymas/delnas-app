@@ -197,7 +197,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-ls::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 100%);pointer-events:none}
 .pm-ls:active{transform:scale(.97)}
 .pm-ls.sel{background:linear-gradient(135deg,rgba(212,168,67,.28),rgba(212,168,67,.14));box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 0 14px rgba(212,168,67,.15)}
-.pm-ls.dim{opacity:.32;background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(212,168,67,.02));box-shadow:none}
+.pm-ls.dim{opacity:.5;background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(212,168,67,.02));box-shadow:none}
 .pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.28);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(212,168,67,.3),inset 0 1px 0 rgba(255,255,255,.12);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.15);box-shadow:none}
 .pm-ls-name{font-size:13px;font-weight:700;color:#f5d97a;letter-spacing:.02em;text-shadow:0 0 10px rgba(212,168,67,.5);transition:all .25s ease}
@@ -411,9 +411,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
           <span style="font-size:11px;color:rgba(245,238,216,.35);text-decoration:line-through">15,99 €</span>
           <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);line-height:1">9,99<span style="font-size:14px;vertical-align:super;margin-left:1px">€</span></span>
           <div style="width:1px;height:24px;background:rgba(212,168,67,.2);flex-shrink:0"></div>
-          <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:2px;white-space:nowrap">
-            <span style="font-size:9.5px;color:rgba(212,168,67,.55);font-weight:300;letter-spacing:.03em">Speciali kaina tau galios dar:</span>
-            <span id="countdown-timer" style="font-size:15px;font-weight:600;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums">03:00</span>
+          <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:1px;flex:1">
+            <span style="font-size:9px;color:rgba(212,168,67,.6);font-weight:400;letter-spacing:.04em">Nuolaida baigiasi per:</span>
+            <span id="countdown-timer" style="font-size:24px;font-weight:700;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums;line-height:1.1">03:00</span>
           </div>
         </div>
       </div>
@@ -430,7 +430,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
       <!-- Google Pay + Revolut Pay — šalia vienas kito -->
       <div style="display:flex;gap:3px">
-        <button id="pm-google-btn" class="pm-ls dim" style="flex:1;border-radius:7px">
+        <button id="pm-google-btn" class="pm-ls sel" style="flex:1;border-radius:7px">
           <span class="pm-ls-icon"><span style="font-size:10px;font-weight:800;letter-spacing:-0.5px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
           <span class="pm-ls-name">Google Pay</span>
         </button>
@@ -441,7 +441,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
 
       <!-- Kortelė -->
-      <button id="pm-card-btn" class="pm-ls dim" style="width:100%;border-radius:7px">
+      <button id="pm-card-btn" class="pm-ls sel" style="width:100%;border-radius:7px">
         <span class="pm-ls-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.9)" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
         <span class="pm-ls-name">Kortelė</span>
       </button>
