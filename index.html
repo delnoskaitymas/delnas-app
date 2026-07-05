@@ -341,13 +341,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="padding:12px 16px 12px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box;justify-content:flex-start;gap:8px">
     <!-- Viršutinė dalis: progresija + klausimai -->
     <div>
-    <div style="margin-bottom:8px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
+    <div style="margin-bottom:8px;background:rgba(212,168,67,.06);border-radius:8px;padding:5px 10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span id="pay-pct" style="font-size:12px;font-weight:700;color:var(--gold2)">99%</span>
         <span id="pay-status-txt" style="font-size:9px;color:rgba(212,168,67,.8);font-weight:500">Žemėlapis paruoštas.</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
-        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;opacity:.5"></div>
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;opacity:.25"></div>
       </div>
     </div>
 
@@ -421,7 +421,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Mokėjimo metodai — vienas blokas, mygtukai su tarpais -->
-    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:hidden;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:3px;padding:4px">
+    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:hidden;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:3px;padding:4px;position:relative;z-index:56">
 
       <!-- Apple Pay (slepiamas jei nepalaikomas) -->
       <button id="pm-apple-btn" class="pm-ls" style="display:none;width:100%;border-radius:7px">
@@ -447,8 +447,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span class="pm-ls-name">Kortelė</span>
       </button>
 
-      <div id="pm-card-wrap" style="display:none;padding:4px 0 0">
-        <div id="pm-card-element" style="background:rgba(212,168,67,.08);border:1.5px solid rgba(212,168,67,.6);border-radius:8px;padding:12px 14px;min-height:44px;box-shadow:0 0 12px rgba(212,168,67,.15)"></div>
+      <div id="pm-card-wrap" style="display:none;padding:4px 0 0;position:relative;z-index:60">
+        <div id="pm-card-element" style="background:rgba(212,168,67,.08);border:1.5px solid rgba(212,168,67,.6);border-radius:8px;padding:12px 14px;min-height:44px;box-shadow:0 0 14px rgba(212,168,67,.2)"></div>
       </div>
     </div>
 
@@ -468,7 +468,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <!-- Fokuso overlay: pritumdo viršų kai vartotojas pildys kortelę -->
-<div id="focus-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,4,15,.5);z-index:50;pointer-events:none;transition:opacity .3s ease;opacity:0"></div>
+<div id="focus-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,4,15,.45);z-index:55;pointer-events:none;transition:opacity .3s ease;opacity:0"></div>
 
 <div id="sticky-cta" style="display:none"></div>
 
