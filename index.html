@@ -2441,9 +2441,8 @@ function initPayment(){
     }catch(e){console.error('Apple Pay:',e);}
   };
 
-  // Pagal nutylėjimą — Revolut aktyvi
+  // Pagal nutylėjimą — Revolut aktyvi (visi mygtukai ryškūs)
   window._payMethod='revolut';
-  setActive('revolut');
   const btn=document.getElementById('pay-btn');
   if(btn){btn.disabled=false;btn.style.opacity='1';}
 
