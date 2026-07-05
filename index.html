@@ -192,6 +192,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-row .pm-ico{flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .pm-row .pm-name{flex:none}
 .pm-row.sel{background:rgba(212,168,67,.12);color:var(--gold2)}
+/* pm-ls — lygiai kaip .ls analizės ekrane */
+.pm-ls{width:100%;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:7px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .3s ease;opacity:.6;text-align:left;box-sizing:border-box}
+.pm-ls:active{opacity:.8}
+.pm-ls.sel{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;box-shadow:2px 0 10px rgba(212,168,67,.08)}
+.pm-ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s ease}
+.pm-ls.sel .pm-ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
+.pm-ls-name{flex:1;font-size:12px;font-weight:500;color:rgba(245,238,216,.4);transition:all .3s ease}
+.pm-ls.sel .pm-ls-name{color:var(--gold2);font-weight:600}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
@@ -328,7 +336,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
 <div class="screen" id="s-info">
-  <div style="padding:12px 16px 12px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box;justify-content:space-between;gap:0">
+  <div style="padding:12px 16px 12px;display:flex;flex-direction:column;min-height:100dvh;box-sizing:border-box;justify-content:flex-start;gap:8px">
     <!-- Viršutinė dalis: progresija + klausimai -->
     <div>
     <div style="margin-bottom:12px;background:rgba(212,168,67,.08);border-radius:8px;padding:5px 10px">
@@ -338,7 +346,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span style="font-size:12px;font-weight:700;color:rgba(212,168,67,.3)">100%</span>
       </div>
       <div style="height:5px;background:rgba(212,168,67,.12);border-radius:50px;overflow:hidden">
-        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:99%;animation:payGlow 1.4s ease-in-out infinite"></div>
+        <div id="pay-pbar" style="height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%"></div>
       </div>
     </div>
 
@@ -395,7 +403,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="pay-section" style="display:flex;flex-direction:column;gap:0">
 
     <!-- Kaina + laikmatis — tos pačios spalvos/rėmelio stilius kaip analizės ekrano punktai -->
-    <div id="price-info-block" class="pay-anim-item" style="margin-bottom:8px">
+    <div id="price-info-block" class="pay-anim-item">
       <div style="background:rgba(212,168,67,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:12px 16px;position:relative;overflow:hidden">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:11px;color:rgba(245,238,216,.35);text-decoration:line-through">15,99 €</span>
@@ -403,41 +411,37 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
           <div style="width:1px;height:24px;background:rgba(212,168,67,.2);flex-shrink:0"></div>
           <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:2px;white-space:nowrap">
             <span style="font-size:9.5px;color:rgba(212,168,67,.55);font-weight:300;letter-spacing:.03em">Speciali kaina tau galios dar:</span>
-            <span id="countdown-timer" style="font-size:15px;font-weight:600;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums">04:59</span>
+            <span id="countdown-timer" style="font-size:15px;font-weight:600;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums">00:00</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Vieninga mokėjimo būdo pasirinkimo zona -->
-    <div id="pm-group" class="pm-group pay-anim-item">
-      <!-- Express checkout: Google + Revolut šalia vienas kito -->
-      <div id="pm-express-row" style="display:flex;border-bottom:.5px solid rgba(212,168,67,.1)">
-        <button id="pm-apple-btn" class="pm-row" style="flex:1;border-right:.5px solid rgba(212,168,67,.1);display:none">
-          <span class="pm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
-          <span class="pm-name" style="font-size:12px">Apple Pay</span>
-        </button>
-        <button id="pm-google-btn" class="pm-row" style="flex:1;border-right:.5px solid rgba(212,168,67,.1)">
-          <span class="pm-ico"><span style="font-size:11px;font-weight:800;letter-spacing:-1px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
-          <span class="pm-name" style="font-size:12px">Google Pay</span>
-        </button>
-        <button id="pm-revolut-btn" class="pm-row sel" style="flex:1">
-          <span class="pm-ico"><span style="font-size:13px;font-weight:900;color:#fff;background:#191c20;padding:1px 6px;border-radius:5px">R</span></span>
-          <span class="pm-name" style="font-size:12px">Revolut Pay</span>
-        </button>
-      </div>
-      <!-- Kortelė -->
-      <button id="pm-card-btn" class="pm-row">
-        <span class="pm-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
-        <span class="pm-name" style="font-size:12px">Kortelė</span>
+    <!-- Mokėjimo metodai — .ls stiliaus, atskirti kaip analizės punktai -->
+    <div id="pm-group" class="pay-anim-item" style="display:flex;flex-direction:column;gap:3px">
+      <button id="pm-apple-btn" class="pm-ls" style="display:none">
+        <span class="pm-ls-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
+        <span class="pm-ls-name">Apple Pay</span>
       </button>
-      <div id="pm-card-wrap" style="display:none;padding:0 14px 14px">
-        <div id="pm-card-element" style="background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:none;border-radius:16px;padding:14px 16px;min-height:44px;box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04)"></div>
+      <button id="pm-google-btn" class="pm-ls">
+        <span class="pm-ls-icon"><span style="font-size:9px;font-weight:800;letter-spacing:-0.5px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
+        <span class="pm-ls-name">Google Pay</span>
+      </button>
+      <button id="pm-revolut-btn" class="pm-ls sel">
+        <span class="pm-ls-icon"><span style="font-size:10px;font-weight:900;color:#fff;background:#191c20;padding:1px 4px;border-radius:4px">R</span></span>
+        <span class="pm-ls-name">Revolut Pay</span>
+      </button>
+      <button id="pm-card-btn" class="pm-ls">
+        <span class="pm-ls-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.8)" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+        <span class="pm-ls-name">Kortelė</span>
+      </button>
+      <div id="pm-card-wrap" style="display:none;padding:4px 0 0">
+        <div id="pm-card-element" style="background:rgba(255,255,255,.05);border-left:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:12px 14px;min-height:44px"></div>
       </div>
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease;margin-top:20px">Gauti mano asmeninį žemėlapį →</button>
+    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
     <div class="pay-anim-item" style="text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:10px;color:rgba(245,238,216,.28)">🔒 Mokėjimas apsaugotas ir šifruotas</span>
       <span style="display:flex;align-items:center;gap:5px;opacity:.25">
@@ -2239,35 +2243,41 @@ function _savePhotos(){
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
 function startPayProgressBar(){
-  // pay-section pati visada matoma — judesį kuria kiekvienas elementas atskirai (stagger)
   const ps=document.getElementById('pay-section');
   if(ps){ps.style.opacity='1';ps.style.transform='none';}
   const items=document.querySelectorAll('#pay-section .pay-anim-item');
   items.forEach(el=>el.classList.remove('in'));
-  // Švelnus, paeiliui įplaukiantis judesys — kiekvienas elementas per ~0.5s, su nedideliu vėlavimu
-  items.forEach((el,i)=>{
-    setTimeout(()=>el.classList.add('in'),120+i*70);
-  });
+  items.forEach((el,i)=>{setTimeout(()=>el.classList.add('in'),120+i*70);});
+
   const bar=document.getElementById('pay-pbar');
   const pct=document.getElementById('pay-pct');
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
-  // Reset — pradžia nuo 99%
+
+  // Reset be animacijos
+  bar.style.animation='none';
   bar.style.transition='none';
   bar.style.width='99%';
-  bar.style.animation='payGlow 1.4s ease-in-out infinite';
   if(pct)pct.textContent='99%';
   if(txt)txt.textContent='Žemėlapis paruoštas.';
-  // Po 400ms pradeda pildytis — 15s iki 100%, glow sustoja kai pilna
+
+  // Reflow — kad transition:none įsigaliotų
+  bar.getBoundingClientRect();
+
+  // Pradedame glow animaciją — tęsinys nuo analizės ekrano
+  bar.style.animation='payGlow 1.4s ease-in-out infinite';
+
+  // Po 300ms — lėtas judėjimas nuo 99% iki 100% per 15s
   setTimeout(()=>{
-    bar.style.transition='width 15s cubic-bezier(.05,.0,.08,1)';
+    bar.style.transition='width 15s cubic-bezier(.04,0,.06,1)';
     bar.style.width='100%';
+    // 15s vėliau — glow sustoja, rodome 100%
     setTimeout(()=>{
       bar.style.animation='none';
-      bar.style.boxShadow='0 0 8px rgba(240,201,106,.6)';
+      bar.style.boxShadow='0 0 10px rgba(240,201,106,.5)';
       if(pct)pct.textContent='100%';
     },15000);
-  },400);
+  },300);
 }
 
 function initPayment(){
