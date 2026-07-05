@@ -2257,8 +2257,8 @@ function applyDefaultPayMethod(){
   var cB=document.getElementById('pm-card-btn');
   var gB=document.getElementById('pm-google-btn');
   var aB=document.getElementById('pm-apple-btn');
-  [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('sel');b.classList.add('dim');}});
-  if(rB){rB.classList.add('sel');rB.classList.remove('dim');}
+  [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('dim');b.classList.add('sel');}});
+  window._payMethod='revolut';
 }
 function startPayProgressBar(){
   const ps=document.getElementById('pay-section');
