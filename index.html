@@ -411,9 +411,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
           <span style="font-size:11px;color:rgba(245,238,216,.35);text-decoration:line-through">15,99 €</span>
           <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);line-height:1">9,99<span style="font-size:14px;vertical-align:super;margin-left:1px">€</span></span>
           <div style="width:1px;height:24px;background:rgba(212,168,67,.2);flex-shrink:0"></div>
-          <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:1px;flex:1">
-            <span style="font-size:9px;color:rgba(212,168,67,.6);font-weight:400;letter-spacing:.04em">Nuolaida baigiasi per:</span>
-            <span id="countdown-timer" style="font-size:24px;font-weight:700;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums;line-height:1.1">03:00</span>
+          <div id="countdown-wrap" style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em">Speciali kaina tau galioja:</span>
+            <span id="countdown-timer" style="font-size:15px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">03:00</span>
           </div>
         </div>
       </div>
@@ -2050,20 +2050,20 @@ setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},4000
 function startCountdown(){
   const el=document.getElementById('countdown-timer');
   if(!el) return;
-  let total=3*60; // 3 minutės atgal
+  const dur=3*60*1000; // 3 minutės ms
+  const end=Date.now()+dur;
   const fmt=n=>(n<10?'0':'')+n;
-  el.textContent=fmt(Math.floor(total/60))+':'+fmt(total%60);
+  el.textContent='03:00';
   const iv=setInterval(()=>{
-    total--;
-    if(total<=0){
+    const rem=Math.max(0,end-Date.now());
+    const m=Math.floor(rem/60000);const s=Math.floor((rem%60000)/1000);
+    el.textContent=fmt(m)+':'+fmt(s);
+    if(rem<=0){
       clearInterval(iv);
       const w=document.getElementById('countdown-wrap');
       if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.9);font-style:italic;font-weight:600;line-height:1.3">Paskutinė proga įsigyti už pradinę kainą</span>';}
-      return;
     }
-    const m=Math.floor(total/60);const s=total%60;
-    el.textContent=fmt(m)+':'+fmt(s);
-  },1000);
+  },500);
 }
 function syncCounters(){
   // now handled by startStaticCountGrowth on DOMContentLoaded
