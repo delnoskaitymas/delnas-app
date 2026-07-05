@@ -1006,7 +1006,7 @@ async function onPaymentSuccess(name,email){
       }).catch(()=>{
         const errEl=document.getElementById('order-err');
         if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-        go('s-info');startPayProgressBar();
+        go('s-info');applyDefaultPayMethod();startPayProgressBar();
       });
     },400);
   },2000);
@@ -1705,7 +1705,7 @@ function animateLoading(){
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
           if(window._userName&&window._userEmail){
-            go('s-info');initPayment();requestWakeLock();startPayProgressBar();
+            go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
@@ -2252,6 +2252,14 @@ function _savePhotos(){
 }
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
+function applyDefaultPayMethod(){
+  var rB=document.getElementById('pm-revolut-btn');
+  var cB=document.getElementById('pm-card-btn');
+  var gB=document.getElementById('pm-google-btn');
+  var aB=document.getElementById('pm-apple-btn');
+  [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('sel');b.classList.add('dim');}});
+  if(rB){rB.classList.add('sel');rB.classList.remove('dim');}
+}
 function startPayProgressBar(){
   const ps=document.getElementById('pay-section');
   if(ps){ps.style.opacity='1';ps.style.transform='none';}
