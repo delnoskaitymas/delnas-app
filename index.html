@@ -232,6 +232,23 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </style>
 </head>
 <body>
+<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(7,4,15,.92);align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="closeRefundPopup()">
+  <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:22px 18px;max-width:340px;width:100%;box-shadow:0 0 40px rgba(212,168,67,.15);margin:20px auto" onclick="event.stopPropagation()">
+    <div style="font-size:22px;margin-bottom:10px;text-align:center">🛡️</div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--gold2);text-align:center;margin:0 0 14px;line-height:1.4">Pasitenkinimo garantija ir grąžinimo politika</h3>
+    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Mes esame įsipareigoję užtikrinti aukščiausią sistemos generuojamos analizės kokybę. Kadangi kiekvienas žemėlapis yra sugeneruojamas pasitelkiant pažangiausius algoritmus bei naujausią duomenų analizės metodiką, sistema užtikrina maksimalų tikslumą.</p>
+    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Jei manote, kad sistemos sugeneruota analizė neatitinka jūsų lūkesčių, jūs galite kreiptis dėl pinigų grąžinimo per <strong style="color:var(--gold2)">14 dienų</strong> nuo pirkimo datos.</p>
+    <p style="font-size:12px;color:var(--gold2);font-weight:600;margin:0 0 8px">Grąžinimo sąlygos:</p>
+    <div style="font-size:11px;color:rgba(245,238,216,.65);line-height:1.6;margin:0 0 12px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(245,238,216,.85)">Argumentuotas pagrindimas:</strong> Privalote pateikti išsamų rašytinį paaiškinimą (ne mažiau nei 200 žodžių), kodėl analizė, jūsų nuomone, yra netiksli ar nepagrįsta.</span></div>
+      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(245,238,216,.85)">Duomenų peržiūra:</strong> Užklausa bus perduota techninės priežiūros komandai, kuri palygins argumentus su sistemos analizės algoritmu.</span></div>
+      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(245,238,216,.85)">Sprendimo priėmimas:</strong> Pasiliekame teisę patvirtinti arba atmesti prašymą, jei argumentai pasirodys nepagrįsti ar neatitiks sistemos generuojamų duomenų logikos.</span></div>
+    </div>
+    <p style="font-size:11px;color:rgba(245,238,216,.6);line-height:1.6;margin:0 0 14px">Norėdami pradėti šį procesą, parašykite mums: <strong style="color:var(--gold2)">pagalba@delnaskaitymas.lt</strong> su tema: <em>„Grąžinimo prašymas – [Jūsų užsakymo numeris]"</em>.</p>
+    <p style="font-size:10.5px;color:rgba(245,238,216,.45);line-height:1.5;margin:0 0 16px;padding:10px;background:rgba(212,168,67,.05);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">Pastaba: savo unikalų užsakymo numerį rasite patvirtinimo pranešime iškart po apmokėjimo, sėkmingo apmokėjimo ekrane šalia „Dėkojame, jūsų užsakymas sėkmingai apdorotas".</p>
+    <button onclick="closeRefundPopup()" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:12px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;cursor:pointer">Supratau, tęsiu mokėjimą</button>
+  </div>
+</div>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
 <div class="screen active" id="s-home">
 
@@ -2542,17 +2559,11 @@ function initOrderScreen(){
 
 function openRefundPopup(){
   var p=document.getElementById('refund-popup');
-  var aw=document.getElementById('app-wrap');
-  if(p){
-    if(aw){aw._savedScroll=aw.scrollTop;aw.scrollTop=0;}
-    p.style.display='flex';
-  }
+  if(p){p.style.display='flex';p.scrollTop=0;}
 }
 function closeRefundPopup(){
   var p=document.getElementById('refund-popup');
-  var aw=document.getElementById('app-wrap');
   if(p){p.style.display='none';}
-  if(aw&&aw._savedScroll!==undefined){aw.scrollTop=aw._savedScroll;}
 }
 function proceedToPayment(){
   const name=document.getElementById('o-name').value.trim();
@@ -2574,22 +2585,4 @@ function proceedToPayment(){
   go('s-loading');
   setTimeout(()=>animateLoading(),100);
 }
-</script>
-<div id="refund-popup" style="display:none;position:absolute;top:0;left:0;right:0;min-height:100%;z-index:9999;background:rgba(7,4,15,.92);align-items:flex-start;justify-content:center;padding:16px;-webkit-overflow-scrolling:touch" onclick="closeRefundPopup()">
-  <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:22px 18px;max-width:340px;width:100%;box-shadow:0 0 40px rgba(212,168,67,.15);margin:20px auto;" onclick="event.stopPropagation()">
-    <div style="font-size:22px;margin-bottom:10px;text-align:center">🛡️</div>
-    <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--gold2);text-align:center;margin:0 0 14px;line-height:1.4">Pasitenkinimo garantija ir grąžinimo politika</h3>
-    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Mes esame įsipareigoję užtikrinti aukščiausią sistemos generuojamos analizės kokybę. Kadangi kiekvienas žemėlapis yra sugeneruojamas pasitelkiant pažangiausius algoritmus bei naujausią duomenų analizės metodiką, sistema užtikrina maksimalų tikslumą.</p>
-    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Jei manote, kad sistemos sugeneruota analizė neatitinka jūsų lūkesčių, jūs galite kreiptis dėl pinigų grąžinimo per <strong style="color:var(--gold2)">14 dienų</strong> nuo pirkimo datos.</p>
-    <p style="font-size:12px;color:var(--gold2);font-weight:600;margin:0 0 8px">Grąžinimo sąlygos:</p>
-    <div style="font-size:11px;color:rgba(245,238,216,.65);line-height:1.6;margin:0 0 12px;display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(245,238,216,.85)">Argumentuotas pagrindimas:</strong> Privalote pateikti išsamų rašytinį paaiškinimą (ne mažiau nei 200 žodžių), kodėl analizė, jūsų nuomone, yra netiksli ar nepagrįsta.</span></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(245,238,216,.85)">Duomenų peržiūra:</strong> Užklausa bus perduota techninės priežiūros komandai, kuri palygins argumentus su sistemos analizės algoritmu.</span></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(245,238,216,.85)">Sprendimo priėmimas:</strong> Pasiliekame teisę patvirtinti arba atmesti prašymą, jei argumentai pasirodys nepagrįsti ar neatitiks sistemos generuojamų duomenų logikos.</span></div>
-    </div>
-    <p style="font-size:11px;color:rgba(245,238,216,.6);line-height:1.6;margin:0 0 14px">Norėdami pradėti šį procesą, parašykite mums adresu: <strong style="color:var(--gold2)">pagalba@delnaskaitymas.lt</strong> su tema: <em>„Grąžinimo prašymas – [Jūsų užsakymo numeris]"</em>.</p>
-    <p style="font-size:10.5px;color:rgba(245,238,216,.45);line-height:1.5;margin:0 0 16px;padding:10px;background:rgba(212,168,67,.05);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">Pastaba: savo unikalų užsakymo numerį rasite patvirtinimo pranešime, kurį gavote iškart po apmokėjimo, sėkmingo apmokėjimo ekrane šalia užrašo „Dėkojame, jūsų užsakymas sėkmingai apdorotas".</p>
-    <button onclick="closeRefundPopup()" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:12px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;cursor:pointer">Supratau, tęsiu mokėjimą</button>
-  </div>
-</div>
-</body></html>
+</script></body></html>
