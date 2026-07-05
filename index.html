@@ -191,10 +191,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-row:active{background:rgba(212,168,67,.05)}
 .pm-row .pm-ico{flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .pm-row .pm-name{flex:none}
-.pm-row .pm-radio{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:50%;border:1.5px solid rgba(212,168,67,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .25s ease}
-.pm-row.sel{background:rgba(212,168,67,.1);color:var(--gold2)}
-.pm-row.sel .pm-radio{background:var(--gold);border-color:var(--gold);color:#07040f}
-.pm-row.sel .pm-radio::after{content:'✓'}
+.pm-row.sel{background:rgba(212,168,67,.12);color:var(--gold2)}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
@@ -346,7 +343,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Klausimų blokas — kompaktiškas -->
-    <div style="background:linear-gradient(135deg,rgba(212,168,67,.06) 0%,rgba(255,255,255,.02) 100%);border:.5px solid rgba(212,168,67,.25);border-radius:12px;padding:6px 10px 6px;margin-bottom:10px;position:relative;overflow:hidden">
+    <div style="background:linear-gradient(135deg,rgba(212,168,67,.06) 0%,rgba(255,255,255,.02) 100%);border:.5px solid rgba(212,168,67,.25);border-radius:12px;padding:6px 10px 6px;margin-bottom:0;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.5),transparent)"></div>
       <div style="font-size:9px;font-weight:700;color:var(--gold2);letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:8px">
         <span style="display:inline-block;width:14px;height:1px;background:var(--gold);opacity:.5"></span>
@@ -419,24 +416,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <button id="pm-apple-btn" class="pm-row" style="flex:1;border-right:.5px solid rgba(212,168,67,.1);display:none">
           <span class="pm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
           <span class="pm-name" style="font-size:12px">Apple Pay</span>
-          <span class="pm-radio"></span>
         </button>
         <button id="pm-google-btn" class="pm-row" style="flex:1;border-right:.5px solid rgba(212,168,67,.1)">
           <span class="pm-ico"><span style="font-size:11px;font-weight:800;letter-spacing:-1px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
           <span class="pm-name" style="font-size:12px">Google Pay</span>
-          <span class="pm-radio"></span>
         </button>
         <button id="pm-revolut-btn" class="pm-row sel" style="flex:1">
           <span class="pm-ico"><span style="font-size:13px;font-weight:900;color:#fff;background:#191c20;padding:1px 6px;border-radius:5px">R</span></span>
           <span class="pm-name" style="font-size:12px">Revolut Pay</span>
-          <span class="pm-radio"></span>
         </button>
       </div>
-      <!-- Kortelė — atskiras, "tradicinis" būdas apačioje -->
+      <!-- Kortelė -->
       <button id="pm-card-btn" class="pm-row">
         <span class="pm-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.7)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
         <span class="pm-name" style="font-size:12px">Kortelė</span>
-        <span class="pm-radio"></span>
       </button>
       <div id="pm-card-wrap" style="display:none;padding:0 14px 14px">
         <div id="pm-card-element" style="background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:none;border-radius:16px;padding:14px 16px;min-height:44px;box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04)"></div>
@@ -2042,18 +2035,19 @@ setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},4000
 function startCountdown(){
   const el=document.getElementById('countdown-timer');
   if(!el) return;
-  let total=4*60+59;
+  let elapsed=0;
+  const total=2*60; // 2 minutės
   const fmt=n=>(n<10?'0':'')+n;
-  el.textContent=fmt(Math.floor(total/60))+':'+fmt(total%60);
+  el.textContent='00:00';
   const iv=setInterval(()=>{
-    if(total<=0){
+    elapsed++;
+    if(elapsed>=total){
       clearInterval(iv);
       const w=document.getElementById('countdown-wrap');
-      if(w){w.innerHTML='<span style="font-size:11px;color:rgba(212,168,67,.8);font-style:italic">✦ Paskutinė proga</span>';}
+      if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.85);font-style:italic;font-weight:500">Paskutinė proga įsigyti už pradinę kainą</span>';}
       return;
     }
-    total--;
-    const m=Math.floor(total/60);const s=total%60;
+    const m=Math.floor(elapsed/60);const s=elapsed%60;
     el.textContent=fmt(m)+':'+fmt(s);
   },1000);
 }
@@ -2258,19 +2252,19 @@ function startPayProgressBar(){
   const pct=document.getElementById('pay-pct');
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
-  // Reset
+  // Reset — pradžia nuo 99%
   bar.style.transition='none';
   bar.style.width='99%';
   bar.style.animation='payGlow 1.4s ease-in-out infinite';
   if(pct)pct.textContent='99%';
   if(txt)txt.textContent='Žemėlapis paruoštas.';
+  // Po 400ms pradeda pildytis — 15s iki 100%, glow sustoja kai pilna
   setTimeout(()=>{
-    // 15s užpildymas nuo 99% iki 100%
-    bar.style.transition='width 15s cubic-bezier(.05,.0,.1,1)';
+    bar.style.transition='width 15s cubic-bezier(.05,.0,.08,1)';
     bar.style.width='100%';
-    // Po 15s pašalinam glow (jau pilna)
     setTimeout(()=>{
       bar.style.animation='none';
+      bar.style.boxShadow='0 0 8px rgba(240,201,106,.6)';
       if(pct)pct.textContent='100%';
     },15000);
   },400);
