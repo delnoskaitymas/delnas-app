@@ -2104,8 +2104,9 @@ function startCountdown(){
   function startPhase2(){
     const pv=document.getElementById('main-price-val');
     const po=document.getElementById('main-price-old');
-    if(pv){pv.innerHTML='11,99<span id="main-price-sup" style="font-size:12px;vertical-align:super;margin-left:1px">€</span>';}
-    if(po){po.textContent='9,99 €';}
+    // Kaina: 11,99€, perbraukta 15,99€
+    if(pv){pv.innerHTML='11,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span>';}
+    if(po){po.textContent='15,99 €';}
     if(pb){pb.style.animation='priceUrgency 2s ease-in-out infinite';}
     const w=document.getElementById('countdown-wrap');
     if(w){w.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.9);font-weight:600;letter-spacing:.02em"><span style="color:var(--gold2);margin-right:2px">✦</span>Paskutinė galimybė: speciali kaina galioja dar:</span><span id="countdown-timer2" style="font-size:14px;font-weight:700;color:#f5d97a;letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">15:00</span>';}
@@ -2118,23 +2119,24 @@ function startCountdown(){
     },500);
   }
 
-  // ── FAZĖ 3: kaina→15,99, laikmatis dingsta, "Standartinė kaina" ──
+  // ── FAZĖ 3: tekstas 5s → kaina 15,99, "Standartinė kaina" ──
   function startPhase3(){
     const pv=document.getElementById('main-price-val');
     const po=document.getElementById('main-price-old');
-    // Kaina → 15,99, be perbraukimo
-    if(pv){pv.innerHTML='15,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span>';}
-    if(po){po.style.display='none';}
-    // Laikmatis → "Standartinė kaina"
     const div=document.getElementById('price-divider');
-    if(div){div.style.display='none';}
     const w=document.getElementById('countdown-wrap');
-    if(w){w.innerHTML='<span style="font-size:10px;color:rgba(245,238,216,.45);letter-spacing:.03em">Standartinė kaina</span>';}
-    // Pulsavimas sustoja
     if(pb){pb.style.animation='none';}
-    // "Vis dar galite..." sakinys
-    const note=document.getElementById('standard-price-note');
-    if(note){note.style.display='block';}
+    // Žinutė "Pasiūlymo laikas baigėsi. Kaina atnaujinta." — 5s
+    if(w){w.innerHTML='<span style="font-size:9.5px;color:rgba(212,168,67,.85);font-style:italic;font-weight:500;line-height:1.4">Pasiūlymo laikas baigėsi.<br>Kaina atnaujinta.</span>';}
+    setTimeout(()=>{
+      // Po 5s — galutinis vaizdas
+      if(pv){pv.innerHTML='15,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span>';}
+      if(po){po.style.display='none';}
+      if(div){div.style.display='none';}
+      if(w){w.innerHTML='<span style="font-size:10px;color:rgba(245,238,216,.4);letter-spacing:.03em">Standartinė kaina</span>';}
+      const note=document.getElementById('standard-price-note');
+      if(note){note.style.display='block';}
+    },5000);
   }
 
   startPhase1();
