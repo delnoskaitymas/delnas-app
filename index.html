@@ -429,13 +429,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="background:rgba(212,168,67,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:7px 13px;position:relative;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:center;gap:12px">
           <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
-            <span style="font-size:10px;color:rgba(245,238,216,.35);text-decoration:line-through">15,99 €</span>
-            <span style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1">9,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span></span>
+            <span id="main-price-old" style="font-size:10px;color:rgba(245,238,216,.35);text-decoration:line-through">15,99 €</span>
+            <span id="main-price-val" style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1">9,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span></span>
           </div>
           <div style="width:1px;height:30px;background:rgba(212,168,67,.25);flex-shrink:0"></div>
           <div id="countdown-wrap" style="display:flex;flex-direction:column;align-items:center;gap:2px">
-            <span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em"><span style="color:var(--gold2);margin-right:2px">✦</span>Speciali kaina tau dar galioja:</span>
-            <span id="countdown-timer" style="font-size:14px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">03:00</span>
+            <span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em"><span style="color:var(--gold2);margin-right:2px">✦</span>Pasiūlymas baigiasi po:</span>
+            <span id="countdown-timer" style="font-size:14px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">04:00</span>
           </div>
         </div>
       </div>
@@ -2079,30 +2079,52 @@ setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},3000
 
 // Skaitiklių sinchronizavimas
 function startCountdown(){
-  const el=document.getElementById('countdown-timer');
-  if(!el) return;
-  // Reset timer kiekvieną kartą iš naujo
   if(window._countdownIv){clearInterval(window._countdownIv);window._countdownIv=null;}
-  const w0=document.getElementById('countdown-wrap');
-  if(w0){w0.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em"><span style="color:var(--gold2);margin-right:2px">✦</span>Speciali kaina tau dar galioja:</span><span id="countdown-timer" style="font-size:14px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">03:00</span>';}
-  const el2=document.getElementById('countdown-timer');
-  if(!el2) return;
-  const dur=3*60*1000; // 3 minutės ms
-  const end=Date.now()+dur;
+  if(window._countdown2Iv){clearInterval(window._countdown2Iv);window._countdown2Iv=null;}
   const fmt=n=>(n<10?'0':'')+n;
-  el.textContent='03:00';
-  window._countdownIv=setInterval(()=>{
-    const rem=Math.max(0,end-Date.now());
-    const m=Math.floor(rem/60000);const s=Math.floor((rem%60000)/1000);
-    el2.textContent=fmt(m)+':'+fmt(s);
-    if(rem<=0){
-      clearInterval(window._countdownIv);window._countdownIv=null;
-      const w=document.getElementById('countdown-wrap');
-      if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.9);font-weight:600;line-height:1.3"><span style="color:var(--gold2);margin-right:2px">✦</span>PASKUTINĖ PROGA: Kaina kils po 15 min.</span>';}
-      const pb=document.getElementById('price-info-block');
-      if(pb){pb.style.animation='priceUrgency 2s ease-in-out infinite';}
-    }
-  },500);
+  const w=document.getElementById('countdown-wrap');
+  const pb=document.getElementById('price-info-block');
+
+  // ── FAZĖ 1: 4 minutės atgal ──────────────────────────────
+  function startPhase1(){
+    if(w){w.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em"><span style="color:var(--gold2);margin-right:2px">✦</span>Pasiūlymas baigiasi po:</span><span id="countdown-timer" style="font-size:14px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">04:00</span>';}
+    const end1=Date.now()+4*60*1000;
+    window._countdownIv=setInterval(()=>{
+      const rem=Math.max(0,end1-Date.now());
+      const el=document.getElementById('countdown-timer');
+      if(el){el.textContent=fmt(Math.floor(rem/60000))+':'+fmt(Math.floor((rem%60000)/1000));}
+      if(rem<=0){
+        clearInterval(window._countdownIv);window._countdownIv=null;
+        startPhase2();
+      }
+    },500);
+  }
+
+  // ── FAZĖ 2: kaina pakyla, 15 min antras laikmatis ────────
+  function startPhase2(){
+    // Kaina pakyla: 9,99 → 11,99
+    const pv=document.getElementById('main-price-val');
+    const po=document.getElementById('main-price-old');
+    if(pv){pv.innerHTML='11,99<span style="font-size:12px;vertical-align:super;margin-left:1px">€</span>';}
+    if(po){po.textContent='9,99 €';}
+    // Kainos blokas pulsuoja
+    if(pb){pb.style.animation='priceUrgency 2s ease-in-out infinite';}
+    // Antras laikmatis: 15 min atgal
+    if(w){w.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.9);font-weight:600;letter-spacing:.02em"><span style="color:var(--gold2);margin-right:2px">✦</span>Paskutinė galimybė: speciali kaina galioja dar:</span><span id="countdown-timer2" style="font-size:14px;font-weight:700;color:#f5d97a;letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">15:00</span>';}
+    const end2=Date.now()+15*60*1000;
+    window._countdown2Iv=setInterval(()=>{
+      const rem=Math.max(0,end2-Date.now());
+      const el2=document.getElementById('countdown-timer2');
+      if(el2){el2.textContent=fmt(Math.floor(rem/60000))+':'+fmt(Math.floor((rem%60000)/1000));}
+      if(rem<=0){
+        clearInterval(window._countdown2Iv);window._countdown2Iv=null;
+        if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.7);font-style:italic">Pasiūlymo laikas baigėsi.</span>';}
+        if(pb){pb.style.animation='none';}
+      }
+    },500);
+  }
+
+  startPhase1();
 }
 function syncCounters(){
   // now handled by startStaticCountGrowth on DOMContentLoaded
