@@ -483,7 +483,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span style="font-size:9px;color:rgba(245,238,216,.4)">✓ 14 dienų garantija</span>
       </div>
       <!-- Eilutė 2: Klausimas — aiškiai atskirtas -->
-      <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">Pinigų grąžinimo sąlygos</button>
+      <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">Pinigų grąžinimas</button>
       <!-- Eilutė 3: Logotipai — sava vieta -->
       <span style="display:flex;align-items:center;gap:5px;opacity:.22;margin-top:2px">
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#1A1F71"/><text x="4" y="13" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">VISA</text></svg>
@@ -2311,11 +2311,11 @@ function startPayProgressBar(){
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
 
-  // Reset
+  // Reset — pradedame nuo 0%
   bar.style.animation='none';
   bar.style.transition='none';
-  bar.style.width='72%';
-  bar.style.opacity='0.4';
+  bar.style.width='0%';
+  bar.style.opacity='1';
   if(pct)pct.textContent='99%';
   if(txt)txt.textContent='Žemėlapis paruoštas.';
 
