@@ -232,21 +232,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </style>
 </head>
 <body>
-<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(7,4,15,.92);align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="closeRefundPopup()">
-  <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.4);border-radius:16px;padding:22px 18px;max-width:340px;width:100%;box-shadow:0 0 40px rgba(212,168,67,.15);margin:20px auto" onclick="event.stopPropagation()">
-    <div style="font-size:22px;margin-bottom:10px;text-align:center">🛡️</div>
-    <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--gold2);text-align:center;margin:0 0 14px;line-height:1.4">Pinigų grąžinimo sąlygos ir grąžinimo politika</h3>
-    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Mes esame įsipareigoję užtikrinti aukščiausią sistemos generuojamos analizės kokybę. Kadangi kiekvienas žemėlapis yra sugeneruojamas pasitelkiant pažangiausias bei naujausias duomenų analizės metodikas, sistema užtikrina maksimalų tikslumą.</p>
-    <p style="font-size:11.5px;color:rgba(245,238,216,.75);line-height:1.65;margin:0 0 12px">Jei manote, kad sistemos sugeneruota analizė neatitinka jūsų lūkesčių, jūs galite kreiptis dėl pinigų grąžinimo per <strong style="color:var(--gold2)">14 dienų</strong> nuo pirkimo datos.</p>
-    <p style="font-size:12px;color:var(--gold2);font-weight:600;margin:0 0 8px">Grąžinimo sąlygos:</p>
-    <div style="font-size:11px;color:rgba(245,238,216,.65);line-height:1.6;margin:0 0 12px;display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(245,238,216,.85)">Argumentuotas pagrindimas:</strong> Kad galėtume tobulinti sistemą, prašome pateikti detalų savo pastabų paaiškinimą, nurodant, kodėl analizė neatitiko jūsų lūkesčių.</span></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(245,238,216,.85)">Duomenų peržiūra:</strong> Jūsų užklausa bus perduota techninės priežiūros komandai, kuri palygins pateiktus argumentus su sistemos duomenų analizės metodika. Atsakymą gausite per 24–48 valandas.</span></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(245,238,216,.85)">Sprendimo priėmimas:</strong> Pasiliekame teisę patvirtinti arba atmesti prašymą, jei argumentai pasirodys nepagrįsti ar neatitiks sistemos generuojamų duomenų logikos.</span></div>
+<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(7,4,15,.94);align-items:center;justify-content:center;padding:12px" onclick="closeRefundPopup()">
+  <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 16px 14px;max-width:340px;width:100%;box-shadow:0 0 30px rgba(212,168,67,.12);display:flex;flex-direction:column;max-height:calc(100dvh - 24px)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;flex-shrink:0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Pinigų grąžinimo sąlygos</h3>
     </div>
-    <p style="font-size:11px;color:rgba(245,238,216,.6);line-height:1.6;margin:0 0 14px">Norėdami pradėti šį procesą, parašykite mums: <strong style="color:var(--gold2)">pagalba@delnaskaitymas.lt</strong> su tema: <em>„Grąžinimo prašymas – [Jūsų užsakymo numeris]"</em>.</p>
-    <p style="font-size:10.5px;color:rgba(245,238,216,.45);line-height:1.5;margin:0 0 16px;padding:10px;background:rgba(212,168,67,.05);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">Svarbu: Savo užsakymo numerį rasite patvirtinimo el. laiške arba pirkimo sėkmės ekrane. Jis reikalingas grąžinimo užklausos vykdymui.</p>
-    <button onclick="closeRefundPopup()" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843);border:none;border-radius:12px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#07040f;cursor:pointer">Supratau, tęsiu mokėjimą</button>
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px">
+      <p style="font-size:10.5px;color:rgba(245,238,216,.7);line-height:1.55;margin:0 0 8px">Mes esame įsipareigoję užtikrinti aukščiausią sistemos generuojamos analizės kokybę. Kadangi kiekvienas žemėlapis yra sugeneruojamas pasitelkiant pažangiausias bei naujausias duomenų analizės metodikas, sistema užtikrina maksimalų tikslumą. Jei analizė neatitiko lūkesčių — kreipkitės dėl grąžinimo per <strong style="color:var(--gold2)">14 dienų</strong> nuo pirkimo.</p>
+      <p style="font-size:10px;color:var(--gold2);font-weight:600;margin:0 0 6px">Grąžinimo sąlygos:</p>
+      <div style="font-size:10px;color:rgba(245,238,216,.6);line-height:1.5;display:flex;flex-direction:column;gap:5px;margin-bottom:8px">
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(245,238,216,.8)">Pagrindimas</strong> — Kad galėtume tobulinti sistemą, prašome pateikti detalų savo pastabų paaiškinimą, nurodant, kodėl analizė neatitiko jūsų lūkesčių.</span></div>
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(245,238,216,.8)">Peržiūra</strong> — Jūsų užklausa bus perduota techninės priežiūros komandai, kuri palygins pateiktus argumentus su sistemos duomenų analizės metodika. Atsakymą gausite per 24–48 valandas.</span></div>
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(245,238,216,.8)">Sprendimas</strong> — Pasiliekame teisę patvirtinti arba atmesti prašymą, jei argumentai pasirodys nepagrįsti ar neatitiks sistemos generuojamų duomenų logikos.</span></div>
+      </div>
+      <div style="font-size:10px;color:rgba(245,238,216,.5);line-height:1.45;padding:8px;background:rgba(212,168,67,.04);border-radius:7px;border:.5px solid rgba(212,168,67,.12)">
+        Rašykite: <strong style="color:rgba(212,168,67,.8)">pagalba@delnaskaitymas.lt</strong><br>Tema: <em>„Grąžinimo prašymas – [užsakymo Nr.]"</em><br><span style="font-size:9.5px;color:rgba(245,238,216,.35)">Svarbu: Savo užsakymo numerį rasite patvirtinimo el. laiške arba pirkimo sėkmės ekrane. Jis reikalingas grąžinimo užklausos vykdymui.</span>
+      </div>
+    </div>
+    <button onclick="closeRefundPopup()" id="refund-close-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#07040f;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.3);animation:payBtnBreathing 3s ease-in-out infinite;flex-shrink:0">Tęsti savo žemėlapio užsakymą</button>
   </div>
 </div>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
@@ -2368,7 +2372,7 @@ function startPayProgressBar(){
     bar.style.width='100%';
     bar.style.opacity='1';
     // Tekstas keičiasi kas 8s kol pildosi
-    const msgs=['Baigiame generuoti tavo asmeninį žemėlapį...','Liko 5 vietos asmeninei žemėlapio analizei!','Baigiame generuoti tavo asmeninį žemėlapį...'];
+    if(!window._vietos){window._vietos=Math.floor(Math.random()*4)+4;}const msgs=['Baigiame generuoti tavo asmeninį žemėlapį...','Liko '+window._vietos+' vietos asmeninei žemėlapio analizei!','Baigiame generuoti tavo asmeninį žemėlapį...'];
     let mi=0;
     if(txt)txt.textContent=msgs[0];
     const mtv=setInterval(()=>{mi=(mi+1)%msgs.length;if(txt)txt.textContent=msgs[mi];},3000);
@@ -2379,7 +2383,7 @@ function startPayProgressBar(){
       bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
       if(pct)pct.textContent='100%';
       // Pakaitom po 100%
-      const doneMsg=['Tavo asmeninis žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>','Liko 5 vietos asmeninei žemėlapio analizei!'];
+      const doneMsg=['Tavo asmeninis žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>','Liko '+(window._vietos||5)+' vietos asmeninei žemėlapio analizei!'];
       let di=0;
       if(txt)txt.innerHTML=doneMsg[0];
       setInterval(()=>{di=(di+1)%doneMsg.length;if(txt)txt.innerHTML=doneMsg[di];},3000);
@@ -2400,7 +2404,7 @@ function initPayment(){
     '::placeholder':{color:'rgba(245,238,216,.35)'},iconColor:'#d4a843'
   },invalid:{color:'#ff6b6b'}}};
 
-  const cardEls=stripeInstance.elements();
+  const cardEls=stripeInstance.elements({disableLink:true});
   window._cardElements=cardEls;
 
   // Card elementas montuojamas tik kai pasirenkama kortelė (lazy mount)
@@ -2412,7 +2416,8 @@ function initPayment(){
     const card=cardEls.create('card',{
       style:cardStyle.style,
       hidePostalCode:true,
-      iconStyle:'solid'
+      iconStyle:'solid',
+      disableLinkAutofill:true
     });
     card.mount('#pm-card-element');
     window._cardElement=card;
