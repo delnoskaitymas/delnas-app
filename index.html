@@ -1034,28 +1034,48 @@ async function onPaymentSuccess(name,email){
   if(window.bgSessionId) sessionStorage.setItem('bgSessionId',window.bgSessionId);
   if(window._payPbarInterval) clearInterval(window._payPbarInterval);
 
-  const infoScreen=document.getElementById('s-info');
   const stickyEl=document.getElementById('sticky-cta');
-  if(infoScreen) infoScreen.style.display='none';
   if(stickyEl) stickyEl.style.display='none';
 
-  const successDiv=document.createElement('div');
-  successDiv.style.cssText='position:fixed;inset:0;background:#07040f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .5s ease;gap:24px';
-  successDiv.innerHTML=`
-    <div style="width:72px;height:72px;border-radius:50%;border:2px solid #d4a843;display:flex;align-items:center;justify-content:center;animation:pulse3 1.6s ease-in-out infinite">
-      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c96a,#d4a843);animation:pulse3 1.6s ease-in-out infinite reverse"></div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">Mokėjimas sėkmingas.</div>
-      <div style="font-size:13px;color:rgba(212,168,67,.8);font-style:italic">Atskleidžiamas tavo gyvenimo žemėlapis...</div>
-    </div>`;
-  document.body.appendChild(successDiv);
-  setTimeout(()=>successDiv.style.opacity='1',30);
-
-  setTimeout(()=>{
-    successDiv.style.transition='opacity .4s ease';successDiv.style.opacity='0';
+  // Visas pay-section virsta sėkmės vaizdu — tame pačiame lange
+  const paySection=document.getElementById('pay-section');
+  if(paySection){
+    // Sklandžiai išbluksta esamas turinys
+    paySection.style.transition='opacity .35s ease';
+    paySection.style.opacity='0';
     setTimeout(()=>{
-      successDiv.remove();
+      // Pakeičiame turinį į sėkmės vaizdą
+      paySection.style.opacity='0';
+      paySection.style.display='flex';
+      paySection.style.flexDirection='column';
+      paySection.style.alignItems='center';
+      paySection.style.justifyContent='center';
+      paySection.style.minHeight='60dvh';
+      paySection.style.gap='16px';
+      paySection.innerHTML=`
+        <div style="animation:paySuccessPop .6s cubic-bezier(.34,1.56,.64,1) both">
+          <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(212,168,67,.15),rgba(212,168,67,.05));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.3)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div style="text-align:center;animation:paySuccessPop .6s .15s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);margin-bottom:6px">Mokėjimas sėkmingas!</div>
+          <div style="font-size:13px;color:rgba(245,238,216,.5);font-style:italic">Atskleidžiamas tavo gyvenimo žemėlapis...</div>
+        </div>`;
+      // Fade-in sėkmės vaizdo
+      requestAnimationFrame(()=>{
+        paySection.style.transition='opacity .4s ease';
+        paySection.style.opacity='1';
+      });
+    },350);
+  }
+
+  // Po 2s — sklandus perėjimas į rezultatus
+  const successDiv={remove:()=>{}};
+  setTimeout(()=>{
+    const aw=document.getElementById('app-wrap');
+    if(aw){aw.style.transition='opacity .5s ease';aw.style.opacity='0';}
+    setTimeout(()=>{
       const photoData=[];
       if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
       if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
