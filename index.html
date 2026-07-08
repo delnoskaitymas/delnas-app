@@ -945,6 +945,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   const paySection=document.getElementById('pay-section');
   let successShownAt=null;
   bringPaySuccessIntoView();
+  finalizePayProgressBar();
   if(paySection){
     paySection.style.transition='opacity .4s ease';
     paySection.style.opacity='0';
@@ -1071,6 +1072,7 @@ async function onPaymentSuccess(name,email){
   // pay-section: viskas išnyksta sklandžiai, tada varnelė + tekstas
   const paySection=document.getElementById('pay-section');
   bringPaySuccessIntoView();
+  finalizePayProgressBar();
   if(paySection){
     paySection.style.transition='opacity .4s ease';
     paySection.style.opacity='0';
@@ -2449,7 +2451,7 @@ function startPayProgressBar(){
   bar.style.animation='payGlow 1.4s ease-in-out infinite';
 
   // Po 300ms — pildosi ir ryškėja per 40s
-  setTimeout(()=>{
+  window._payBarStartTimeout=setTimeout(()=>{
     bar.style.transition='width 40s cubic-bezier(.04,0,.06,1), opacity 20s ease';
     bar.style.width='100%';
     bar.style.opacity='1';
@@ -2457,9 +2459,9 @@ function startPayProgressBar(){
     if(!window._vietos){window._vietos=Math.floor(Math.random()*4)+4;}const msgs=['Baigiame generuoti tavo asmeninį žemėlapį...','Liko '+window._vietos+' vietos asmeninei žemėlapio analizei!','Baigiame generuoti tavo asmeninį žemėlapį...'];
     let mi=0;
     if(txt)txt.textContent=msgs[0];
-    const mtv=setInterval(()=>{mi=(mi+1)%msgs.length;if(txt)txt.textContent=msgs[mi];},3000);
-    setTimeout(()=>{
-      clearInterval(mtv);
+    window._payMsgInterval=setInterval(()=>{mi=(mi+1)%msgs.length;if(txt)txt.textContent=msgs[mi];},3000);
+    window._payBarDoneTimeout=setTimeout(()=>{
+      clearInterval(window._payMsgInterval);
       bar.style.animation='none';
       bar.style.opacity='1';
       bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
@@ -2468,9 +2470,29 @@ function startPayProgressBar(){
       const doneMsg=['Tavo asmeninis žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>','Liko '+(window._vietos||5)+' vietos asmeninei žemėlapio analizei!'];
       let di=0;
       if(txt)txt.innerHTML=doneMsg[0];
-      setInterval(()=>{di=(di+1)%doneMsg.length;if(txt)txt.innerHTML=doneMsg[di];},3000);
+      window._payDoneInterval=setInterval(()=>{di=(di+1)%doneMsg.length;if(txt)txt.innerHTML=doneMsg[di];},3000);
     },40000);
   },300);
+}
+
+// Užbaigia progreso juostą iškart: gold, 100%, pilnai, statiškas tekstas su varnele gale
+function finalizePayProgressBar(){
+  clearTimeout(window._payBarStartTimeout);
+  clearTimeout(window._payBarDoneTimeout);
+  clearInterval(window._payMsgInterval);
+  clearInterval(window._payDoneInterval);
+  const bar=document.getElementById('pay-pbar');
+  const pct=document.getElementById('pay-pct');
+  const txt=document.getElementById('pay-status-txt');
+  if(bar){
+    bar.style.animation='none';
+    bar.style.transition='width .5s ease, opacity .3s ease';
+    bar.style.width='100%';
+    bar.style.opacity='1';
+    bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
+  }
+  if(pct)pct.textContent='100%';
+  if(txt)txt.innerHTML='Tavo asmeninis žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>';
 }
 
 function initPayment(){
