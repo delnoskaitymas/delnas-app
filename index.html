@@ -1033,40 +1033,35 @@ async function onPaymentSuccess(name,email){
   const stickyEl=document.getElementById('sticky-cta');
   if(stickyEl) stickyEl.style.display='none';
 
-  // Visas pay-section virsta sėkmės vaizdu — tame pačiame lange
+  // pay-section: viskas išnyksta sklandžiai, tada varnelė + tekstas
   const paySection=document.getElementById('pay-section');
   if(paySection){
-    // Sklandžiai išbluksta esamas turinys
-    paySection.style.transition='opacity .35s ease';
+    paySection.style.transition='opacity .4s ease';
     paySection.style.opacity='0';
     setTimeout(()=>{
-      // Pakeičiame turinį į sėkmės vaizdą
-      paySection.style.opacity='0';
       paySection.style.display='flex';
       paySection.style.flexDirection='column';
       paySection.style.alignItems='center';
       paySection.style.justifyContent='center';
-      paySection.style.minHeight='60dvh';
+      paySection.style.minHeight='50dvh';
       paySection.style.gap='16px';
       paySection.innerHTML=`
-        <div style="animation:paySuccessPop .6s cubic-bezier(.34,1.56,.64,1) both">
-          <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(212,168,67,.15),rgba(212,168,67,.05));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.3)">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
+          <div style="width:76px;height:76px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(212,168,67,.35),0 0 60px rgba(212,168,67,.1)">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
         </div>
-        <div style="text-align:center;animation:paySuccessPop .6s .15s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);margin-bottom:6px">Mokėjimas sėkmingas!</div>
-          <div style="font-size:13px;color:rgba(245,238,216,.5);font-style:italic">Atskleidžiamas tavo gyvenimo žemėlapis...</div>
+        <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);line-height:1.3">Mokėjimas sėkmingas!</div>
         </div>`;
-      // Fade-in sėkmės vaizdo
       requestAnimationFrame(()=>{
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
-    },350);
+    },400);
   }
 
-  // Po 2s — sklandus perėjimas į rezultatus
+  // Po 2.5s — sklandus perėjimas į rezultatus
   const successDiv={remove:()=>{}};
   setTimeout(()=>{
     const aw=document.getElementById('app-wrap');
@@ -1092,14 +1087,17 @@ async function onPaymentSuccess(name,email){
           }, 400);
           return;
         }
+        const aw2=document.getElementById('app-wrap');
+        go('s-result');
         displayResult(result);
+        if(aw2){requestAnimationFrame(()=>{aw2.style.transition='opacity .6s ease';aw2.style.opacity='1';});}
       }).catch(()=>{
         const errEl=document.getElementById('order-err');
         if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
         if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();startCountdown();startPayProgressBar();
       });
     },400);
-  },2000);
+  },2500);
 }
 
 function showReminderModal(){const modal=document.getElementById('reminder-modal');if(modal){modal.style.display='flex';const emailInput=document.getElementById('reminder-email');if(emailInput&&window.userEmail) emailInput.value=window.userEmail;}}
