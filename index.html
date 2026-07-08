@@ -863,6 +863,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function verifyAndProceed(sessionId){
+ try{
   // Išsaugoti nuotraukas iš sessionStorage
   const _pl=sessionStorage.getItem('photoLeft')||photoLeft||window._savedPhotoLeft;
   const _pr=sessionStorage.getItem('photoRight')||photoRight||window._savedPhotoRight;
@@ -875,8 +876,22 @@ async function verifyAndProceed(sessionId){
   sessionStorage.removeItem('bgSessionId');
 
   go('s-loading');
+  setTimeout(()=>animateLoading(),100);
   // Naudoti fetchResultsAndNavigate - viena funkcija viskam
   await fetchResultsAndNavigate(sessionId,null);
+ }catch(e){
+  console.error('verifyAndProceed klaida:',e);
+  go('s-result');
+  setTimeout(()=>{
+    const rc=document.getElementById('r-char');
+    if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+    const rn=document.getElementById('res-name');
+    if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+      el.style.opacity='1';el.style.transform='none';
+    });
+  },50);
+ }
 }
 
 
@@ -940,6 +955,23 @@ function bringPaySuccessIntoView(){
 }
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
+ let _navigated=false;
+ const _watchdog=setTimeout(()=>{
+   if(_navigated)return;
+   _navigated=true;
+   console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 25s');
+   go('s-result');
+   setTimeout(()=>{
+     const rc=document.getElementById('r-char');
+     if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+     const rn=document.getElementById('res-name');
+     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+     document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+       el.style.opacity='1';el.style.transform='none';
+     });
+   },50);
+ },25000);
+ try{
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
   const paySection=document.getElementById('pay-section');
@@ -1031,6 +1063,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // 5. Palaukti, kol varnelė bus išsilaikiusi ekrane MIN 2.5s — VISADA, net ir klaidos atveju
   await minDisplay;
   successDiv.remove();
+  _navigated=true;clearTimeout(_watchdog);
 
   if(finalAd){
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
@@ -1054,6 +1087,22 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       });
     },50);
   }
+ }catch(outerErr){
+  // Garantuota apsauga — kad ir kas nutiktų (net netikėta JS klaida animacijos
+  // kode), vartotojas NIEKADA neliks įstrigęs tuščiame/juodame ekrane
+  console.error('fetchResultsAndNavigate kritinė klaida:',outerErr);
+  _navigated=true;clearTimeout(_watchdog);
+  go('s-result');
+  setTimeout(()=>{
+    const rc=document.getElementById('r-char');
+    if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+    const rn=document.getElementById('res-name');
+    if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+      el.style.opacity='1';el.style.transform='none';
+    });
+  },50);
+ }
 }
 
 
