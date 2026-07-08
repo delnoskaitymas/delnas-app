@@ -1058,7 +1058,10 @@ async function onPaymentSuccess(name,email){
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
+      startResultTimer();
     },400);
+  } else {
+    startResultTimer();
   }
 
   // Iš karto pradedame gauti rezultatą fone (kol rodomas sėkmės ekranas)
@@ -1077,7 +1080,16 @@ async function onPaymentSuccess(name,email){
 
   // Rezultatų gavimas — pradedame IŠ KARTO (fone, kol rodomas sėkmės ekranas)
   let resultReady=null;
-  let resultTimer=null;
+  let minDisplayDone=false;
+
+  // Varnelė + "Mokėjimas sėkmingas!" turi išsilaikyti ekrane MIN 2.5s nuo pasirodymo momento
+  function startResultTimer(){
+    setTimeout(()=>{
+      minDisplayDone=true;
+      if(resultReady) showFinalResult(resultReady);
+      // Jei resultReady dar null — fetchResult/fetchDirect pats iškvieps showFinalResult kai baigs
+    },2500);
+  }
 
   function fetchResult(){
     if(window.bgSessionId){
@@ -1086,8 +1098,8 @@ async function onPaymentSuccess(name,email){
         .then(d=>{
           if(d.status==='done'&&d.result){
             resultReady=d.result;
-            // Jei 2.5s jau praėjo — rodome iš karto
-            if(resultTimer===null) showFinalResult(resultReady);
+            // Rodome tik jei varnelė jau išsilaikė min. 2.5s
+            if(minDisplayDone) showFinalResult(resultReady);
           } else {
             // Dar nepabaigta — kviečiame /analyze-palm tiesiogiai
             fetchDirect();
@@ -1111,7 +1123,8 @@ async function onPaymentSuccess(name,email){
         camHand='left';photoLeft=null;photoRight=null;go('s-camera');return;
       }
       resultReady=result;
-      if(resultTimer===null) showFinalResult(resultReady);
+      // Rodome tik jei varnelė jau išsilaikė min. 2.5s
+      if(minDisplayDone) showFinalResult(resultReady);
     }).catch(()=>{
       const errEl=document.getElementById('order-err');
       if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
@@ -1120,17 +1133,8 @@ async function onPaymentSuccess(name,email){
     });
   }
 
-  // Pradedame gauti rezultatą iš karto
+  // Pradedame gauti rezultatą iš karto fone (nepriklausomai nuo varnelės animacijos laiko)
   fetchResult();
-
-  // Po 2.5s — jei rezultatas jau paruoštas, rodome iš karto; jei ne — laukiame
-  resultTimer=setTimeout(()=>{
-    resultTimer=null;
-    if(resultReady){
-      showFinalResult(resultReady);
-    }
-    // Jei resultReady dar null — fetchResult/fetchDirect pats iškvieps showFinalResult kai baigs
-  },2500);
 }
 
 function showReminderModal(){const modal=document.getElementById('reminder-modal');if(modal){modal.style.display='flex';const emailInput=document.getElementById('reminder-email');if(emailInput&&window.userEmail) emailInput.value=window.userEmail;}}
