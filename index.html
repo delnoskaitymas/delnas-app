@@ -932,14 +932,13 @@ async function initiatePayment(){
   }catch(e){restore(e.message||'Klaida');}
 }
 
-// Scrollina taip, kad sėkmės varnelė matytųsi pilnai, biškį aukščiau ekrano, be reikalo scrollinti
+// Scrollina taip, kad sėkmės varnelė būtų sklandžiai sucentruota ekrane, be reikalo scrollinti
 function bringPaySuccessIntoView(el){
-  const aw=document.getElementById('app-wrap');
-  if(!aw||!el) return;
+  if(!el) return;
   requestAnimationFrame(()=>{
-    const rect=el.getBoundingClientRect();
-    const target=aw.scrollTop+rect.top-24;
-    aw.scrollTo({top:Math.max(target,0),behavior:'smooth'});
+    requestAnimationFrame(()=>{
+      el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
+    });
   });
 }
 
@@ -956,16 +955,19 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       paySection.style.flexDirection='column';
       paySection.style.alignItems='center';
       paySection.style.justifyContent='center';
-      paySection.style.minHeight='38dvh';
-      paySection.style.gap='16px';
+      paySection.style.minHeight='';
+      paySection.style.padding='48px 0 40px';
+      paySection.style.background='radial-gradient(circle at 50% 42%,rgba(212,168,67,.09),transparent 70%)';
+      paySection.style.borderRadius='24px';
+      paySection.style.gap='18px';
       paySection.innerHTML=`
         <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
-          <div style="width:76px;height:76px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(212,168,67,.35),0 0 60px rgba(212,168,67,.1)">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div style="width:80px;height:80px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.4),0 0 70px rgba(212,168,67,.12)">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
         </div>
         <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);line-height:1.3">Mokėjimas sėkmingas!</div>
+          <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
         </div>`;
       requestAnimationFrame(()=>{
         paySection.style.transition='opacity .4s ease';
@@ -1079,16 +1081,19 @@ async function onPaymentSuccess(name,email){
       paySection.style.flexDirection='column';
       paySection.style.alignItems='center';
       paySection.style.justifyContent='center';
-      paySection.style.minHeight='38dvh';
-      paySection.style.gap='16px';
+      paySection.style.minHeight='';
+      paySection.style.padding='48px 0 40px';
+      paySection.style.background='radial-gradient(circle at 50% 42%,rgba(212,168,67,.09),transparent 70%)';
+      paySection.style.borderRadius='24px';
+      paySection.style.gap='18px';
       paySection.innerHTML=`
         <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
-          <div style="width:76px;height:76px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(212,168,67,.35),0 0 60px rgba(212,168,67,.1)">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div style="width:80px;height:80px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.4),0 0 70px rgba(212,168,67,.12)">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
         </div>
         <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);line-height:1.3">Mokėjimas sėkmingas!</div>
+          <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
         </div>`;
       requestAnimationFrame(()=>{
         paySection.style.transition='opacity .4s ease';
