@@ -943,42 +943,48 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
   const paySection=document.getElementById('pay-section');
-  let successShownAt=null;
   bringPaySuccessIntoView();
   finalizePayProgressBar();
-  if(paySection){
-    paySection.style.transition='opacity .4s ease';
-    paySection.style.opacity='0';
-    setTimeout(()=>{
-      paySection.style.display='flex';
-      paySection.style.flexDirection='column';
-      paySection.style.alignItems='center';
-      paySection.style.justifyContent='center';
-      paySection.style.minHeight='';
-      paySection.style.padding='48px 0 40px';
-      paySection.style.background='radial-gradient(circle at 50% 42%,rgba(212,168,67,.09),transparent 70%)';
-      paySection.style.borderRadius='24px';
-      paySection.style.gap='18px';
-      paySection.innerHTML=`
-        <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
-          <div style="width:80px;height:80px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.4),0 0 70px rgba(212,168,67,.12)">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+
+  // Pažadas, kuris išsipildo TIK praėjus min. 2.5s nuo varnelės pasirodymo —
+  // naudojamas VISADA prieš pereinant į rezultatus, tiek sėkmės, tiek klaidos atveju
+  const minDisplay=new Promise((resolve)=>{
+    if(paySection){
+      paySection.style.transition='opacity .4s ease';
+      paySection.style.opacity='0';
+      setTimeout(()=>{
+        paySection.style.display='flex';
+        paySection.style.flexDirection='column';
+        paySection.style.alignItems='center';
+        paySection.style.justifyContent='center';
+        paySection.style.minHeight='';
+        paySection.style.padding='48px 0 40px';
+        paySection.style.background='radial-gradient(circle at 50% 42%,rgba(212,168,67,.09),transparent 70%)';
+        paySection.style.borderRadius='24px';
+        paySection.style.gap='18px';
+        paySection.innerHTML=`
+          <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
+            <div style="width:80px;height:80px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(212,168,67,.4),0 0 70px rgba(212,168,67,.12)">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
           </div>
-        </div>
-        <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-          <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
-        </div>`;
-      requestAnimationFrame(()=>{
-        paySection.style.transition='opacity .4s ease';
-        paySection.style.opacity='1';
-      });
-      successShownAt=Date.now();
-    },400);
-  } else {
-    successShownAt=Date.now();
-  }
+          <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
+            <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
+          </div>`;
+        requestAnimationFrame(()=>{
+          paySection.style.transition='opacity .4s ease';
+          paySection.style.opacity='1';
+        });
+        setTimeout(resolve,2500);
+      },400);
+    } else {
+      setTimeout(resolve,2500);
+    }
+  });
+
   // Fake successDiv kad likęs kodas veiktų
   const successDiv={remove:()=>{}};
+  let finalAd=null,finalErr=null;
 
   try{
     // 2. Patvirtinti mokėjimą ir gauti token
@@ -1013,37 +1019,40 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     if(ad&&ad.prigimtines_stiprybes&&ad.gyvenimo_tikslas&&
        ad.santykiai&&ad.finansai&&ad.galimybes&&ad.pokyciai&&ad.klutys){
       if(userName&&!ad.userName) ad.userName=userName;
-      successDiv.remove();
-      // Varnelė + "Mokėjimas sėkmingas!" turi išsilaikyti ekrane MIN 2.5s nuo pasirodymo momento
-      const elapsed=successShownAt?Date.now()-successShownAt:0;
-      const remaining=Math.max(2500-elapsed,0);
-      setTimeout(()=>{
-        const aw=document.getElementById('app-wrap');
-        if(aw){aw.style.transition='opacity .6s ease';aw.style.opacity='0';}
-        setTimeout(()=>{
-          go('s-result');
-          displayResult(ad);
-          document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
-            el.style.opacity='1';el.style.transform='none';
-          });
-          if(aw){
-            aw.style.opacity='0';
-            aw.style.transition='opacity .7s ease';
-            requestAnimationFrame(()=>{aw.style.opacity='1';});
-          }
-        },600);
-      },remaining);
+      finalAd=ad;
     } else {
       throw new Error(ad?.error||'Rezultatai neišsamūs');
     }
   }catch(e){
     console.error('fetchResults klaida:',e);
-    successDiv.remove();
+    finalErr=e.message||'Klaida';
+  }
+
+  // 5. Palaukti, kol varnelė bus išsilaikiusi ekrane MIN 2.5s — VISADA, net ir klaidos atveju
+  await minDisplay;
+  successDiv.remove();
+
+  if(finalAd){
+    const aw=document.getElementById('app-wrap');
+    if(aw){aw.style.transition='opacity .6s ease';aw.style.opacity='0';}
+    setTimeout(()=>{
+      go('s-result');
+      displayResult(finalAd);
+      document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+        el.style.opacity='1';el.style.transform='none';
+      });
+      if(aw){
+        aw.style.opacity='0';
+        aw.style.transition='opacity .7s ease';
+        requestAnimationFrame(()=>{aw.style.opacity='1';});
+      }
+    },600);
+  } else {
     // Rodyti klaidą rezultatų ekrane
     go('s-result');
     setTimeout(()=>{
       const rc=document.getElementById('r-char');
-      if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">'+e.message+'</p>';
+      if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">'+finalErr+'</p>';
       const rn=document.getElementById('res-name');
       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
       document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
@@ -2492,7 +2501,7 @@ function finalizePayProgressBar(){
     bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
   }
   if(pct)pct.textContent='100%';
-  if(txt)txt.innerHTML='Tavo asmeninis žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>';
+  if(txt)txt.innerHTML='Tavo asmeninis gyvenimo žemėlapis paruoštas <span style="color:var(--gold2)">✓</span>';
 }
 
 function initPayment(){
