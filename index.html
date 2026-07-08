@@ -1033,20 +1033,14 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   successDiv.remove();
 
   if(finalAd){
-    const aw=document.getElementById('app-wrap');
-    if(aw){aw.style.transition='opacity .6s ease';aw.style.opacity='0';}
-    setTimeout(()=>{
-      go('s-result');
-      displayResult(finalAd);
-      document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
-        el.style.opacity='1';el.style.transform='none';
-      });
-      if(aw){
-        aw.style.opacity='0';
-        aw.style.transition='opacity .7s ease';
-        requestAnimationFrame(()=>{aw.style.opacity='1';});
-      }
-    },600);
+    // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
+    // (anksčiau papildomas app-wrap opacity blukimas persidengdavo su go() animacija
+    // ir sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatus)
+    go('s-result');
+    displayResult(finalAd);
+    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+      el.style.opacity='1';el.style.transform='none';
+    });
   } else {
     // Rodyti klaidą rezultatų ekrane
     go('s-result');
@@ -1119,13 +1113,9 @@ async function onPaymentSuccess(name,email){
 
   // Funkcija rodyti rezultatą
   function showFinalResult(result){
-    const aw=document.getElementById('app-wrap');
-    if(aw){aw.style.transition='opacity .5s ease';aw.style.opacity='0';}
-    setTimeout(()=>{
-      go('s-result');
-      displayResult(result);
-      if(aw){requestAnimationFrame(()=>{aw.style.transition='opacity .6s ease';aw.style.opacity='1';});}
-    },500);
+    // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
+    go('s-result');
+    displayResult(result);
   }
 
   // Rezultatų gavimas — pradedame IŠ KARTO (fone, kol rodomas sėkmės ekranas)
@@ -1962,7 +1952,7 @@ async function callClaude(){
 }
 
 function pillIcon(text){
-  const t=text.toLowerCase();
+  const t=(text||'').toString().toLowerCase();
   const svgOpts={
     brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
     star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
@@ -2063,7 +2053,11 @@ function displayResult(r){
     el.classList.add('visible');
   });
   const actionEl=document.getElementById('r-action');if(actionEl) actionEl.style.display='none';
-  go('s-result');
+  // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
+  // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
+  // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
+  // konfliktuojančią/persidengiančią fuOut+fu animacijos laiko problemą,
+  // kuri sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatų ekraną.
 }
 
 async function registerReminder(){
