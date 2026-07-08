@@ -932,14 +932,11 @@ async function initiatePayment(){
   }catch(e){restore(e.message||'Klaida');}
 }
 
-// Scrollina taip, kad sėkmės varnelė būtų sklandžiai sucentruota ekrane, be reikalo scrollinti
-function bringPaySuccessIntoView(el){
-  if(!el) return;
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
-    });
-  });
+// Iškart scrollina į patį viršų, kad sėkmės ekranas (varnelė+tekstas) būtų visas matomas
+function bringPaySuccessIntoView(){
+  const aw=document.getElementById('app-wrap');
+  if(!aw) return;
+  aw.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
@@ -947,6 +944,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
   const paySection=document.getElementById('pay-section');
   let successShownAt=null;
+  bringPaySuccessIntoView();
   if(paySection){
     paySection.style.transition='opacity .4s ease';
     paySection.style.opacity='0';
@@ -973,7 +971,6 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
-      bringPaySuccessIntoView(paySection);
       successShownAt=Date.now();
     },400);
   } else {
@@ -1073,6 +1070,7 @@ async function onPaymentSuccess(name,email){
 
   // pay-section: viskas išnyksta sklandžiai, tada varnelė + tekstas
   const paySection=document.getElementById('pay-section');
+  bringPaySuccessIntoView();
   if(paySection){
     paySection.style.transition='opacity .4s ease';
     paySection.style.opacity='0';
@@ -1099,7 +1097,6 @@ async function onPaymentSuccess(name,email){
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
-      bringPaySuccessIntoView(paySection);
       startResultTimer();
     },400);
   } else {
