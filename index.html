@@ -1061,42 +1061,75 @@ async function onPaymentSuccess(name,email){
     },400);
   }
 
-  // Po 2.5s — sklandus perėjimas į rezultatus
+  // Iš karto pradedame gauti rezultatą fone (kol rodomas sėkmės ekranas)
   const successDiv={remove:()=>{}};
-  setTimeout(()=>{
+
+  // Funkcija rodyti rezultatą
+  function showFinalResult(result){
     const aw=document.getElementById('app-wrap');
     if(aw){aw.style.transition='opacity .5s ease';aw.style.opacity='0';}
     setTimeout(()=>{
-      const photoData=[];
-      if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
-      if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-      fetch('/analyze-palm',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
-      }).then(r=>r.json()).then(result=>{
-        if(result.error && result.error.includes('NEDELNAS')) {
-          // Grąžinti į kamerą su klaidos pranešimu
-          camHand='left';photoLeft=null;photoRight=null;
-          go('s-camera');
-          setTimeout(()=>{
-            const errDiv=document.createElement('div');
-            errDiv.style.cssText='position:fixed;bottom:100px;left:16px;right:16px;background:rgba(220,50,50,.12);border:.5px solid rgba(220,80,80,.4);border-radius:12px;padding:14px 16px;z-index:100;text-align:center';
-            errDiv.innerHTML='<div style="font-size:13px;color:#f99;font-weight:500;margin-bottom:4px">Nuotraukoje nematome delno</div><div style="font-size:11px;color:rgba(249,153,153,.7)">Prašome nufotografuoti atvirą delną ant šviesaus fono</div>';
-            document.body.appendChild(errDiv);
-            setTimeout(()=>errDiv.remove(), 4000);
-          }, 400);
-          return;
-        }
-        const aw2=document.getElementById('app-wrap');
-        go('s-result');
-        displayResult(result);
-        if(aw2){requestAnimationFrame(()=>{aw2.style.transition='opacity .6s ease';aw2.style.opacity='1';});}
-      }).catch(()=>{
-        const errEl=document.getElementById('order-err');
-        if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-        if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();startCountdown();startPayProgressBar();
-      });
-    },400);
+      go('s-result');
+      displayResult(result);
+      if(aw){requestAnimationFrame(()=>{aw.style.transition='opacity .6s ease';aw.style.opacity='1';});}
+    },500);
+  }
+
+  // Rezultatų gavimas — pradedame IŠ KARTO (fone, kol rodomas sėkmės ekranas)
+  let resultReady=null;
+  let resultTimer=null;
+
+  function fetchResult(){
+    if(window.bgSessionId){
+      fetch(`/analysis-status?sessionId=${window.bgSessionId}`)
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.status==='done'&&d.result){
+            resultReady=d.result;
+            // Jei 2.5s jau praėjo — rodome iš karto
+            if(resultTimer===null) showFinalResult(resultReady);
+          } else {
+            // Dar nepabaigta — kviečiame /analyze-palm tiesiogiai
+            fetchDirect();
+          }
+        })
+        .catch(()=>fetchDirect());
+    } else {
+      fetchDirect();
+    }
+  }
+
+  function fetchDirect(){
+    const photoData=[];
+    if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+    if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+    fetch('/analyze-palm',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
+    }).then(r=>r.json()).then(result=>{
+      if(result.error&&result.error.includes('NEDELNAS')){
+        camHand='left';photoLeft=null;photoRight=null;go('s-camera');return;
+      }
+      resultReady=result;
+      if(resultTimer===null) showFinalResult(resultReady);
+    }).catch(()=>{
+      const errEl=document.getElementById('order-err');
+      if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
+      if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}
+      go('s-info');applyDefaultPayMethod();startCountdown();startPayProgressBar();
+    });
+  }
+
+  // Pradedame gauti rezultatą iš karto
+  fetchResult();
+
+  // Po 2.5s — jei rezultatas jau paruoštas, rodome iš karto; jei ne — laukiame
+  resultTimer=setTimeout(()=>{
+    resultTimer=null;
+    if(resultReady){
+      showFinalResult(resultReady);
+    }
+    // Jei resultReady dar null — fetchResult/fetchDirect pats iškvieps showFinalResult kai baigs
   },2500);
 }
 
