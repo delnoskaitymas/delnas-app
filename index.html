@@ -466,25 +466,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:visible;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:5px;padding:5px;position:relative;z-index:56">
 
       <!-- Apple Pay (slepiamas jei nepalaikomas) -->
-      <button id="pm-apple-btn" class="pm-ls" style="display:none;width:100%;border-radius:7px">
+      <button id="pm-apple-btn" class="pm-ls dim" style="display:none;width:100%;border-radius:7px">
         <span class="pm-ls-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:#fff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
         <span class="pm-ls-name">Apple Pay</span>
       </button>
 
       <!-- Google Pay + Revolut Pay — šalia vienas kito -->
       <div style="display:flex;gap:5px">
-        <button id="pm-google-btn" class="pm-ls" style="flex:1;border-radius:7px">
+        <button id="pm-google-btn" class="pm-ls dim" style="flex:1;border-radius:7px">
           <span class="pm-ls-icon"><span style="font-size:10px;font-weight:800;letter-spacing:-0.5px"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span></span>
           <span class="pm-ls-name">Google Pay</span>
         </button>
-        <button id="pm-revolut-btn" class="pm-ls" style="flex:1;border-radius:7px">
+        <button id="pm-revolut-btn" class="pm-ls dim" style="flex:1;border-radius:7px">
           <span class="pm-ls-icon"><span style="font-size:11px;font-weight:900;color:#fff;background:#191c20;padding:1px 5px;border-radius:4px">R</span></span>
           <span class="pm-ls-name">Revolut Pay</span>
         </button>
       </div>
 
       <!-- Kortelė su Visa/MC logotipais -->
-      <button id="pm-card-btn" class="pm-ls" style="width:100%;border-radius:7px;position:relative">
+      <button id="pm-card-btn" class="pm-ls dim" style="width:100%;border-radius:7px;position:relative">
         <span class="pm-ls-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.9)" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
         <span class="pm-ls-name">Kortelė</span>
         <span style="display:flex;align-items:center;gap:3px;margin-left:auto;opacity:.55">
@@ -2431,9 +2431,9 @@ function applyDefaultPayMethod(){
   var cB=document.getElementById('pm-card-btn');
   var gB=document.getElementById('pm-google-btn');
   var aB=document.getElementById('pm-apple-btn');
-  // Neutrali būsena — joks mokėjimo būdas nėra pažymėtas iš anksto,
-  // vartotojas privalo pats aktyviai pasirinkti
-  [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('sel');b.classList.remove('dim');}});
+  // Tamsi (dim) būsena — joks mokėjimo būdas nėra pažymėtas iš anksto,
+  // vartotojas privalo pats aktyviai pasirinkti, tada mygtukas nušvinta
+  [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('sel');b.classList.add('dim');}});
   window._payMethod=null;
   const btn=document.getElementById('pay-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.45';}
@@ -2468,7 +2468,7 @@ function startPayProgressBar(){
     bar.style.transition='width 40s cubic-bezier(.04,0,.06,1), opacity 20s ease';
     bar.style.width='100%';
     bar.style.opacity='1';
-    if(txt)txt.textContent='Baigiame generuoti tavo asmeninį žemėlapį...';
+    if(txt)txt.textContent='Baigiame generuoti tavo asmeninį gyvenimo žemėlapį...';
     window._payBarDoneTimeout=setTimeout(()=>{
       bar.style.animation='none';
       bar.style.opacity='1';
