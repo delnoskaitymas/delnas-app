@@ -933,14 +933,37 @@ async function initiatePayment(){
 }
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
-  // 1. Sėkmės animacija — tame pačiame lange, mygtuko vietoje
-  const btn2=document.getElementById('pay-btn');
+  // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
+  // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
   const paySection=document.getElementById('pay-section');
-  if(btn2){
-    btn2.style.animation='none';
-    btn2.innerHTML='<span style="display:inline-flex;align-items:center;justify-content:center;gap:10px;animation:paySuccessPop .5s cubic-bezier(.34,1.56,.64,1) forwards"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#07040f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Mokėjimas sėkmingas!</span>';
-    btn2.style.background='linear-gradient(135deg,#6fcf97,#27ae60)';
-    btn2.style.boxShadow='0 0 28px rgba(39,174,96,.45)';
+  let successShownAt=null;
+  if(paySection){
+    paySection.style.transition='opacity .4s ease';
+    paySection.style.opacity='0';
+    setTimeout(()=>{
+      paySection.style.display='flex';
+      paySection.style.flexDirection='column';
+      paySection.style.alignItems='center';
+      paySection.style.justifyContent='center';
+      paySection.style.minHeight='50dvh';
+      paySection.style.gap='16px';
+      paySection.innerHTML=`
+        <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
+          <div style="width:76px;height:76px;border-radius:50%;background:transparent;border:2.5px solid #d4a843;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(212,168,67,.35),0 0 60px rgba(212,168,67,.1)">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);line-height:1.3">Mokėjimas sėkmingas!</div>
+        </div>`;
+      requestAnimationFrame(()=>{
+        paySection.style.transition='opacity .4s ease';
+        paySection.style.opacity='1';
+      });
+      successShownAt=Date.now();
+    },400);
+  } else {
+    successShownAt=Date.now();
   }
   // Fake successDiv kad likęs kodas veiktų
   const successDiv={remove:()=>{}};
@@ -978,9 +1001,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     if(ad&&ad.prigimtines_stiprybes&&ad.gyvenimo_tikslas&&
        ad.santykiai&&ad.finansai&&ad.galimybes&&ad.pokyciai&&ad.klutys){
       if(userName&&!ad.userName) ad.userName=userName;
-      // 5. IŠKART į rezultatų ekraną - be laukimo
       successDiv.remove();
-      // Sklandus perėjimas į rezultatus po 1.5s (kad vartotojas pamatytų sėkmę)
+      // Varnelė + "Mokėjimas sėkmingas!" turi išsilaikyti ekrane MIN 2.5s nuo pasirodymo momento
+      const elapsed=successShownAt?Date.now()-successShownAt:0;
+      const remaining=Math.max(2500-elapsed,0);
       setTimeout(()=>{
         const aw=document.getElementById('app-wrap');
         if(aw){aw.style.transition='opacity .6s ease';aw.style.opacity='0';}
@@ -996,7 +1020,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
             requestAnimationFrame(()=>{aw.style.opacity='1';});
           }
         },600);
-      },1500);
+      },remaining);
     } else {
       throw new Error(ad?.error||'Rezultatai neišsamūs');
     }
