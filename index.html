@@ -932,6 +932,17 @@ async function initiatePayment(){
   }catch(e){restore(e.message||'Klaida');}
 }
 
+// Scrollina taip, kad sėkmės varnelė matytųsi pilnai, biškį aukščiau ekrano, be reikalo scrollinti
+function bringPaySuccessIntoView(el){
+  const aw=document.getElementById('app-wrap');
+  if(!aw||!el) return;
+  requestAnimationFrame(()=>{
+    const rect=el.getBoundingClientRect();
+    const target=aw.scrollTop+rect.top-24;
+    aw.scrollTo({top:Math.max(target,0),behavior:'smooth'});
+  });
+}
+
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
@@ -945,7 +956,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       paySection.style.flexDirection='column';
       paySection.style.alignItems='center';
       paySection.style.justifyContent='center';
-      paySection.style.minHeight='50dvh';
+      paySection.style.minHeight='38dvh';
       paySection.style.gap='16px';
       paySection.innerHTML=`
         <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
@@ -960,6 +971,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
+      bringPaySuccessIntoView(paySection);
       successShownAt=Date.now();
     },400);
   } else {
@@ -1067,7 +1079,7 @@ async function onPaymentSuccess(name,email){
       paySection.style.flexDirection='column';
       paySection.style.alignItems='center';
       paySection.style.justifyContent='center';
-      paySection.style.minHeight='50dvh';
+      paySection.style.minHeight='38dvh';
       paySection.style.gap='16px';
       paySection.innerHTML=`
         <div style="animation:paySuccessPop .55s cubic-bezier(.34,1.56,.64,1) both">
@@ -1082,6 +1094,7 @@ async function onPaymentSuccess(name,email){
         paySection.style.transition='opacity .4s ease';
         paySection.style.opacity='1';
       });
+      bringPaySuccessIntoView(paySection);
       startResultTimer();
     },400);
   } else {
