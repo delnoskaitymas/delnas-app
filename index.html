@@ -734,6 +734,21 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     let stack=(m&&m.stack)?('\n'+m.stack.substring(0,400)):'';
     showDebugError('NEAPDOROTAS PROMISE REJECT: '+txt+stack);
   });
+  window.__dbgLog=function(msg){
+    try{
+      let box=document.getElementById('__debug_log_box');
+      if(!box){
+        box=document.createElement('div');
+        box.id='__debug_log_box';
+        box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999998;background:#0a7ea4;color:#fff;font-family:monospace;font-size:10px;padding:6px 10px;max-height:30vh;overflow-y:auto;white-space:pre-wrap;word-break:break-word;box-shadow:0 2px 12px rgba(0,0,0,.5)';
+        document.documentElement.appendChild(box);
+      }
+      const line=document.createElement('div');
+      line.textContent='['+new Date().toISOString().substr(11,12)+'] '+msg;
+      box.appendChild(line);
+      box.style.display='block';
+    }catch(e){}
+  };
 })();
 
 const sb=document.getElementById('stars');
@@ -813,7 +828,11 @@ function go(id){
     cam.style.animation='';
     cam.classList.remove('active');
     if(id==='s-camera'){cam.classList.add('active');}
-    else{const el=document.getElementById(id);if(el){el.style.opacity='';el.style.animation='';el.classList.add('active');}}
+    else{const el=document.getElementById(id);if(el){el.style.opacity='';el.style.animation='';el.classList.add('active');}
+      if(id==='s-result'&&window.__dbgLog){
+        window.__dbgLog('go(): s-result elementas rastas='+(!!el)+' turi .active klasę='+(el?el.classList.contains('active'):'N/A')+' computed display='+(el?getComputedStyle(el).display:'N/A'));
+      }
+    }
     if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
@@ -1015,6 +1034,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    },50);
  },25000);
  try{
+  window.__dbgLog&&window.__dbgLog('fetchResultsAndNavigate START, sessionId='+sessionId);
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
   const paySection=document.getElementById('pay-section');
@@ -1062,6 +1082,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   let finalAd=null,finalErr=null;
 
   try{
+    window.__dbgLog&&window.__dbgLog('2. Tikrinam mokėjimą, isPI='+(sessionId&&sessionId.startsWith('pi_')));
     // 2. Patvirtinti mokėjimą ir gauti token
     const isPI=sessionId&&sessionId.startsWith('pi_');
     let token='',userName=window._userName||'',userEmail=window._userEmail||'';
@@ -1074,6 +1095,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
     }
+    window.__dbgLog&&window.__dbgLog('2b. token gautas: '+(token?'TAIP':'NE'));
     if(!token) throw new Error('Mokėjimas nepatvirtintas');
     window.palmToken=token;window.userName=userName;window._userName=userName;
 
@@ -1083,28 +1105,35 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     const photoData=[];
     if(p1&&p1.length>100) photoData.push({type:'image/jpeg',data:p1.includes(',')?p1.split(',')[1]:p1});
     if(p2&&p2.length>100) photoData.push({type:'image/jpeg',data:p2.includes(',')?p2.split(',')[1]:p2});
+    window.__dbgLog&&window.__dbgLog('3. Siunčiam /analyze-palm, nuotraukų:'+photoData.length+' bgSessionId:'+(window.bgSessionId||'NĖRA'));
 
     const ar=await fetch('/analyze-palm',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
     });
     const ad=await ar.json();
+    window.__dbgLog&&window.__dbgLog('3b. /analyze-palm atsakymas gautas, ar.status='+ar.status+' ad keys='+(ad?Object.keys(ad).join(','):'NULL'));
 
     // 4. Guard Clause - visos 7 temos
     if(ad&&ad.prigimtines_stiprybes&&ad.gyvenimo_tikslas&&
        ad.santykiai&&ad.finansai&&ad.galimybes&&ad.pokyciai&&ad.klutys){
       if(userName&&!ad.userName) ad.userName=userName;
       finalAd=ad;
+      window.__dbgLog&&window.__dbgLog('4. Guard Clause OK - finalAd nustatytas');
     } else {
+      window.__dbgLog&&window.__dbgLog('4. Guard Clause NEPRAĖJO - trūksta laukų');
       throw new Error(ad?.error||'Rezultatai neišsamūs');
     }
   }catch(e){
     console.error('fetchResults klaida:',e);
+    window.__dbgLog&&window.__dbgLog('CATCH: '+(e&&e.message||e));
     finalErr=e.message||'Klaida';
   }
 
   // 5. Palaukti, kol varnelė bus išsilaikiusi ekrane MIN 2.5s — VISADA, net ir klaidos atveju
+  window.__dbgLog&&window.__dbgLog('5. Laukiam minDisplay pažado...');
   await minDisplay;
+  window.__dbgLog&&window.__dbgLog('5b. minDisplay išsipildė. finalAd='+(finalAd?'YRA':'NULL')+' finalErr='+finalErr);
   successDiv.remove();
   _navigated=true;clearTimeout(_watchdog);
 
@@ -1112,8 +1141,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
     // (anksčiau papildomas app-wrap opacity blukimas persidengdavo su go() animacija
     // ir sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatus)
+    window.__dbgLog&&window.__dbgLog('6. Kviečiam go(s-result) + displayResult()');
     go('s-result');
     displayResult(finalAd);
+    window.__dbgLog&&window.__dbgLog('7. displayResult() BAIGĖSI be klaidos');
     document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
       el.style.opacity='1';el.style.transform='none';
     });
@@ -2094,9 +2125,11 @@ function renderInsights(containerId, insights){
 
 function displayResult(r){
   console.log('displayResult called, r=',r?JSON.stringify(r).substring(0,200):'NULL');
+  window.__dbgLog&&window.__dbgLog('displayResult() START, r type='+(typeof r)+' keys='+(r&&typeof r==='object'?Object.keys(r).join(','):'N/A'));
   window._palmResult=r;window._shareUrl=null;
   if(!r||typeof r!=='object'){
     console.error('displayResult: invalid result');
+    window.__dbgLog&&window.__dbgLog('displayResult: NEVALIDUS r, IŠEINAM ANKSTI');
     // Rodyti bent tuščią ekraną su žinute
     const resName=document.getElementById('res-name');
     if(resName) resName.textContent='✦ Tavo asmeninė delnų analizė';
@@ -2105,7 +2138,9 @@ function displayResult(r){
   if(r.userName) window.userName=r.userName;
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
-  document.getElementById('res-name').textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
+  const resNameEl=document.getElementById('res-name');
+  window.__dbgLog&&window.__dbgLog('res-name elementas rastas: '+(resNameEl?'TAIP':'NE - ČIA GALI BŪTI CRASH'));
+  resNameEl.textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
   const rChar=document.getElementById('r-char');
   if(rChar) rChar.innerHTML=formatText(r.prigimtines_stiprybes);
   else console.error('r-char not found!');
@@ -2118,6 +2153,7 @@ function displayResult(r){
   renderInsights('insights-finance', r.finansai_insights);
   document.getElementById('r-gifts-text').innerHTML=formatText(r.galimybes);
   renderInsights('insights-galimybes', r.galimybes_insights);
+  window.__dbgLog&&window.__dbgLog('displayResult: prieš pills, stiprybes_sarasas='+JSON.stringify(r.stiprybes_sarasas));
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
@@ -2127,6 +2163,7 @@ function displayResult(r){
       </div>
     `).join('');
   }
+  window.__dbgLog&&window.__dbgLog('displayResult: pills OK, tęsiam toliau');
   document.getElementById('r-astro').innerHTML=formatText(r.pokyciai);
   renderInsights('insights-astro', r.pokyciai_insights);
   document.getElementById('r-challenges').innerHTML=formatText(r.klutys);
@@ -2145,6 +2182,7 @@ function displayResult(r){
     el.classList.add('visible');
   });
   const actionEl=document.getElementById('r-action');if(actionEl) actionEl.style.display='none';
+  window.__dbgLog&&window.__dbgLog('displayResult() BAIGĖSI SĖKMINGAI (visa funkcija įvykdyta)');
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
