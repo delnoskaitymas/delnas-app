@@ -706,6 +706,36 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+// ─── LAIKINAS DEBUG: rodo bet kokią JS klaidą tiesiai ekrane (viršuje, raudonai) ───
+// Tai leidžia matyti realią klaidos priežastį per nuotrauką, be naršyklės konsolės.
+// Kai problema bus surasta ir pataisyta, šį bloką galima pašalinti.
+(function(){
+  function showDebugError(msg){
+    try{
+      let box=document.getElementById('__debug_err_box');
+      if(!box){
+        box=document.createElement('div');
+        box.id='__debug_err_box';
+        box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999999;background:#ff2d55;color:#fff;font-family:monospace;font-size:11px;padding:8px 10px;max-height:40vh;overflow-y:auto;white-space:pre-wrap;word-break:break-word;box-shadow:0 2px 12px rgba(0,0,0,.5)';
+        document.documentElement.appendChild(box);
+      }
+      const line=document.createElement('div');
+      line.style.cssText='border-top:1px solid rgba(255,255,255,.3);padding-top:4px;margin-top:4px';
+      line.textContent='['+new Date().toISOString().substr(11,8)+'] '+msg;
+      box.appendChild(line);
+    }catch(e){}
+  }
+  window.addEventListener('error',function(ev){
+    showDebugError('JS KLAIDA: '+(ev.message||'')+' @ '+(ev.filename||'')+':'+(ev.lineno||'')+':'+(ev.colno||'')+(ev.error&&ev.error.stack?'\n'+ev.error.stack.substring(0,400):''));
+  });
+  window.addEventListener('unhandledrejection',function(ev){
+    let m=ev.reason;
+    let txt=(m&&m.message)?m.message:String(m);
+    let stack=(m&&m.stack)?('\n'+m.stack.substring(0,400)):'';
+    showDebugError('NEAPDOROTAS PROMISE REJECT: '+txt+stack);
+  });
+})();
+
 const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7};pointer-events:none`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
