@@ -830,7 +830,8 @@ function go(id){
     if(id==='s-camera'){cam.classList.add('active');}
     else{const el=document.getElementById(id);if(el){el.style.opacity='';el.style.animation='';el.classList.add('active');}
       if(id==='s-result'&&window.__dbgLog){
-        window.__dbgLog('go(): s-result elementas rastas='+(!!el)+' turi .active klasę='+(el?el.classList.contains('active'):'N/A')+' computed display='+(el?getComputedStyle(el).display:'N/A'));
+        const _r0=el.getBoundingClientRect();
+        window.__dbgLog('go(): s-result elementas rastas='+(!!el)+' turi .active klasę='+(el?el.classList.contains('active'):'N/A')+' computed display='+(el?getComputedStyle(el).display:'N/A')+' PRADINIS RECT w='+Math.round(_r0.width)+' h='+Math.round(_r0.height));
       }
     }
     if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
@@ -843,35 +844,20 @@ function go(id){
     // VISADA nugali inline stilių — todėl vien opacity='1' nustatymas neveikė
     // (animacija ją iš karto perrašydavo atgal į 0). Reikia PIRMA sustabdyti
     // pačią animaciją (animation:none), tada priverstinai nustatyti opacity.
+    // PASTABA: ankstesnis display:none/block „repaint" trigeris PAŠALINTAS —
+    // įtariama, kad jis pats sukeldavo layout klaidą (elementas gaudavo 0x0
+    // dydį). Dabar keičiame TIK animation/opacity/transform, nieko daugiau.
     const activeEl=id==='s-camera'?cam:document.getElementById(id);
     if(activeEl){
       const forceVisible=(tag)=>{
         activeEl.style.animation='none';
-        void activeEl.offsetHeight;
         activeEl.style.opacity='1';
         activeEl.style.transform='none';
-        // Animacija jau sustabdyta (animation:none) — DABAR saugu priverstinai
-        // perpiešti GPU kompozitoriaus sluoksnį, nerizikuojant sutrikdyti animaciją
-        const _od=activeEl.style.display;
-        activeEl.style.display='none';
-        void activeEl.offsetHeight;
-        activeEl.style.display=_od||'';
-        void activeEl.offsetHeight;
-        if(aw){
-          aw.style.transform='translateZ(0.01px)';
-          void aw.offsetHeight;
-          requestAnimationFrame(()=>{aw.style.transform='';});
-        }
         if(id==='s-result'&&window.__dbgLog){
           const r=activeEl.getBoundingClientRect();
           const rn=document.getElementById('res-name');
           const rnr=rn?rn.getBoundingClientRect():null;
-          const rnStyle=rn?getComputedStyle(rn):null;
-          window.__dbgLog('go(): '+tag+' animation=none+opacity=1+repaint. s-result computed opacity='+getComputedStyle(activeEl).opacity+' display='+getComputedStyle(activeEl).display+' | app-wrap opacity='+(aw?getComputedStyle(aw).opacity:'N/A')+' display='+(aw?getComputedStyle(aw).display:'N/A')+' visibility='+(aw?getComputedStyle(aw).visibility:'N/A'));
-          window.__dbgLog('go(): '+tag+' RECT s-result: top='+Math.round(r.top)+' left='+Math.round(r.left)+' w='+Math.round(r.width)+' h='+Math.round(r.height)+' | res-name RECT: '+(rnr?('top='+Math.round(rnr.top)+' w='+Math.round(rnr.width)+' h='+Math.round(rnr.height)):'NĖRA')+' | res-name color='+(rnStyle?rnStyle.color:'N/A')+' fontSize='+(rnStyle?rnStyle.fontSize:'N/A')+' text="'+(rn?rn.textContent:'')+'"');
-          window.__dbgLog('go(): body bg='+getComputedStyle(document.body).backgroundColor+' html bg='+getComputedStyle(document.documentElement).backgroundColor+' aw zIndex='+(aw?getComputedStyle(aw).zIndex:'N/A')+' s-result zIndex='+getComputedStyle(activeEl).zIndex);
-          const topEl=document.elementFromPoint(Math.floor(window.innerWidth/2),Math.floor(window.innerHeight/2));
-          window.__dbgLog('go(): '+tag+' TIKRASIS elementas ekrano CENTRE: tag='+(topEl?topEl.tagName:'NĖRA')+' id="'+(topEl?topEl.id:'')+'" class="'+(topEl?(topEl.className+'').substring(0,80):'')+'" bg='+(topEl?getComputedStyle(topEl).backgroundColor:'N/A'));
+          window.__dbgLog('go(): '+tag+' opacity='+getComputedStyle(activeEl).opacity+' display='+getComputedStyle(activeEl).display+' width='+getComputedStyle(activeEl).width+' | RECT s-result: w='+Math.round(r.width)+' h='+Math.round(r.height)+' | res-name RECT: '+(rnr?('w='+Math.round(rnr.width)+' h='+Math.round(rnr.height)):'NĖRA')+' text="'+(rn?rn.textContent:'')+'"');
         }
       };
       setTimeout(()=>forceVisible('[1-550ms]'),550);
