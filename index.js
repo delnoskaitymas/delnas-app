@@ -94,6 +94,14 @@ async function runPalmAnalysis(photos, name) {
     source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
   }));
 
+  // ═══════════════════════════════════════════════════════════════════
+  // LAIKINAI IŠJUNGTA: delno atpažinimo (NEDELNAS) validacija.
+  // Priežastis: patikra atmesdavo net realias, tinkamas delnų nuotraukas,
+  // trukdydama testuoti tolesnę ekranų/rezultatų logiką.
+  // Norint ATKURTI patikrą: ištrinkite žemiau esantį komentaro bloką
+  // "/*" ... "*/" (arba grąžinkite jį iš git istorijos) ir jis vėl veiks.
+  // ═══════════════════════════════════════════════════════════════════
+  /*
   // Validacija
   const validationResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -125,6 +133,8 @@ async function runPalmAnalysis(photos, name) {
   if (!validationText.startsWith('YES')) {
     throw new Error('NEDELNAS: Nuotraukoje nematome delno. Prašome nufotografuoti atvirą delną.');
   }
+  */
+  console.log('[DEBUG] Delno validacija PRALEISTA (laikinai išjungta)');
 
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
