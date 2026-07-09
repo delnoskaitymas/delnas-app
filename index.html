@@ -850,8 +850,20 @@ function go(id){
         void activeEl.offsetHeight;
         activeEl.style.opacity='1';
         activeEl.style.transform='none';
+        // Animacija jau sustabdyta (animation:none) — DABAR saugu priverstinai
+        // perpiešti GPU kompozitoriaus sluoksnį, nerizikuojant sutrikdyti animaciją
+        const _od=activeEl.style.display;
+        activeEl.style.display='none';
+        void activeEl.offsetHeight;
+        activeEl.style.display=_od||'';
+        void activeEl.offsetHeight;
+        if(aw){
+          aw.style.transform='translateZ(0.01px)';
+          void aw.offsetHeight;
+          requestAnimationFrame(()=>{aw.style.transform='';});
+        }
         if(id==='s-result'&&window.__dbgLog){
-          window.__dbgLog('go(): '+tag+' animation=none + opacity=1. s-result computed opacity='+getComputedStyle(activeEl).opacity);
+          window.__dbgLog('go(): '+tag+' animation=none+opacity=1+repaint. s-result computed opacity='+getComputedStyle(activeEl).opacity+' display='+getComputedStyle(activeEl).display+' | app-wrap opacity='+(aw?getComputedStyle(aw).opacity:'N/A')+' display='+(aw?getComputedStyle(aw).display:'N/A')+' visibility='+(aw?getComputedStyle(aw).visibility:'N/A'));
         }
       };
       setTimeout(()=>forceVisible('[1-550ms]'),550);
