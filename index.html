@@ -837,36 +837,21 @@ function go(id){
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
-    // Apsauga nuo žinomos Android WebView/MIUI piešimo (repaint) triktys,
-    // kai turinys techniškai yra DOM'e (display:block), bet fiziškai
-    // nenupiešiamas ekrane po dinaminio ekranų perjungimo.
-    // Naudojame AGRESYVŲ metodą: display:none -> reflow -> display atgal
-    // tiesiai ant aktyvaus ekrano elemento — tai priverčia GPU kompozitorių
-    // iš naujo įtraukti šį sluoksnį į piešimą.
+    // Apsauga: kai kuriose Android WebView (MIUI) versijose CSS 'fu' animacija
+    // (kuri keičia opacity 0->1) kartais lieka „įstrigusi" ties opacity:0,
+    // net kai display:block ir .active klasė teisingai pritaikyti.
+    // Vietoj rizikingo display-perjungimo (galėjo dar labiau trikdyti
+    // animaciją) — tiesiog GARANTUOJAME, kad po animacijos trukmės (500ms)
+    // elementas bus pilnai matomas, priverstinai nustatydami opacity per JS.
     const activeEl=id==='s-camera'?cam:document.getElementById(id);
     if(activeEl){
-      const _origDisplay=activeEl.style.display;
-      activeEl.style.display='none';
-      void activeEl.offsetHeight; // priverstinis reflow
-      activeEl.style.display=_origDisplay||'';
-      void activeEl.offsetHeight;
-    }
-    if(aw){
-      const _prevScroll=aw.scrollTop;
-      aw.style.transform='translateZ(0)';
-      void aw.offsetHeight;
-      aw.scrollTop=_prevScroll+1;
-      requestAnimationFrame(()=>{
-        aw.scrollTop=_prevScroll;
-        void aw.offsetHeight;
-        requestAnimationFrame(()=>{
-          aw.style.transform='';
-          window.dispatchEvent(new Event('resize'));
-          if(id==='s-result'&&window.__dbgLog){
-            window.__dbgLog('go(): REPAINT seka BAIGĖSI. s-result computed display='+(activeEl?getComputedStyle(activeEl).display:'N/A')+' opacity='+(activeEl?getComputedStyle(activeEl).opacity:'N/A'));
-          }
-        });
-      });
+      setTimeout(()=>{
+        activeEl.style.opacity='1';
+        activeEl.style.transform='none';
+        if(id==='s-result'&&window.__dbgLog){
+          window.__dbgLog('go(): FORSUOTAS opacity=1. s-result computed opacity='+getComputedStyle(activeEl).opacity);
+        }
+      },550);
     }
   };
   // Praleisti fuOut animaciją jei einamas ekranas yra kamera arba loading
