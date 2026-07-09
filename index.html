@@ -818,6 +818,19 @@ function go(id){
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
+    // Apsauga nuo žinomos Android WebView/MIUI piešimo (repaint) triktys,
+    // kai turinys techniškai yra DOM'e, bet fiziškai nenupiešiamas ekrane
+    // po dinaminio ekranų perjungimo — priverstinai atnaujiname piešimą.
+    if(aw){
+      const _prevScroll=aw.scrollTop;
+      aw.scrollTop=1;
+      requestAnimationFrame(()=>{
+        aw.scrollTop=_prevScroll;
+        aw.style.transform='translateZ(0)';
+        void aw.offsetHeight;
+        requestAnimationFrame(()=>{aw.style.transform='';});
+      });
+    }
   };
   // Praleisti fuOut animaciją jei einamas ekranas yra kamera arba loading
   // (jie turi savo vizualinius perėjimus arba jau yra tamsinami)
@@ -2646,7 +2659,6 @@ function initPayment(){
     mountCardIfNeeded();
     const btn=document.getElementById('pay-btn');
     if(btn){btn.disabled=true;btn.style.opacity='.45';}
-    upd();
     setTimeout(()=>{
       const payBtn=document.getElementById('pay-btn');
       if(payBtn){
