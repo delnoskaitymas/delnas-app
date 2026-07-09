@@ -838,20 +838,24 @@ function go(id){
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
     // Apsauga: kai kuriose Android WebView (MIUI) versijose CSS 'fu' animacija
-    // (kuri keičia opacity 0->1) kartais lieka „įstrigusi" ties opacity:0,
-    // net kai display:block ir .active klasė teisingai pritaikyti.
-    // Vietoj rizikingo display-perjungimo (galėjo dar labiau trikdyti
-    // animaciją) — tiesiog GARANTUOJAME, kad po animacijos trukmės (500ms)
-    // elementas bus pilnai matomas, priverstinai nustatydami opacity per JS.
+    // (kuri keičia opacity 0->1) kartais lieka „įstrigusi" ties opacity:0
+    // IR NIEKADA NEUŽSIBAIGIA. Kol animacija veikia, ji pagal CSS specifikaciją
+    // VISADA nugali inline stilių — todėl vien opacity='1' nustatymas neveikė
+    // (animacija ją iš karto perrašydavo atgal į 0). Reikia PIRMA sustabdyti
+    // pačią animaciją (animation:none), tada priverstinai nustatyti opacity.
     const activeEl=id==='s-camera'?cam:document.getElementById(id);
     if(activeEl){
-      setTimeout(()=>{
+      const forceVisible=(tag)=>{
+        activeEl.style.animation='none';
+        void activeEl.offsetHeight;
         activeEl.style.opacity='1';
         activeEl.style.transform='none';
         if(id==='s-result'&&window.__dbgLog){
-          window.__dbgLog('go(): FORSUOTAS opacity=1. s-result computed opacity='+getComputedStyle(activeEl).opacity);
+          window.__dbgLog('go(): '+tag+' animation=none + opacity=1. s-result computed opacity='+getComputedStyle(activeEl).opacity);
         }
-      },550);
+      };
+      setTimeout(()=>forceVisible('[1-550ms]'),550);
+      setTimeout(()=>forceVisible('[2-2000ms]'),2000);
     }
   };
   // Praleisti fuOut animaciją jei einamas ekranas yra kamera arba loading
