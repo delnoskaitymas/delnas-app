@@ -1150,15 +1150,20 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     });
   } else {
     // Rodyti klaidą rezultatų ekrane
+    window.__dbgLog&&window.__dbgLog('8. finalAd NULL -> einam į klaidos rodymo šaką, finalErr='+finalErr);
     go('s-result');
     setTimeout(()=>{
+      window.__dbgLog&&window.__dbgLog('9. Klaidos setTimeout(50ms) SUVEIKĖ, ieškom r-char/res-name');
       const rc=document.getElementById('r-char');
+      window.__dbgLog&&window.__dbgLog('9b. r-char rastas='+(!!rc));
       if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">'+finalErr+'</p>';
       const rn=document.getElementById('res-name');
+      window.__dbgLog&&window.__dbgLog('9c. res-name rastas='+(!!rn));
       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
       document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
         el.style.opacity='1';el.style.transform='none';
       });
+      window.__dbgLog&&window.__dbgLog('10. Klaidos rodymo blokas BAIGĖSI sėkmingai');
     },50);
   }
  }catch(outerErr){
