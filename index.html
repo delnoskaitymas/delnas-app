@@ -838,16 +838,34 @@ function go(id){
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
     // Apsauga nuo žinomos Android WebView/MIUI piešimo (repaint) triktys,
-    // kai turinys techniškai yra DOM'e, bet fiziškai nenupiešiamas ekrane
-    // po dinaminio ekranų perjungimo — priverstinai atnaujiname piešimą.
+    // kai turinys techniškai yra DOM'e (display:block), bet fiziškai
+    // nenupiešiamas ekrane po dinaminio ekranų perjungimo.
+    // Naudojame AGRESYVŲ metodą: display:none -> reflow -> display atgal
+    // tiesiai ant aktyvaus ekrano elemento — tai priverčia GPU kompozitorių
+    // iš naujo įtraukti šį sluoksnį į piešimą.
+    const activeEl=id==='s-camera'?cam:document.getElementById(id);
+    if(activeEl){
+      const _origDisplay=activeEl.style.display;
+      activeEl.style.display='none';
+      void activeEl.offsetHeight; // priverstinis reflow
+      activeEl.style.display=_origDisplay||'';
+      void activeEl.offsetHeight;
+    }
     if(aw){
       const _prevScroll=aw.scrollTop;
-      aw.scrollTop=1;
+      aw.style.transform='translateZ(0)';
+      void aw.offsetHeight;
+      aw.scrollTop=_prevScroll+1;
       requestAnimationFrame(()=>{
         aw.scrollTop=_prevScroll;
-        aw.style.transform='translateZ(0)';
         void aw.offsetHeight;
-        requestAnimationFrame(()=>{aw.style.transform='';});
+        requestAnimationFrame(()=>{
+          aw.style.transform='';
+          window.dispatchEvent(new Event('resize'));
+          if(id==='s-result'&&window.__dbgLog){
+            window.__dbgLog('go(): REPAINT seka BAIGĖSI. s-result computed display='+(activeEl?getComputedStyle(activeEl).display:'N/A')+' opacity='+(activeEl?getComputedStyle(activeEl).opacity:'N/A'));
+          }
+        });
       });
     }
   };
