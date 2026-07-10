@@ -711,11 +711,22 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 // teisingai atspindi realiai matomą sritį, skirtingai nei vh/dvh CSS vienetai,
 // kurie kai kuriose mobiliose naršyklėse nepatikimi arba nepalaikomi).
 function _setRealVH(){
-  document.documentElement.style.setProperty('--rvh',(window.innerHeight*0.01)+'px');
+  const h=(window.visualViewport&&window.visualViewport.height)?window.visualViewport.height:window.innerHeight;
+  document.documentElement.style.setProperty('--rvh',(h*0.01)+'px');
 }
 _setRealVH();
+// Kai kuriose mobiliose naršyklėse adreso juosta/UI „nusistovi" per keliasdešimt-kelis
+// šimtus ms po pradinio įkėlimo — todėl pirmas matavimas gali būti neteisingas.
+// Pakartotinai patikriname keliais momentais po įkėlimo, kad pagautume šį pasikeitimą.
+setTimeout(_setRealVH,100);
+setTimeout(_setRealVH,350);
+setTimeout(_setRealVH,800);
+setTimeout(_setRealVH,1500);
 window.addEventListener('resize',_setRealVH);
 window.addEventListener('orientationchange',()=>setTimeout(_setRealVH,100));
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',_setRealVH);
+}
 
 const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7};pointer-events:none`;sb.appendChild(s);}
@@ -762,6 +773,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 function go(id){
+  if(typeof _setRealVH==='function') _setRealVH();
   if(id==='s-home'){
     setTimeout(()=>{
       document.querySelectorAll('.home-bullet').forEach((el,i)=>{
