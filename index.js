@@ -112,7 +112,7 @@ async function runPalmAnalysis(photos, name) {
           ...imageBlocks,
           {
             type: 'text',
-            text: 'Look at this image. Is this a photo of a human palm suitable for palm reading? Answer YES only if: the full inner palm surface is visible, ALL 5 fingers are present and their tips are visible (not cut off), the palm is facing the camera directly (not at a sharp angle). Answer NO if: any fingers are missing or cut off at frame edge, fewer than 5 fingers visible, only part of palm visible, palm is sideways or angled, back of hand shown, wrist only shown. Answer only YES or NO.'
+            text: 'Look at this image. Is this a usable photo of a human palm (inner side of a hand, with fingers) for palm reading purposes? This is a real phone camera photo, not a studio shot, so be tolerant of MINOR technical defects: imperfect lighting/shadows, a slight angle (not perfectly facing camera), or a fingertip barely touching the frame edge. Answer YES if the palm and all 5 fingers are essentially present and mostly visible despite such minor defects. Answer NO if: this is not a hand/palm at all (any other object, food, face, screen, document, blank image), OR only part of the hand is shown (e.g. only half the palm, only one or two fingers, wrist/arm only), OR it is the back/outer side of the hand (knuckles, no palm lines), OR one or more fingers are clearly missing or majority cut off from the frame. When genuinely uncertain between a real but imperfect palm photo and a clearly wrong/incomplete capture, prefer NO. Answer only YES or NO.'
           }
         ]
       }]
