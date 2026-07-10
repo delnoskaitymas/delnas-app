@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="lt">
 <head>
@@ -71,7 +72,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.load-wrap{padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;height:100vh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:calc(var(--rvh,1vh) * 100);box-sizing:border-box;overflow:hidden}
+.load-wrap{position:fixed;top:0;left:0;right:0;bottom:0;padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;box-sizing:border-box;overflow:hidden;z-index:20}
 .load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:8px}
 .load-sub{font-size:13px;color:rgba(245,238,216,.82);font-weight:400;letter-spacing:.01em}
 .oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -154,7 +155,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rev-tag{font-size:10px;color:var(--gold3);margin-top:5px;letter-spacing:.06em}
 .sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
-#s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;padding-bottom:180px;height:100vh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:calc(var(--rvh,1vh) * 100);overflow:hidden;justify-content:space-between;box-sizing:border-box}
+#s-camera{position:fixed;top:0;left:0;right:0;bottom:0;background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;padding-bottom:180px;overflow:hidden;justify-content:space-between;box-sizing:border-box;z-index:20}
 #s-camera.active{display:flex;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 .cam-progress{display:flex;gap:10px;margin-top:max(24px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
