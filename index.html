@@ -715,13 +715,6 @@ function _setRealVH(){
   document.documentElement.style.setProperty('--rvh',(h*0.01)+'px');
 }
 _setRealVH();
-// Kai kuriose mobiliose naršyklėse adreso juosta/UI „nusistovi" per keliasdešimt-kelis
-// šimtus ms po pradinio įkėlimo — todėl pirmas matavimas gali būti neteisingas.
-// Pakartotinai patikriname keliais momentais po įkėlimo, kad pagautume šį pasikeitimą.
-setTimeout(_setRealVH,100);
-setTimeout(_setRealVH,350);
-setTimeout(_setRealVH,800);
-setTimeout(_setRealVH,1500);
 window.addEventListener('resize',_setRealVH);
 window.addEventListener('orientationchange',()=>setTimeout(_setRealVH,100));
 if(window.visualViewport){
