@@ -328,7 +328,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div style="position:relative;margin-top:6px;margin-bottom:4px;flex:1;min-height:0;max-height:calc(100dvh - 235px);width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
+  <div id="cam-vp-wrap" style="position:relative;margin-top:6px;margin-bottom:4px;flex:1;min-height:0;max-height:calc(100dvh - 235px);width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
@@ -1562,6 +1562,17 @@ function capturePhoto(){
   const shutterWrap=shutter.closest('.cam-shutter-wrap');
   const camSub=document.getElementById('cam-sub');
   const frozen=document.getElementById('cam-frozen');
+  // Užfiksuojame TIKSLŲ kameros lango dydį pikseliais PRIEŠ bet kokius kitus
+  // pakeitimus (paantraštės/mygtuko slėpimą ir pan.) — taip jis garantuotai
+  // NEBEPASIKEIS per visą analizės/sėkmės/nesėkmės būseną.
+  const vpWrap=document.getElementById('cam-vp-wrap');
+  if(vpWrap){
+    const vr=vpWrap.getBoundingClientRect();
+    vpWrap.style.flex='0 0 auto';
+    vpWrap.style.height=vr.height+'px';
+    vpWrap.style.maxHeight=vr.height+'px';
+    vpWrap.style.width=vr.width+'px';
+  }
   clearTimeout(window._autoCaptureTimer);
   shutter.style.pointerEvents='none';
   shutter.style.animation='none';
@@ -1660,6 +1671,8 @@ function capturePhoto(){
             const titleEl=document.getElementById('cam-title');
             if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';}
             if(camSub) camSub.style.visibility='';
+            const vpWrap1=document.getElementById('cam-vp-wrap');
+            if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
             // Grąžinti mygtuką
             shutterWrap.style.visibility='';
             shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
@@ -1700,6 +1713,8 @@ function capturePhoto(){
             video.style.display='block';
             shutterWrap.style.visibility='';
             if(camSub) camSub.style.visibility='';
+            const vpWrap2=document.getElementById('cam-vp-wrap');
+            if(vpWrap2){vpWrap2.style.flex='';vpWrap2.style.height='';vpWrap2.style.maxHeight='calc(100dvh - 235px)';vpWrap2.style.width='';}
             document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
             camHand='right';
             updateCameraUI();
@@ -1740,6 +1755,8 @@ function capturePhoto(){
       video.style.display='block';
       shutterWrap.style.visibility='';
       if(camSub) camSub.style.visibility='';
+      const vpWrap3=document.getElementById('cam-vp-wrap');
+      if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
       document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
       shutter.disabled=false;
       shutter.style.opacity='1';
