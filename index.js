@@ -206,15 +206,24 @@ TAISYKLĖS:
 - DRAUDŽIAMA: abstrakčios frazės kurios tiktų bet kuriam žmogui
 - Kalba: paprasta, kasdienė, lietuvių, kreipkis "tu"
 - Kiekvienas skyrius: 8–10 sakinių, skyriai nesikartoja tarpusavyje
+- KIEKVIENAME skyriuje žemiau išvardintos 7 potemės — tavo tekstas PRIVALO atskleisti VISAS 7, bent po vieną sakinį kiekvienai (natūraliu, sklandžiu tekstu, ne sąrašu)
 
-SKYRIAI — kiekvienas kalba tik apie savo temą:
-- prigimtines_stiprybes: kokie šio žmogaus stipriausi prigimtiniai charakterio bruožai ir kaip jie pasireiškia kasdieniame gyvenime. Atskleisk jo unikalų asmenybės branduolį, pamatinius bruožus, kurie jį apibrėžia, kokia yra jo natūrali prigimtis bei potencialas, ir tai, kas konkrečiai daro jį išskirtine asmenybe tarp kitų — sudaryk detalų, gilų jo charakterio portretą
-- gyvenimo_tikslas: TEMOS ESMĖ — gyvenimo KRYPTIS ir TIKSLAI. Ką šis žmogus nori pasiekti gyvenime? Kokia jo gyvenimo misija? Kur jis juda? Ko siekia? Kas jam svarbiausia gyvenime — ne darbe, bet gyvenime apskritai. Aprašyk jo vidinės motyvacijos šaltinius, paslėptus tikslų orientyrus, asmeninio augimo kryptį ir gyvenimo kelio posūkius. Rašyk apie jo vidinę kryptį, svajonę, tikslą
-- santykiai: kaip šis žmogus myli ir bendrauja — ko ieško ryšiuose, kaip elgiasi su artimaisiais, kas jam sunku santykiuose. Aprašyk jo emocinio ryšio modelius, bendravimo stiliaus dinamiką, kaip jo būdas veikia aplinkinius, kokie jo socialinio bendravimo dėsningumai ir gebėjimas kurti gilius, ilgalaikius ryšius
-- finansai: TEMOS ESMĖ — FINANSINIS POTENCIALAS. Kiek šis žmogus gali uždirbti? Kokioje srityje jo finansinė sėkmė didžiausia? Ar jo potencialas didelis ar vidutinis? Kaip jis gali jį realizuoti? Įvardink, kas jam natūraliai pritraukia finansines galimybes, kokie jo paslėpti gebėjimai kurti gerovę, ir kokioje srityje slypi jo didžiausias, dar nepilnai išnaudotas finansinis potencialas. Rašyk apie galimybes ir potencialą — ne apie tai kaip jis elgiasi su pinigais
-- galimybes: kokia konkreti savybė ar gebėjimas išskiria jį iš kitų — tai jo didžiausias pranašumas. Įvardink jo asmeninę sėkmės formulę, jo „slaptąjį ginklą", kuriuo jis sprendžia sunkiausius iššūkius, ir tai, kas jam visada atveria duris ten, kur kitiems sunkiau — jo unikalų kelią į pripažinimą
-- pokyciai: kokie reikšmingi gyvenimo pokyčiai artėja arba jau vyksta. Aprašyk, kokie asmeninės transformacijos etapai jo laukia, kokios naujos galimybės netrukus atsivers ir kas konkrečiai jo gyvenime netrukus pasikeis į gerą
-- klutys: kas konkrečiai stabdo šį žmogų — koks jo pagrindinis vidinis barjeras. Atskleisk jo pasąmoningus stabdžius, kasdienius trikdžius, kurie vėlina jo sėkmę, ir tai, ką jam reikia paleisti, kad atsiblokuotų tikrasis jo potencialas
+SKYRIAI — kiekvienas kalba tik apie savo temą ir PRIVALO atskleisti visas 7 žemiau nurodytas potemes:
+
+- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): 1) jo unikalų, jį apibrėžiantį asmenybės branduolį; 2) prie kokio ryškaus, atpažįstamo charakterio tipo jis artimiausias; 3) pamatinius, jį apibrėžiančius charakterio bruožus; 4) detalų vidinį/psichologinį jo portretą; 5) kokia vidinė jėga/prigimtis jį veda; 6) jo natūralų, įgimtą potencialą; 7) kas konkrečiai jį išskiria iš kitų
+
+- gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): 1) kryptį, kuria jis natūraliai juda gyvenime; 2) kas jį iš vidaus varo pirmyn (vidinės motyvacijos šaltinius); 3) giliau slypinčius, dar neįvardytus jo tikslus; 4) kokia linkme jis auga kaip asmenybė; 5) kokie posūkiai/lūžiai būdingi jo gyvenimo keliui; 6) kokias gaires jis pats sau kelia ateičiai; 7) svarbiausius orientyrus jo gyvenimo kelyje
+
+- santykiai (Bendravimo būdas ir įtaka santykiams): 1) kaip jis kuria emocinį ryšį su kitais; 2) koks jo bendravimo stilius ir tempas; 3) kokį poveikį/įspūdį jis daro aplinkiniams; 4) pasikartojančius jo elgesio su žmonėmis modelius; 5) kaip jis siekia pusiausvyros santykiuose; 6) ar ir kaip jis sukuria gilų, ilgalaikį ryšį; 7) koks jis būna tarp žmonių, grupėje
+
+- finansai (Finansinis potencialas): 1) kur/kaip jo finansinė sėkmė labiausiai įmanoma; 2) jo potencialą kurti materialią gerovę; 3) kas jam natūraliai atveria finansines galimybes; 4) koks jo santykis su pinigais/turtu; 5) kokie ženklai rodo jo augimo/klestėjimo kryptį; 6) jo karjeros ir gerovės perspektyvas; 7) nepastebėtus/neišnaudotus jo gebėjimus kurti pajamas. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip jis leidžia/taupo pinigus
+
+- galimybes (Unikalus sėkmės raktas): 1) jo asmeninę sėkmės formulę; 2) didžiausią jo pranašumą prieš kitus; 3) kaip jis natūraliai laimi/įveikia iššūkius (pergalės strategiją); 4) kas jį daro stipria asmenybe; 5) ką jis naudoja sunkiausiais momentais („slaptąjį ginklą"); 6) kas jam padeda ten, kur kitiems sunkiau (kas atveria duris į sėkmę); 7) jo unikalų kelią į pripažinimą
+
+- pokyciai (Svarbiausi artėjantys pokyčiai): 1) koks reikšmingas posūkis artėja jo gyvenime; 2) kokios naujos galimybės netrukus atsivers; 3) koks vidinis transformacijos etapas jo laukia; 4) kokia permaina jau juntama; 5) kas konkrečiai jo gyvenime netrukus pasikeis į gerą; 6) koks svarbus etapas jo laukia; 7) kokie ženklai rodo naujos pradžios artėjimą
+
+- klutys (Pažangą stabdančios kliūtys): 1) nesąmoningus, giliai įsišaknijusius jo stabdžius; 2) kasdienius įpročius/trikdžius, kurie vėlina jo sėkmę; 3) kas trukdo jam pilnai atsiskleisti; 4) konkrečią kliūtį jo kelyje į tikslą; 5) ką jam metas paleisti; 6) nematomą jo pasipriešinimą pokyčiams; 7) kaip jis galėtų atsiblokuoti ir pasiekti tikrąjį potencialą
+
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 
@@ -235,7 +244,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 8000,
+        max_tokens: 10000,
         temperature: 0.2,
         messages: [
           { role: 'user', content: step2Content },
@@ -445,7 +454,7 @@ app.post('/analyze-palm', async (req, res) => {
           const iv = setInterval(() => {
             waited++;
             const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 40) { clearInterval(iv); resolve(); }
+            if (!entry || entry.status !== 'pending' || waited >= 60) { clearInterval(iv); resolve(); }
           }, 1000);
         });
         const entry = analysisCache.get(sessionId);
