@@ -204,7 +204,9 @@ TAISYKLĖS:
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios frazės kurios tiktų bet kuriam žmogui
-- Kalba: paprasta, kasdienė, lietuvių, kreipkis "tu"
+- Kalba: LABAI paprasta, kasdienė, tokia, kokia kalbama gyvenime — lietuvių, kreipkis "tu"
+- DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika") — vietoj jų rink paprasčiausią, kasdienį žodį, kurį vartotų draugas pokalbyje
+- DRAUDŽIAMA: ilgi, sudėtingi, keliais sakinio nariais apkrauti sakiniai — rašyk trumpais, aiškiais sakiniais, kaip kalbėtum su draugu
 - Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
