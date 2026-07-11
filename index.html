@@ -71,7 +71,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt-name{font-size:14px;font-weight:500;flex:1}
 .pay-opt-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#07040f}
-.load-wrap{padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden}
+.load-wrap{padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;height:100vh;height:100dvh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:100dvh;max-height:calc(var(--rvh,1vh) * 100);box-sizing:border-box;overflow:hidden}
 .load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:8px}
 .load-sub{font-size:13px;color:rgba(245,238,216,.82);font-weight:400;letter-spacing:.01em}
 .oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -154,7 +154,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rev-tag{font-size:10px;color:var(--gold3);margin-top:5px;letter-spacing:.06em}
 .sec-lbl{font-size:11px;letter-spacing:.18em;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
-#s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;height:100dvh;max-height:100dvh;overflow:hidden;justify-content:flex-start;box-sizing:border-box}
+#s-camera{background:#07040f;display:none;flex-direction:column;align-items:center;padding:0;height:100vh;height:100dvh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:100dvh;max-height:calc(var(--rvh,1vh) * 100);overflow:hidden;justify-content:flex-start;box-sizing:border-box}
 #s-camera.active{display:flex;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 .cam-progress{display:flex;gap:10px;margin-top:max(24px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
@@ -707,6 +707,32 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+// LAIKINA DIAGNOSTIKA: stebi #cam-viewport dydį per laiką, kad rastume,
+// KADA tiksliai jis pasikeičia po ekrano atsiradimo.
+function _dbgCamSize(tag){
+  const el=document.getElementById('cam-viewport');
+  if(!el) return;
+  const r=el.getBoundingClientRect();
+  let box=document.getElementById('__cam_dbg_box');
+  if(!box){
+    box=document.createElement('div');
+    box.id='__cam_dbg_box';
+    box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999999;background:#0a7ea4;color:#fff;font-family:monospace;font-size:11px;padding:6px 8px;max-height:35vh;overflow-y:auto;white-space:pre-wrap;box-shadow:0 2px 12px rgba(0,0,0,.5)';
+    document.documentElement.appendChild(box);
+  }
+  const line=document.createElement('div');
+  line.textContent='['+tag+'] cam-viewport w='+Math.round(r.width)+' h='+Math.round(r.height)+' top='+Math.round(r.top);
+  box.appendChild(line);
+}
+window._camDbgActive=false;
+function _startCamDbg(){
+  window._camDbgActive=true;
+  _dbgCamSize('t=0ms (go() metu)');
+  [50,150,300,500,800,1200,2000].forEach(ms=>{
+    setTimeout(()=>{if(window._camDbgActive)_dbgCamSize('t='+ms+'ms');},ms);
+  });
+}
+
 const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7};pointer-events:none`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
@@ -752,6 +778,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 function go(id){
+  if(id==='s-camera'&&typeof _startCamDbg==='function') _startCamDbg();
   if(id==='s-home'){
     setTimeout(()=>{
       document.querySelectorAll('.home-bullet').forEach((el,i)=>{
