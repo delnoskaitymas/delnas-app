@@ -162,7 +162,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
 .cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
 .cam-vp-border{position:absolute;inset:0;border-radius:18px;border:1.5px solid rgba(212,168,67,.3);pointer-events:none;z-index:999}
-.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#0a0a0a;z-index:10;box-shadow:none}
+.cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;max-height:calc(100dvh - 260px);flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#0a0a0a;z-index:10;box-shadow:none}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
@@ -328,7 +328,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div>
   <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
   <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
-  <div style="position:relative;margin-top:6px;margin-bottom:8px;flex:1;min-height:0;width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
+  <div style="position:relative;margin-top:6px;margin-bottom:8px;flex:1;min-height:0;max-height:calc(100dvh - 260px);width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
@@ -707,32 +707,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-// LAIKINA DIAGNOSTIKA: stebi #cam-viewport dydį per laiką, kad rastume,
-// KADA tiksliai jis pasikeičia po ekrano atsiradimo.
-function _dbgCamSize(tag){
-  const el=document.getElementById('cam-viewport');
-  if(!el) return;
-  const r=el.getBoundingClientRect();
-  let box=document.getElementById('__cam_dbg_box');
-  if(!box){
-    box=document.createElement('div');
-    box.id='__cam_dbg_box';
-    box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999999;background:#0a7ea4;color:#fff;font-family:monospace;font-size:11px;padding:6px 8px;max-height:35vh;overflow-y:auto;white-space:pre-wrap;box-shadow:0 2px 12px rgba(0,0,0,.5)';
-    document.documentElement.appendChild(box);
-  }
-  const line=document.createElement('div');
-  line.textContent='['+tag+'] cam-viewport w='+Math.round(r.width)+' h='+Math.round(r.height)+' top='+Math.round(r.top);
-  box.appendChild(line);
-}
-window._camDbgActive=false;
-function _startCamDbg(){
-  window._camDbgActive=true;
-  _dbgCamSize('t=0ms (go() metu)');
-  [50,150,300,500,800,1200,2000].forEach(ms=>{
-    setTimeout(()=>{if(window._camDbgActive)_dbgCamSize('t='+ms+'ms');},ms);
-  });
-}
-
 const sb=document.getElementById('stars');
 for(let i=0;i<55;i++){const s=document.createElement('div');s.className='ss';const sz=Math.random()<.25?3:2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:twkS ${2+Math.random()*5}s ease-in-out infinite ${Math.random()*5}s;opacity:0;--op:${.3+Math.random()*.7};pointer-events:none`;sb.appendChild(s);}
 const ts=document.createElement('style');ts.textContent='@keyframes twkS{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op,.6);transform:scale(1)}}';document.head.appendChild(ts);
@@ -778,7 +752,6 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 function go(id){
-  if(id==='s-camera'&&typeof _startCamDbg==='function') _startCamDbg();
   if(id==='s-home'){
     setTimeout(()=>{
       document.querySelectorAll('.home-bullet').forEach((el,i)=>{
