@@ -1604,10 +1604,10 @@ function capturePhoto(){
     frozen.style.opacity='1';
     video.style.display='none';
   }
-  if(shutterWrap){shutterWrap.style.transition='opacity 0.3s ease';shutterWrap.style.opacity='0';setTimeout(()=>{shutterWrap.style.visibility='hidden';shutterWrap.style.opacity='1';shutterWrap.style.transition='';},300);}
-  if(camSub) camSub.style.visibility='hidden';
-  const titleEl2=document.getElementById('cam-title');
-  if(titleEl2){titleEl2.style.transition='opacity 0.3s ease';titleEl2.style.opacity='0';setTimeout(()=>{titleEl2.textContent='';titleEl2.style.opacity='1';titleEl2.style.transition='';},300);}
+  // PASTABA: antraštė, paantraštė ir mygtukas DABAR NEBESLEPIAMI ir
+  // NEKEIČIAMI analizės/sėkmės/nesėkmės metu — taip garantuojama, kad
+  // išdėstymas (ir kameros lango dydis) niekada nepasikeičia.
+  if(shutter){shutter.disabled=true;shutter.style.opacity='.4';shutter.style.pointerEvents='none';}
 
   // Rodyti "Analizuojame" laukelį frozen apačioje
   function showMsgBar(html){
