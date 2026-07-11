@@ -206,9 +206,13 @@ TAISYKLĖS:
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
-- Kalba: LABAI paprasta, kasdienė, tokia, kokia kalbama gyvenime — lietuvių, kreipkis "tu"
-- DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika") — vietoj jų rink paprasčiausią, kasdienį žodį, kurį vartotų draugas pokalbyje
-- DRAUDŽIAMA: ilgi, sudėtingi, keliais sakinio nariais apkrauti sakiniai — rašyk trumpais, aiškiais sakiniais, kaip kalbėtum su draugu
+- Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
+- Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
+- DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
+- DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
+- DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
+- Kiekvienas žodis ir sakinys turi turėti prasmę ir svorį — jokių tuščių, niekuo neprisidedančių žodžių ar sakinio dalių
+- DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
 - Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
