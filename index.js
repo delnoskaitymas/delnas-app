@@ -205,31 +205,31 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios frazės kurios tiktų bet kuriam žmogui
 - Kalba: paprasta, kasdienė, lietuvių, kreipkis "tu"
-- Kiekvienas skyrius: 8–10 sakinių, skyriai nesikartoja tarpusavyje
-- KIEKVIENAME skyriuje žemiau išvardintos 7 potemės — tavo tekstas PRIVALO atskleisti VISAS 7, bent po vieną sakinį kiekvienai (natūraliu, sklandžiu tekstu, ne sąrašu)
+- Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
+- KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
-SKYRIAI — kiekvienas kalba tik apie savo temą ir PRIVALO atskleisti visas 7 žemiau nurodytas potemes:
+SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
 
-- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): 1) jo unikalų, jį apibrėžiantį asmenybės branduolį; 2) prie kokio ryškaus, atpažįstamo charakterio tipo jis artimiausias; 3) pamatinius, jį apibrėžiančius charakterio bruožus; 4) detalų vidinį/psichologinį jo portretą; 5) kokia vidinė jėga/prigimtis jį veda; 6) jo natūralų, įgimtą potencialą; 7) kas konkrečiai jį išskiria iš kitų
+- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) jo unikalų asmenybės branduolį ir pamatinius, jį apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis jį veda; (c) jo natūralų, įgimtą potencialą ir tai, kas konkrečiai jį išskiria iš kitų
 
-- gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): 1) kryptį, kuria jis natūraliai juda gyvenime; 2) kas jį iš vidaus varo pirmyn (vidinės motyvacijos šaltinius); 3) giliau slypinčius, dar neįvardytus jo tikslus; 4) kokia linkme jis auga kaip asmenybė; 5) kokie posūkiai/lūžiai būdingi jo gyvenimo keliui; 6) kokias gaires jis pats sau kelia ateičiai; 7) svarbiausius orientyrus jo gyvenimo kelyje
+- gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): (a) kryptį, kuria jis natūraliai juda gyvenime, ir kas jį iš vidaus varo pirmyn; (b) giliau slypinčius jo tikslus ir kryptį, kuria jis auga kaip asmenybė; (c) svarbiausius jo gyvenimo kelio posūkius ir gaires, kurias jis pats sau kelia ateičiai
 
-- santykiai (Bendravimo būdas ir įtaka santykiams): 1) kaip jis kuria emocinį ryšį su kitais; 2) koks jo bendravimo stilius ir tempas; 3) kokį poveikį/įspūdį jis daro aplinkiniams; 4) pasikartojančius jo elgesio su žmonėmis modelius; 5) kaip jis siekia pusiausvyros santykiuose; 6) ar ir kaip jis sukuria gilų, ilgalaikį ryšį; 7) koks jis būna tarp žmonių, grupėje
+- santykiai (Bendravimo būdas ir įtaka santykiams): (a) kaip jis kuria emocinį ryšį su kitais ir koks jo bendravimo stilius; (b) kokį poveikį daro aplinkiniams ir pasikartojančius elgesio su žmonėmis modelius; (c) kaip jis siekia pusiausvyros santykiuose ir gebėjimą kurti gilų, ilgalaikį ryšį
 
-- finansai (Finansinis potencialas): 1) kur/kaip jo finansinė sėkmė labiausiai įmanoma; 2) jo potencialą kurti materialią gerovę; 3) kas jam natūraliai atveria finansines galimybes; 4) koks jo santykis su pinigais/turtu; 5) kokie ženklai rodo jo augimo/klestėjimo kryptį; 6) jo karjeros ir gerovės perspektyvas; 7) nepastebėtus/neišnaudotus jo gebėjimus kurti pajamas. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip jis leidžia/taupo pinigus
+- finansai (Finansinis potencialas): (a) kur/kaip jo finansinė sėkmė labiausiai įmanoma ir jo potencialą kurti materialią gerovę; (b) kas jam natūraliai atveria finansines galimybes; (c) jo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip jis leidžia/taupo pinigus
 
-- galimybes (Unikalus sėkmės raktas): 1) jo asmeninę sėkmės formulę; 2) didžiausią jo pranašumą prieš kitus; 3) kaip jis natūraliai laimi/įveikia iššūkius (pergalės strategiją); 4) kas jį daro stipria asmenybe; 5) ką jis naudoja sunkiausiais momentais („slaptąjį ginklą"); 6) kas jam padeda ten, kur kitiems sunkiau (kas atveria duris į sėkmę); 7) jo unikalų kelią į pripažinimą
+- galimybes (Unikalus sėkmės raktas): (a) jo asmeninę sėkmės formulę ir didžiausią pranašumą prieš kitus; (b) kaip jis natūraliai įveikia iššūkius ir ką naudoja sunkiausiais momentais („slaptąjį ginklą"); (c) kas jam visada atveria duris ten, kur kitiems sunkiau, ir jo unikalų kelią į pripažinimą
 
-- pokyciai (Svarbiausi artėjantys pokyčiai): 1) koks reikšmingas posūkis artėja jo gyvenime; 2) kokios naujos galimybės netrukus atsivers; 3) koks vidinis transformacijos etapas jo laukia; 4) kokia permaina jau juntama; 5) kas konkrečiai jo gyvenime netrukus pasikeis į gerą; 6) koks svarbus etapas jo laukia; 7) kokie ženklai rodo naujos pradžios artėjimą
+- pokyciai (Svarbiausi artėjantys pokyčiai): (a) koks reikšmingas posūkis artėja jo gyvenime ir kokios naujos galimybės netrukus atsivers; (b) koks vidinis transformacijos etapas jo laukia; (c) kas konkrečiai jo gyvenime netrukus pasikeis į gerą ir kokie ženklai tai jau rodo
 
-- klutys (Pažangą stabdančios kliūtys): 1) nesąmoningus, giliai įsišaknijusius jo stabdžius; 2) kasdienius įpročius/trikdžius, kurie vėlina jo sėkmę; 3) kas trukdo jam pilnai atsiskleisti; 4) konkrečią kliūtį jo kelyje į tikslą; 5) ką jam metas paleisti; 6) nematomą jo pasipriešinimą pokyčiams; 7) kaip jis galėtų atsiblokuoti ir pasiekti tikrąjį potencialą
+- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius jo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį jo kelyje į tikslą ir kas trukdo jam pilnai atsiskleisti; (c) ką jam metas paleisti, kad atsiblokuotų tikrasis jo potencialas
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"8-10 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"8-10 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"8-10 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"8-10 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"8-10 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"8-10 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"8-10 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
+{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
     }
   ];
 
