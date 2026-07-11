@@ -205,22 +205,22 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios frazės kurios tiktų bet kuriam žmogui
 - Kalba: paprasta, kasdienė, lietuvių, kreipkis "tu"
-- Kiekvienas skyrius: 6–8 sakiniai, skyriai nesikartoja tarpusavyje
+- Kiekvienas skyrius: 8–10 sakinių, skyriai nesikartoja tarpusavyje
 
 SKYRIAI — kiekvienas kalba tik apie savo temą:
-- prigimtines_stiprybes: kokie šio žmogaus stipriausi prigimtiniai charakterio bruožai ir kaip jie pasireiškia kasdieniame gyvenime
-- gyvenimo_tikslas: TEMOS ESMĖ — gyvenimo KRYPTIS ir TIKSLAI. Ką šis žmogus nori pasiekti gyvenime? Kokia jo gyvenimo misija? Kur jis juda? Ko siekia? Kas jam svarbiausia gyvenime — ne darbe, bet gyvenime apskritai. Rašyk apie jo vidinę kryptį, svajonę, tikslą
-- santykiai: kaip šis žmogus myli ir bendrauja — ko ieško ryšiuose, kaip elgiasi su artimaisiais, kas jam sunku santykiuose
-- finansai: TEMOS ESMĖ — FINANSINIS POTENCIALAS. Kiek šis žmogus gali uždirbti? Kokioje srityje jo finansinė sėkmė didžiausia? Ar jo potencialas didelis ar vidutinis? Kaip jis gali jį realizuoti? Rašyk apie galimybes ir potencialą — ne apie tai kaip jis elgiasi su pinigais
-- galimybes: kokia konkreti savybė ar gebėjimas išskiria jį iš kitų — tai jo didžiausias pranašumas
-- pokyciai: kokie reikšmingi gyvenimo pokyčiai artėja arba jau vyksta
-- klutys: kas konkrečiai stabdo šį žmogų — koks jo pagrindinis vidinių barjeras
+- prigimtines_stiprybes: kokie šio žmogaus stipriausi prigimtiniai charakterio bruožai ir kaip jie pasireiškia kasdieniame gyvenime. Atskleisk jo unikalų asmenybės branduolį, pamatinius bruožus, kurie jį apibrėžia, kokia yra jo natūrali prigimtis bei potencialas, ir tai, kas konkrečiai daro jį išskirtine asmenybe tarp kitų — sudaryk detalų, gilų jo charakterio portretą
+- gyvenimo_tikslas: TEMOS ESMĖ — gyvenimo KRYPTIS ir TIKSLAI. Ką šis žmogus nori pasiekti gyvenime? Kokia jo gyvenimo misija? Kur jis juda? Ko siekia? Kas jam svarbiausia gyvenime — ne darbe, bet gyvenime apskritai. Aprašyk jo vidinės motyvacijos šaltinius, paslėptus tikslų orientyrus, asmeninio augimo kryptį ir gyvenimo kelio posūkius. Rašyk apie jo vidinę kryptį, svajonę, tikslą
+- santykiai: kaip šis žmogus myli ir bendrauja — ko ieško ryšiuose, kaip elgiasi su artimaisiais, kas jam sunku santykiuose. Aprašyk jo emocinio ryšio modelius, bendravimo stiliaus dinamiką, kaip jo būdas veikia aplinkinius, kokie jo socialinio bendravimo dėsningumai ir gebėjimas kurti gilius, ilgalaikius ryšius
+- finansai: TEMOS ESMĖ — FINANSINIS POTENCIALAS. Kiek šis žmogus gali uždirbti? Kokioje srityje jo finansinė sėkmė didžiausia? Ar jo potencialas didelis ar vidutinis? Kaip jis gali jį realizuoti? Įvardink, kas jam natūraliai pritraukia finansines galimybes, kokie jo paslėpti gebėjimai kurti gerovę, ir kokioje srityje slypi jo didžiausias, dar nepilnai išnaudotas finansinis potencialas. Rašyk apie galimybes ir potencialą — ne apie tai kaip jis elgiasi su pinigais
+- galimybes: kokia konkreti savybė ar gebėjimas išskiria jį iš kitų — tai jo didžiausias pranašumas. Įvardink jo asmeninę sėkmės formulę, jo „slaptąjį ginklą", kuriuo jis sprendžia sunkiausius iššūkius, ir tai, kas jam visada atveria duris ten, kur kitiems sunkiau — jo unikalų kelią į pripažinimą
+- pokyciai: kokie reikšmingi gyvenimo pokyčiai artėja arba jau vyksta. Aprašyk, kokie asmeninės transformacijos etapai jo laukia, kokios naujos galimybės netrukus atsivers ir kas konkrečiai jo gyvenime netrukus pasikeis į gerą
+- klutys: kas konkrečiai stabdo šį žmogų — koks jo pagrindinis vidinis barjeras. Atskleisk jo pasąmoningus stabdžius, kasdienius trikdžius, kurie vėlina jo sėkmę, ir tai, ką jam reikia paleisti, kad atsiblokuotų tikrasis jo potencialas
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"6-8 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"6-8 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"6-8 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"6-8 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"6-8 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"6-8 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"6-8 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
+{"prigimtines_stiprybes":"8-10 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"8-10 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"8-10 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"8-10 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"8-10 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"8-10 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"8-10 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
     }
   ];
 
