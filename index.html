@@ -1680,8 +1680,8 @@ function capturePhoto(){
             shutter.style.animation='camBreathing 2s ease-in-out infinite';
             const vp=document.getElementById('cam-viewport');
             if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-          },550);
-        },2500);
+          },450);
+        },1800);
         return;
       }
 
@@ -1731,8 +1731,8 @@ function capturePhoto(){
             }
             const vpR=document.getElementById('cam-viewport');
             if(vpR) vpR.style.animation='camGoldGlow 2.5s ease-in-out infinite';
-          },400);
-        },900);
+          },300);
+        },650);
       } else {
         photoRight=dataURL;
         setTimeout(()=>{
@@ -1746,8 +1746,8 @@ function capturePhoto(){
               go('s-order');
               initOrderScreen();
             },80);
-          },400);
-        },900);
+          },300);
+        },650);
       }
     }).catch(()=>{
       if(tikrOvl) tikrOvl.style.display='none';
@@ -1763,7 +1763,7 @@ function capturePhoto(){
       shutter.style.pointerEvents='auto';
       showCamError('Klaida.','Prašome bandyti dar kartą.');
     });
-  },500);
+  },150);
 }
 
 
