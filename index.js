@@ -445,7 +445,7 @@ app.post('/analyze-palm', async (req, res) => {
           const iv = setInterval(() => {
             waited++;
             const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 8) { clearInterval(iv); resolve(); }
+            if (!entry || entry.status !== 'pending' || waited >= 40) { clearInterval(iv); resolve(); }
           }, 1000);
         });
         const entry = analysisCache.get(sessionId);
