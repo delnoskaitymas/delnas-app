@@ -1274,7 +1274,7 @@ function startApp(){
   const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='visible';
   // Atstatyti visus kameros UI elementus
   const sw=document.querySelector('.cam-shutter-wrap');if(sw) sw.style.display='';
-  const cs=document.getElementById('cam-sub');if(cs) cs.style.display='';
+  const cs=document.getElementById('cam-sub');if(cs){cs.style.display='';cs.style.visibility='';}
   const sh=document.getElementById('cam-shutter');
   if(sh){sh.disabled=false;sh.style.opacity='1';sh.style.pointerEvents='auto';}
   // Rodyti siluetą kol kamera neaktyvi
@@ -1594,7 +1594,7 @@ function capturePhoto(){
     video.style.display='none';
   }
   if(shutterWrap){shutterWrap.style.transition='opacity 0.3s ease';shutterWrap.style.opacity='0';setTimeout(()=>{shutterWrap.style.visibility='hidden';shutterWrap.style.opacity='1';shutterWrap.style.transition='';},300);}
-  if(camSub) camSub.style.display='none';
+  if(camSub) camSub.style.visibility='hidden';
   const titleEl2=document.getElementById('cam-title');
   if(titleEl2){titleEl2.style.transition='opacity 0.3s ease';titleEl2.style.opacity='0';setTimeout(()=>{titleEl2.textContent='';titleEl2.style.opacity='1';titleEl2.style.transition='';},300);}
 
@@ -1659,7 +1659,7 @@ function capturePhoto(){
             // Grąžinti antraštę
             const titleEl=document.getElementById('cam-title');
             if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';}
-            if(camSub) camSub.style.display='';
+            if(camSub) camSub.style.visibility='';
             // Grąžinti mygtuką
             shutterWrap.style.visibility='';
             shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
@@ -1699,7 +1699,7 @@ function capturePhoto(){
           if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
             video.style.display='block';
             shutterWrap.style.visibility='';
-            if(camSub) camSub.style.display='';
+            if(camSub) camSub.style.visibility='';
             document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
             camHand='right';
             updateCameraUI();
@@ -1739,7 +1739,7 @@ function capturePhoto(){
       if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';}
       video.style.display='block';
       shutterWrap.style.visibility='';
-      if(camSub) camSub.style.display='';
+      if(camSub) camSub.style.visibility='';
       document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
       shutter.disabled=false;
       shutter.style.opacity='1';
