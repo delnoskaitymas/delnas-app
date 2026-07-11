@@ -235,7 +235,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 5000,
+        max_tokens: 8000,
         temperature: 0.2,
         messages: [
           { role: 'user', content: step2Content },
