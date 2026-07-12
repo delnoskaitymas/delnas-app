@@ -2095,15 +2095,26 @@ function initScrollReveal(){
     const app=document.getElementById('app-wrap');
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
+    // LAIKINA DIAGNOSTIKA
+    let dbgBox=document.getElementById('__reveal_dbg');
+    if(!dbgBox){
+      dbgBox=document.createElement('div');
+      dbgBox.id='__reveal_dbg';
+      dbgBox.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999999;background:#7a1a9e;color:#fff;font-family:monospace;font-size:10px;padding:6px 8px;max-height:30vh;overflow-y:auto;white-space:pre-wrap;box-shadow:0 -2px 12px rgba(0,0,0,.5)';
+      document.documentElement.appendChild(dbgBox);
+    }
+    const dlog=(msg)=>{const l=document.createElement('div');l.textContent=msg;dbgBox.appendChild(l);if(dbgBox.children.length>40)dbgBox.removeChild(dbgBox.firstChild);};
+    dlog('init: app='+(!!app)+' sections='+sections.length);
+    // /LAIKINA DIAGNOSTIKA
     const revealedSet=new WeakSet();
 
-    const revealSection=(el)=>{
+    const revealSection=(el,tag)=>{
       if(revealedSet.has(el)) return;
       revealedSet.add(el);
+      dlog('REVEAL['+tag+']: '+(el.querySelector('.rs-label')?el.querySelector('.rs-label').textContent:'?'));
       el.style.opacity='1';
       el.style.transform='none';
       el.classList.add('visible');
-      // Šio bloko geltonos "insight" kortelės — palaipsniui, viena po kitos
       const cards=el.querySelectorAll('.insight-card');
       cards.forEach((card,i)=>{
         setTimeout(()=>{
@@ -2114,7 +2125,6 @@ function initScrollReveal(){
       });
     };
 
-    // Pradinė (paslėpta) būsena — nustatoma TIK dabar, kai turinys jau tikrai yra
     sections.forEach(el=>{
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
@@ -2125,55 +2135,47 @@ function initScrollReveal(){
         card.style.transform='translateY(14px)';
       });
     });
-    // Priverstinis reflow, kad pradinė būsena tikrai pritaikyta prieš animaciją
     void document.body.offsetHeight;
 
-    // PATIKIMAS MECHANIZMAS: periodinis tikrinimas (setInterval) — VISIŠKAI
-    // nepriklauso nuo 'scroll' įvykių ar requestAnimationFrame patikimumo.
-    // Ankstesnė versija naudojo scroll+requestAnimationFrame throttling'ą,
-    // bet requestAnimationFrame šiame WebView kartais NIEKADA nebesuveikia
-    // po kelių kartų (užstringa), todėl scroll'o tikrinimas nustodavo
-    // veikti po 2-3 blokų. setInterval yra paprastas laikrodžio pagrindu
-    // veikiantis mechanizmas — jis NIEKADA neužstringa, nes nepriklauso
-    // nuo jokio kito naršyklės API grįžtamojo iškvietimo.
     let manualCheckActive=true;
     let _pollInterval=null;
+    let _pollCount=0;
     function manualCheck(){
       if(!manualCheckActive || !app) return;
+      _pollCount++;
       const appRect=app.getBoundingClientRect();
       let allDone=true;
-      sections.forEach(el=>{
+      let unrevealedInfo=[];
+      sections.forEach((el,idx)=>{
         if(revealedSet.has(el)) return;
         allDone=false;
         const r=el.getBoundingClientRect();
-        if(r.top < appRect.bottom-40 && r.bottom > appRect.top){
-          revealSection(el);
-        }
+        const hit=(r.top < appRect.bottom-40 && r.bottom > appRect.top);
+        unrevealedInfo.push('#'+idx+' top='+Math.round(r.top)+' bot='+Math.round(r.bottom)+' hit='+hit);
+        if(hit){ revealSection(el,'poll#'+_pollCount); }
       });
+      if(_pollCount<=3 || _pollCount%10===0){
+        dlog('poll#'+_pollCount+' appRect='+Math.round(appRect.top)+'-'+Math.round(appRect.bottom)+' | '+unrevealedInfo.join(' | '));
+      }
       if(allDone){
         manualCheckActive=false;
         if(_pollInterval) clearInterval(_pollInterval);
+        dlog('VISI ATSKLEISTI po '+_pollCount+' poll');
       }
     }
-    // Pirminis patikrinimas iškart (tam, kas jau matoma be scrollinimo)
     manualCheck();
-    // Periodinis tikrinimas kas 250ms, kol visi blokai atskleisti
     if(manualCheckActive){
       _pollInterval=setInterval(manualCheck,250);
     }
-    // Papildomai — ir scroll'o įvykiai, jei jie šiame WebView veikia
-    // (nekenkia, jei jau taip pat tikrinama periodiškai)
     if(app){
       app.addEventListener('scroll',manualCheck,{passive:true});
     }
 
-    // PATIKIMAS MECHANIZMAS Nr.2: IntersectionObserver — jei šiame WebView
-    // jis veikia teisingai, atskleis dar anksčiau/tiksliau nei periodinis tikrinimas
     if('IntersectionObserver' in window && app){
       const obs=new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
-            revealSection(entry.target);
+            revealSection(entry.target,'IO');
             obs.unobserve(entry.target);
           }
         });
@@ -2182,17 +2184,14 @@ function initScrollReveal(){
       window._resultRevealObs=obs;
     }
 
-    // APSAUGA: nepriklausomai nuo to, ar bet kuris mechanizmas suveikė,
-    // po 10s VISKAS garantuotai bus matoma
     setTimeout(()=>{
-      sections.forEach(revealSection);
+      sections.forEach(el=>revealSection(el,'SAFETY-10s'));
       manualCheckActive=false;
       clearInterval(_pollInterval);
       if(app) app.removeEventListener('scroll',manualCheck);
       if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
     },10000);
   }catch(e){
-    // Bet kokios klaidos atveju — GARANTUOTAI parodyti viską iškart
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card').forEach(el=>{
       el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
