@@ -841,10 +841,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
       if(result){
         go('s-result');
         displayResult(result);
-        setTimeout(()=>{
-          document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));
-          document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));
-        },300);
         return;
       }
     }catch(e){console.error('Share parse error:',e);}
@@ -868,11 +864,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
         // Rodyti rezultatų ekraną tiesiai
         go('s-result');
         displayResult(result);
-        // Forced visible po 500ms
-        setTimeout(()=>{
-          document.querySelectorAll('.rs-reveal').forEach(el=>el.classList.add('visible'));
-          document.querySelectorAll('.insight-card').forEach(el=>el.classList.add('visible'));
-        },500);
         // Paslėpti mokėjimo ir kitus mygtukus
         const payBtn=document.getElementById('sticky-pay');if(payBtn)payBtn.style.display='none';
         // Pridėti "Shared" ženkliuką
@@ -1110,9 +1101,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // ir sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatus)
     go('s-result');
     displayResult(finalAd);
-    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
-      el.style.opacity='1';el.style.transform='none';
-    });
+    // PASTABA: čia anksčiau buvo priverstinis opacity='1' visiems .rs-reveal
+    // elementams — tai panaikindavo displayResult()'e nustatytą fade-in
+    // animaciją. Dabar animaciją valdo initScrollReveal() (kviečiama iš
+    // pačios displayResult()), todėl čia daugiau NIEKO nedarome su .rs-reveal.
   } else {
     // Rodyti klaidą rezultatų ekrane
     go('s-result');
@@ -2088,6 +2080,67 @@ function pillIcon(text){
   return svgOpts.star;
 }
 
+// Sklandi "iškilimo" (fade-in + slide-up) animacija rezultatų ekrane,
+// suveikianti kai vartotojas prislenka prie kiekvieno bloko.
+// SAUGUMO PRINCIPAS: CSS numatytoji .rs-reveal/.insight-card būsena YRA
+// opacity:1 (visada matoma) — tai lieka nepakitę. Šis JS TIK LAIKINAI
+// paslepia elementus prieš animaciją, ir turi KELIAS nepriklausomas
+// apsaugas (IntersectionObserver su aiškiu root=app-wrap + laiko limito
+// saugiklis), kad turinys NIEKADA neliktų paslėptas, jei kas nors
+// nepavyktų.
+function initScrollReveal(){
+  try{
+    const app=document.getElementById('app-wrap');
+    const items=document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card');
+    if(!items.length) return;
+
+    const reveal=(el)=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+      el.classList.add('visible');
+    };
+
+    // Pradinė (paslėpta) būsena — nustatoma TIK dabar, kai turinys jau tikrai yra
+    items.forEach(el=>{
+      el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
+      el.style.opacity='0';
+      el.style.transform='translateY(26px)';
+    });
+    // Priverstinis reflow, kad pradinė būsena tikrai pritaikyta prieš animaciją
+    void document.body.offsetHeight;
+
+    if('IntersectionObserver' in window && app){
+      const obs=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            reveal(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+      items.forEach(el=>obs.observe(el));
+      window._resultRevealObs=obs;
+    } else {
+      // IntersectionObserver nepalaikomas — iškart rodome viską (saugus atsarginis variantas)
+      items.forEach(reveal);
+      return;
+    }
+
+    // APSAUGA: nepriklausomai nuo to, ar observer suveikė, po 10s VISKAS
+    // garantuotai bus matoma — taip turinys niekada neliks paslėptas
+    setTimeout(()=>{
+      items.forEach(reveal);
+      if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
+    },10000);
+  }catch(e){
+    // Bet kokios klaidos atveju — GARANTUOTAI parodyti viską iškart
+    console.error('initScrollReveal klaida, rodome viską iškart:',e);
+    document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card').forEach(el=>{
+      el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
+    });
+  }
+}
+
 function renderInsights(containerId, insights){
   const el=document.getElementById(containerId);
   if(!el||!insights||!insights.length) return;
@@ -2147,17 +2200,9 @@ function displayResult(r){
   renderInsights('insights-challenges', r.klutys_insights);
   // PATAISYTA: saugus tikrinimas prieš naudojimą
   const rStr=document.getElementById('r-strengths');if(rStr) rStr.innerHTML='';
-  // Force visible - nebenaudojame IntersectionObserver nes app-wrap scroll neveikia
-  document.querySelectorAll('.rs-reveal').forEach(el=>{
-    el.style.opacity='1';
-    el.style.transform='none';
-    el.classList.add('visible');
-  });
-  document.querySelectorAll('.insight-card').forEach(el=>{
-    el.style.opacity='1';
-    el.style.transform='none';
-    el.classList.add('visible');
-  });
+  // Sklandi "iškilimo" animacija (fade-in + slide-up), su patikima
+  // apsauga jei kas nors nepavyktų (žr. initScrollReveal() aukščiau)
+  initScrollReveal();
   const actionEl=document.getElementById('r-action');if(actionEl) actionEl.style.display='none';
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
