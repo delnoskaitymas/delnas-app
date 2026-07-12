@@ -2318,6 +2318,16 @@ function initScrollReveal(){
       sec.querySelectorAll('.rs-body p').forEach(p=>targets.push({el:p,secIdx,kind:'child'}));
       sec.querySelectorAll('.insight-card').forEach(c=>targets.push({el:c,secIdx,kind:'child'}));
     });
+    // Grupuota struktūra (pagal skyrių) — naudojama TIK manualCheck()
+    // našumo optimizacijai (žr. komentarą prie manualCheck žemiau).
+    // `targets` (plokščias masyvas) paliktas nepakitęs kitiems tikslams
+    // (IntersectionObserver, diagnostika).
+    const sectionGroups=sections.map((sec,secIdx)=>({
+      sec,secIdx,
+      sectionTarget:targets.find(t=>t.el===sec),
+      children:targets.filter(t=>t.secIdx===secIdx&&t.kind==='child'),
+      done:false
+    }));
 
     const revealedSet=new WeakSet();
     const revealTarget=(t)=>{
@@ -2384,7 +2394,24 @@ function initScrollReveal(){
     // įvykiu, ARBA tiesiog praėjus pakankamai laiko (žr. komentarą žemiau
     // apie tai, kodėl reikalingi ABU signalai, ne tik scroll).
     let layoutStable=false;
-    function markLayoutStable(){ layoutStable=true; manualCheck(); }
+    // SVARBU (našumo taisymas): scroll įvykiai realiame įrenginyje gali
+    // suveikti LABAI dažnai (net 30-60 kartų per sekundę per aktyvų
+    // scroll'inimą). Be apribojimo, KIEKVIENAS toks įvykis paleisdavo PILNĄ
+    // ~70+ elementų patikrinimą su getBoundingClientRect() — tai realiame
+    // WebView galėjo perkrauti pagrindinę giją ir sukelti nepatikimą,
+    // "užstringantį" elgesį (diagnostika parodė tikrinimus vykstant
+    // vidutiniškai kas ~50ms — daug dažniau nei būtina). Dabar scroll
+    // sukelti manualCheck() iškvietimai apriboti iki 1 karto per 120ms —
+    // pakankamai dažnai sklandžiam atsakui, bet žymiai mažiau apkraunant
+    // gijos.
+    let _lastScrollCheck=0;
+    function markLayoutStable(){
+      layoutStable=true;
+      const now=Date.now();
+      if(now-_lastScrollCheck<250) return;
+      _lastScrollCheck=now;
+      manualCheck();
+    }
     setTimeout(markLayoutStable,1200);
     function manualCheck(){
       _checkTicks++;
@@ -2392,30 +2419,48 @@ function initScrollReveal(){
       if(!manualCheckActive) return;
       const vh=window.innerHeight||document.documentElement.clientHeight||800;
       let allDone=true;
-      targets.forEach(t=>{
-        if(revealedSet.has(t.el)) return;
-        allDone=false;
-        if(t.secIdx>0&&!layoutStable) return; // dar neįrodyta, kad išdėstymas tikras
-        const r=t.el.getBoundingClientRect();
-        // Slenkstis: elementas atsiskleidžia, kai jo viršus JAU PASIEKĖ
-        // arba PERŽENGĖ ribą (150px nuo ekrano apačios) — TIESIOG
-        // r.top<vh-150, BE papildomos "r.bottom>0" sąlygos.
-        //
-        // SVARBI PAMOKA: su "r.bottom>0" sąlyga elementas būdavo
-        // atskleidžiamas TIK jei jis TIKSLIAI TĄ patikrinimo akimirką dar
-        // tebebuvo matomoje srityje. Mažiems elementams (vienas sakinys,
-        // ~60-90px aukščio) tai reiškė: jei vartotojas scrollina bent
-        // vidutiniu greičiu, per VIENĄ patikrinimo intervalą (220ms)
-        // elementas galėjo VISIŠKAI "peršokti" per matomą sritį — jo
-        // viršus jau būtų virš ekrano (r.top<vh-150 ✓), bet ir apačia jau
-        // būtų virš ekrano (r.bottom<0 ✗) — sąlyga NIEKADA nebūtų
-        // patenkinta, elementas liktų amžinai paslėptas! Su dideliais
-        // skyriais (800px+) tai beveik neįmanoma, bet su mažais sakiniais
-        // — labai tikėtina, ypač scrollinant vidutiniu ar greitu tempu.
-        // Dabar užtenka, kad viršus BŪTŲ PASIEKĘS ribą (nesvarbu, ar
-        // apačia jau irgi pra-scrollinta) — tai garantuoja, kad joks
-        // elementas nebus "praleistas" tarp patikrinimų.
-        if(r.top<vh-150){ revealTarget(t); }
+      // NAŠUMO OPTIMIZACIJA (svarbi pamoka): anksčiau ČIA buvo tikrinami
+      // VISI ~85 elementai (7 skyriai × ~12 taškų/kortelių) KIEKVIENĄ
+      // kartą, nepriklausomai nuo to, kaip toli jie buvo. Realiame
+      // įrenginyje diagnostika parodė, kad šis tikrinimas vyko itin dažnai
+      // (net kas ~50ms per aktyvų scroll'inimą) — tai reiškė TŪKSTANČIUS
+      // nereikalingų getBoundingClientRect() skaičiavimų per minutę
+      // elementams, kurie buvo toli už ekrano ribų ir dar ilgai nebus
+      // pasiekti. Tai galėjo perkrauti pagrindinę JS giją realiame
+      // (silpnesniame) įrenginyje.
+      // SPRENDIMAS: dabar PIRMA patikriname TIK patį SKYRIŲ (1 skaičiavimas
+      // vietoj ~12). Jei skyrius vis dar toli žemiau ekrano (top>vh+3000),
+      // PRALEIDŽIAME jo vidinių taškų/kortelių tikrinimą IŠVIS — jie bus
+      // patikrinti VĖLIAU, kai skyrius realiai priartės. Tai sumažina
+      // patikrinimų skaičių keliomis dešimtimis kartų ankstyvuose tikruose.
+      sectionGroups.forEach(g=>{
+        if(g.done) return;
+        const canCheck=g.secIdx===0||layoutStable;
+        const secRevealed=revealedSet.has(g.sec);
+        const r=g.sec.getBoundingClientRect();
+        if(!secRevealed){
+          allDone=false;
+          if(canCheck&&r.top<vh-150) revealTarget(g.sectionTarget);
+        }
+        if(r.top>vh+3000){
+          // Skyrius (ir jo vidiniai elementai) dar toli — nešvaistome laiko
+          // tikrinant kiekvieną tašką/kortelę atskirai šį kartą.
+          if(!secRevealed||g.children.some(t=>!revealedSet.has(t.el))) allDone=false;
+          return;
+        }
+        let childAllDone=true;
+        g.children.forEach(t=>{
+          if(revealedSet.has(t.el)) return;
+          childAllDone=false;
+          allDone=false;
+          if(!canCheck) return; // dar neįrodyta, kad išdėstymas tikras
+          const cr=t.el.getBoundingClientRect();
+          // Slenkstis: elementas atsiskleidžia, kai jo viršus JAU PASIEKĖ
+          // arba PERŽENGĖ ribą (150px nuo ekrano apačios) — BE papildomos
+          // "bottom>0" sąlygos (kad nebūtų "peršoktas" per greitą scroll'inimą).
+          if(cr.top<vh-150) revealTarget(t);
+        });
+        if(childAllDone&&secRevealed) g.done=true;
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
       renderDiag();
@@ -2424,7 +2469,13 @@ function initScrollReveal(){
     function startRevealChecks(){
       renderDiag();
       manualCheck();
-      if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
+      // Intervalas dabar yra tik ATSARGINIS mechanizmas (IntersectionObserver
+      // žemiau yra pagrindinis, efektyvus, naršyklės vidinis sekimo būdas,
+      // kuris neapkrauna JS gijos pakartotiniais getBoundingClientRect()
+      // skaičiavimais). Sumažintas dažnis (500ms vietoj 220ms) — pakanka
+      // kaip atsarginis "saugiklis", jei IntersectionObserver kažko
+      // nepagautų, bet nebekonkuruoja dėl gijos laiko su scroll įvykiais.
+      if(manualCheckActive) _pollInterval=setInterval(manualCheck,500);
       // Scroll klausytojas TIEK ant #app-wrap (tikrasis scroll'inimo
       // konteineris), TIEK ant window (papildoma apsauga, jei kažkodėl
       // scroll įvykiai realiame WebView nepasiektų #app-wrap elemento).
