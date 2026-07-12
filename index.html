@@ -2168,24 +2168,38 @@ function initScrollReveal(){
     // Teksto taškai (sakiniai) ir gold insight kortelės atsiranda vienas po
     // kito, PRADEDANT nuo momento, kai PATS SKYRIUS realiai atsiskleidžia
     // (t.y. kai vartotojas jį pamato), o ne nuo puslapio įkėlimo momento.
+    //
+    // SVARBU (kritinė pamoka): anksčiau šis "vienas po kito" efektas buvo
+    // įgyvendintas per JS `setTimeout` kaskadą (kiekvienam taškui/kortelei —
+    // atskiras laikmatis). Realiame įrenginyje tai pasirodė NEPATIKIMA:
+    // skirtinguose bandymuose neveikdavo skirtingi, nenuspėjamai kintantys
+    // blokai (kartą 1-as, kitą kartą paskutiniai 3) — tai klasikinis požymis,
+    // kad JS laikmačiai vykdomi nepatikimai (WebView foninis/CPU ribojimas,
+    // GC pauzės, konkuruojantys kiti laikmačiai). JS `setTimeout` priklauso
+    // nuo PAGRINDINĖS JS gijos — jei ji užimta ar pristabdyta, laikmatis
+    // pavėluoja arba "susilieja" su kitais.
+    // SPRENDIMAS: šis "vienas po kito" efektas dabar įgyvendintas per GRYNĄ
+    // CSS `transition-delay` — kiekvienam taškui/kortelei priskiriama sava
+    // delsa TIESIOGIAI kaip CSS savybė, o naršyklės ATVAIZDAVIMO
+    // (compositor) GIJA — NE JS gija — savarankiškai atskaičiuoja tą delsą
+    // ir paleidžia perėjimą. Tai NEPRIKLAUSO nuo JS vykdymo trikčių ir yra
+    // žymiai patikimesnis mechanizmas šiam efektui.
     const revealPointsAndCards=(el)=>{
       const points=el.querySelectorAll('.rs-body p');
       const pointStep=160;
       points.forEach((p,i)=>{
-        setTimeout(()=>{
-          p.style.opacity='1';
-          p.style.transform='none';
-          p.classList.add('visible');
-        },80+i*pointStep);
+        p.style.transitionDelay=(80+i*pointStep)+'ms';
+        p.style.opacity='1';
+        p.style.transform='none';
+        p.classList.add('visible');
       });
       const cards=el.querySelectorAll('.insight-card');
       const cardsStart=80+points.length*pointStep+220;
       cards.forEach((card,i)=>{
-        setTimeout(()=>{
-          card.style.opacity='1';
-          card.style.transform='none';
-          card.classList.add('visible');
-        },cardsStart+i*150);
+        card.style.transitionDelay=(cardsStart+i*150)+'ms';
+        card.style.opacity='1';
+        card.style.transform='none';
+        card.classList.add('visible');
       });
     };
 
