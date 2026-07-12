@@ -2477,10 +2477,30 @@ function initScrollReveal(){
     // atveju vien opacity='1' nustatymas NEPADEDA, nes vykstanti transition
     // ją perrašo atgal. Reikia PIRMA nutraukti pačią transition
     // (transition:none), TADA priverstinai nustatyti opacity (identiškas
-    // metodas kaip go() funkcijos forceVisible). Šis absoliutus saugiklis
-    // (30s) užtikrina, kad turinys TIKRAI taps matomas, net jei vartotojas
-    // apskritai nescrollintų arba scroll'o aptikimas kažkodėl neveiktų.
-    setTimeout(()=>teardown(true),30000);
+    // metodas kaip go() funkcijos forceVisible).
+    //
+    // KRITINĖ PAMOKA (rasta per realaus įrenginio diagnostiką): šis
+    // saugiklis anksčiau suveikdavo PO 30 SEKUNDŽIŲ — bet 30s NEUŽTENKA
+    // normaliam skaitymui per 7 skyrius! Diagnostika parodė, kad iki 30s
+    // riba NORMALUS (scroll'inimu pagrįstas) mechanizmas VEIKĖ PUIKIAI
+    // (aktyviai sekė ir teisingai atskleidė turinį pagal realų
+    // scroll'inimą) — bet lygiai 30s momentu jis būdavo PRIVERSTINAI
+    // IŠJUNGIAMAS (interval sustabdomas, scroll klausytojai pašalinami) IR
+    // pakeičiamas VIENKARTINIU priverstinio atskleidimo bandymu likusiems
+    // (dar nepasiektiems) elementams — o šis vienkartinis bandymas
+    // nepatikimai suveikdavo (ta pati "įstrigusios transition" WebView
+    // klaida). Rezultatas: vartotojams, kurie skaito lėčiau nei 30s/4
+    // blokus, VEIKIANTI sistema būdavo išjungiama TEISINGAI PER ANKSTI, o
+    // pakaitalas nepatikimai suveikdavo likusiems blokams.
+    // SPRENDIMAS: šis saugiklis dabar suveikia TIK po 2 MINUČIŲ — tai
+    // TIKRAS paskutinis išsigelbėjimo būdas, ne rutininis normaliai
+    // veikiančio mechanizmo išjungimas. Papildomai kartojame kelis
+    // priverstinius bandymus (kaip go() funkcijoje), jei šis retas
+    // scenarijus vis tiek įvyktų.
+    setTimeout(()=>teardown(true),120000);
+    setTimeout(()=>teardown(true),120800);
+    setTimeout(()=>teardown(true),122500);
+    setTimeout(()=>teardown(true),126000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
