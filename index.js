@@ -436,19 +436,32 @@ app.post('/analyze-palm', async (req, res) => {
         result = cached.result;
         analysisCache.delete(sessionId);
       } else if (cached.status === 'pending') {
+        // Trumpas laukimo langas VIENAM HTTP užklausimui (saugu nuo proxy/
+        // gateway laiko limitų). Jei per šį langą analizė nebaigiama,
+        // GRĄŽINAME "pending" signalą — klientas mandagiai paprašys dar
+        // kartą po kelių sekundžių. SVARBU: NIEKADA netriname dar vykstančios
+        // fono analizės ir NEPRADEDAME jos iš naujo — tai anksčiau
+        // priversdavo dvigubą, brangią ir ilgą pakartotinę analizę, kai
+        // originali tiesiog dar nebuvo baigusi (dažna klaidos priežastis:
+        // vartotojas taip ir nesulaukdavo rezultato per 130s).
         await new Promise((resolve) => {
           let waited = 0;
           const iv = setInterval(() => {
             waited++;
             const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 100) { clearInterval(iv); resolve(); }
+            if (!entry || entry.status !== 'pending' || waited >= 8) { clearInterval(iv); resolve(); }
           }, 1000);
         });
         const entry = analysisCache.get(sessionId);
         if (entry && entry.status === 'done' && entry.result) {
           result = entry.result;
+          analysisCache.delete(sessionId);
+        } else if (entry && entry.status === 'pending') {
+          return res.status(202).json({ pending: true, sessionId });
+        } else {
+          // status === 'error' arba įrašas dingo — cache nebenaudingas
+          analysisCache.delete(sessionId);
         }
-        analysisCache.delete(sessionId);
       } else {
         analysisCache.delete(sessionId);
       }
