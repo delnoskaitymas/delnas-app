@@ -48,6 +48,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .r2{inset:14px;border-color:rgba(212,168,67,.18);animation:sp 15s linear infinite reverse}
 .r3{inset:26px;border-color:rgba(212,168,67,.28);animation:sp 9s linear infinite}
 @keyframes sp{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes heroGlowPulse{0%,100%{box-shadow:0 0 18px rgba(212,168,67,.35),inset 0 0 18px rgba(212,168,67,.1)}50%{box-shadow:0 0 34px rgba(212,168,67,.65),inset 0 0 24px rgba(212,168,67,.2)}}
 .core{width:86px;height:86px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;animation:bob 4s ease-in-out infinite;pointer-events:none}
 50%{opacity:1}100%{opacity:0}}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -1030,11 +1031,21 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           </div>
           <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
             <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
+          </div>
+          <div id="pay-still-working" style="text-align:center;opacity:0;transition:opacity .6s ease;margin-top:4px">
+            <div style="display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.65)">
+              <span style="width:12px;height:12px;border:1.5px solid rgba(212,168,67,.35);border-top-color:#d4a843;border-radius:50%;display:inline-block;animation:spin .8s linear infinite"></span>
+              Ruošiame tavo asmeninę analizę...
+            </div>
           </div>`;
         requestAnimationFrame(()=>{
           paySection.style.transition='opacity .4s ease';
           paySection.style.opacity='1';
         });
+        setTimeout(()=>{
+          const sw=document.getElementById('pay-still-working');
+          if(sw) sw.style.opacity='1';
+        },4000);
         setTimeout(resolve,2500);
       },400);
     } else {
