@@ -2310,13 +2310,21 @@ function initScrollReveal(){
     // savaime sustabdo tolimesnius patikrinimus (žr. allDone žemiau) — todėl
     // atrodo, kad "niekas daugiau neveikia scrollinant".
     // SPRENDIMAS: TIK pirmasis skyrius (kuris tikrai yra matomas iškart,
-    // dar prieš bet kokį scroll'inimą) gali būti atskleistas be išankstinio
-    // scroll įvykio. VISI kiti skyriai negali būti atskleisti, KOL vartotojas
-    // REALIAI bent kartą nescrollino — tai patikima, nuo laiko/šriftų
-    // NEPRIKLAUSOMA apsauga, nes scroll įvykis yra vienareikšmis vartotojo
-    // veiksmo įrodymas, o ne prielaida apie tai, kiek laiko praėjo.
-    let hasScrolled=false;
-    function markScrolled(){ hasScrolled=true; manualCheck(); }
+    // dar prieš bet kokį scroll'inimą) gali būti atskleistas be papildomo
+    // patvirtinimo. VISI kiti skyriai negali būti atskleisti, KOL
+    // išdėstymas nepatvirtintas kaip "stabilus" — o tai įrodoma ARBA realiu
+    // scroll įvykiu, ARBA tiesiog praėjus pakankamai laiko.
+    // KRITINĖ PAMOKA (kodėl DU signalai, ne vienas): ankstesnėje versijoje
+    // buvo reikalaujama TIK scroll įvykio — bet šio konkretaus WebView
+    // istorija (dokumentuota nuo pat šio projekto pradžios) rodo, kad
+    // scroll įvykiai čia gali NEPATIKIMAI suveikti arba visai nesuveikti.
+    // Jei pasikliaujame TIK scroll įvykiu, o jis niekada neateina —
+    // apsauga niekada neatsirakina, ir VISI skyriai po pirmojo lieka
+    // amžinai užblokuoti (net jei vartotojas realiai scrollina!). Todėl
+    // dabar naudojame ABU signalus: koks pirmas suveikia, tas atrakina.
+    let layoutStable=false;
+    function markLayoutStable(){ layoutStable=true; manualCheck(); }
+    setTimeout(markLayoutStable,1200);
     function manualCheck(){
       if(!manualCheckActive) return;
       const vh=window.innerHeight||document.documentElement.clientHeight||800;
@@ -2324,7 +2332,7 @@ function initScrollReveal(){
       sections.forEach((el,idx)=>{
         if(revealedSet.has(el)) return;
         allDone=false;
-        if(idx>0&&!hasScrolled) return; // dar neįrodyta, kad išdėstymas tikras
+        if(idx>0&&!layoutStable) return; // dar neįrodyta, kad išdėstymas tikras
         const r=el.getBoundingClientRect();
         if(r.top<vh-40&&r.bottom>0){ revealSection(el); }
       });
@@ -2337,8 +2345,11 @@ function initScrollReveal(){
       // Scroll klausytojas TIEK ant #app-wrap (tikrasis scroll'inimo
       // konteineris), TIEK ant window (papildoma apsauga, jei kažkodėl
       // scroll įvykiai realiame WebView nepasiektų #app-wrap elemento).
-      if(app) app.addEventListener('scroll',markScrolled,{passive:true});
-      window.addEventListener('scroll',markScrolled,{passive:true});
+      // Scroll įvykis TAIP PAT patvirtina, kad išdėstymas stabilus
+      // (vartotojas jau mato realų puslapį) — jei jis suveikia ANKSČIAU
+      // nei 1200ms laikmatis, atrakiname iš karto, nelaukdami.
+      if(app) app.addEventListener('scroll',markLayoutStable,{passive:true});
+      window.addEventListener('scroll',markLayoutStable,{passive:true});
       if('IntersectionObserver' in window){
         // root:null = numatytasis naršyklės viewport (paprasčiau ir
         // patikimiau nei nurodyti custom root, kadangi #app-wrap vis tiek
@@ -2350,7 +2361,7 @@ function initScrollReveal(){
             // PIRMASIS callback taip pat gali suveikti dar prieš išdėstymui
             // nusistovint, todėl skyriams po pirmojo reikalaujame realaus
             // scroll įvykio patvirtinimo.
-            if(entry.isIntersecting&&(idx===0||hasScrolled)) revealSection(entry.target);
+            if(entry.isIntersecting&&(idx===0||layoutStable)) revealSection(entry.target);
           });
         },{root:null,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
         sections.forEach(el=>obs.observe(el));
@@ -2368,8 +2379,8 @@ function initScrollReveal(){
     setTimeout(()=>{
       manualCheckActive=false;
       if(_pollInterval) clearInterval(_pollInterval);
-      if(app) app.removeEventListener('scroll',markScrolled);
-      window.removeEventListener('scroll',markScrolled);
+      if(app) app.removeEventListener("scroll",markLayoutStable);
+      window.removeEventListener("scroll",markLayoutStable);
       if(obs){obs.disconnect();obs=null;}
       document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
         el.style.transition='none';
