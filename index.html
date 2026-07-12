@@ -2081,7 +2081,9 @@ function pillIcon(text){
 }
 
 // Sklandi "iškilimo" (fade-in + slide-up) animacija rezultatų ekrane,
-// suveikianti kai vartotojas prislenka prie kiekvieno bloko.
+// suveikianti kai vartotojas prislenka prie kiekvieno bloko. Kiekviename
+// skyriuje geltonos "insight" kortelės atsiranda PALAIPSNIUI, viena po
+// kitos (ne visos vienu metu).
 // SAUGUMO PRINCIPAS: CSS numatytoji .rs-reveal/.insight-card būsena YRA
 // opacity:1 (visada matoma) — tai lieka nepakitę. Šis JS TIK LAIKINAI
 // paslepia elementus prieš animaciją, ir turi KELIAS nepriklausomas
@@ -2091,20 +2093,34 @@ function pillIcon(text){
 function initScrollReveal(){
   try{
     const app=document.getElementById('app-wrap');
-    const items=document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card');
-    if(!items.length) return;
+    const sections=document.querySelectorAll('#s-result .rs-reveal');
+    if(!sections.length) return;
 
-    const reveal=(el)=>{
+    const revealSection=(el)=>{
       el.style.opacity='1';
       el.style.transform='none';
       el.classList.add('visible');
+      // Šio bloko geltonos "insight" kortelės — palaipsniui, viena po kitos
+      const cards=el.querySelectorAll('.insight-card');
+      cards.forEach((card,i)=>{
+        setTimeout(()=>{
+          card.style.opacity='1';
+          card.style.transform='none';
+          card.classList.add('visible');
+        },160+i*150);
+      });
     };
 
     // Pradinė (paslėpta) būsena — nustatoma TIK dabar, kai turinys jau tikrai yra
-    items.forEach(el=>{
+    sections.forEach(el=>{
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
       el.style.transform='translateY(26px)';
+      el.querySelectorAll('.insight-card').forEach(card=>{
+        card.style.transition='opacity .55s ease, transform .55s ease';
+        card.style.opacity='0';
+        card.style.transform='translateY(14px)';
+      });
     });
     // Priverstinis reflow, kad pradinė būsena tikrai pritaikyta prieš animaciją
     void document.body.offsetHeight;
@@ -2113,23 +2129,23 @@ function initScrollReveal(){
       const obs=new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
-            reveal(entry.target);
+            revealSection(entry.target);
             obs.unobserve(entry.target);
           }
         });
       },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
-      items.forEach(el=>obs.observe(el));
+      sections.forEach(el=>obs.observe(el));
       window._resultRevealObs=obs;
     } else {
       // IntersectionObserver nepalaikomas — iškart rodome viską (saugus atsarginis variantas)
-      items.forEach(reveal);
+      sections.forEach(revealSection);
       return;
     }
 
     // APSAUGA: nepriklausomai nuo to, ar observer suveikė, po 10s VISKAS
     // garantuotai bus matoma — taip turinys niekada neliks paslėptas
     setTimeout(()=>{
-      items.forEach(reveal);
+      sections.forEach(revealSection);
       if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
     },10000);
   }catch(e){
