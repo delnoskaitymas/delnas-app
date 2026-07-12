@@ -434,7 +434,19 @@ app.post('/analyze-palm', async (req, res) => {
       const cached = analysisCache.get(sessionId);
       if (cached.status === 'done' && cached.result) {
         result = cached.result;
-        analysisCache.delete(sessionId);
+        // SVARBU (lenktynių sąlygos taisymas): ANKSČIAU čia iškart
+        // ištrindavome cache įrašą. Bet jei KLIENTO fetch() nutrūksta dėl
+        // laiko limito (pvz. lėtas tinklas), SERVERIS TOLIAU tęsia šio
+        // užklausimo apdorojimą fone (Node.js to automatiškai
+        // nesustabdo) — ir jei tuo metu analizė būdavo baigta bei cache
+        // įrašas ištrintas, o klientas jau buvo "pasidavęs" nesulaukęs
+        // atsakymo, KITAS kliento bandymas su TUO PAČIU sessionId
+        // NEBERASDAVO cache įrašo (jis jau ištrintas!) ir buvo
+        // PRIVERSTINAI pradedama VISIŠKAI NAUJA, lėta analizė nuo nulio —
+        // kuri VĖL viršydavo kliento laiko limitą, ir taip be galo. Dabar
+        // NETRINAME įrašo — jis saugiai lieka, kol jį išvalys bendras 3
+        // valandų TTL valymas (žr. aukščiau), garantuojant, kad bet koks
+        // pakartotinis bandymas VISADA ras jau paruoštą rezultatą.
       } else if (cached.status === 'pending') {
         // Trumpas laukimo langas VIENAM HTTP užklausimui (saugu nuo proxy/
         // gateway laiko limitų). Jei per šį langą analizė nebaigiama,
@@ -455,7 +467,8 @@ app.post('/analyze-palm', async (req, res) => {
         const entry = analysisCache.get(sessionId);
         if (entry && entry.status === 'done' && entry.result) {
           result = entry.result;
-          analysisCache.delete(sessionId);
+          // Netriname (žr. komentarą aukščiau — apsauga nuo lenktynių
+          // sąlygos su kliento pusės laiko limitu/abort).
         } else if (entry && entry.status === 'pending') {
           return res.status(202).json({ pending: true, sessionId });
         } else {
