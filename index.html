@@ -727,6 +727,26 @@ let photoRight=null;
 let camHand="left";
 let handVisible=false;
 let oracleAnimId=null;
+// Globalūs s-loading ekrano laikmačių/animacijų identifikatoriai — reikalingi
+// tam, kad juos būtų galima PRIVERSTINAI sustabdyti, jei vartotojas išeina
+// iš s-loading ekrano ANKSČIAU, nei baigiasi 145s fake-progreso ciklas (t.y.
+// kai tikroji fono analizė baigiasi greičiau). Anksčiau šie laikmačiai
+// (setInterval, requestAnimationFrame canvas ciklas, 6x setTimeout) NIEKADA
+// nebūdavo sustabdomi tokiu atveju — jie toliau veikdavo FONE (nematomame
+// s-loading ekrane) kol natūraliai pasibaigdavo po 145s, ir konkuruodavo dėl
+// "render" gijos laiko su s-result ekrano fade-in animacijomis. Tai galėjo
+// sukelti CSS 'transition' "įstrigimą" (žr. go() funkcijos forceVisible
+// komentarą apie MIUI WebView klaidą) — TA PATI klaidos klasė, tik paveikianti
+// s-result vaizdo elementus vietoj viso ekrano.
+window._loadTickInterval=null;
+window._loadStepTimeouts=[];
+window._stopLoadingAnimation=function(){
+  if(window._loadTickInterval){clearInterval(window._loadTickInterval);window._loadTickInterval=null;}
+  (window._loadStepTimeouts||[]).forEach(id=>clearTimeout(id));
+  window._loadStepTimeouts=[];
+  if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
+  if(typeof window._stopMicroText==='function') window._stopMicroText();
+};
 let cardOpen=false;
 let bgAnalysisDone=false;
 
@@ -822,6 +842,16 @@ function go(id){
   // Praleisti fuOut animaciją jei einamas ekranas yra kamera arba loading
   // (jie turi savo vizualinius perėjimus arba jau yra tamsinami)
   const current=document.querySelector('.screen.active');
+  // Jei paliekame s-loading ekraną PRIEŠ jam natūraliai pasibaigus (145s),
+  // PRIVALOME sustabdyti jo foninius laikmačius (progreso setInterval,
+  // requestAnimationFrame canvas ciklą, mikroteksto ciklą) — kitaip jie
+  // toliau veikia NEMATOMAME ekrane ir konkuruoja dėl render/paint laiko su
+  // naujai rodomo ekrano (pvz. s-result) CSS fade-in animacijomis, galėdami
+  // sukelti jų "įstrigimą" (ta pati klaidos klasė, aprašyta žemiau prie
+  // forceVisible — MIUI/Android WebView CSS transition/animation bug).
+  if(current&&current.id==='s-loading'&&id!=='s-loading'&&typeof window._stopLoadingAnimation==='function'){
+    window._stopLoadingAnimation();
+  }
   const camActive=document.getElementById('s-camera').classList.contains('active');
   const skipFadeOut=camActive||(current&&(current.id==='s-loading'||current.id==='s-camera'));
   if(current&&!skipFadeOut){
@@ -1918,6 +1948,7 @@ function animateLoading(){
     const mt=document.getElementById('micro-text');
     if(mt){mt.style.transition='opacity 0.3s ease';mt.style.opacity='0';}
   }
+  window._stopMicroText=stopMicro;
 
   function updateMicroText(step,force){
     if(step>6){stopMicro();return;}
@@ -1976,13 +2007,16 @@ function animateLoading(){
       },2500);
     }
   },250);
-  setTimeout(()=>{activateStep(1,false);},500);
-  setTimeout(()=>{activateStep(1,true);setTimeout(()=>{activateStep(2,false);},50);},15000);
-  setTimeout(()=>{activateStep(2,true);setTimeout(()=>{activateStep(3,false);},50);},30000);
-  setTimeout(()=>{activateStep(3,true);setTimeout(()=>{activateStep(4,false);},50);},45000);
-  setTimeout(()=>{activateStep(4,true);setTimeout(()=>{activateStep(5,false);},50);},60000);
-  setTimeout(()=>{activateStep(5,true);setTimeout(()=>{activateStep(6,false);},50);},75000);
-  setTimeout(()=>{activateStep(6,true);setTimeout(()=>{activateStep(7,false);},50);},90000);
+  window._loadTickInterval=t;
+  window._loadStepTimeouts=[
+    setTimeout(()=>{activateStep(1,false);},500),
+    setTimeout(()=>{activateStep(1,true);setTimeout(()=>{activateStep(2,false);},50);},15000),
+    setTimeout(()=>{activateStep(2,true);setTimeout(()=>{activateStep(3,false);},50);},30000),
+    setTimeout(()=>{activateStep(3,true);setTimeout(()=>{activateStep(4,false);},50);},45000),
+    setTimeout(()=>{activateStep(4,true);setTimeout(()=>{activateStep(5,false);},50);},60000),
+    setTimeout(()=>{activateStep(5,true);setTimeout(()=>{activateStep(6,false);},50);},75000),
+    setTimeout(()=>{activateStep(6,true);setTimeout(()=>{activateStep(7,false);},50);},90000)
+  ];
 }
 
 function activateStep(n,done){
@@ -2155,14 +2189,30 @@ function initScrollReveal(){
       setTimeout(()=>revealSection(el),400+i*1100);
     });
 
-    // APSAUGA: nepriklausomai nuo bet ko, po 12s VISKAS garantuotai matoma
-    setTimeout(()=>{
-      sections.forEach(revealSection);
-    },12000);
+    // APSAUGA (bulletproof): kai kuriose Android WebView (MIUI) versijose CSS
+    // 'transition' analogiškai kaip ir 'animation' gali likti „įstrigusi" ir
+    // niekada neužsibaigti — tokiu atveju vien opacity='1' nustatymas
+    // NEPADEDA, nes vykstanti transition ją perrašo atgal. Reikia PIRMA
+    // nutraukti pačią transition (transition:none), TADA priverstinai
+    // nustatyti opacity (identiškas metodas kaip go() funkcijos
+    // forceVisible). Kartojame KELIS kartus skirtingu laiku (kaip ir go()),
+    // kad garantuotai pagautume net jei viena bandymo akimirka nepavyktų.
+    const forceRevealAll=()=>{
+      document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
+        el.style.transition='none';
+        el.style.animation='none';
+        el.style.opacity='1';
+        el.style.transform='none';
+        el.classList.add('visible');
+      });
+    };
+    setTimeout(forceRevealAll,11000);
+    setTimeout(forceRevealAll,14000);
+    setTimeout(forceRevealAll,18000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
-      el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
+      el.style.transition='none';el.style.animation='none';el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
     });
   }
 }
