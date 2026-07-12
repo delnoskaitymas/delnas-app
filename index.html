@@ -2371,7 +2371,15 @@ function initScrollReveal(){
         allDone=false;
         if(idx>0&&!layoutStable) return; // dar neįrodyta, kad išdėstymas tikras
         const r=el.getBoundingClientRect();
-        if(r.top<vh-40&&r.bottom>0){ revealSection(el); }
+        // Slenkstis PAKEISTAS: anksčiau (vh-40) reikšdavo, kad skyrius
+        // atsiskleisdavo, kai tik VOS pradėdavo lįsti į ekrano apačią —
+        // tuo metu vartotojo akys dar toli nuo jo, ir kol jis natūraliai
+        // atkeliauja į patogią skaitymo poziciją, animacija JAU BAIGIASI
+        // (matomas tik jos "uodegos" galas — todėl atrodė "per greitai").
+        // Dabar reikalaujame, kad skyrius būtų JAU GEROKAI matomas (jo
+        // viršus pakilęs virš ekrano vidurio), kad animacija vyktų TADA,
+        // kai vartotojas jį realiai mato ir skaito.
+        if(r.top<vh*0.55&&r.bottom>0){ revealSection(el); }
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
       renderDiag();
@@ -2402,7 +2410,7 @@ function initScrollReveal(){
             // scroll įvykio patvirtinimo.
             if(entry.isIntersecting&&(idx===0||layoutStable)) revealSection(entry.target);
           });
-        },{root:null,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+        },{root:null,threshold:0.08,rootMargin:'0px 0px -42% 0px'});
         sections.forEach(el=>obs.observe(el));
       }
     }
