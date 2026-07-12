@@ -113,8 +113,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
 .rs-body{font-size:13.5px;color:rgba(245,238,216,.9);line-height:1.75;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;letter-spacing:.01em}
-.rs-body p{margin-bottom:10px}
+.rs-body p{margin-bottom:10px;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
 .rs-body p:last-child{margin-bottom:0}
+.rs-body p.visible{opacity:1;transform:none}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .rs-reveal{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s ease}
@@ -907,7 +908,7 @@ async function verifyAndProceed(sessionId){
     if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+    document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
       el.style.opacity='1';el.style.transform='none';
     });
   },50);
@@ -986,7 +987,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
      const rn=document.getElementById('res-name');
      if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-     document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
        el.style.opacity='1';el.style.transform='none';
      });
    },50);
@@ -1113,7 +1114,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">'+finalErr+'</p>';
       const rn=document.getElementById('res-name');
       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-      document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+      document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
         el.style.opacity='1';el.style.transform='none';
       });
     },50);
@@ -1129,7 +1130,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-    document.querySelectorAll('.rs-reveal,.insight-card').forEach(el=>{
+    document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
       el.style.opacity='1';el.style.transform='none';
     });
   },50);
@@ -2108,13 +2109,26 @@ function initScrollReveal(){
       el.style.opacity='1';
       el.style.transform='none';
       el.classList.add('visible');
+      // 1) Teksto bloko taškai (sakiniai) atsiranda vienas po kito
+      const points=el.querySelectorAll('.rs-body p');
+      const pointStep=160;
+      points.forEach((p,i)=>{
+        setTimeout(()=>{
+          p.style.opacity='1';
+          p.style.transform='none';
+          p.classList.add('visible');
+        },120+i*pointStep);
+      });
+      // 2) Auksinės (gold) insight kortelės atsiranda vienas po kito,
+      //    PO to, kai visi teksto bloko taškai jau atsiskleidę
       const cards=el.querySelectorAll('.insight-card');
+      const cardsStart=120+points.length*pointStep+220;
       cards.forEach((card,i)=>{
         setTimeout(()=>{
           card.style.opacity='1';
           card.style.transform='none';
           card.classList.add('visible');
-        },150+i*150);
+        },cardsStart+i*150);
       });
     };
 
@@ -2123,6 +2137,11 @@ function initScrollReveal(){
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
       el.style.transform='translateY(26px)';
+      el.querySelectorAll('.rs-body p').forEach(p=>{
+        p.style.transition='opacity .5s ease, transform .5s ease';
+        p.style.opacity='0';
+        p.style.transform='translateY(10px)';
+      });
       el.querySelectorAll('.insight-card').forEach(card=>{
         card.style.transition='opacity .55s ease, transform .55s ease';
         card.style.opacity='0';
@@ -2142,7 +2161,7 @@ function initScrollReveal(){
     },12000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
-    document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card').forEach(el=>{
+    document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
       el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
     });
   }
