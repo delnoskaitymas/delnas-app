@@ -2256,15 +2256,23 @@ function initScrollReveal(){
     // 3) IntersectionObserver — papildomas, jei WebView jį patikimai palaiko.
     let manualCheckActive=true;
     let _pollInterval=null;
+    // SVARBU (supaprastinimas): anksčiau matomumas buvo skaičiuojamas
+    // santykinai su #app-wrap elemento getBoundingClientRect() rezultatu.
+    // Kadangi #app-wrap yra `position:fixed;inset:0` (t.y. visada tiksliai
+    // dengia visą ekraną), jo pačio matmenys TURĖTŲ sutapti su
+    // window.innerHeight — bet realiame WebView tai gali elgtis
+    // nenuspėjamai (papildomas elementas = papildoma vieta klaidai). Todėl
+    // dabar naudojame TIESIOGIAI window.innerHeight — paprasčiausias,
+    // patikimiausias matavimas, be jokių tarpinių priklausomybių.
     function manualCheck(){
-      if(!manualCheckActive||!app) return;
-      const appRect=app.getBoundingClientRect();
+      if(!manualCheckActive) return;
+      const vh=window.innerHeight||document.documentElement.clientHeight||800;
       let allDone=true;
       sections.forEach(el=>{
         if(revealedSet.has(el)) return;
         allDone=false;
         const r=el.getBoundingClientRect();
-        if(r.top<appRect.bottom-40&&r.bottom>appRect.top){ revealSection(el); }
+        if(r.top<vh-40&&r.bottom>0){ revealSection(el); }
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
     }
@@ -2272,11 +2280,18 @@ function initScrollReveal(){
     function startRevealChecks(){
       manualCheck();
       if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
+      // Scroll klausytojas TIEK ant #app-wrap (tikrasis scroll'inimo
+      // konteineris), TIEK ant window (papildoma apsauga, jei kažkodėl
+      // scroll įvykiai realiame WebView nepasiektų #app-wrap elemento).
       if(app) app.addEventListener('scroll',manualCheck,{passive:true});
-      if('IntersectionObserver' in window&&app){
+      window.addEventListener('scroll',manualCheck,{passive:true});
+      if('IntersectionObserver' in window){
+        // root:null = numatytasis naršyklės viewport (paprasčiau ir
+        // patikimiau nei nurodyti custom root, kadangi #app-wrap vis tiek
+        // dengia visą ekraną)
         obs=new IntersectionObserver((entries)=>{
           entries.forEach(entry=>{ if(entry.isIntersecting) revealSection(entry.target); });
-        },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+        },{root:null,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
         sections.forEach(el=>obs.observe(el));
       }
     }
@@ -2293,6 +2308,7 @@ function initScrollReveal(){
       manualCheckActive=false;
       if(_pollInterval) clearInterval(_pollInterval);
       if(app) app.removeEventListener('scroll',manualCheck);
+      window.removeEventListener('scroll',manualCheck);
       if(obs){obs.disconnect();obs=null;}
       document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
         el.style.transition='none';
