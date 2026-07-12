@@ -2226,9 +2226,34 @@ function initScrollReveal(){
     // patikimas būdas užtikrinti, kad naršyklė realiai nupiešė "paslėptą"
     // būseną prieš pereinant į "matoma", kad transition VISADA suveiktų —
     // įskaitant PIRMĄ, iškart matomą skyrių.
+    // SVARBU #2: jei puslaikinis (fallback) šriftas dar naudojamas, kol
+    // TIKRIEJI šriftai (Playfair Display, DM Sans) dar kraunasi, teksto
+    // blokai laikinai užima MAŽIAU vietos nei galutiniame išdėstyme. Tai
+    // gali sukelti klaidingą ankstyvą kelių pirmų skyrių atskleidimą IŠ
+    // KARTO (jie visi "susispaudę" tilptų matomoje srityje vienu metu) —
+    // jų vidiniai taškų/kortelių laikmačiai tada suveikia beveik iškart,
+    // GEROKAI PRIEŠ vartotojui realiai priscrollinant iki jų. Kadangi
+    // skyrius, kuris jau pažymėtas kaip "atskleistas", NEBEPATIKRINAMAS iš
+    // naujo, ši klaida negrįžtama. Todėl laukiame document.fonts.ready
+    // (su saugikliu, jei API neprieinama arba niekada neišsipildo), kad
+    // pozicijos tikrinimai prasidėtų TIK kai išdėstymas jau galutinis.
+    function waitForFontsReady(cb){
+      let done=false;
+      const finish=()=>{ if(done) return; done=true; cb(); };
+      if(document.fonts&&document.fonts.ready&&typeof document.fonts.ready.then==='function'){
+        document.fonts.ready.then(finish).catch(finish);
+      }
+      setTimeout(finish,900); // saugiklis — negalime laukti amžinai
+    }
+
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        startRevealChecks();
+        waitForFontsReady(()=>{
+          // Dar vienas layout reflow po galimo šrifto pakeitimo/paint'o
+          requestAnimationFrame(()=>{
+            startRevealChecks();
+          });
+        });
       });
     });
 
