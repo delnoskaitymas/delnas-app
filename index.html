@@ -2323,11 +2323,25 @@ function initScrollReveal(){
         allDone=false;
         if(t.secIdx>0&&!layoutStable) return; // dar neįrodyta, kad išdėstymas tikras
         const r=t.el.getBoundingClientRect();
-        // Slenkstis: elementas atsiskleidžia, kai jo viršus jau įlindęs
-        // 150px į ekraną nuo apačios — pakankamai anksti, kad nereikėtų
-        // ilgai scrollinti kol kas nors atsiranda, bet pakankamai vėlai,
-        // kad vartotojas realiai matytų patį perėjimą.
-        if(r.top<vh-150&&r.bottom>0){ revealTarget(t); }
+        // Slenkstis: elementas atsiskleidžia, kai jo viršus JAU PASIEKĖ
+        // arba PERŽENGĖ ribą (150px nuo ekrano apačios) — TIESIOG
+        // r.top<vh-150, BE papildomos "r.bottom>0" sąlygos.
+        //
+        // SVARBI PAMOKA: su "r.bottom>0" sąlyga elementas būdavo
+        // atskleidžiamas TIK jei jis TIKSLIAI TĄ patikrinimo akimirką dar
+        // tebebuvo matomoje srityje. Mažiems elementams (vienas sakinys,
+        // ~60-90px aukščio) tai reiškė: jei vartotojas scrollina bent
+        // vidutiniu greičiu, per VIENĄ patikrinimo intervalą (220ms)
+        // elementas galėjo VISIŠKAI "peršokti" per matomą sritį — jo
+        // viršus jau būtų virš ekrano (r.top<vh-150 ✓), bet ir apačia jau
+        // būtų virš ekrano (r.bottom<0 ✗) — sąlyga NIEKADA nebūtų
+        // patenkinta, elementas liktų amžinai paslėptas! Su dideliais
+        // skyriais (800px+) tai beveik neįmanoma, bet su mažais sakiniais
+        // — labai tikėtina, ypač scrollinant vidutiniu ar greitu tempu.
+        // Dabar užtenka, kad viršus BŪTŲ PASIEKĘS ribą (nesvarbu, ar
+        // apačia jau irgi pra-scrollinta) — tai garantuoja, kad joks
+        // elementas nebus "praleistas" tarp patikrinimų.
+        if(r.top<vh-150){ revealTarget(t); }
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
       renderDiag();
