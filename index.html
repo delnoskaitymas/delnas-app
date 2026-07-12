@@ -1102,11 +1102,24 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     if(p1&&p1.length>100) photoData.push({type:'image/jpeg',data:p1.includes(',')?p1.split(',')[1]:p1});
     if(p2&&p2.length>100) photoData.push({type:'image/jpeg',data:p2.includes(',')?p2.split(',')[1]:p2});
 
-    const ar=await fetch('/analyze-palm',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
-    });
-    const ad=await ar.json();
+    // Mandagus pakartotinio bandymo ciklas: jei fono analizė dar nebaigta,
+    // backend'as grąžina {pending:true} (NE klaidą) — laukiame ir bandome
+    // dar kartą, kol analizė baigsis arba baigsis 130s watchdog laikas.
+    // SVARBU: tai NIEKADA nepradeda naujos analizės nuo nulio — tiesiog
+    // pasiteirauja, ar originali (fone vykstanti) analizė jau baigta.
+    let ad=null;
+    for(let attempt=0;attempt<20;attempt++){
+      const ar=await fetch('/analyze-palm',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
+      });
+      ad=await ar.json();
+      if(ad&&ad.pending){
+        await new Promise(r=>setTimeout(r,3000));
+        continue;
+      }
+      break;
+    }
 
     // 4. Guard Clause - visos 7 temos
     if(ad&&ad.prigimtines_stiprybes&&ad.gyvenimo_tikslas&&
