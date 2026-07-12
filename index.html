@@ -2233,43 +2233,20 @@ function initScrollReveal(){
     // PAČIAME JS cikle iškviestume atskleidimą (pvz. pirmam skyriui, kuris
     // jau matomas ekrane be scroll'inimo), naršyklė gali "suvienyti" abu
     // stiliaus pakeitimus į vieną kadrą IR NIEKADA realiai nenupiešti
-    // pradinės opacity:0 būsenos — CSS transition tada tiesiog nesuveikia
-    // (elementas iš karto atsiranda be animacijos). Vien `void
-    // document.body.offsetHeight` (layout reflow) šito NEGARANTUOJA — reikia
-    // tikro PAINT kadro. DVIGUBAS requestAnimationFrame yra standartinis,
-    // patikimas būdas užtikrinti, kad naršyklė realiai nupiešė "paslėptą"
-    // būseną prieš pereinant į "matoma", kad transition VISADA suveiktų —
-    // įskaitant PIRMĄ, iškart matomą skyrių.
-    // SVARBU #2: jei puslaikinis (fallback) šriftas dar naudojamas, kol
-    // TIKRIEJI šriftai (Playfair Display, DM Sans) dar kraunasi, teksto
-    // blokai laikinai užima MAŽIAU vietos nei galutiniame išdėstyme. Tai
-    // gali sukelti klaidingą ankstyvą kelių pirmų skyrių atskleidimą IŠ
-    // KARTO (jie visi "susispaudę" tilptų matomoje srityje vienu metu) —
-    // jų vidiniai taškų/kortelių laikmačiai tada suveikia beveik iškart,
-    // GEROKAI PRIEŠ vartotojui realiai priscrollinant iki jų. Kadangi
-    // skyrius, kuris jau pažymėtas kaip "atskleistas", NEBEPATIKRINAMAS iš
-    // naujo, ši klaida negrįžtama. Todėl laukiame document.fonts.ready
-    // (su saugikliu, jei API neprieinama arba niekada neišsipildo), kad
-    // pozicijos tikrinimai prasidėtų TIK kai išdėstymas jau galutinis.
-    function waitForFontsReady(cb){
-      let done=false;
-      const finish=()=>{ if(done) return; done=true; cb(); };
-      if(document.fonts&&document.fonts.ready&&typeof document.fonts.ready.then==='function'){
-        document.fonts.ready.then(finish).catch(finish);
-      }
-      setTimeout(finish,900); // saugiklis — negalime laukti amžinai
-    }
-
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
-        waitForFontsReady(()=>{
-          // Dar vienas layout reflow po galimo šrifto pakeitimo/paint'o
-          requestAnimationFrame(()=>{
-            startRevealChecks();
-          });
-        });
-      });
-    });
+    // pradinės opacity:0 būsenos — CSS transition tada tiesiog nesuveikia.
+    // Taip pat: kol šriftai (Playfair Display, DM Sans) dar kraunasi, teksto
+    // blokai laikinai užima MAŽIAU vietos — tai gali klaidingai priversti
+    // kelis pirmus skyrius atrodyti "jau matomi" vienu metu.
+    // PASTABA (pamoka): anksčiau čia buvo bandyta spręsti šiuos du dalykus
+    // GRANDINE iš dviejų requestAnimationFrame + document.fonts.ready Promise
+    // + dar vieno requestAnimationFrame. Tai PASIRODĖ PER TRAPU realiame
+    // įrenginyje — jei bent VIENAS grandinės žingsnis neįvyksta patikimai
+    // (pvz. rAF, kol vyksta ekrano perėjimo animacija), VISAS atskleidimo
+    // mechanizmas niekada nepasileidžia (nulinis rezultatas — dar blogiau
+    // nei pradinė problema). Todėl dabar naudojamas VIENAS paprastas,
+    // besąlygiškai suveikiantis `setTimeout` — mažiausiai galimų klaidos
+    // taškų, didžiausias patikimumas.
+    setTimeout(startRevealChecks,350);
 
     // TRIGUBA APSAUGA (patikrinta senesnėje šio failo versijoje):
     // 1) setInterval periodiškai tikrina kiekvieno skyriaus poziciją per
