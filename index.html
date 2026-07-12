@@ -2204,6 +2204,23 @@ function pillIcon(text){
 // REALIAI patenka į matomą sritį, o ne pagal abstraktų laikrodį.
 function initScrollReveal(){
   try{
+    // APSAUGA NUO DUBLIKAVIMO: jei initScrollReveal() kada nors būtų
+    // iškviesta daugiau nei kartą tai pačiai rezultatų sesijai (net ir dėl
+    // retos/netikėtos priežasties — pvz. lygiagretaus iškvietimo), ANTRA
+    // instancija turėtų SAVO NEPRIKLAUSOMĄ revealedSet (WeakSet), IŠ NAUJO
+    // PASLĖPTŲ jau perskaitytą/parodytą turinį (nes "Pradinė paslėpta
+    // būsena" ciklas vykdomas iš naujo), IR paleistų SAVO atskirą,
+    // nesusietą setInterval/scroll sekimo ciklą — o SENOSIOS instancijos
+    // duomenys (įskaitant diagnostikos skydelį) liktų "įšaldyti" ankstesnėje
+    // būsenoje, nors realus turinys jau būtų kitoks. Tai galėjo kelti
+    // painius, sunkiai paaiškinamus simptomus. Todėl PRIEŠ pradedant naują
+    // instanciją, VISADA pilnai išjungiame/išvalome bet kokią ankstesnę.
+    if(typeof window._scrollRevealCleanup==='function'){
+      try{ window._scrollRevealCleanup(); }catch(e){}
+      window._scrollRevealCleanup=null;
+    }
+    window._scrollRevealCallCount=(window._scrollRevealCallCount||0)+1;
+    const _instanceNum=window._scrollRevealCallCount;
     const app=document.getElementById('app-wrap');
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
@@ -2231,7 +2248,7 @@ function initScrollReveal(){
         const appRect=app?app.getBoundingClientRect():null;
         const scrollTop=app?app.scrollTop:'-';
         let lines=[];
-        lines.push('[DIAG '+new Date().toLocaleTimeString()+'] vh='+vh+' app.scrollTop='+scrollTop+' app.rect.h='+(appRect?Math.round(appRect.height):'-'));
+        lines.push('[DIAG#'+_instanceNum+' '+new Date().toLocaleTimeString()+'] vh='+vh+' app.scrollTop='+scrollTop+' app.rect.h='+(appRect?Math.round(appRect.height):'-'));
         sections.forEach((el,i)=>{
           const r=el.getBoundingClientRect();
           const rev=revealedSet.has(el)?'REVEALED':'hidden';
@@ -2415,6 +2432,27 @@ function initScrollReveal(){
       }
     }
 
+    // Bendra "išjungimo" funkcija — naudojama TIEK jei šią instanciją
+    // reikės išjungti dėl NAUJO initScrollReveal() iškvietimo (žr. apsaugą
+    // funkcijos pradžioje), TIEK 30s absoliučiam saugikliui žemiau.
+    function teardown(forceVisible){
+      manualCheckActive=false;
+      if(_pollInterval) clearInterval(_pollInterval);
+      if(app) app.removeEventListener("scroll",markLayoutStable);
+      window.removeEventListener("scroll",markLayoutStable);
+      if(obs){obs.disconnect();obs=null;}
+      if(forceVisible){
+        document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
+          el.style.transition='none';
+          el.style.animation='none';
+          el.style.opacity='1';
+          el.style.transform='none';
+          el.classList.add('visible');
+        });
+      }
+    }
+    window._scrollRevealCleanup=()=>teardown(false);
+
     // APSAUGA (bulletproof): kai kuriose Android WebView (MIUI) versijose CSS
     // 'transition' gali likti „įstrigusi" ir niekada neužsibaigti — tokiu
     // atveju vien opacity='1' nustatymas NEPADEDA, nes vykstanti transition
@@ -2423,20 +2461,7 @@ function initScrollReveal(){
     // metodas kaip go() funkcijos forceVisible). Šis absoliutus saugiklis
     // (30s) užtikrina, kad turinys TIKRAI taps matomas, net jei vartotojas
     // apskritai nescrollintų arba scroll'o aptikimas kažkodėl neveiktų.
-    setTimeout(()=>{
-      manualCheckActive=false;
-      if(_pollInterval) clearInterval(_pollInterval);
-      if(app) app.removeEventListener("scroll",markLayoutStable);
-      window.removeEventListener("scroll",markLayoutStable);
-      if(obs){obs.disconnect();obs=null;}
-      document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
-        el.style.transition='none';
-        el.style.animation='none';
-        el.style.opacity='1';
-        el.style.transform='none';
-        el.classList.add('visible');
-      });
-    },30000);
+    setTimeout(()=>teardown(true),30000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
