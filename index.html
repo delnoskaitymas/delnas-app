@@ -2093,10 +2093,13 @@ function pillIcon(text){
 function initScrollReveal(){
   try{
     const app=document.getElementById('app-wrap');
-    const sections=document.querySelectorAll('#s-result .rs-reveal');
+    const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
+    const revealedSet=new WeakSet();
 
     const revealSection=(el)=>{
+      if(revealedSet.has(el)) return;
+      revealedSet.add(el);
       el.style.opacity='1';
       el.style.transform='none';
       el.classList.add('visible');
@@ -2125,6 +2128,43 @@ function initScrollReveal(){
     // Priverstinis reflow, kad pradinė būsena tikrai pritaikyta prieš animaciją
     void document.body.offsetHeight;
 
+    // PATIKIMAS MECHANIZMAS Nr.1: rankinis scroll'o tikrinimas per
+    // getBoundingClientRect — veikia visada, nepriklausomai nuo to, ar
+    // IntersectionObserver teisingai palaiko pasirinktinį (custom) scroll
+    // konteinerį (kai kuriose WebView versijose jis suveikia tik VIENĄ
+    // kartą, pradiniam būviui, ir nebeatsinaujina vėliau scrollinant).
+    let manualCheckActive=true;
+    function manualCheck(){
+      if(!manualCheckActive || !app) return;
+      const appRect=app.getBoundingClientRect();
+      let allDone=true;
+      sections.forEach(el=>{
+        if(revealedSet.has(el)) return;
+        allDone=false;
+        const r=el.getBoundingClientRect();
+        if(r.top < appRect.bottom-40 && r.bottom > appRect.top){
+          revealSection(el);
+        }
+      });
+      if(allDone){
+        manualCheckActive=false;
+        app.removeEventListener('scroll',onScroll);
+      }
+    }
+    let _rafPending=false;
+    function onScroll(){
+      if(_rafPending) return;
+      _rafPending=true;
+      requestAnimationFrame(()=>{_rafPending=false;manualCheck();});
+    }
+    if(app){
+      app.addEventListener('scroll',onScroll,{passive:true});
+    }
+    // Pirminis patikrinimas iškart (tam, kas jau matoma be scrollinimo)
+    manualCheck();
+
+    // PATIKIMAS MECHANIZMAS Nr.2: IntersectionObserver — jei šiame WebView
+    // jis veikia teisingai, atskleis dar anksčiau/tiksliau nei rankinis scroll
     if('IntersectionObserver' in window && app){
       const obs=new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{
@@ -2136,16 +2176,14 @@ function initScrollReveal(){
       },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
       sections.forEach(el=>obs.observe(el));
       window._resultRevealObs=obs;
-    } else {
-      // IntersectionObserver nepalaikomas — iškart rodome viską (saugus atsarginis variantas)
-      sections.forEach(revealSection);
-      return;
     }
 
-    // APSAUGA: nepriklausomai nuo to, ar observer suveikė, po 10s VISKAS
-    // garantuotai bus matoma — taip turinys niekada neliks paslėptas
+    // APSAUGA: nepriklausomai nuo to, ar bet kuris mechanizmas suveikė,
+    // po 10s VISKAS garantuotai bus matoma
     setTimeout(()=>{
       sections.forEach(revealSection);
+      manualCheckActive=false;
+      if(app) app.removeEventListener('scroll',onScroll);
       if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
     },10000);
   }catch(e){
