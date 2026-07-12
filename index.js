@@ -94,37 +94,16 @@ async function runPalmAnalysis(photos, name) {
     source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data }
   }));
 
-  // Validacija — švelni patikra: atmeta tik akivaizdžiai netinkamus atvejus
-  const validationResponse = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 20,
-      temperature: 0,
-      messages: [{
-        role: 'user',
-        content: [
-          ...imageBlocks,
-          {
-            type: 'text',
-            text: 'Look at this image. Is this a usable photo of a human palm (inner side of a hand, with fingers) for palm reading purposes? This is a real phone camera photo taken by an ordinary person, not a studio shot — be GENEROUSLY tolerant of technical imperfections: shadows, uneven or dim lighting, slight blur, a hand that is not perfectly flat or centered, an angle that is not perfectly frontal, fingers that are close together rather than fully spread, or a fingertip/edge slightly cropped by the frame. Answer YES whenever a palm with fingers is recognizably present and most of the palm area is visible, even if the photo is imperfect in the ways described above. Answer NO only if: the image clearly shows something other than a hand (an object, food, a face, a screen, a document, a blank/dark image), OR a large majority of the hand is missing from frame (e.g. only a wrist, only one finger, or less than roughly half the palm visible), OR it is unmistakably the back of the hand (knuckles visible, no palm lines/creases visible at all). If a palm is plausibly present and you are not sure whether the defects are "minor" or "major", answer YES — only answer NO when you are confident the photo is fundamentally unusable. Answer only YES or NO.'
-          }
-        ]
-      }]
-    })
-  });
-
-  const validationData = await validationResponse.json();
-  const validationText = (validationData.content?.[0]?.text || '').trim().toUpperCase();
-
-  if (!validationText.startsWith('YES')) {
-    throw new Error('NEDELNAS: Nuotraukoje nematome delno. Prašome nufotografuoti atvirą delną.');
-  }
+  // ═══════════════════════════════════════════════════════════════════
+  // IŠJUNGTA: pakartotinė delno validacija analizės viduje.
+  // Priežastis: griežta patikra JAU atliekama endpoint'e /validate-palm
+  // fotografavimo metu (su galimybe iškart bandyti dar kartą, jei
+  // netinka). Kartoti tą patį patikrinimą čia, PO sėkmingo mokėjimo,
+  // yra perteklinis ir tik rizikuoja klaidingai atmesti jau patvirtintą,
+  // apmokėjusį klientą. Delno atpažinimas dabar pilnai patikimas
+  // /validate-palm endpoint'ui — jis lieka griežtas ir sprendžia
+  // vienintelis.
+  // ═══════════════════════════════════════════════════════════════════
 
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
