@@ -2209,12 +2209,13 @@ function renderInsights(containerId, insights){
       <div class="insight-text">${txt}</div>
     </div>
   `).join('');
-  // Animuoti su delay
-  setTimeout(()=>{
-    el.querySelectorAll('.insight-card').forEach((card,i)=>{
-      setTimeout(()=>card.classList.add('visible'),i*150);
-    });
-  },300);
+  // PASTABA: čia anksčiau buvo savarankiška, nuo scroll'inimo nepriklausoma
+  // animacija (setTimeout + .visible klasė), kuri PALEISDAVO korteles
+  // automatiškai per ~2s po displayResult(), nepriklausomai nuo to, ar
+  // vartotojas apskritai prislinko prie šio bloko. Tai KONFLIKTAVO su
+  // initScrollReveal() (žr. žemiau) ir panaikindavo scroll-pagrįstą
+  // animaciją. Dabar VISĄ korteles atskleidimą (įskaitant palaipsnį
+  // "vieną po kitos" efektą) tvarko IŠIMTINAI initScrollReveal().
 }
 
 function displayResult(r){
