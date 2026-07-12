@@ -2090,28 +2090,21 @@ function pillIcon(text){
 // apsaugas (IntersectionObserver su aiškiu root=app-wrap + laiko limito
 // saugiklis), kad turinys NIEKADA neliktų paslėptas, jei kas nors
 // nepavyktų.
+// Palaipsnis "generavimo" efektas rezultatų ekrane — kiekvienas skyrius
+// atsiskleidžia pagal FIKSUOTĄ LAIKO grafiką (ne pagal scroll'inimo
+// poziciją). Priežastis: šiame WebView, kol vartotojo pirštas aktyviai
+// scrollina, naršyklė sulėtina/sustabdo JS laikmačių vykdymą (prioritetą
+// atiduoda sklandžiam scroll'o atvaizdavimui) — todėl BET KOKS
+// scroll-poziciją tikrinantis mechanizmas (IntersectionObserver, rankinis
+// getBoundingClientRect tikrinimas) šiame WebView nepatikimai suveikia
+// per aktyvų scroll'inimą. Laiku pagrįstas grafikas šios problemos
+// visiškai neturi, nes nepriklauso nuo jokios scroll informacijos.
 function initScrollReveal(){
   try{
-    const app=document.getElementById('app-wrap');
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
-    // LAIKINA DIAGNOSTIKA
-    let dbgBox=document.getElementById('__reveal_dbg');
-    if(!dbgBox){
-      dbgBox=document.createElement('div');
-      dbgBox.id='__reveal_dbg';
-      dbgBox.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999999;background:#7a1a9e;color:#fff;font-family:monospace;font-size:10px;padding:6px 8px;max-height:30vh;overflow-y:auto;white-space:pre-wrap;box-shadow:0 -2px 12px rgba(0,0,0,.5)';
-      document.documentElement.appendChild(dbgBox);
-    }
-    const dlog=(msg)=>{const l=document.createElement('div');l.textContent=msg;dbgBox.appendChild(l);if(dbgBox.children.length>40)dbgBox.removeChild(dbgBox.firstChild);};
-    dlog('init: app='+(!!app)+' sections='+sections.length);
-    // /LAIKINA DIAGNOSTIKA
-    const revealedSet=new WeakSet();
 
-    const revealSection=(el,tag)=>{
-      if(revealedSet.has(el)) return;
-      revealedSet.add(el);
-      dlog('REVEAL['+tag+']: '+(el.querySelector('.rs-label')?el.querySelector('.rs-label').textContent:'?'));
+    const revealSection=(el)=>{
       el.style.opacity='1';
       el.style.transform='none';
       el.classList.add('visible');
@@ -2121,10 +2114,11 @@ function initScrollReveal(){
           card.style.opacity='1';
           card.style.transform='none';
           card.classList.add('visible');
-        },160+i*150);
+        },150+i*150);
       });
     };
 
+    // Pradinė (paslėpta) būsena
     sections.forEach(el=>{
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
@@ -2137,60 +2131,15 @@ function initScrollReveal(){
     });
     void document.body.offsetHeight;
 
-    let manualCheckActive=true;
-    let _pollInterval=null;
-    let _pollCount=0;
-    function manualCheck(){
-      if(!manualCheckActive || !app) return;
-      _pollCount++;
-      const appRect=app.getBoundingClientRect();
-      let allDone=true;
-      let unrevealedInfo=[];
-      sections.forEach((el,idx)=>{
-        if(revealedSet.has(el)) return;
-        allDone=false;
-        const r=el.getBoundingClientRect();
-        const hit=(r.top < appRect.bottom-40 && r.bottom > appRect.top);
-        unrevealedInfo.push('#'+idx+' top='+Math.round(r.top)+' bot='+Math.round(r.bottom)+' hit='+hit);
-        if(hit){ revealSection(el,'poll#'+_pollCount); }
-      });
-      if(_pollCount<=3 || _pollCount%10===0){
-        dlog('poll#'+_pollCount+' appRect='+Math.round(appRect.top)+'-'+Math.round(appRect.bottom)+' | '+unrevealedInfo.join(' | '));
-      }
-      if(allDone){
-        manualCheckActive=false;
-        if(_pollInterval) clearInterval(_pollInterval);
-        dlog('VISI ATSKLEISTI po '+_pollCount+' poll');
-      }
-    }
-    manualCheck();
-    if(manualCheckActive){
-      _pollInterval=setInterval(manualCheck,250);
-    }
-    if(app){
-      app.addEventListener('scroll',manualCheck,{passive:true});
-    }
+    // Kiekvienas skyrius atsiskleidžia pagal fiksuotą laiko grafiką
+    sections.forEach((el,i)=>{
+      setTimeout(()=>revealSection(el),400+i*1100);
+    });
 
-    if('IntersectionObserver' in window && app){
-      const obs=new IntersectionObserver((entries)=>{
-        entries.forEach(entry=>{
-          if(entry.isIntersecting){
-            revealSection(entry.target,'IO');
-            obs.unobserve(entry.target);
-          }
-        });
-      },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
-      sections.forEach(el=>obs.observe(el));
-      window._resultRevealObs=obs;
-    }
-
+    // APSAUGA: nepriklausomai nuo bet ko, po 12s VISKAS garantuotai matoma
     setTimeout(()=>{
-      sections.forEach(el=>revealSection(el,'SAFETY-10s'));
-      manualCheckActive=false;
-      clearInterval(_pollInterval);
-      if(app) app.removeEventListener('scroll',manualCheck);
-      if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
-    },10000);
+      sections.forEach(revealSection);
+    },12000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .insight-card').forEach(el=>{
