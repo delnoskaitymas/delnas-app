@@ -2224,7 +2224,36 @@ function initScrollReveal(){
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
 
-    function renderDiag(){}
+    let diagBox=document.getElementById('scroll-diag');
+    if(!diagBox){
+      diagBox=document.createElement('div');
+      diagBox.id='scroll-diag';
+      diagBox.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.94);color:#6f6;font-family:monospace;font-size:9px;padding:6px 8px;z-index:999999;max-height:150px;overflow-y:auto;line-height:1.45;border-top:2px solid #d4a843;white-space:pre-wrap;pointer-events:auto;-webkit-overflow-scrolling:touch';
+      document.body.appendChild(diagBox);
+    }
+    function renderDiag(){
+      try{
+        const vh=window.innerHeight||document.documentElement.clientHeight||0;
+        const scrollTop=app?app.scrollTop:'-';
+        let lines=[];
+        lines.push('[DIAG#'+_instanceNum+' '+new Date().toLocaleTimeString()+'] vh='+vh+' scrollTop='+Math.round(scrollTop)+' layoutStable='+layoutStable+' active='+manualCheckActive);
+        const bySec={};
+        targets.forEach(t=>{
+          bySec[t.secIdx]=bySec[t.secIdx]||{total:0,done:0,firstHiddenTop:null};
+          bySec[t.secIdx].total++;
+          if(revealedSet.has(t.el)) bySec[t.secIdx].done++;
+          else if(bySec[t.secIdx].firstHiddenTop===null){
+            const r=t.el.getBoundingClientRect();
+            bySec[t.secIdx].firstHiddenTop=Math.round(r.top);
+          }
+        });
+        Object.keys(bySec).forEach(idx=>{
+          const s=bySec[idx];
+          lines.push('  sec['+idx+'] '+s.done+'/'+s.total+(s.firstHiddenTop!==null?' | pirmo paslėpto top='+s.firstHiddenTop:' | VISKAS atskleista'));
+        });
+        diagBox.textContent=lines.join('\n');
+      }catch(e){ diagBox.textContent='[DIAG klaida] '+e.message; }
+    }
 
     // SVARBU (šio perrašymo priežastis): anksčiau teksto taškai ir gold
     // kortelės atsiskleisdavo pagal FIKSUOTĄ CSS transition-delay,
