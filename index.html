@@ -2128,12 +2128,16 @@ function initScrollReveal(){
     // Priverstinis reflow, kad pradinė būsena tikrai pritaikyta prieš animaciją
     void document.body.offsetHeight;
 
-    // PATIKIMAS MECHANIZMAS Nr.1: rankinis scroll'o tikrinimas per
-    // getBoundingClientRect — veikia visada, nepriklausomai nuo to, ar
-    // IntersectionObserver teisingai palaiko pasirinktinį (custom) scroll
-    // konteinerį (kai kuriose WebView versijose jis suveikia tik VIENĄ
-    // kartą, pradiniam būviui, ir nebeatsinaujina vėliau scrollinant).
+    // PATIKIMAS MECHANIZMAS: periodinis tikrinimas (setInterval) — VISIŠKAI
+    // nepriklauso nuo 'scroll' įvykių ar requestAnimationFrame patikimumo.
+    // Ankstesnė versija naudojo scroll+requestAnimationFrame throttling'ą,
+    // bet requestAnimationFrame šiame WebView kartais NIEKADA nebesuveikia
+    // po kelių kartų (užstringa), todėl scroll'o tikrinimas nustodavo
+    // veikti po 2-3 blokų. setInterval yra paprastas laikrodžio pagrindu
+    // veikiantis mechanizmas — jis NIEKADA neužstringa, nes nepriklauso
+    // nuo jokio kito naršyklės API grįžtamojo iškvietimo.
     let manualCheckActive=true;
+    let _pollInterval=null;
     function manualCheck(){
       if(!manualCheckActive || !app) return;
       const appRect=app.getBoundingClientRect();
@@ -2148,23 +2152,23 @@ function initScrollReveal(){
       });
       if(allDone){
         manualCheckActive=false;
-        app.removeEventListener('scroll',onScroll);
+        if(_pollInterval) clearInterval(_pollInterval);
       }
-    }
-    let _rafPending=false;
-    function onScroll(){
-      if(_rafPending) return;
-      _rafPending=true;
-      requestAnimationFrame(()=>{_rafPending=false;manualCheck();});
-    }
-    if(app){
-      app.addEventListener('scroll',onScroll,{passive:true});
     }
     // Pirminis patikrinimas iškart (tam, kas jau matoma be scrollinimo)
     manualCheck();
+    // Periodinis tikrinimas kas 250ms, kol visi blokai atskleisti
+    if(manualCheckActive){
+      _pollInterval=setInterval(manualCheck,250);
+    }
+    // Papildomai — ir scroll'o įvykiai, jei jie šiame WebView veikia
+    // (nekenkia, jei jau taip pat tikrinama periodiškai)
+    if(app){
+      app.addEventListener('scroll',manualCheck,{passive:true});
+    }
 
     // PATIKIMAS MECHANIZMAS Nr.2: IntersectionObserver — jei šiame WebView
-    // jis veikia teisingai, atskleis dar anksčiau/tiksliau nei rankinis scroll
+    // jis veikia teisingai, atskleis dar anksčiau/tiksliau nei periodinis tikrinimas
     if('IntersectionObserver' in window && app){
       const obs=new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{
@@ -2183,7 +2187,8 @@ function initScrollReveal(){
     setTimeout(()=>{
       sections.forEach(revealSection);
       manualCheckActive=false;
-      if(app) app.removeEventListener('scroll',onScroll);
+      clearInterval(_pollInterval);
+      if(app) app.removeEventListener('scroll',manualCheck);
       if(window._resultRevealObs){window._resultRevealObs.disconnect();window._resultRevealObs=null;}
     },10000);
   }catch(e){
