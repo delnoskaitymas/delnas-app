@@ -2209,6 +2209,42 @@ function initScrollReveal(){
     if(!sections.length) return;
     const revealedSet=new WeakSet();
 
+    // LAIKINAS DIAGNOSTIKOS SKYDELIS — rodo gyvą, tikrą initScrollReveal
+    // būseną tiesiai ekrane (be dev tools), kad būtų galima tiksliai
+    // diagnozuoti, kodėl scroll'inimu pagrįstas atskleidimas neveikia
+    // realiame įrenginyje. Pašalinti, kai problema išspręsta.
+    let diagBox=document.getElementById('scroll-diag');
+    if(!diagBox){
+      diagBox=document.createElement('div');
+      diagBox.id='scroll-diag';
+      diagBox.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.94);color:#6f6;font-family:monospace;font-size:9px;padding:6px 8px;z-index:999999;max-height:150px;overflow-y:auto;line-height:1.45;border-top:2px solid #d4a843;white-space:pre-wrap;pointer-events:auto;-webkit-overflow-scrolling:touch';
+      document.body.appendChild(diagBox);
+    }
+    let diagErrors=[];
+    window.addEventListener('error',(e)=>{
+      diagErrors.push((e.message||'?')+' @'+(e.filename||'?').split('/').pop()+':'+(e.lineno||'?'));
+      renderDiag();
+    });
+    function renderDiag(){
+      try{
+        const vh=window.innerHeight||document.documentElement.clientHeight||0;
+        const appRect=app?app.getBoundingClientRect():null;
+        const scrollTop=app?app.scrollTop:'-';
+        let lines=[];
+        lines.push('[DIAG '+new Date().toLocaleTimeString()+'] vh='+vh+' app.scrollTop='+scrollTop+' app.rect.h='+(appRect?Math.round(appRect.height):'-'));
+        sections.forEach((el,i)=>{
+          const r=el.getBoundingClientRect();
+          const rev=revealedSet.has(el)?'REVEALED':'hidden';
+          lines.push('  sec['+i+'] '+rev+' top='+Math.round(r.top)+' bot='+Math.round(r.bottom)+' op='+el.style.opacity);
+        });
+        if(diagErrors.length){
+          lines.push('--- JS KLAIDOS ---');
+          diagErrors.slice(-5).forEach(e=>lines.push('  ⚠ '+e));
+        }
+        diagBox.textContent=lines.join('\n');
+      }catch(e){}
+    }
+
     // Teksto taškai (sakiniai) ir gold insight kortelės atsiranda vienas po
     // kito, PRADEDANT nuo momento, kai PATS SKYRIUS realiai atsiskleidžia
     // (t.y. kai vartotojas jį pamato), o ne nuo puslapio įkėlimo momento.
@@ -2326,6 +2362,7 @@ function initScrollReveal(){
     function markLayoutStable(){ layoutStable=true; manualCheck(); }
     setTimeout(markLayoutStable,1200);
     function manualCheck(){
+      renderDiag();
       if(!manualCheckActive) return;
       const vh=window.innerHeight||document.documentElement.clientHeight||800;
       let allDone=true;
@@ -2337,9 +2374,11 @@ function initScrollReveal(){
         if(r.top<vh-40&&r.bottom>0){ revealSection(el); }
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
+      renderDiag();
     }
     let obs=null;
     function startRevealChecks(){
+      renderDiag();
       manualCheck();
       if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
       // Scroll klausytojas TIEK ant #app-wrap (tikrasis scroll'inimo
