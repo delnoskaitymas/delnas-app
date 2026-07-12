@@ -1030,22 +1030,40 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      if(el) el.textContent='+'+(((Date.now()-_diagStartTime)/1000).toFixed(1))+'s | '+text;
    }catch(e){}
  }
- updatePayDiag('pradžia');
+ updatePayDiag('pradžia, laukiama fetchResultsAndNavigate vykdymo');
+ if(!window._payErrorListenerAdded){
+   window._payErrorListenerAdded=true;
+   window.addEventListener('error',(e)=>{
+     updatePayDiag('!!! JS KLAIDA: '+(e.message||'?')+' @'+(e.filename||'?').split('/').pop()+':'+(e.lineno||'?'));
+   });
+   window.addEventListener('unhandledrejection',(e)=>{
+     updatePayDiag('!!! PROMISE REJECTED: '+(e.reason&&e.reason.message||e.reason||'?'));
+   });
+ }
  let _navigated=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
    _navigated=true;
-   console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 130s');
-   go('s-result');
-   setTimeout(()=>{
-     const rc=document.getElementById('r-char');
-     if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
-     const rn=document.getElementById('res-name');
-     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
-       el.style.opacity='1';el.style.transform='none';
-     });
-   },50);
+   try{
+     updatePayDiag('WATCHDOG SUVEIKĖ po 130s — priverstinis perjungimas');
+     console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 130s');
+     go('s-result');
+     setTimeout(()=>{
+       const rc=document.getElementById('r-char');
+       if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+       const rn=document.getElementById('res-name');
+       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+       document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
+         el.style.opacity='1';el.style.transform='none';
+       });
+     },50);
+   }catch(watchdogErr){
+     // Net jei watchdog'o VIDUJE kas nors nepavyktų, bent jau pažymime tai
+     // diagnostikoje, kad žinotume — problema NE tame, jog watchdog
+     // nesuveikė, o kad jo VYKDYMAS klaidingas.
+     try{ updatePayDiag('WATCHDOG KLAIDA: '+watchdogErr.message); }catch(e2){}
+     console.error('watchdog klaida:',watchdogErr);
+   }
  },130000);
  try{
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
@@ -1084,6 +1102,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
               <span style="width:12px;height:12px;border:1.5px solid rgba(212,168,67,.35);border-top-color:#d4a843;border-radius:50%;display:inline-block;animation:spin .8s linear infinite"></span>
               Ruošiame tavo asmeninę analizę...
             </div>
+            <div id="pay-diag" style="margin-top:6px;font-size:9px;color:rgba(212,168,67,.45);font-family:monospace;white-space:pre-wrap"></div>
           </div>
           </div>`;
         requestAnimationFrame(()=>{
