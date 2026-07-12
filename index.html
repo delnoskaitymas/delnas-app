@@ -1006,6 +1006,20 @@ function bringPaySuccessIntoView(){
 }
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
+ // Pagalbinė funkcija: fetch() SU AIŠKIU LAIKO LIMITU. Standartinis fetch()
+ // gali laukti NERIBOTĄ laiką, jei tinklo užklausa "pakimba" (serverio
+ // triktis, nutrūkęs ryšys be klaidos) — tai reiškia, kad VIENAS pakibęs
+ // užklausimas galėjo laikyti visą procesą įstrigusį, nepriklausomai nuo
+ // 130s watchdog (nes watchdog tik VĖLIAU priverstinai perjungia ekraną,
+ // bet nesustabdo pačios pakibusios užklausos). Su AbortController galime
+ // garantuoti, kad KIEKVIENA atskira užklausa turi savo maksimalų laiką.
+ function fetchWithTimeout(url,options,timeoutMs){
+   timeoutMs=timeoutMs||20000;
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),timeoutMs);
+   return fetch(url,Object.assign({},options,{signal:controller.signal}))
+     .finally(()=>clearTimeout(timer));
+ }
  let _navigated=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
@@ -1084,11 +1098,11 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     const isPI=sessionId&&sessionId.startsWith('pi_');
     let token='',userName=window._userName||'',userEmail=window._userEmail||'';
     if(isPI){
-      const vr=await fetch('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail})});
+      const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail})},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
     } else {
-      const vr=await fetch('/verify-payment?session_id='+sessionId);
+      const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId,{},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
     }
@@ -1109,11 +1123,20 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // pasiteirauja, ar originali (fone vykstanti) analizė jau baigta.
     let ad=null;
     for(let attempt=0;attempt<20;attempt++){
-      const ar=await fetch('/analyze-palm',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
-      });
-      ad=await ar.json();
+      try{
+        const ar=await fetchWithTimeout('/analyze-palm',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
+        },20000);
+        ad=await ar.json();
+      }catch(fetchErr){
+        // Vienas bandymas "pakibo" arba viršijo laiko limitą — traktuojame
+        // kaip "dar nebaigta" ir bandome dar kartą, o NE kaip galutinę
+        // klaidą (kitaip vienas laikinas tinklo trikdis nutrauktų visą
+        // procesą, nors fono analizė gali būti puikiai vykstanti).
+        console.error('analyze-palm bandymo klaida (laiko limitas/tinklas), bandome dar kartą:',fetchErr);
+        ad={pending:true};
+      }
       if(ad&&ad.pending){
         await new Promise(r=>setTimeout(r,3000));
         continue;
