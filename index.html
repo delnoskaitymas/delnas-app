@@ -987,7 +987,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
    _navigated=true;
-   console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 80s');
+   console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 130s');
    go('s-result');
    setTimeout(()=>{
      const rc=document.getElementById('r-char');
@@ -998,7 +998,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
        el.style.opacity='1';el.style.transform='none';
      });
    },50);
- },80000);
+ },130000);
  try{
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
