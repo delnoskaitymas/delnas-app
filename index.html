@@ -2132,18 +2132,30 @@ function pillIcon(text){
 // atiduoda sklandžiam scroll'o atvaizdavimui) — todėl BET KOKS
 // scroll-poziciją tikrinantis mechanizmas (IntersectionObserver, rankinis
 // getBoundingClientRect tikrinimas) šiame WebView nepatikimai suveikia
-// per aktyvų scroll'inimą. Laiku pagrįstas grafikas šios problemos
-// visiškai neturi, nes nepriklauso nuo jokios scroll informacijos.
+// per aktyvų scroll'inimą (žr. komentarą apie setInterval patikimumą žemiau).
+//
+// PASTABA (svarbi pamoka): ankstesnėje versijoje čia buvo naudojamas
+// GRYNAI LAIKU pagrįstas grafikas (kiekvienas skyrius atsiskleisdavo praėjus
+// fiksuotam laikui nuo puslapio įkėlimo, NEPRIKLAUSOMAI nuo to, ar vartotojas
+// jį jau matė). Tai sukėlė NAUJĄ problemą: kadangi vartotojai paprastai
+// skaito 1-ą skyrių ILGIAU nei kitiems skyriams skirtas laiko tarpas, kol jie
+// nuslenka žemyn — 2-7 skyriai JAU BŪNA pilnai atsiskleidę PRIEŠ tai, kai
+// vartotojas juos pamato. Vizualiai tai atrodo taip, lyg "tik pirmas skyrius
+// animuojasi, kiti — ne" (nors iš tikrųjų jie tiesiog animavosi NEMATOMI).
+// Todėl grąžiname PATIKRINTĄ scroll'inimu pagrįstą sprendimą (žr. senesnę
+// šio failo istoriją) — kiekvienas skyrius atsiskleidžia TADA, kai jis
+// REALIAI patenka į matomą sritį, o ne pagal abstraktų laikrodį.
 function initScrollReveal(){
   try{
+    const app=document.getElementById('app-wrap');
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
+    const revealedSet=new WeakSet();
 
-    const revealSection=(el)=>{
-      el.style.opacity='1';
-      el.style.transform='none';
-      el.classList.add('visible');
-      // 1) Teksto bloko taškai (sakiniai) atsiranda vienas po kito
+    // Teksto taškai (sakiniai) ir gold insight kortelės atsiranda vienas po
+    // kito, PRADEDANT nuo momento, kai PATS SKYRIUS realiai atsiskleidžia
+    // (t.y. kai vartotojas jį pamato), o ne nuo puslapio įkėlimo momento.
+    const revealPointsAndCards=(el)=>{
       const points=el.querySelectorAll('.rs-body p');
       const pointStep=160;
       points.forEach((p,i)=>{
@@ -2151,12 +2163,10 @@ function initScrollReveal(){
           p.style.opacity='1';
           p.style.transform='none';
           p.classList.add('visible');
-        },120+i*pointStep);
+        },80+i*pointStep);
       });
-      // 2) Auksinės (gold) insight kortelės atsiranda vienas po kito,
-      //    PO to, kai visi teksto bloko taškai jau atsiskleidę
       const cards=el.querySelectorAll('.insight-card');
-      const cardsStart=120+points.length*pointStep+220;
+      const cardsStart=80+points.length*pointStep+220;
       cards.forEach((card,i)=>{
         setTimeout(()=>{
           card.style.opacity='1';
@@ -2164,6 +2174,15 @@ function initScrollReveal(){
           card.classList.add('visible');
         },cardsStart+i*150);
       });
+    };
+
+    const revealSection=(el)=>{
+      if(revealedSet.has(el)) return;
+      revealedSet.add(el);
+      el.style.opacity='1';
+      el.style.transform='none';
+      el.classList.add('visible');
+      revealPointsAndCards(el);
     };
 
     // Pradinė (paslėpta) būsena
@@ -2184,20 +2203,50 @@ function initScrollReveal(){
     });
     void document.body.offsetHeight;
 
-    // Kiekvienas skyrius atsiskleidžia pagal fiksuotą laiko grafiką
-    sections.forEach((el,i)=>{
-      setTimeout(()=>revealSection(el),400+i*1100);
-    });
+    // TRIGUBA APSAUGA (patikrinta senesnėje šio failo versijoje):
+    // 1) setInterval periodiškai tikrina kiekvieno skyriaus poziciją per
+    //    getBoundingClientRect() — PAGRINDINIS, patikimiausias mechanizmas
+    //    šiame WebView (nepriklauso nuo scroll įvykių patikimumo).
+    // 2) scroll event listener — papildomas, greitesnis atsakas.
+    // 3) IntersectionObserver — papildomas, jei WebView jį patikimai palaiko.
+    let manualCheckActive=true;
+    let _pollInterval=null;
+    function manualCheck(){
+      if(!manualCheckActive||!app) return;
+      const appRect=app.getBoundingClientRect();
+      let allDone=true;
+      sections.forEach(el=>{
+        if(revealedSet.has(el)) return;
+        allDone=false;
+        const r=el.getBoundingClientRect();
+        if(r.top<appRect.bottom-40&&r.bottom>appRect.top){ revealSection(el); }
+      });
+      if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
+    }
+    manualCheck();
+    if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
+    if(app) app.addEventListener('scroll',manualCheck,{passive:true});
+    let obs=null;
+    if('IntersectionObserver' in window&&app){
+      obs=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{ if(entry.isIntersecting) revealSection(entry.target); });
+      },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+      sections.forEach(el=>obs.observe(el));
+    }
 
     // APSAUGA (bulletproof): kai kuriose Android WebView (MIUI) versijose CSS
-    // 'transition' analogiškai kaip ir 'animation' gali likti „įstrigusi" ir
-    // niekada neužsibaigti — tokiu atveju vien opacity='1' nustatymas
-    // NEPADEDA, nes vykstanti transition ją perrašo atgal. Reikia PIRMA
-    // nutraukti pačią transition (transition:none), TADA priverstinai
-    // nustatyti opacity (identiškas metodas kaip go() funkcijos
-    // forceVisible). Kartojame KELIS kartus skirtingu laiku (kaip ir go()),
-    // kad garantuotai pagautume net jei viena bandymo akimirka nepavyktų.
-    const forceRevealAll=()=>{
+    // 'transition' gali likti „įstrigusi" ir niekada neužsibaigti — tokiu
+    // atveju vien opacity='1' nustatymas NEPADEDA, nes vykstanti transition
+    // ją perrašo atgal. Reikia PIRMA nutraukti pačią transition
+    // (transition:none), TADA priverstinai nustatyti opacity (identiškas
+    // metodas kaip go() funkcijos forceVisible). Šis absoliutus saugiklis
+    // (30s) užtikrina, kad turinys TIKRAI taps matomas, net jei vartotojas
+    // apskritai nescrollintų arba scroll'o aptikimas kažkodėl neveiktų.
+    setTimeout(()=>{
+      manualCheckActive=false;
+      if(_pollInterval) clearInterval(_pollInterval);
+      if(app) app.removeEventListener('scroll',manualCheck);
+      if(obs){obs.disconnect();obs=null;}
       document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
         el.style.transition='none';
         el.style.animation='none';
@@ -2205,10 +2254,7 @@ function initScrollReveal(){
         el.style.transform='none';
         el.classList.add('visible');
       });
-    };
-    setTimeout(forceRevealAll,11000);
-    setTimeout(forceRevealAll,14000);
-    setTimeout(forceRevealAll,18000);
+    },30000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
