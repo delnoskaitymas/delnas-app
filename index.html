@@ -2214,7 +2214,23 @@ function initScrollReveal(){
         card.style.transform='translateY(14px)';
       });
     });
-    void document.body.offsetHeight;
+
+    // SVARBU: jei iškart po pradinės (paslėptos) būsenos nustatymo TAME
+    // PAČIAME JS cikle iškviestume atskleidimą (pvz. pirmam skyriui, kuris
+    // jau matomas ekrane be scroll'inimo), naršyklė gali "suvienyti" abu
+    // stiliaus pakeitimus į vieną kadrą IR NIEKADA realiai nenupiešti
+    // pradinės opacity:0 būsenos — CSS transition tada tiesiog nesuveikia
+    // (elementas iš karto atsiranda be animacijos). Vien `void
+    // document.body.offsetHeight` (layout reflow) šito NEGARANTUOJA — reikia
+    // tikro PAINT kadro. DVIGUBAS requestAnimationFrame yra standartinis,
+    // patikimas būdas užtikrinti, kad naršyklė realiai nupiešė "paslėptą"
+    // būseną prieš pereinant į "matoma", kad transition VISADA suveiktų —
+    // įskaitant PIRMĄ, iškart matomą skyrių.
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        startRevealChecks();
+      });
+    });
 
     // TRIGUBA APSAUGA (patikrinta senesnėje šio failo versijoje):
     // 1) setInterval periodiškai tikrina kiekvieno skyriaus poziciją per
@@ -2236,15 +2252,17 @@ function initScrollReveal(){
       });
       if(allDone){ manualCheckActive=false; if(_pollInterval) clearInterval(_pollInterval); }
     }
-    manualCheck();
-    if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
-    if(app) app.addEventListener('scroll',manualCheck,{passive:true});
     let obs=null;
-    if('IntersectionObserver' in window&&app){
-      obs=new IntersectionObserver((entries)=>{
-        entries.forEach(entry=>{ if(entry.isIntersecting) revealSection(entry.target); });
-      },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
-      sections.forEach(el=>obs.observe(el));
+    function startRevealChecks(){
+      manualCheck();
+      if(manualCheckActive) _pollInterval=setInterval(manualCheck,220);
+      if(app) app.addEventListener('scroll',manualCheck,{passive:true});
+      if('IntersectionObserver' in window&&app){
+        obs=new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{ if(entry.isIntersecting) revealSection(entry.target); });
+        },{root:app,threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+        sections.forEach(el=>obs.observe(el));
+      }
     }
 
     // APSAUGA (bulletproof): kai kuriose Android WebView (MIUI) versijose CSS
