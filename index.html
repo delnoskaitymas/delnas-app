@@ -1020,6 +1020,17 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    return fetch(url,Object.assign({},options,{signal:controller.signal}))
      .finally(()=>clearTimeout(timer));
  }
+ // Diagnostikos indikatorius — rodo GYVĄ tikslią būseną tiesiai ekrane, kad
+ // esant strigimui būtų iškart aišku KUR tiksliai procesas sustojo, be
+ // jokių dev tools ar serverio logų. Laikina priemonė šiai problemai rasti.
+ const _diagStartTime=Date.now();
+ function updatePayDiag(text){
+   try{
+     const el=document.getElementById('pay-diag');
+     if(el) el.textContent='+'+(((Date.now()-_diagStartTime)/1000).toFixed(1))+'s | '+text;
+   }catch(e){}
+ }
+ updatePayDiag('pradžia');
  let _navigated=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
@@ -1071,8 +1082,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           <div id="pay-still-working" style="text-align:center;opacity:0;transition:opacity .6s ease;margin-top:4px">
             <div style="display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.65)">
               <span style="width:12px;height:12px;border:1.5px solid rgba(212,168,67,.35);border-top-color:#d4a843;border-radius:50%;display:inline-block;animation:spin .8s linear infinite"></span>
-              Ruošiame tavo asmeninę analizę...
+              Ruošiame tavo asmeninę analizę... <span style="opacity:.4;font-size:9px">[build 0713-A]</span>
             </div>
+            <div id="pay-diag" style="margin-top:6px;font-size:10px;color:rgba(212,168,67,.4);font-family:monospace"></div>
+          </div>
           </div>`;
         requestAnimationFrame(()=>{
           paySection.style.transition='opacity .4s ease';
@@ -1098,15 +1111,19 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     const isPI=sessionId&&sessionId.startsWith('pi_');
     let token='',userName=window._userName||'',userEmail=window._userEmail||'';
     if(isPI){
+      updatePayDiag('tikrinu mokėjimą (PI)...');
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail})},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
+      updatePayDiag('tikrinu mokėjimą (session)...');
       const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId,{},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     }
-    if(!token) throw new Error('Mokėjimas nepatvirtintas');
+    if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
     window.palmToken=token;window.userName=userName;window._userName=userName;
 
     // 3. Siųsti analizę - nuotraukos iš visų šaltinių
@@ -1115,6 +1132,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     const photoData=[];
     if(p1&&p1.length>100) photoData.push({type:'image/jpeg',data:p1.includes(',')?p1.split(',')[1]:p1});
     if(p2&&p2.length>100) photoData.push({type:'image/jpeg',data:p2.includes(',')?p2.split(',')[1]:p2});
+    updatePayDiag('nuotraukos:'+photoData.length+' sessionId:'+(window.bgSessionId?'yra':'NĖRA'));
 
     // Mandagus pakartotinio bandymo ciklas: jei fono analizė dar nebaigta,
     // backend'as grąžina {pending:true} (NE klaidą) — laukiame ir bandome
@@ -1123,18 +1141,21 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // pasiteirauja, ar originali (fone vykstanti) analizė jau baigta.
     let ad=null;
     for(let attempt=0;attempt<20;attempt++){
+      updatePayDiag('analizė, bandymas #'+(attempt+1)+'...');
       try{
         const ar=await fetchWithTimeout('/analyze-palm',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
         },20000);
         ad=await ar.json();
+        updatePayDiag('atsakymas #'+(attempt+1)+': '+(ad&&ad.pending?'dar ruošiama':(ad&&ad.error?'KLAIDA: '+ad.error:'gauta')));
       }catch(fetchErr){
         // Vienas bandymas "pakibo" arba viršijo laiko limitą — traktuojame
         // kaip "dar nebaigta" ir bandome dar kartą, o NE kaip galutinę
         // klaidą (kitaip vienas laikinas tinklo trikdis nutrauktų visą
         // procesą, nors fono analizė gali būti puikiai vykstanti).
         console.error('analyze-palm bandymo klaida (laiko limitas/tinklas), bandome dar kartą:',fetchErr);
+        updatePayDiag('bandymas #'+(attempt+1)+' klaida: '+(fetchErr&&fetchErr.name||'nežinoma'));
         ad={pending:true};
       }
       if(ad&&ad.pending){
