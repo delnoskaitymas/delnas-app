@@ -1020,26 +1020,9 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    return fetch(url,Object.assign({},options,{signal:controller.signal}))
      .finally(()=>clearTimeout(timer));
  }
- // Diagnostikos indikatorius — rodo GYVĄ tikslią būseną tiesiai ekrane, kad
- // esant strigimui būtų iškart aišku KUR tiksliai procesas sustojo, be
- // jokių dev tools ar serverio logų. Laikina priemonė šiai problemai rasti.
- const _diagStartTime=Date.now();
- function updatePayDiag(text){
-   try{
-     const el=document.getElementById('pay-diag');
-     if(el) el.textContent='+'+(((Date.now()-_diagStartTime)/1000).toFixed(1))+'s | '+text;
-   }catch(e){}
- }
- updatePayDiag('pradžia, laukiama fetchResultsAndNavigate vykdymo');
- if(!window._payErrorListenerAdded){
-   window._payErrorListenerAdded=true;
-   window.addEventListener('error',(e)=>{
-     updatePayDiag('!!! JS KLAIDA: '+(e.message||'?')+' @'+(e.filename||'?').split('/').pop()+':'+(e.lineno||'?'));
-   });
-   window.addEventListener('unhandledrejection',(e)=>{
-     updatePayDiag('!!! PROMISE REJECTED: '+(e.reason&&e.reason.message||e.reason||'?'));
-   });
- }
+ // Diagnostika išspręsta ir patvirtinta - pašalinta. updatePayDiag paliktas
+ // kaip tuščia (no-op) funkcija, kad nereikėtų trinti kiekvieno iškvietimo atskirai.
+ function updatePayDiag(){}
  let _navigated=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
@@ -1106,7 +1089,6 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
               <span style="width:12px;height:12px;border:1.5px solid rgba(212,168,67,.35);border-top-color:#d4a843;border-radius:50%;display:inline-block;animation:spin .8s linear infinite"></span>
               Ruošiame tavo asmeninę analizę...
             </div>
-            <div id="pay-diag" style="margin-top:6px;font-size:9px;color:rgba(212,168,67,.45);font-family:monospace;white-space:pre-wrap"></div>
           </div>
           </div>`;
         requestAnimationFrame(()=>{
@@ -2248,65 +2230,14 @@ function initScrollReveal(){
       window._scrollRevealCleanup=null;
     }
     window._scrollRevealCallCount=(window._scrollRevealCallCount||0)+1;
-    const _instanceNum=window._scrollRevealCallCount;
     const app=document.getElementById('app-wrap');
     const sections=Array.from(document.querySelectorAll('#s-result .rs-reveal'));
     if(!sections.length) return;
 
-    let diagBox=document.getElementById('scroll-diag');
-    if(!diagBox){
-      diagBox=document.createElement('div');
-      diagBox.id='scroll-diag';
-      diagBox.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.94);color:#6f6;font-family:monospace;font-size:9px;padding:6px 8px;z-index:999999;max-height:150px;overflow-y:auto;line-height:1.45;border-top:2px solid #d4a843;white-space:pre-wrap;pointer-events:auto;-webkit-overflow-scrolling:touch';
-      document.body.appendChild(diagBox);
-    }
-    // Globalus klaidų gaudytuvas — fiksuoja BET KOKIĄ nepagautą JS klaidą
-    // BET KUR puslapyje (ne tik šioje funkcijoje), nes tokia klaida gali
-    // sustabdyti šio konkretaus intervalo tolimesnį vykdymą.
-    window._diagErrors=window._diagErrors||[];
-    if(!window._diagErrorListenerAdded){
-      window._diagErrorListenerAdded=true;
-      window.addEventListener('error',(e)=>{
-        window._diagErrors.push(new Date().toLocaleTimeString()+' '+(e.message||'?')+' @'+(e.filename||'?').split('/').pop()+':'+(e.lineno||'?'));
-      });
-      window.addEventListener('unhandledrejection',(e)=>{
-        window._diagErrors.push(new Date().toLocaleTimeString()+' PROMISE REJECTED: '+(e.reason&&e.reason.message||e.reason||'?'));
-      });
-    }
-    // Nepriklausomas "širdies plakimo" laikmatis — VISIŠKAI atskiras nuo
-    // manualCheck(). Jei ŠIS irgi sustotų atsinaujinti, tai reikštų, kad
-    // apskritai VISI šios instancijos JS laikmačiai (ne tik manualCheck)
-    // nustojo veikti — tai leis atskirti, ar problema yra manualCheck()
-    // viduje, ar visiškai kitame lygmenyje.
-    let _heartbeat=0;
-    const _heartbeatIv=setInterval(()=>{ _heartbeat++; },500);
-    function renderDiag(){
-      try{
-        const vh=window.innerHeight||document.documentElement.clientHeight||0;
-        const scrollTop=app?app.scrollTop:'-';
-        let lines=[];
-        lines.push('[DIAG#'+_instanceNum+' '+new Date().toLocaleTimeString()+'] vh='+vh+' scrollTop='+Math.round(scrollTop)+' layoutStable='+layoutStable+' active='+manualCheckActive+' hb='+_heartbeat+' ticks='+_checkTicks);
-        const bySec={};
-        targets.forEach(t=>{
-          bySec[t.secIdx]=bySec[t.secIdx]||{total:0,done:0,firstHiddenTop:null};
-          bySec[t.secIdx].total++;
-          if(revealedSet.has(t.el)) bySec[t.secIdx].done++;
-          else if(bySec[t.secIdx].firstHiddenTop===null){
-            const r=t.el.getBoundingClientRect();
-            bySec[t.secIdx].firstHiddenTop=Math.round(r.top);
-          }
-        });
-        Object.keys(bySec).forEach(idx=>{
-          const s=bySec[idx];
-          lines.push('  sec['+idx+'] '+s.done+'/'+s.total+(s.firstHiddenTop!==null?' | pirmo paslėpto top='+s.firstHiddenTop:' | VISKAS atskleista'));
-        });
-        if(window._diagErrors.length){
-          lines.push('--- JS KLAIDOS ---');
-          window._diagErrors.slice(-4).forEach(e=>lines.push('  ⚠ '+e));
-        }
-        diagBox.textContent=lines.join('\n');
-      }catch(e){ diagBox.textContent='[DIAG klaida] '+e.message; }
-    }
+    // Diagnostikos skydelis (naudotas derinant scroll-reveal problemą)
+    // pašalintas — problema išspręsta ir patvirtinta. renderDiag() paliktas
+    // kaip tuščia funkcija, kad nereikėtų trinti kiekvieno iškvietimo atskirai.
+    function renderDiag(){}
 
     // SVARBU (šio perrašymo priežastis): anksčiau teksto taškai ir gold
     // kortelės atsiskleisdavo pagal FIKSUOTĄ CSS transition-delay,
@@ -2395,7 +2326,6 @@ function initScrollReveal(){
     // 3) IntersectionObserver — papildomas, jei WebView jį patikimai palaiko.
     let manualCheckActive=true;
     let _pollInterval=null;
-    let _checkTicks=0;
     // SVARBU (struktūrinė apsauga): jei puslapio atidarymo momentu
     // išdėstymas laikinai būna KITOKS nei galutinis (pvz. šriftai dar
     // nepilnai pasikrovę), PIRMAS patikrinimas gali KLAIDINGAI nuspręsti,
@@ -2427,7 +2357,6 @@ function initScrollReveal(){
     }
     setTimeout(markLayoutStable,1200);
     function manualCheck(){
-      _checkTicks++;
       renderDiag();
       if(!manualCheckActive) return;
       const vh=window.innerHeight||document.documentElement.clientHeight||800;
@@ -2520,7 +2449,6 @@ function initScrollReveal(){
     function teardown(forceVisible){
       manualCheckActive=false;
       if(_pollInterval) clearInterval(_pollInterval);
-      if(_heartbeatIv) clearInterval(_heartbeatIv);
       if(app) app.removeEventListener("scroll",markLayoutStable);
       window.removeEventListener("scroll",markLayoutStable);
       if(obs){obs.disconnect();obs=null;}
