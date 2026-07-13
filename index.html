@@ -2556,7 +2556,7 @@ function displayResult(r){
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:8px">
+      <div class="insight-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:8px">
         <div style="width:28px;height:28px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIcon(d)}</div>
         <span style="font-size:13px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.02em">${d}</span>
       </div>
