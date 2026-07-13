@@ -86,6 +86,72 @@ const mailer = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
 });
 
+// --- JSON taisymo pagalbinė funkcija ---
+// PRIEŽASTIS: AI modelis generuoja JSON, kuriame ilgi laisvo teksto laukai
+// (7-9 sakinių pastraipos) kartais turi NEAPSAUGOTĄ kabutės ženklą (") —
+// pvz. kai tekstas cituoja frazę kabutėse — kuris sugadina JSON sintaksę
+// (parseris tą kabutę palaiko eilutės PABAIGA, o po jos einantis tekstas
+// tampa "netikėtu"). Tai buvo realiai stebėta gamybos serverio kluadoje:
+// "Expected ',' or '}' after property value in JSON at position X".
+// SPRENDIMAS: einame per simbolius po vieną, sekame ar esame JSON eilutės
+// (string) viduje; radę kabutę TOS eilutės viduje, PAŽIŪRIME, kas eina po
+// jos (praleidus tarpus) — jei tai NĖRA JSON struktūrinis simbolis
+// (, } ] : arba teksto pabaiga), reiškia ši kabutė yra TURINIO dalis, o
+// ne tikra eilutės pabaiga — tokiu atveju ją PAKEIČIAME į \" (apsaugotą).
+// Taip pat apsaugome neapsaugotus naujos eilutės simbolius eilučių viduje
+// (irgi negalimi grynajame JSON). Naudojama TIK kaip atsarginis variantas,
+// jei įprastas JSON.parse() nepavyksta iš karto.
+function repairJsonString(text) {
+  let out = '';
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (ch === '\\') {
+        // Jau apsaugotas simbolis — kopijuojame abu kaip yra
+        out += ch + (text[i + 1] || '');
+        i++;
+        continue;
+      }
+      if (ch === '"') {
+        let j = i + 1;
+        while (j < text.length && /\s/.test(text[j])) j++;
+        const next = text[j];
+        const isRealEnd = next === ',' || next === '}' || next === ']' || next === ':' || j >= text.length;
+        if (isRealEnd) {
+          inString = false;
+          out += ch;
+        } else {
+          out += '\\"';
+        }
+        continue;
+      }
+      if (ch === '\n') { out += '\\n'; continue; }
+      if (ch === '\r') { continue; }
+      out += ch;
+    } else {
+      if (ch === '"') inString = true;
+      out += ch;
+    }
+  }
+  return out;
+}
+
+// Bando JSON.parse() įprastai; jei nepavyksta — bando pataisytą versiją.
+// Jei ir tai nepavyksta, meta ORIGINALIĄ klaidą (informatyvesnė log'ams).
+function parseJsonLenient(text) {
+  try {
+    return JSON.parse(text);
+  } catch (originalErr) {
+    try {
+      return JSON.parse(repairJsonString(text));
+    } catch (repairErr) {
+      console.error('[parseJsonLenient] taisymas irgi nepavyko:', repairErr.message);
+      throw originalErr;
+    }
+  }
+}
+
 // --- Pagrindinė Claude analizės funkcija ---
 async function runPalmAnalysis(photos, name) {
 
@@ -159,7 +225,7 @@ Grąžink TIKTAI JSON:
   try {
     const step1Text = step1Data.content.map(b => b.text || '').join('');
     const jsonMatch = step1Text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) bruozai = JSON.parse(jsonMatch[0]).bruozai || [];
+    if (jsonMatch) bruozai = parseJsonLenient(jsonMatch[0]).bruozai || [];
   } catch(e) {
     console.warn('Žingsnis 1 JSON klaida:', e.message);
   }
@@ -255,7 +321,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('JSON nerastas');
 
-  const result = JSON.parse(jsonMatch[0]);
+  const result = parseJsonLenient(jsonMatch[0]);
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
   return result;
