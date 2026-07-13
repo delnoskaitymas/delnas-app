@@ -21,7 +21,7 @@ body{min-height:100vh;min-height:100dvh;padding-top:env(safe-area-inset-top);pad
 :root{
   --bg:#0d0d0d;--g2:#120b28;--g3:#1a1035;
   --gold:#d4a843;--gold2:#f0c96a;--gold3:#a07828;
-  --text:#f5eed8;--muted:rgba(245,238,216,0.6);--faint:rgba(245,238,216,0.22);
+  --text:#c7c7c7;--muted:rgba(199,199,199,0.6);--faint:rgba(199,199,199,0.22);
   --border:rgba(212,168,67,0.2);--border2:rgba(212,168,67,0.42);
   --surf:rgba(255,255,255,0.03);--surf2:rgba(255,255,255,0.06);
 }
@@ -75,7 +75,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-opt.sel .pay-opt-check{background:var(--gold);border-color:var(--gold);color:#0d0d0d}
 .load-wrap{padding:60px 16px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;height:100vh;height:100dvh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:100dvh;max-height:calc(var(--rvh,1vh) * 100);box-sizing:border-box;overflow:hidden}
 .load-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:8px}
-.load-sub{font-size:13px;color:rgba(245,238,216,.82);font-weight:400;letter-spacing:.01em}
+.load-sub{font-size:13px;color:rgba(199,199,199,.82);font-weight:400;letter-spacing:.01em}
 .oracle-wrap{width:150px;height:150px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .oracle-ring{position:absolute;border-radius:50%;border:1.5px solid}
 .or1{inset:0;border-color:rgba(212,168,67,.18);animation:sp 20s linear infinite}
@@ -96,7 +96,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
 .ls.done .ls-icon{background:rgba(212,168,67,.18);border-color:var(--gold)}
-.ls-text{flex:1;text-align:left;font-size:11.5px;line-height:1.35;color:rgba(245,238,216,.3);font-weight:400;font-style:normal}
+.ls-text{flex:1;text-align:left;font-size:11.5px;line-height:1.35;color:rgba(199,199,199,.3);font-weight:400;font-style:normal}
 .ls.active .ls-text{color:var(--gold2);font-weight:500}
 .ls.done .ls-text{color:var(--gold2);font-weight:600}
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
@@ -163,7 +163,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
-.cam-sub{color:rgba(245,238,216,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
+.cam-sub{color:rgba(199,199,199,.45);font-size:12px;text-align:center;margin-top:8px;padding:0 32px;line-height:1.5;z-index:10;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em}
 .cam-vp-border{position:absolute;inset:0;border-radius:18px;border:1.5px solid rgba(212,168,67,.3);pointer-events:none;z-index:999}
 .cam-viewport{position:relative;margin-top:6px;width:calc(100vw - 32px);max-width:340px;max-height:calc(100dvh - 235px);flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#0a0a0a;z-index:10;box-shadow:none}
 #cam-video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s}
@@ -205,7 +205,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pay-anim-item{opacity:0;transform:translateY(14px)}
 .pay-anim-item.in{opacity:1;transform:translateY(0);transition:opacity .55s cubic-bezier(.25,.46,.45,.94),transform .55s cubic-bezier(.25,.46,.45,.94)}
 .pm-group{background:rgba(212,168,67,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;overflow:hidden;margin-bottom:0}
-.pm-row{width:100%;padding:11px 12px;border:none;background:transparent;color:rgba(245,238,216,.72);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;position:relative;transition:background .25s ease,color .25s ease}
+.pm-row{width:100%;padding:11px 12px;border:none;background:transparent;color:rgba(199,199,199,.72);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;position:relative;transition:background .25s ease,color .25s ease}
 .pm-row+.pm-row{border-top:.5px solid rgba(212,168,67,.1)}
 .pm-row:active{background:rgba(212,168,67,.05)}
 .pm-row .pm-ico{flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -220,7 +220,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.28);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(212,168,67,.3),inset 0 1px 0 rgba(255,255,255,.12);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.15);box-shadow:none}
 .pm-ls-name{font-size:13px;font-weight:700;color:#f5d97a;letter-spacing:.02em;text-shadow:0 0 10px rgba(212,168,67,.5);transition:all .25s ease}
-.pm-ls.dim .pm-ls-name{color:rgba(245,238,216,.35);text-shadow:none}
+.pm-ls.dim .pm-ls-name{color:rgba(199,199,199,.35);text-shadow:none}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 @keyframes camGoldGlow{0%,100%{box-shadow:inset 0 0 0 2px rgba(212,168,67,0),0 0 0 rgba(212,168,67,0)}50%{box-shadow:inset 0 0 0 2px rgba(212,168,67,.5),0 0 20px rgba(212,168,67,.2)}}
@@ -233,10 +233,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   50%{box-shadow:0 0 22px rgba(212,168,67,.6),0 0 40px rgba(212,168,67,.2);opacity:.85}
 }
 @keyframes ls7textblink{
-  0%,100%{color:rgba(245,238,216,.95)}
+  0%,100%{color:rgba(199,199,199,.95)}
   50%{color:#fce97a}
 }
-@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(245,238,216,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}
+@keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(199,199,199,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}
 /* Slėpti Stripe generuojamus nukreipimo pranešimus iframe viduje */
 #stripe-payment-element .p-BankRedirectSection,
 #stripe-payment-element [class*="BankRedirect"],
@@ -254,15 +254,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Tavo pasitenkinimo garantija</h3>
     </div>
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px">
-      <p style="font-size:11.5px;color:rgba(245,238,216,.78);line-height:1.65;margin:0 0 10px">Mes esame tikri, kad tavo asmeninis žemėlapis suteiks tau vertingų įžvalgų apie tavo gyvenimo kelią. Kiekviena analizė yra sugeneruota naudojant pažangiausias chiromantijos duomenų analizės metodikas.</p>
-      <p style="font-size:11.5px;color:rgba(245,238,216,.78);line-height:1.65;margin:0 0 10px">Tačiau, jei per <strong style="color:var(--gold2)">14 dienų</strong> pajusi, kad rezultatai neatitiko tavo lūkesčių, mes norime tai ištaisyti.</p>
+      <p style="font-size:11.5px;color:rgba(199,199,199,.78);line-height:1.65;margin:0 0 10px">Mes esame tikri, kad tavo asmeninis žemėlapis suteiks tau vertingų įžvalgų apie tavo gyvenimo kelią. Kiekviena analizė yra sugeneruota naudojant pažangiausias chiromantijos duomenų analizės metodikas.</p>
+      <p style="font-size:11.5px;color:rgba(199,199,199,.78);line-height:1.65;margin:0 0 10px">Tačiau, jei per <strong style="color:var(--gold2)">14 dienų</strong> pajusi, kad rezultatai neatitiko tavo lūkesčių, mes norime tai ištaisyti.</p>
       <p style="font-size:11px;color:var(--gold2);font-weight:600;margin:0 0 8px">Kaip veikia mūsų 14 dienų garantija:</p>
-      <div style="font-size:11px;color:rgba(245,238,216,.68);line-height:1.6;display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
-        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(245,238,216,.85)">Parašyk mums:</strong> Atsiųsk el. laišką adresu <strong style="color:rgba(212,168,67,.85)">pagalba@delnaskaitymas.lt</strong> nurodydamas savo užsakymo numerį.</span></div>
-        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(245,238,216,.85)">Trumpas atsiliepimas:</strong> Būsime dėkingi, jei trumpai parašysi, ko pritrūko – tai padeda mums kasdien tobulinti savo sistemą.</span></div>
-        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(245,238,216,.85)">Sprendimas:</strong> Mes nedelsdami peržiūrėsime tavo užklausą ir grąžinsime pinigus. Mūsų tikslas – laimingas vartotojas, todėl visus prašymus sprendžiame palankiai.</span></div>
+      <div style="font-size:11px;color:rgba(199,199,199,.68);line-height:1.6;display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(199,199,199,.85)">Parašyk mums:</strong> Atsiųsk el. laišką adresu <strong style="color:rgba(212,168,67,.85)">pagalba@delnaskaitymas.lt</strong> nurodydamas savo užsakymo numerį.</span></div>
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(199,199,199,.85)">Trumpas atsiliepimas:</strong> Būsime dėkingi, jei trumpai parašysi, ko pritrūko – tai padeda mums kasdien tobulinti savo sistemą.</span></div>
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(199,199,199,.85)">Sprendimas:</strong> Mes nedelsdami peržiūrėsime tavo užklausą ir grąžinsime pinigus. Mūsų tikslas – laimingas vartotojas, todėl visus prašymus sprendžiame palankiai.</span></div>
       </div>
-      <div style="font-size:10.5px;color:rgba(245,238,216,.55);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">
+      <div style="font-size:10.5px;color:rgba(199,199,199,.55);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">
         <strong style="color:rgba(212,168,67,.8)">Svarbu:</strong> savo užsakymo numerį rasi rezultato ekrane iškart po sėkmingo apmokėjimo.
       </div>
     </div>
@@ -291,9 +291,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     
   <div class="wrap center" style="padding-top:0px;padding-bottom:4px;position:relative;z-index:3;margin-top:-30px">
-    <p style="font-size:15px;font-weight:300;color:rgba(245,238,216,.78);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
+    <p style="font-size:15px;font-weight:400;color:rgba(199,199,199,.78);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:14px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
-    <div style="font-size:12px;color:rgba(245,238,216,.45);font-style:italic;margin-bottom:6px">
+    <div style="font-size:12px;color:rgba(199,199,199,.45);font-style:italic;margin-bottom:6px">
       Jau <span id="static-main-count" style="color:var(--gold2);font-weight:500">2 847</span> <span id="static-main-word">žmonės</span> atliko savo analizę
     </div>
   </div>
@@ -402,32 +402,32 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kas tavyje slypi tokio, ko net pats dar nesi atradęs?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie paslėptą potencialą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kas tavyje slypi tokio, ko net pats dar nesi atradęs?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie paslėptą potencialą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Ar tikrai gyveni tą gyvenimą, kurį turėtum gyventi?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie gyvenimo tikslą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Ar tikrai gyveni tą gyvenimą, kurį turėtum gyventi?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie gyvenimo tikslą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kodėl tavo santykiai vis „strigo" tose pačiose vietose?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie tikrąsias priežastis</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kodėl tavo santykiai vis „strigo" tose pačiose vietose?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie tikrąsias priežastis</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9 12h6"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kada pagaliau tavo pastangos taps pinigais, o ne tik darbu?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie finansinę sėkmę</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kada pagaliau tavo pastangos taps pinigais, o ne tik darbu?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie finansinę sėkmę</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kokia savybė tave išskiria iš visų kitų minioje?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie tavo tikrąjį unikalumą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kokia savybė tave išskiria iš visų kitų minioje?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie tavo tikrąjį unikalumą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Koks lūžis tavo gyvenime įvyks per artimiausius mėnesius?<span style="display:block;color:rgba(245,238,216,.4);font-weight:400;margin-top:1px">Apie laukiančius pokyčius</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Koks lūžis tavo gyvenime įvyks per artimiausius mėnesius?<span style="display:block;color:rgba(199,199,199,.4);font-weight:400;margin-top:1px">Apie laukiančius pokyčius</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
@@ -451,7 +451,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div style="display:flex;align-items:center;justify-content:center;gap:14px">
           <!-- Kaina -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-            <span style="font-size:9.5px;color:rgba(245,238,216,.3);text-decoration:line-through;letter-spacing:.02em">15,99 €</span>
+            <span style="font-size:9.5px;color:rgba(199,199,199,.3);text-decoration:line-through;letter-spacing:.02em">15,99 €</span>
             <span style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">9,99<span style="font-size:13px;vertical-align:super;margin-left:1px">€</span></span>
           </div>
           <!-- Skiriamoji linija -->
@@ -505,7 +505,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#0d0d0d;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
     <div style="text-align:center;margin-top:4px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Pagrindinis sakinys: saugumas + garantija -->
-      <span style="font-size:9.5px;color:rgba(245,238,216,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • 14 dienų pinigų grąžinimo garantija</span>
+      <span style="font-size:9.5px;color:rgba(199,199,199,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • 14 dienų pinigų grąžinimo garantija</span>
       <!-- Pinigų grąžinimas -->
       <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.65);font-size:8.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">Pinigų grąžinimas</button>
       <!-- Logotipai -->
@@ -536,7 +536,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Antraštė -->
     <div style="text-align:center;margin-bottom:32px">
       <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:14px;line-height:1.3">Gauk asmeninę analizę</div>
-      <div style="font-size:13px;color:rgba(245,238,216,.55);line-height:1.6;max-width:280px;margin:0 auto">Įvesk duomenis, kad sugeneruotume tavo unikalų gyvenimo žemėlapį ir atsiųstume išsamią ataskaitą.</div>
+      <div style="font-size:13px;color:rgba(199,199,199,.55);line-height:1.6;max-width:280px;margin:0 auto">Įvesk duomenis, kad sugeneruotume tavo unikalų gyvenimo žemėlapį ir atsiųstume išsamią ataskaitą.</div>
     </div>
     <!-- Laukeliai -->
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
@@ -549,10 +549,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         Kodėl prašome vardo ir el. pašto?
       </div>
-      <div style="font-size:11.5px;color:rgba(245,238,216,.5);line-height:1.7;display:flex;flex-direction:column;gap:4px">
-        <div>✦ <strong style="color:rgba(245,238,216,.7)">Vardas</strong> — personalizuoja analizę būtent Tau</div>
-        <div>✦ <strong style="color:rgba(245,238,216,.7)">El. paštas</strong> — atsiųsime pilną ataskaitą, kurią galėsi peržiūrėti bet kada</div>
-        <div>✦ <strong style="color:rgba(245,238,216,.7)">🔒 Konfidencialu</strong> — duomenys niekada neperduodami trečiosioms šalims</div>
+      <div style="font-size:11.5px;color:rgba(199,199,199,.5);line-height:1.7;display:flex;flex-direction:column;gap:4px">
+        <div>✦ <strong style="color:rgba(199,199,199,.7)">Vardas</strong> — personalizuoja analizę būtent Tau</div>
+        <div>✦ <strong style="color:rgba(199,199,199,.7)">El. paštas</strong> — atsiųsime pilną ataskaitą, kurią galėsi peržiūrėti bet kada</div>
+        <div>✦ <strong style="color:rgba(199,199,199,.7)">🔒 Konfidencialu</strong> — duomenys niekada neperduodami trečiosioms šalims</div>
       </div>
     </div>
     <!-- Mygtukas -->
@@ -665,7 +665,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="rs-label">V · Unikalus sėkmės raktas</div>
       <div class="rs-body" id="r-gifts-text"></div>
       <div id="insights-galimybes" class="insight-cards"></div>
-      <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
+      <div id="r-action" style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;font-size:12px;color:rgba(199,199,199,.75);line-height:1.6;font-family:'DM Sans',sans-serif"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Tai, kas tave išskiria iš kitų — yra ir tavo didžiausias privalumas.</div>
     </div>
     <div class="rs rs-std rs-reveal">
@@ -935,7 +935,7 @@ async function verifyAndProceed(sessionId){
   go('s-result');
   setTimeout(()=>{
     const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+    if(rc) rc.innerHTML='<p style="color:rgba(199,199,199,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1039,7 +1039,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      go('s-result');
      setTimeout(()=>{
        const rc=document.getElementById('r-char');
-       if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+       if(rc) rc.innerHTML='<p style="color:rgba(199,199,199,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
        const rn=document.getElementById('res-name');
        if(rn) rn.textContent='Tavo asmeninė delnų analizė';
        document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1215,7 +1215,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     go('s-result');
     setTimeout(()=>{
       const rc=document.getElementById('r-char');
-      if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">'+finalErr+'</p>';
+      if(rc) rc.innerHTML='<p style="color:rgba(199,199,199,.7)">'+finalErr+'</p>';
       const rn=document.getElementById('res-name');
       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
       document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1231,7 +1231,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   go('s-result');
   setTimeout(()=>{
     const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(245,238,216,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
+    if(rc) rc.innerHTML='<p style="color:rgba(199,199,199,.7)">Įvyko klaida. Prašome susisiekti: pagalba@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1627,7 +1627,7 @@ function checkSkinArea(dataURL, minRatio){
 function showCamError(title, msg){
   const bar=document.getElementById('cam-msg-bar');
   if(!bar) return;
-  bar.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.4">'+msg+'</div>';
+  bar.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(199,199,199,.8);line-height:1.4">'+msg+'</div>';
   bar.style.display='block';
   bar.style.opacity='0';
   bar.style.transform='translateY(8px)';
@@ -1651,7 +1651,7 @@ function showCamToast(title, msg){
   const toast=document.createElement('div');
   toast.id='cam-toast';
   toast.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:100;transform:translateY(100%);background:rgba(7,4,15,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(212,168,67,.3);padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;border-radius:0 0 16px 16px;opacity:0;transition:opacity 0.4s ease;background:rgba(7,4,15,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(212,168,67,.25);border-radius:0 0 16px 16px;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:20;opacity:0;transition:opacity 0.35s ease,transform 0.35s ease';
-  toast.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:4px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.45">'+msg+'</div>';
+  toast.innerHTML='<div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:4px;letter-spacing:.02em">'+title+'</div><div style="font-size:11px;color:rgba(199,199,199,.8);line-height:1.45">'+msg+'</div>';
   if(container.style) container.style.position='relative';
   container.appendChild(toast);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -1767,7 +1767,7 @@ function capturePhoto(){
         // Rodyti klaidos laukelį frozen apačioje
         hideMsgBar();
         setTimeout(()=>{
-          showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(245,238,216,.8);line-height:1.4">'+msg+'</div></div>');
+          showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(199,199,199,.8);line-height:1.4">'+msg+'</div></div>');
         },350);
         // Po 2.5s — grįžimas į kamerą
         setTimeout(()=>{
@@ -1955,7 +1955,7 @@ function animateLoading(){
   [1,2,3,4,5,6,7].forEach(i=>{
     const el=document.getElementById('ls'+i);const st=document.getElementById('ls'+i+'-status');const txt=el&&el.querySelector('.ls-text');
     if(el) el.classList.remove('active');if(txt) txt.textContent=stepTexts[i-1];
-    if(st){st.textContent='·';st.style.color='rgba(245,238,216,.25)';st.style.animation='';st.style.fontSize='18px';}
+    if(st){st.textContent='·';st.style.color='rgba(199,199,199,.25)';st.style.animation='';st.style.fontSize='18px';}
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
@@ -2133,7 +2133,7 @@ function activateStep(n,done){
     st.style.fontSize='0';st.style.flexShrink='0';
     // Ryškus tekstas
     const aTxt=el.querySelector('.ls-text');
-    if(aTxt){aTxt.style.color='rgba(245,238,216,.95)';aTxt.style.fontWeight='600';}
+    if(aTxt){aTxt.style.color='rgba(199,199,199,.95)';aTxt.style.fontWeight='600';}
     const aIcon=el.querySelector('.ls-icon');
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
@@ -2832,7 +2832,7 @@ function showSampleReport(e){
     <div style="font-size:22px;font-weight:700;color:#f0ece2;font-family:'Playfair Display',serif;margin-bottom:4px">Tavo Gyvenimo Žemėlapis</div>
     <div style="font-size:11px;color:rgba(212,168,67,.6);letter-spacing:.1em">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div style="width:50px;height:1px;background:rgba(212,168,67,.5);margin:12px auto 0"></div>
-    <div style="margin-top:12px;font-size:12px;color:rgba(245,238,216,.45);font-style:italic">Tai — pavyzdys. Tavo ataskaita bus personalizuota pagal tavo delno linijų unikalią struktūrą.</div>
+    <div style="margin-top:12px;font-size:12px;color:rgba(199,199,199,.45);font-style:italic">Tai — pavyzdys. Tavo ataskaita bus personalizuota pagal tavo delno linijų unikalią struktūrą.</div>
   </div>
 
   <div style="padding:0 16px">
@@ -2840,7 +2840,7 @@ function showSampleReport(e){
     <!-- I skyrius -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.07),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.32);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">I · Prigimtinės stiprybės ir charakteris</div>
-      <div style="font-size:13.5px;color:rgba(245,238,216,.88);line-height:1.75;margin-bottom:14px">Tavo rankoje ryškiai išsiskiria giliai išraižyta <strong style="color:rgba(212,168,67,.9)">gyvenimo linija</strong> — tai ženklas nepaprasto gyvybingumo ir stiprios vidinės energijos. Tokios žmonės dažnai randa jėgų net tuomet, kai kiti jau pasiduoda.<br><br>Ilgas, aiškus <strong style="color:rgba(212,168,67,.9)">proto linijos</strong> tęsinys atskleidžia analitinį mąstymą — tu natūraliai matai vaizdą plačiau nei dauguma. Ši savybė tampa stiprybe tiek priimant sprendimus, tiek bendraujant su kitais.</div>
+      <div style="font-size:13.5px;color:rgba(199,199,199,.88);line-height:1.75;margin-bottom:14px">Tavo rankoje ryškiai išsiskiria giliai išraižyta <strong style="color:rgba(212,168,67,.9)">gyvenimo linija</strong> — tai ženklas nepaprasto gyvybingumo ir stiprios vidinės energijos. Tokios žmonės dažnai randa jėgų net tuomet, kai kiti jau pasiduoda.<br><br>Ilgas, aiškus <strong style="color:rgba(212,168,67,.9)">proto linijos</strong> tęsinys atskleidžia analitinį mąstymą — tu natūraliai matai vaizdą plačiau nei dauguma. Ši savybė tampa stiprybe tiek priimant sprendimus, tiek bendraujant su kitais.</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         <span style="background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(212,168,67,.9)">✦ Lyderystė</span>
         <span style="background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(212,168,67,.9)">✦ Analitinis mąstymas</span>
@@ -2852,28 +2852,28 @@ function showSampleReport(e){
     <!-- II skyrius -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.07),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.32);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">II · Gyvenimo kryptis ir tikslai</div>
-      <div style="font-size:13.5px;color:rgba(245,238,216,.88);line-height:1.75;margin-bottom:14px">Stiprus <strong style="color:rgba(212,168,67,.9)">likimo linijos</strong> žymėjimas nuo riešo centro rodo, kad tavo gyvenimo kelias turi aiškią kryptį — net jei dabar tai ne visada jauti. Tavo sėkmė susijusi su tuo, kuo tu tikri giliai viduje, o ne su aplinkos lūkesčiais.<br><br>Tokie žmonės dažniausiai randa savo tikrąjį pašaukimą tik po 28–35 metų — ir tada progresas būna spartus bei ilgalaikis.</div>
-      <div style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid rgba(212,168,67,.7);border-radius:0 8px 8px 0;font-size:12px;color:rgba(245,238,216,.75);line-height:1.6">Patarimas: Ateinantys 6 mėnesiai — tinkamas laikas peržiūrėti, ar tai, ką darai, atitinka tai, ko iš tiesų nori.</div>
+      <div style="font-size:13.5px;color:rgba(199,199,199,.88);line-height:1.75;margin-bottom:14px">Stiprus <strong style="color:rgba(212,168,67,.9)">likimo linijos</strong> žymėjimas nuo riešo centro rodo, kad tavo gyvenimo kelias turi aiškią kryptį — net jei dabar tai ne visada jauti. Tavo sėkmė susijusi su tuo, kuo tu tikri giliai viduje, o ne su aplinkos lūkesčiais.<br><br>Tokie žmonės dažniausiai randa savo tikrąjį pašaukimą tik po 28–35 metų — ir tada progresas būna spartus bei ilgalaikis.</div>
+      <div style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid rgba(212,168,67,.7);border-radius:0 8px 8px 0;font-size:12px;color:rgba(199,199,199,.75);line-height:1.6">Patarimas: Ateinantys 6 mėnesiai — tinkamas laikas peržiūrėti, ar tai, ką darai, atitinka tai, ko iš tiesų nori.</div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kai žmogus eina savo keliu — viskas sekasi lengviau.</div>
     </div>
 
     <!-- III skyrius -->
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.18);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">III · Bendravimo būdas ir santykiai</div>
-      <div style="font-size:13.5px;color:rgba(245,238,216,.88);line-height:1.75">Gili, ilga <strong style="color:rgba(212,168,67,.9)">širdies linija</strong> — emocinio gylio ženklas. Tu mylite giliai ir visa esybe. Tuo pačiu — labai jautrus nusivylimams. Svarbu išmokti atpažinti, kada atiduodi daugiau nei gauni...</div>
-      <div style="margin-top:12px;padding:8px 12px;background:rgba(212,168,67,.04);border-radius:8px;font-size:11.5px;color:rgba(245,238,216,.55);text-align:center">🔒 Pilnas skyrius — tavo asmeninėje ataskaitoje</div>
+      <div style="font-size:13.5px;color:rgba(199,199,199,.88);line-height:1.75">Gili, ilga <strong style="color:rgba(212,168,67,.9)">širdies linija</strong> — emocinio gylio ženklas. Tu mylite giliai ir visa esybe. Tuo pačiu — labai jautrus nusivylimams. Svarbu išmokti atpažinti, kada atiduodi daugiau nei gauni...</div>
+      <div style="margin-top:12px;padding:8px 12px;background:rgba(212,168,67,.04);border-radius:8px;font-size:11.5px;color:rgba(199,199,199,.55);text-align:center">🔒 Pilnas skyrius — tavo asmeninėje ataskaitoje</div>
     </div>
 
     <!-- IV–VII -->
     <div style="border:.5px solid rgba(212,168,67,.15);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px">
-      ${['IV · Finansinis potencialas','V · Unikalus sėkmės raktas','VI · Svarbiausi artėjantys pokyčiai','VII · Pažangą stabdančios kliūtys'].map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:10px;border:.5px solid rgba(212,168,67,.1)"><span style="font-size:11px;color:rgba(245,238,216,.55);letter-spacing:.05em">${s}</span><span style="font-size:10px;color:rgba(212,168,67,.5);background:rgba(212,168,67,.08);padding:3px 8px;border-radius:8px">🔒 Tavo versijoje</span></div>`).join('')}
+      ${['IV · Finansinis potencialas','V · Unikalus sėkmės raktas','VI · Svarbiausi artėjantys pokyčiai','VII · Pažangą stabdančios kliūtys'].map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:10px;border:.5px solid rgba(212,168,67,.1)"><span style="font-size:11px;color:rgba(199,199,199,.55);letter-spacing:.05em">${s}</span><span style="font-size:10px;color:rgba(212,168,67,.5);background:rgba(212,168,67,.08);padding:3px 8px;border-radius:8px">🔒 Tavo versijoje</span></div>`).join('')}
     </div>
 
     <!-- CTA -->
     <div style="text-align:center;padding:4px 0 12px">
-      <div style="font-size:13px;color:rgba(245,238,216,.5);margin-bottom:16px;line-height:1.6">Tavo ataskaita bus personalizuota pagal<br>tavo rankos linijų unikalią struktūrą</div>
+      <div style="font-size:13px;color:rgba(199,199,199,.5);margin-bottom:16px;line-height:1.6">Tavo ataskaita bus personalizuota pagal<br>tavo rankos linijų unikalią struktūrą</div>
       <button onclick="this.closest('div[style*=fixed]').remove();startApp()" style="width:100%;padding:15px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#0d0d0d;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 20px rgba(212,168,67,.4)">Gauti savo ataskaitą →</button>
-      <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:rgba(245,238,216,.35);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px">Uždaryti</button>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:rgba(199,199,199,.35);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px">Uždaryti</button>
     </div>
 
   </div>
@@ -3031,7 +3031,7 @@ function initPayment(){
 
   const cardStyle={style:{base:{
     color:'#f5eed8',fontFamily:'DM Sans,sans-serif',fontSize:'15px',
-    '::placeholder':{color:'rgba(245,238,216,.35)'},iconColor:'#d4a843'
+    '::placeholder':{color:'rgba(199,199,199,.35)'},iconColor:'#d4a843'
   },invalid:{color:'#ff6b6b'}}};
 
   const cardEls=stripeInstance.elements({disableLink:true});
