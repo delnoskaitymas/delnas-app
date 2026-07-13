@@ -1020,9 +1020,15 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    return fetch(url,Object.assign({},options,{signal:controller.signal}))
      .finally(()=>clearTimeout(timer));
  }
- // Diagnostika išspręsta ir patvirtinta - pašalinta. updatePayDiag paliktas
- // kaip tuščia (no-op) funkcija, kad nereikėtų trinti kiekvieno iškvietimo atskirai.
- function updatePayDiag(){}
+ // Diagnostikos indikatorius — rodo GYVĄ tikslią būseną tiesiai ekrane.
+ const _diagStartTime=Date.now();
+ function updatePayDiag(text){
+   try{
+     const el=document.getElementById('pay-diag');
+     if(el) el.textContent='+'+(((Date.now()-_diagStartTime)/1000).toFixed(1))+'s | '+text;
+   }catch(e){}
+ }
+ updatePayDiag('pradžia');
  let _navigated=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
@@ -1089,6 +1095,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
               <span style="width:12px;height:12px;border:1.5px solid rgba(212,168,67,.35);border-top-color:#d4a843;border-radius:50%;display:inline-block;animation:spin .8s linear infinite"></span>
               Ruošiame tavo asmeninę analizę...
             </div>
+            <div id="pay-diag" style="margin-top:6px;font-size:9px;color:rgba(212,168,67,.55);font-family:monospace;white-space:pre-wrap"></div>
           </div>
           </div>`;
         requestAnimationFrame(()=>{
