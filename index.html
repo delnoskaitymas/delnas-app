@@ -1072,8 +1072,12 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   bringPaySuccessIntoView();
   finalizePayProgressBar();
 
-  // Pažadas, kuris išsipildo TIK praėjus min. 2.5s nuo varnelės pasirodymo —
-  // naudojamas VISADA prieš pereinant į rezultatus, tiek sėkmės, tiek klaidos atveju
+  // Pažadas, kuris išsipildo praėjus TIK minimaliam vizualinės animacijos
+  // laikui (600ms — tiek, kad varnelės "pop" animacija spėtų suveikti ir
+  // nebūtų trūkčiojanti), o NE dirbtinai primestam 2.5s laukimui. Jei
+  // rezultatai jau paruošti (dažnas atvejis, nes fono analizė prasideda
+  // gerokai prieš mokėjimą), pereinama į juos BEVEIK IŠKART — jokio
+  // nereikalingo laukimo ekrano.
   const minDisplay=new Promise((resolve)=>{
     if(paySection){
       paySection.style.transition='opacity .4s ease';
@@ -1109,14 +1113,17 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           paySection.style.transition='opacity .4s ease';
           paySection.style.opacity='1';
         });
+        // "Vis dar ruošiame..." indikatorius rodomas TIK jei laukimas
+        // realiai užsitęsia (po 1.5s, ne 4s) — kad vartotojas greičiau
+        // suprastų, jog kažkas vyksta, jei duomenys dar negreitai bus paruošti.
         setTimeout(()=>{
           const sw=document.getElementById('pay-still-working');
           if(sw) sw.style.opacity='1';
-        },4000);
-        setTimeout(resolve,2500);
-      },400);
+        },1500);
+        setTimeout(resolve,600);
+      },250);
     } else {
-      setTimeout(resolve,2500);
+      setTimeout(resolve,600);
     }
   });
 
@@ -1196,7 +1203,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     finalErr=e.message||'Klaida';
   }
 
-  // 5. Palaukti, kol varnelė bus išsilaikiusi ekrane MIN 2.5s — VISADA, net ir klaidos atveju
+  // 5. Palaukti minimalaus vizualinio laiko (žr. minDisplay aukščiau) — bet
+  // kadangi realaus duomenų gavimo (mokėjimo patvirtinimas + analizė)
+  // trukmė paprastai JAU viršija šį minimalų laiką, šis "await" praktiškai
+  // nieko nebelaukia — rezultatai rodomi TIESIOG kai tik jie paruošti.
   await minDisplay;
   successDiv.remove();
   _navigated=true;clearTimeout(_watchdog);
