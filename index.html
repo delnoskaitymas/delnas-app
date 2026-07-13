@@ -1053,7 +1053,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      try{ updatePayDiag('WATCHDOG KLAIDA: '+watchdogErr.message); }catch(e2){}
      console.error('watchdog klaida:',watchdogErr);
    }
- },130000);
+ },220000);
  try{
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
@@ -1160,7 +1160,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         const ar=await fetchWithTimeout('/analyze-palm',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
-        },45000);
+        },100000);
         ad=await ar.json();
         updatePayDiag('atsakymas #'+(attempt+1)+': '+(ad&&ad.pending?'dar ruošiama':(ad&&ad.error?'KLAIDA: '+ad.error:'gauta')));
       }catch(fetchErr){
