@@ -2312,10 +2312,16 @@ function initScrollReveal(){
     // SAVARANKIŠKAS sekamas elementas — lygiai taip pat, kaip ir patys
     // skyriai — ir atsiskleidžia TADA, kai JIS PATS (o ne jo tėvinis
     // skyrius) realiai patenka į matomą sritį.
+    // SUPAPRASTINIMAS (pagal aiškų reikalavimą): sakiniai teksto blokų
+    // viduje DAUGIAU NEBEANIMUOJAMI — jie rodomi IŠKART kartu su pačiu
+    // bloku (be atskiro fade in). Sekami (animuojami) elementai dabar yra
+    // TIK: (1) patys 7 skyriai (dideli blokai) ir (2) gold insight
+    // kortelės (mažesni "blokai" bloko viduje) — kortelės elgiasi
+    // LYGIAI TAIP PAT kaip skyriai: turi savo scroll'inimu pagrįstą fade
+    // in, atsiskleidžia TADA, kai PAČIOS realiai patenka į matomą sritį.
     const targets=[];
     sections.forEach((sec,secIdx)=>{
       targets.push({el:sec,secIdx,kind:'section'});
-      sec.querySelectorAll('.rs-body p').forEach(p=>targets.push({el:p,secIdx,kind:'child'}));
       sec.querySelectorAll('.insight-card').forEach(c=>targets.push({el:c,secIdx,kind:'child'}));
     });
     // Grupuota struktūra (pagal skyrių) — naudojama TIK manualCheck()
@@ -2338,16 +2344,13 @@ function initScrollReveal(){
       t.el.classList.add('visible');
     };
 
-    // Pradinė (paslėpta) būsena — VISI elementai (skyriai, taškai, kortelės)
+    // Pradinė (paslėpta) būsena — TIK skyriai ir gold kortelės. Sakiniai
+    // (.rs-body p) NELIEČIAMI — jie lieka savo numatytoje CSS būsenoje
+    // (visada opacity:1, jokios animacijos), kaip reikalauta.
     sections.forEach(el=>{
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
       el.style.transform='translateY(26px)';
-    });
-    document.querySelectorAll('#s-result .rs-body p').forEach(p=>{
-      p.style.transition='opacity .5s ease, transform .5s ease';
-      p.style.opacity='0';
-      p.style.transform='translateY(10px)';
     });
     document.querySelectorAll('#s-result .insight-card').forEach(card=>{
       card.style.transition='opacity .5s ease, transform .5s ease';
@@ -2548,10 +2551,17 @@ function initScrollReveal(){
     // veikiančio mechanizmo išjungimas. Papildomai kartojame kelis
     // priverstinius bandymus (kaip go() funkcijoje), jei šis retas
     // scenarijus vis tiek įvyktų.
-    setTimeout(()=>teardown(true),120000);
-    setTimeout(()=>teardown(true),120800);
-    setTimeout(()=>teardown(true),122500);
-    setTimeout(()=>teardown(true),126000);
+    // ATNAUJINTAS REIKALAVIMAS: scroll'inimu pagrįstas fade in turi veikti
+    // NEPRIKLAUSOMAI nuo laiko — nesvarbu, ar vartotojas pasiekia bloką po
+    // 1s, ar po 10 minučių skaitymo. Todėl šis saugiklis dabar suveikia
+    // tik po 20 MINUČIŲ — realiai tai reiškia, kad jis praktiškai NIEKADA
+    // nesuveiks įprasto naudojimo metu (7 skyrių perskaitymas užtrunka
+    // gerokai mažiau), ir egzistuoja TIK kaip absoliučiai paskutinis
+    // apsauginis tinklas nuo tikrai išskirtinių, sugedusių scenarijų.
+    setTimeout(()=>teardown(true),1200000);
+    setTimeout(()=>teardown(true),1200800);
+    setTimeout(()=>teardown(true),1202500);
+    setTimeout(()=>teardown(true),1206000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
     document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
