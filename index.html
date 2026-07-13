@@ -104,10 +104,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
-.rs{border-radius:14px;padding:20px 24px;margin-bottom:24px;position:relative;overflow:hidden;max-width:600px;margin-left:auto;margin-right:auto}
+.rs{border-radius:14px;padding:14px 16px;margin-bottom:24px;position:relative;max-width:600px;margin-left:auto;margin-right:auto}
 .rs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5}
-.rs-std{background:#141414;border:.5px solid rgba(212,168,67,0.15)}
-.rs-feat{background:#191919;border:.5px solid rgba(212,168,67,0.32)}
+.rs-std{background:#1c1c1c;border:.5px solid rgba(212,168,67,0.18);box-shadow:0 4px 16px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.03) inset}
+.rs-feat{background:#221f1a;border:.5px solid rgba(212,168,67,0.35);box-shadow:0 4px 18px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.04) inset}
 .rs-feat::before{opacity:1}
 .rs-label{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
