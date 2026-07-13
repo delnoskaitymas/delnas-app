@@ -317,10 +317,14 @@ app.post('/validate-palm', async (req, res) => {
 app.post('/start-analysis', async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
+    console.log(`[start-analysis] gauta sessionId=${sessionId||'(nėra)'} photos=${photos?photos.length:0}`);
     if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
     if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
 
-    if (analysisCache.has(sessionId)) return res.json({ started: true, sessionId });
+    if (analysisCache.has(sessionId)) {
+      console.log(`[start-analysis] sessionId=${sessionId} JAU YRA cache (dublikatas), grąžinam started:true be naujo paleidimo`);
+      return res.json({ started: true, sessionId });
+    }
 
     analysisCache.set(sessionId, {
       status: 'pending',
@@ -330,17 +334,20 @@ app.post('/start-analysis', async (req, res) => {
       name: req.body.name || '',
       createdAt: Date.now()
     });
+    console.log(`[start-analysis] sessionId=${sessionId} UŽREGISTRUOTAS cache'e (status=pending), cacheSize=${analysisCache.size}`);
 
     res.json({ started: true, sessionId });
 
     runPalmAnalysis(photos, req.body.name || '')
       .then(result => {
         const entry = analysisCache.get(sessionId);
-        if (entry) { entry.status = 'done'; entry.result = result; }
+        if (entry) { entry.status = 'done'; entry.result = result; console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ BAIGTA sėkmingai`); }
+        else console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ baigta, BET cache įrašo BENĖRA (?!)`);
       })
       .catch(err => {
         const entry = analysisCache.get(sessionId);
         if (entry) { entry.status = 'error'; entry.error = err.message; }
+        console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ KLAIDA: ${err.message}`);
       });
 
   } catch (err) {
@@ -430,10 +437,14 @@ app.post('/analyze-palm', async (req, res) => {
     const userName = name || tokenEntry.name || '';
     let result = null;
 
+    console.log(`[analyze-palm] sessionId=${sessionId||'(nėra)'} cacheHas=${sessionId?analysisCache.has(sessionId):'n/a'} cacheSize=${analysisCache.size}`);
+
     if (sessionId && analysisCache.has(sessionId)) {
       const cached = analysisCache.get(sessionId);
+      console.log(`[analyze-palm] sessionId=${sessionId} cache statusas='${cached.status}'`);
       if (cached.status === 'done' && cached.result) {
         result = cached.result;
+        console.log(`[analyze-palm] sessionId=${sessionId} -> NAUDOJAMAS JAU PARUOŠTAS cache rezultatas (greitas kelias)`);
         // SVARBU (lenktynių sąlygos taisymas): ANKSČIAU čia iškart
         // ištrindavome cache įrašą. Bet jei KLIENTO fetch() nutrūksta dėl
         // laiko limito (pvz. lėtas tinklas), SERVERIS TOLIAU tęsia šio
@@ -467,23 +478,29 @@ app.post('/analyze-palm', async (req, res) => {
         const entry = analysisCache.get(sessionId);
         if (entry && entry.status === 'done' && entry.result) {
           result = entry.result;
+          console.log(`[analyze-palm] sessionId=${sessionId} -> baigėsi per laukimo langą, naudojamas rezultatas`);
           // Netriname (žr. komentarą aukščiau — apsauga nuo lenktynių
           // sąlygos su kliento pusės laiko limitu/abort).
         } else if (entry && entry.status === 'pending') {
+          console.log(`[analyze-palm] sessionId=${sessionId} -> VIS DAR pending po 8s laukimo, grąžinam 202`);
           return res.status(202).json({ pending: true, sessionId });
         } else {
+          console.log(`[analyze-palm] sessionId=${sessionId} -> statusas tapo '${entry&&entry.status}', triname cache`);
           // status === 'error' arba įrašas dingo — cache nebenaudingas
           analysisCache.delete(sessionId);
         }
       } else {
+        console.log(`[analyze-palm] sessionId=${sessionId} -> netikėtas statusas '${cached.status}', triname cache`);
         analysisCache.delete(sessionId);
       }
     }
 
     if (!result) {
       if (!photos || photos.length === 0) {
+        console.log(`[analyze-palm] sessionId=${sessionId||'(nėra)'} -> NĖRA rezultato IR nėra nuotraukų, grąžinam 400`);
         return res.status(400).json({ error: 'Analizė dar nebaigta. Bandykite dar kartą.' });
       }
+      console.log(`[analyze-palm] sessionId=${sessionId||'(nėra)'} -> PRADEDAMA NAUJA PILNA ANALIZĖ (lėtas kelias, cache nerastas arba tuščias)`);
       result = await runPalmAnalysis(photos, userName);
     }
 
