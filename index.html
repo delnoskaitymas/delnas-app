@@ -2161,19 +2161,19 @@ async function callClaude(){
 function pillIcon(text){
   const t=(text||'').toString().toLowerCase();
   const svgOpts={
-    brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
-    star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
-    crown:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/><path d="M12 4l-2 6h4l-2-6z"/></svg>`,
-    heart:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-    bolt:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-    eye:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    target:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-    msg:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    coin:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a1.5 1.5 0 0 1 0 3H9h4.5a1.5 1.5 0 0 1 0 3H9"/></svg>`,
-    trophy:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4m14 4h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 5h12v8a6 6 0 0 1-12 0V5z"/><path d="M9 21h6M12 17v4"/></svg>`,
-    hands:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-    leaf:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21c1-1 2-2 3-2 1.5 0 2.5 1 4 1 4 0 8-3 8-8V8z"/></svg>`,
-    spark:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/><circle cx="12" cy="12" r="2" fill="#d4a843" opacity=".4"/></svg>`,
+    brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
+    star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
+    crown:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/><path d="M12 4l-2 6h4l-2-6z"/></svg>`,
+    heart:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    bolt:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+    eye:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    target:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+    msg:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    coin:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a1.5 1.5 0 0 1 0 3H9h4.5a1.5 1.5 0 0 1 0 3H9"/></svg>`,
+    trophy:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4m14 4h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 5h12v8a6 6 0 0 1-12 0V5z"/><path d="M9 21h6M12 17v4"/></svg>`,
+    hands:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+    leaf:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21c1-1 2-2 3-2 1.5 0 2.5 1 4 1 4 0 8-3 8-8V8z"/></svg>`,
+    spark:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/><circle cx="12" cy="12" r="2" fill="#f0c96a" opacity=".4"/></svg>`,
   };
   if(t.includes('mąst')||t.includes('intelek')||t.includes('analiz')||t.includes('proto')||t.includes('logik')) return svgOpts.brain;
   if(t.includes('kūryb')||t.includes('menin')||t.includes('vaizduot')||t.includes('idėj')) return svgOpts.spark;
@@ -2565,7 +2565,7 @@ function displayResult(r){
   if(pillsContainer){
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
       <div class="insight-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.2);border-radius:8px">
-        <div style="width:28px;height:28px;border-radius:50%;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIcon(d)}</div>
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIcon(d)}</div>
         <span style="font-size:13px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.02em">${d}</span>
       </div>
     `).join('');
