@@ -110,10 +110,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-std{background:#0f0f0f;border:.5px solid rgba(212,168,67,0.16);box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset}
 .rs-feat{background:#110f0c;border:.5px solid rgba(212,168,67,0.3);box-shadow:0 4px 18px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.02) inset}
 .rs-feat::before{opacity:1}
-.rs-label{font-size:11px;letter-spacing:normal;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600;font-family:'DM Sans',sans-serif;text-shadow:0 0 8px rgba(212,168,67,.4)}
+.rs-label{font-size:11px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600;font-family:'DM Sans',sans-serif;text-shadow:0 0 8px rgba(212,168,67,.4)}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
-.rs-body{font-size:11.5px;color:#ffffff;line-height:1.35;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
+.rs-body{font-size:12.5px;color:#ffffff;line-height:1.4;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
 .rs-body p{margin-bottom:16px;text-indent:0;text-align:left;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
 .rs-body p:last-child{margin-bottom:0}
 .rs-body p:last-child{margin-bottom:0}
@@ -122,10 +122,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .rs-reveal{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s ease}
 .insight-cards{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
-.insight-card{display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
+.insight-card{display:flex;align-items:center;gap:10px;padding:8px 11px;background:#0a0a0a;border:.5px solid rgba(212,168,67,.35);border-radius:8px;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
 .insight-card.visible{opacity:1;transform:translateX(0)}
 .insight-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,168,67,.5);flex-shrink:0}
-.insight-text{font-size:11.5px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-weight:600;line-height:1.35;letter-spacing:normal;text-shadow:0 0 8px rgba(240,201,106,.4)}
+.insight-text{font-size:11.5px;color:rgba(212,168,67,.75);font-family:'DM Sans',sans-serif;font-weight:600;line-height:1.35;letter-spacing:normal;text-shadow:none}
 @keyframes insightPulse{0%,100%{box-shadow:0 0 4px rgba(240,201,106,.5)}50%{box-shadow:0 0 12px rgba(240,201,106,1),0 0 20px rgba(240,201,106,.4)}}
 .rs-reveal.visible{opacity:1;transform:translateY(0)}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
@@ -1813,7 +1813,7 @@ function capturePhoto(){
       // Sėkmė — rodyti varnelę laukelyje
       hideMsgBar();
       setTimeout(()=>{
-        showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</span></div>');
+        showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</span></div>');
       },300);
 
       // Po 0.9s — švelniai pereiti į kitą ekraną
@@ -2159,36 +2159,61 @@ async function callClaude(){
   return await res.json();
 }
 
-function pillIcon(text){
-  const t=(text||'').toString().toLowerCase();
-  const svgOpts={
-    brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
-    star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
-    crown:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/><path d="M12 4l-2 6h4l-2-6z"/></svg>`,
-    heart:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-    bolt:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-    eye:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    target:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-    msg:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    coin:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a1.5 1.5 0 0 1 0 3H9h4.5a1.5 1.5 0 0 1 0 3H9"/></svg>`,
-    trophy:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4m14 4h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 5h12v8a6 6 0 0 1-12 0V5z"/><path d="M9 21h6M12 17v4"/></svg>`,
-    hands:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-    leaf:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21c1-1 2-2 3-2 1.5 0 2.5 1 4 1 4 0 8-3 8-8V8z"/></svg>`,
-    spark:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f0c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/><circle cx="12" cy="12" r="2" fill="#f0c96a" opacity=".4"/></svg>`,
+
+function pillIconSvgs(){
+  return {
+    brain:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a2.5 2.5 0 0 1 5 0v1.5a2.5 2.5 0 0 1-5 0V2z"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4l3 2"/></svg>`,
+    star:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/></svg>`,
+    crown:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/><path d="M12 4l-2 6h4l-2-6z"/></svg>`,
+    heart:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    bolt:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+    eye:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    target:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+    msg:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    coin:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a1.5 1.5 0 0 1 0 3H9h4.5a1.5 1.5 0 0 1 0 3H9"/></svg>`,
+    trophy:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4m14 4h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 5h12v8a6 6 0 0 1-12 0V5z"/><path d="M9 21h6M12 17v4"/></svg>`,
+    hands:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+    leaf:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21c1-1 2-2 3-2 1.5 0 2.5 1 4 1 4 0 8-3 8-8V8z"/></svg>`,
+    spark:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14 2 9l7-1z"/><circle cx="12" cy="12" r="2" fill="#f0c96a" opacity=".4"/></svg>`,
   };
-  if(t.includes('mąst')||t.includes('intelek')||t.includes('analiz')||t.includes('proto')||t.includes('logik')) return svgOpts.brain;
-  if(t.includes('kūryb')||t.includes('menin')||t.includes('vaizduot')||t.includes('idėj')) return svgOpts.spark;
-  if(t.includes('lyderyst')||t.includes('vadov')||t.includes('tvark')||t.includes('organizac')) return svgOpts.crown;
-  if(t.includes('meil')||t.includes('empat')||t.includes('jautr')||t.includes('santyk')||t.includes('šird')) return svgOpts.heart;
-  if(t.includes('stipr')||t.includes('energij')||t.includes('jėg')||t.includes('ryžt')||t.includes('drąs')) return svgOpts.bolt;
-  if(t.includes('intuic')||t.includes('jautimu')||t.includes('instinkt')||t.includes('nuojaut')) return svgOpts.eye;
-  if(t.includes('disciplin')||t.includes('savitvard')||t.includes('kantrybė')||t.includes('nuosekl')) return svgOpts.target;
-  if(t.includes('komunikac')||t.includes('kalb')||t.includes('bendrav')||t.includes('įtaig')) return svgOpts.msg;
-  if(t.includes('finans')||t.includes('verslo')||t.includes('pinig')||t.includes('materialin')) return svgOpts.coin;
-  if(t.includes('strategin')||t.includes('planavim')||t.includes('tiksl')||t.includes('vizij')) return svgOpts.trophy;
-  if(t.includes('patikimum')||t.includes('ištikimy')||t.includes('sąžiningu')||t.includes('atsakomy')) return svgOpts.hands;
-  if(t.includes('ryšys')||t.includes('šeima')||t.includes('draugyst')||t.includes('bendryst')||t.includes('augim')||t.includes('tobulėjim')) return svgOpts.leaf;
-  return svgOpts.star;
+}
+const PILL_ICON_ORDER=['brain','spark','crown','heart','bolt','eye','target','msg','coin','trophy','hands','leaf','star'];
+function pillIconKey(text){
+  const t=(text||'').toString().toLowerCase();
+  if(t.includes('mąst')||t.includes('intelek')||t.includes('analiz')||t.includes('proto')||t.includes('logik')) return 'brain';
+  if(t.includes('kūryb')||t.includes('menin')||t.includes('vaizduot')||t.includes('idėj')) return 'spark';
+  if(t.includes('lyderyst')||t.includes('vadov')||t.includes('tvark')||t.includes('organizac')) return 'crown';
+  if(t.includes('meil')||t.includes('empat')||t.includes('jautr')||t.includes('santyk')||t.includes('šird')) return 'heart';
+  if(t.includes('stipr')||t.includes('energij')||t.includes('jėg')||t.includes('ryžt')||t.includes('drąs')) return 'bolt';
+  if(t.includes('intuic')||t.includes('jautimu')||t.includes('instinkt')||t.includes('nuojaut')) return 'eye';
+  if(t.includes('disciplin')||t.includes('savitvard')||t.includes('kantrybė')||t.includes('nuosekl')) return 'target';
+  if(t.includes('komunikac')||t.includes('kalb')||t.includes('bendrav')||t.includes('įtaig')) return 'msg';
+  if(t.includes('finans')||t.includes('verslo')||t.includes('pinig')||t.includes('materialin')) return 'coin';
+  if(t.includes('strategin')||t.includes('planavim')||t.includes('tiksl')||t.includes('vizij')) return 'trophy';
+  if(t.includes('patikimum')||t.includes('ištikimy')||t.includes('sąžiningu')||t.includes('atsakomy')) return 'hands';
+  if(t.includes('ryšys')||t.includes('šeima')||t.includes('draugyst')||t.includes('bendryst')||t.includes('augim')||t.includes('tobulėjim')) return 'leaf';
+  return 'star';
+}
+// Parenka piktogramą TEKSTUI, VENGIANT pasikartojimo TAME PAČIAME sąraše
+// (perduodamas `used` Set su jau panaudotomis raktų reikšmėmis). Jei
+// pagal raktažodį parinkta piktograma jau panaudota, ieškoma pirmos
+// LAISVOS piktogramos iš fiksuotos eilės — tik jei VISOS jau panaudotos
+// (retas atvejis, kai sąrašas ilgesnis nei piktogramų kiekis), leidžiama
+// pasikartoti.
+function pillIconFor(text, used){
+  const svgs=pillIconSvgs();
+  let key=pillIconKey(text);
+  if(used.has(key)){
+    const alt=PILL_ICON_ORDER.find(k=>!used.has(k));
+    if(alt) key=alt;
+  }
+  used.add(key);
+  return svgs[key]||svgs.star;
+}
+function pillIcon(text){
+  // Paliktas atgaliniam suderinamumui (naudojamas ten, kur pasikartojimo
+  // apsauga nereikalinga / nėra sąrašo konteksto).
+  return pillIconSvgs()[pillIconKey(text)];
 }
 
 // Sklandi "iškilimo" (fade-in + slide-up) animacija rezultatų ekrane,
@@ -2520,9 +2545,10 @@ function initScrollReveal(){
 function renderInsights(containerId, insights){
   const el=document.getElementById(containerId);
   if(!el||!insights||!insights.length) return;
+  const usedIcons=new Set();
   el.innerHTML=insights.map(txt=>`
     <div class="insight-card">
-      <div class="insight-dot"></div>
+      <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(txt,usedIcons)}</div>
       <div class="insight-text">${txt}</div>
     </div>
   `).join('');
@@ -2564,9 +2590,10 @@ function displayResult(r){
   renderInsights('insights-galimybes', r.galimybes_insights);
   const pillsContainer=document.getElementById('r-gifts-pills');
   if(pillsContainer){
+    const usedPillIcons=new Set();
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
       <div class="insight-card">
-        <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIcon(d)}</div>
+        <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(d,usedPillIcons)}</div>
         <span class="insight-text">${d}</span>
       </div>
     `).join('');
