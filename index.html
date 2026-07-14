@@ -122,10 +122,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pill{background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.28);border-radius:4px;padding:5px 14px;font-size:12px;color:var(--gold2);letter-spacing:.04em;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .rs-reveal{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s ease}
 .insight-cards{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
-.insight-card{display:flex;align-items:center;gap:10px;padding:8px 11px;background:#141414;border:1px solid rgba(212,168,67,.5);border-radius:8px;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
+.insight-card{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(212,168,67,.06);border-left:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
 .insight-card.visible{opacity:1;transform:translateX(0)}
 .insight-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,168,67,.5);flex-shrink:0}
-.insight-text{font-size:13.5px;color:rgba(212,168,67,.9);font-family:'DM Sans',sans-serif;font-weight:600;line-height:1.35;letter-spacing:normal;text-shadow:0 0 8px rgba(212,168,67,.6)}
+.insight-text{flex:1;text-align:left;font-size:11.5px;line-height:1.35;color:var(--gold2);font-weight:600;font-style:normal;font-family:'DM Sans',sans-serif;letter-spacing:normal;text-shadow:none}
 @keyframes insightPulse{0%,100%{box-shadow:0 0 4px rgba(240,201,106,.5)}50%{box-shadow:0 0 12px rgba(240,201,106,1),0 0 20px rgba(240,201,106,.4)}}
 .rs-reveal.visible{opacity:1;transform:translateY(0)}
 .result-hero-orb{width:110px;height:110px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center}
@@ -684,11 +684,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
-      <div class="result-final-text">Šis skaitymas sukurtas tik tau.<br>Išsaugok — ir grįžk kai prireiks atsakymų.</div>
+      <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Išsaugok jį – tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
     </div>
     <div style="text-align:center;padding:10px 16px 22px;opacity:.75">
       <div style="width:30px;height:30px;margin:0 auto 8px;border-radius:50%;border:1px solid rgba(212,168,67,.45);display:flex;align-items:center;justify-content:center;color:var(--gold2);font-size:13px">✦</div>
-      <div style="font-size:11px;letter-spacing:.08em;color:rgba(212,168,67,.55);font-family:'DM Sans',sans-serif;text-transform:uppercase">Sukurta asmeniškai Jums · Chiromantijos analizė</div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden">
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Tavo draugai nusipelnė žinoti</div>
@@ -2548,7 +2547,7 @@ function renderInsights(containerId, insights){
   const usedIcons=new Set();
   el.innerHTML=insights.map(txt=>`
     <div class="insight-card">
-      <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(txt,usedIcons)}</div>
+      <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(txt,usedIcons)}</div>
       <div class="insight-text">${txt}</div>
     </div>
   `).join('');
@@ -2593,7 +2592,7 @@ function displayResult(r){
     const usedPillIcons=new Set();
     pillsContainer.innerHTML=(r.stiprybes_sarasas||[]).map(d=>`
       <div class="insight-card">
-        <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(d,usedPillIcons)}</div>
+        <div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">${pillIconFor(d,usedPillIcons)}</div>
         <span class="insight-text">${d}</span>
       </div>
     `).join('');
