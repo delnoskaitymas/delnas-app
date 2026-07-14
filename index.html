@@ -214,11 +214,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-row .pm-name{flex:none}
 .pm-row.sel{background:rgba(212,168,67,.12);color:var(--gold2)}
 /* pm-ls — visi mygtukai ryškūs kaip sel, dim tik prislopina */
-.pm-ls{display:flex;align-items:center;justify-content:center;gap:9px;background:#000000;border:1px solid rgba(255,255,255,.06);padding:11px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s ease,border-color .15s ease,box-shadow .2s ease,opacity .15s ease;box-sizing:border-box;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.pm-ls{display:flex;align-items:center;justify-content:center;gap:9px;background:#000000;border:1px solid rgba(212,168,67,.28);padding:11px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s ease,border-color .15s ease,box-shadow .2s ease,opacity .15s ease;box-sizing:border-box;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .pm-ls::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 100%);pointer-events:none}
 .pm-ls:active{transform:scale(.97)}
 .pm-ls.sel{background:#000000;border:1px solid var(--gold);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 10px rgba(212,168,67,.35),0 0 2px rgba(212,168,67,.5);transition:all .2s ease}
-.pm-ls.dim{opacity:.5;background:#000000;box-shadow:none}
+.pm-ls.dim{opacity:.5;background:#000000;border:1px solid rgba(212,168,67,.16);box-shadow:none}
 .pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.15);box-shadow:none}
 .pm-ls-name{font-size:13px;font-weight:700;color:#e8e0cc;letter-spacing:.02em;text-shadow:none;transition:all .25s ease}
@@ -254,7 +254,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div style="background:#0a0a0a;border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 16px 14px;max-width:340px;width:100%;box-shadow:0 0 30px rgba(212,168,67,.12);display:flex;flex-direction:column;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;flex-shrink:0">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Tavo pasitenkinimo garantija</h3>
+      <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Pinigų grąžinimo garantija</h3>
     </div>
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px">
       <p style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 10px">Mes esame tikri, kad tavo asmeninis žemėlapis suteiks tau vertingų įžvalgų apie tavo gyvenimo kelią. Kiekviena analizė yra sugeneruota naudojant pažangiausias chiromantijos duomenų analizės metodikas.</p>
@@ -469,7 +469,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <!-- Mokėjimo metodai — vienas blokas, mygtukai su tarpais -->
-    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:visible;background:rgba(7,4,15,1);box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:5px;padding:5px;position:relative;z-index:56">
+    <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:visible;background:#000000;box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:5px;padding:5px;position:relative;z-index:56">
 
       <!-- Apple Pay (slepiamas jei nepalaikomas) -->
       <button id="pm-apple-btn" class="pm-ls dim" style="display:none;width:100%;border-radius:7px">
