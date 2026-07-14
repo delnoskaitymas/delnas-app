@@ -214,14 +214,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-row .pm-name{flex:none}
 .pm-row.sel{background:rgba(212,168,67,.12);color:var(--gold2)}
 /* pm-ls — visi mygtukai ryškūs kaip sel, dim tik prislopina */
-.pm-ls{display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,rgba(212,168,67,.22),rgba(212,168,67,.10));border:none;padding:11px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s ease,box-shadow .15s ease,opacity .15s ease;box-sizing:border-box;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.pm-ls::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 100%);pointer-events:none}
+.pm-ls{display:flex;align-items:center;justify-content:center;gap:9px;background:#1a1a1a;border:1.5px solid transparent;padding:11px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s ease,border-color .15s ease,opacity .15s ease;box-sizing:border-box;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.pm-ls::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,transparent 100%);pointer-events:none}
 .pm-ls:active{transform:scale(.97)}
-.pm-ls.sel{background:linear-gradient(135deg,rgba(212,168,67,.28),rgba(212,168,67,.14));box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 0 12px rgba(212,168,67,.2);transition:all .2s ease}
-.pm-ls.dim{opacity:.5;background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(212,168,67,.02));box-shadow:none}
-.pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.28);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(212,168,67,.3),inset 0 1px 0 rgba(255,255,255,.12);transition:all .25s ease}
+.pm-ls.sel{background:#1a1a1a;border:1.5px solid var(--gold);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 10px rgba(212,168,67,.15);transition:all .2s ease}
+.pm-ls.dim{opacity:.5;background:#141414;box-shadow:none}
+.pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.15);box-shadow:none}
-.pm-ls-name{font-size:13px;font-weight:700;color:#f5d97a;letter-spacing:.02em;text-shadow:0 0 10px rgba(212,168,67,.5);transition:all .25s ease}
+.pm-ls-name{font-size:13px;font-weight:700;color:#e8e0cc;letter-spacing:.02em;text-shadow:none;transition:all .25s ease}
+.pm-ls.sel .pm-ls-name{color:var(--gold2)}
 .pm-ls.dim .pm-ls-name{color:rgba(255,255,255,.35);text-shadow:none}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
 @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
@@ -249,8 +250,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </style>
 </head>
 <body>
-<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(7,4,15,.94);align-items:center;justify-content:center;padding:12px" onclick="closeRefundPopup()">
-  <div style="background:linear-gradient(135deg,#1a1206,#0f0a03);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 16px 14px;max-width:340px;width:100%;box-shadow:0 0 30px rgba(212,168,67,.12);display:flex;flex-direction:column;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)" onclick="event.stopPropagation()">
+<div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:12px" onclick="closeRefundPopup()">
+  <div style="background:#0a0a0a;border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 16px 14px;max-width:340px;width:100%;box-shadow:0 0 30px rgba(212,168,67,.12);display:flex;flex-direction:column;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;flex-shrink:0">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Tavo pasitenkinimo garantija</h3>
@@ -264,8 +265,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(255,255,255,.85)">Trumpas atsiliepimas:</strong> Būsime dėkingi, jei trumpai parašysi, ko pritrūko – tai padeda mums kasdien tobulinti savo sistemą.</span></div>
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(255,255,255,.85)">Sprendimas:</strong> Mes nedelsdami peržiūrėsime tavo užklausą ir grąžinsime pinigus. Mūsų tikslas – laimingas vartotojas, todėl visus prašymus sprendžiame palankiai.</span></div>
       </div>
-      <div style="font-size:10.5px;color:rgba(255,255,255,.55);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">
-        <strong style="color:rgba(212,168,67,.8)">Svarbu:</strong> savo užsakymo numerį rasi rezultato ekrane iškart po sėkmingo apmokėjimo.
+      <div style="font-size:10.5px;color:var(--muted);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">
+        <strong style="color:var(--gold2)">Svarbu:</strong> savo užsakymo numerį rasi rezultato ekrane iškart po sėkmingo apmokėjimo.
       </div>
     </div>
     <button onclick="closeRefundPopup()" id="refund-close-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.3);animation:payBtnBreathing 3s ease-in-out infinite;flex-shrink:0">Tęsti savo žemėlapio užsakymą</button>
@@ -404,32 +405,32 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kas tavyje slypi tokio, ko net pats dar nesi atradęs?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie paslėptą potencialą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Kas tavyje slypi tokio, ko net pats dar nesi atradęs?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie paslėptą potencialą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Ar tikrai gyveni tą gyvenimą, kurį turėtum gyventi?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie gyvenimo tikslą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Ar tikrai gyveni tą gyvenimą, kurį turėtum gyventi?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie gyvenimo tikslą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kodėl tavo santykiai vis „strigo" tose pačiose vietose?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie tikrąsias priežastis</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Kodėl tavo santykiai vis „strigo" tose pačiose vietose?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie tikrąsias priežastis</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9 12h6"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kada pagaliau tavo pastangos taps pinigais, o ne tik darbu?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie finansinę sėkmę</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Kada pagaliau tavo pastangos taps pinigais, o ne tik darbu?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie finansinę sėkmę</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Kokia savybė tave išskiria iš visų kitų minioje?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie tavo tikrąjį unikalumą</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Kokia savybė tave išskiria iš visų kitų minioje?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie tavo tikrąjį unikalumą</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></div>
-          <span style="font-size:10.5px;line-height:1.25;color:var(--text);font-weight:700">Koks lūžis tavo gyvenime įvyks per artimiausius mėnesius?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie laukiančius pokyčius</span></span>
+          <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Koks lūžis tavo gyvenime įvyks per artimiausius mėnesius?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie laukiančius pokyčius</span></span>
           <span style="margin-left:auto;font-size:9px;color:rgba(212,168,67,.35);white-space:nowrap">🔒</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
@@ -492,7 +493,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <button id="pm-card-btn" class="pm-ls dim" style="width:100%;border-radius:7px;position:relative">
         <span class="pm-ls-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.9)" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
         <span class="pm-ls-name">Kortelė</span>
-        <span style="display:flex;align-items:center;gap:3px;margin-left:auto;opacity:.55">
+        <span style="display:flex;align-items:center;gap:3px;margin-left:auto;opacity:.35;filter:grayscale(.4)">
           <svg width="22" height="14" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#1A1F71"/><text x="4" y="13" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">VISA</text></svg>
           <svg width="22" height="14" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#252525"/><circle cx="11" cy="9" r="6" fill="#EB001B"/><circle cx="17" cy="9" r="6" fill="#F79E1B"/><path d="M14 4.8a6 6 0 0 1 0 8.4A6 6 0 0 1 14 4.8z" fill="#FF5F00"/></svg>
         </span>
@@ -504,14 +505,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.45;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
+    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
     <div style="text-align:center;margin-top:4px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Pagrindinis sakinys: saugumas + garantija -->
       <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • 14 dienų pinigų grąžinimo garantija</span>
       <!-- Pinigų grąžinimas -->
       <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.65);font-size:8.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">Pinigų grąžinimas</button>
       <!-- Logotipai -->
-      <span style="display:flex;align-items:center;gap:5px;opacity:.2;margin-top:1px">
+      <span style="display:flex;align-items:center;gap:5px;opacity:.2;margin-top:1px;filter:grayscale(.5)">
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#1A1F71"/><text x="4" y="13" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">VISA</text></svg>
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#252525"/><circle cx="11" cy="9" r="6" fill="#EB001B"/><circle cx="17" cy="9" r="6" fill="#F79E1B"/><path d="M14 4.8a6 6 0 0 1 0 8.4A6 6 0 0 1 14 4.8z" fill="#FF5F00"/></svg>
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#635BFF"/><text x="5" y="13" font-size="8" font-weight="700" fill="#fff" font-family="sans-serif">stripe</text></svg>
@@ -2981,7 +2982,7 @@ function applyDefaultPayMethod(){
   [rB,cB,gB,aB].forEach(function(b){if(b){b.classList.remove('sel');b.classList.add('dim');}});
   window._payMethod=null;
   const btn=document.getElementById('pay-btn');
-  if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  if(btn){btn.disabled=true;btn.style.opacity='.55';}
 }
 function startPayProgressBar(){
   const ps=document.getElementById('pay-section');
@@ -3085,7 +3086,7 @@ function initPayment(){
       if(err){if(ev.error){err.textContent=ev.error.message;err.style.display='block';}else err.style.display='none';}
       if(btn){
         btn.disabled=!ev.complete;
-        btn.style.opacity=ev.complete?'1':'.45';
+        btn.style.opacity=ev.complete?'1':'.55';
         btn.style.transition='opacity .15s ease';
       }
     });
@@ -3117,7 +3118,7 @@ function initPayment(){
     if(cWrap){cWrap.style.display='block';cWrap.style.animation='fu .3s ease';}
     mountCardIfNeeded();
     const btn=document.getElementById('pay-btn');
-    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+    if(btn){btn.disabled=true;btn.style.opacity='.55';}
     setTimeout(()=>{
       const payBtn=document.getElementById('pay-btn');
       if(payBtn){
