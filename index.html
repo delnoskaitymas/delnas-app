@@ -540,28 +540,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <!-- Antraštė -->
     <div style="text-align:center;margin-bottom:32px">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:14px;line-height:1.3">Gauk asmeninę analizę</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;max-width:280px;margin:0 auto">Įvesk duomenis, kad sugeneruotume tavo unikalų gyvenimo žemėlapį ir atsiųstume išsamią ataskaitą.</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#e8e2d4;margin-bottom:14px;line-height:1.3">Atskleisk savo gyvenimo žemėlapį</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;max-width:280px;margin:0 auto">Tavo delno linijos nuskaitytos. Nurodyk savo vardą ir el. paštą, kad galėtume personalizuoti ir išsaugoti tavo analizę.</div>
     </div>
     <!-- Laukeliai -->
-    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
-      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
-      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px">
+      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
+      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
-    <!-- Privatumo blokas -->
-    <div style="background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.12);border-radius:12px;padding:14px 16px;margin-bottom:28px">
-      <div style="font-size:12px;font-weight:600;color:rgba(212,168,67,.8);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        Kodėl prašome vardo ir el. pašto?
-      </div>
-      <div style="font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.7;display:flex;flex-direction:column;gap:4px">
-        <div>✦ <strong style="color:rgba(255,255,255,.7)">Vardas</strong> — personalizuoja analizę būtent Tau</div>
-        <div>✦ <strong style="color:rgba(255,255,255,.7)">El. paštas</strong> — atsiųsime pilną ataskaitą, kurią galėsi peržiūrėti bet kada</div>
-        <div>✦ <strong style="color:rgba(255,255,255,.7)">🔒 Konfidencialu</strong> — duomenys niekada neperduodami trečiosioms šalims</div>
-      </div>
-    </div>
+    <!-- Konfidencialumo eilutė -->
+    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Jūsų duomenys yra konfidencialūs ir saugūs</div>
     <!-- Mygtukas -->
-    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f7df88,#e8b840,#b8841a);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Generuoti ataskaitą</button>
+    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(135deg,#f7df88,#e8b840,#b8841a);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Atskleisti mano žemėlapį</button>
     <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 </div>
