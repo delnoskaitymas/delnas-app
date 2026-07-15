@@ -66,6 +66,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .field input{width:100%;background:var(--surf2);border:.5px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
 .field input:focus{border-color:var(--gold)}
 .field input::placeholder{color:var(--faint)}
+#o-name:focus,#o-email:focus{border-color:var(--gold2) !important;box-shadow:0 0 0 1px rgba(212,168,67,.35),0 0 14px rgba(212,168,67,.18) inset;background:rgba(255,255,255,.06) !important}
+#o-name::placeholder,#o-email::placeholder{color:rgba(232,226,212,.35)}
 .pay-methods-list{display:grid;gap:10px;margin-bottom:20px}
 .pay-opt{display:flex;align-items:center;gap:12px;background:var(--surf);border:.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .2s,background .2s}
 .pay-opt:hover,.pay-opt.sel{border-color:var(--gold);background:rgba(212,168,67,.06)}
@@ -543,8 +545,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <!-- Laukeliai -->
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
-      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
-      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s">
+      <input type="text" id="o-name" placeholder="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
+      <input type="email" id="o-email" placeholder="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:rgba(255,255,255,.1);border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
     <!-- Privatumo blokas -->
     <div style="background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.12);border-radius:12px;padding:14px 16px;margin-bottom:28px">
