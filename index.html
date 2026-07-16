@@ -1829,11 +1829,7 @@ function capturePhoto(){
       const tikrLabel=document.getElementById('tikr-label');
       // Vizualinis mirksnys — mygtukas trumpam nušvinta
       const shutterFlash=document.getElementById('cam-shutter');
-      if(shutterFlash){
-        shutterFlash.style.transition='background 0.08s ease';
-        shutterFlash.style.background='linear-gradient(135deg,#fff8e0,#f5d878,#e8b840)';
-        setTimeout(()=>{_shutterLock(shutterFlash);shutterFlash.style.transition='';},120);
-      }
+      if(shutterFlash) _shutterLock(shutterFlash);
       // Sėkmė — atstatome nesėkmių skaitiklį ir rodyti varnelę laukelyje
       window._palmFailCount=0;
       hideMsgBar();
