@@ -150,6 +150,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(7,4,15,.3);border-top-color:#000000;border-radius:50%;animation:spin2 .7s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin2{to{transform:rotate(360deg)}}
 @keyframes checkPopIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(3deg);opacity:1}80%{transform:scale(0.92)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes analyzePulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes confirmFadeIn{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
 @keyframes toastSlideUp{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}
 .rev{background:var(--surf);border:.5px solid var(--border);border-radius:14px;padding:7px;margin-bottom:10px}
 .rev-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
@@ -334,8 +336,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-dot inactive" id="cam-dot2"></div>
     <div class="cam-dot inactive" id="cam-dot3"></div>
   </div>
-  <div class="cam-title" id="cam-title">Nufotografuokite kairįjį delną</div>
-  <div id="cam-sub" class="cam-sub">Išskėskite pirštus ir laikykite delną tiesiai prieš kamerą.</div>
+  <div class="cam-title" id="cam-title">Nufotografuok kairįjį delną</div>
+  <div id="cam-sub" class="cam-sub">Laikyk delną tiesiai prieš kamerą, pirštus laikyk išskėstus.</div>
   <div id="cam-vp-wrap" style="position:relative;margin-top:6px;margin-bottom:4px;flex:1;min-height:0;max-height:calc(100dvh - 235px);width:calc(100vw - 32px);max-width:340px;margin-left:auto;margin-right:auto"><div class="cam-vp-border"></div><div class="cam-viewport" style="position:relative;overflow:hidden;height:100%;margin-top:0;margin-bottom:0;width:100%" id="cam-viewport">
 
 
@@ -372,7 +374,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /cam-viewport -->
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
-    <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:18px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4">Sistema paruošta – spauskite fotografuoti</div>
+    <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:18px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
     <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(!this.disabled) this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
@@ -1416,7 +1418,7 @@ function startApp(){
         const hint=document.getElementById('cam-hint-txt');
         if(hint){
           hint.style.opacity='0';
-          hint.textContent='Sistema paruošta – spauskite fotografuoti';
+          hint.textContent='';
           hint.style.color='rgba(212,168,67,.85)';
           hint.style.transition='opacity 0.5s ease';
           setTimeout(()=>{hint.style.opacity='1';},200);
@@ -1440,13 +1442,13 @@ function updateCameraUI(){
   const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');const dot3=document.getElementById('cam-dot3');if(dot3) dot3.classList.add('inactive');
   const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
-    title.textContent='Nufotografuokite kairįjį delną';dot1.classList.remove('inactive');dot2.classList.add('inactive');
+    title.textContent='Nufotografuok kairįjį delną';dot1.classList.remove('inactive');dot2.classList.add('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI KAIRĮJĮ DELNĄ';
   }else{
-    title.textContent='Nufotografuokite dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
+    title.textContent='Nufotografuok dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
   }
-  if(hint){hint.textContent='Sistema paruošta – spauskite fotografuoti';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
+  if(hint){hint.textContent='';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
   // Resetinti būseną perjungiant tarp delno
   handVisible=false;
   const shutterEl=document.getElementById('cam-shutter');
@@ -1736,7 +1738,7 @@ function capturePhoto(){
     setTimeout(()=>{bar.style.display='none';},300);
   }
   const SPINNER='<div id="tikr-spinner" style="width:22px;height:22px;border:2.5px solid rgba(212,168,67,.2);border-top-color:#d4a843;border-radius:50%;animation:spin2 .8s linear infinite;flex-shrink:0"></div>';
-  showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px">'+SPINNER+'<span id="tikr-label" style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif;letter-spacing:.03em">Analizuojame detales...</span></div>');
+  showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px">'+SPINNER+'<span id="tikr-label" style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif;letter-spacing:.03em;animation:analyzePulse 1.6s ease-in-out infinite">Analizuojame detales...</span></div>');
   let tikrOvl=null; // legacy compat
 
   // Po 500ms - tikrinti
@@ -1747,6 +1749,9 @@ function capturePhoto(){
       body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]})
     }).then(r=>r.json()).then(v=>{
       if(!v.valid){
+        // Sekame nesėkmingų bandymų skaičių, kad po 2-3 klaidų parodytume
+        // švelnią palaikančią frazę — vartotojas nepasiduotų.
+        window._palmFailCount=(window._palmFailCount||0)+1;
         // Konkreti klaidos žinutė pagal priežastį
         const msgs={
           'too_close':['Nuotrauka per arti.','Atitraukite ranką šiek tiek toliau – taip sistema geriau matys visą delną.'],
@@ -1755,10 +1760,11 @@ function capturePhoto(){
           'no_hand':['Sistema nematė delno.','Įsitikinkite, kad esate gerai apšviestoje vietoje ir delnas yra vaizdo centre.']
         };
         const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
+        const encourage=window._palmFailCount>=2?'<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko, dar vienas bandymas ✦</div>':'';
         // Rodyti klaidos laukelį frozen apačioje
         hideMsgBar();
         setTimeout(()=>{
-          showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.4">'+msg+'</div></div>');
+          showMsgBar('<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#f0c96a;margin-bottom:3px">'+title+'</div><div style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.4">'+msg+'</div>'+encourage+'</div>');
         },350);
         // Po 2.5s — grįžimas į kamerą
         setTimeout(()=>{
@@ -1773,7 +1779,7 @@ function capturePhoto(){
             video.style.transition='';
             // Grąžinti antraštę
             const titleEl=document.getElementById('cam-title');
-            if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';}
+            if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';}
             if(camSub) camSub.style.visibility='';
             const vpWrap1=document.getElementById('cam-vp-wrap');
             if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
@@ -1799,10 +1805,11 @@ function capturePhoto(){
         shutterFlash.style.background='linear-gradient(135deg,#fff8e0,#f5d878,#e8b840)';
         setTimeout(()=>{shutterFlash.style.background='';shutterFlash.style.transition='';},120);
       }
-      // Sėkmė — rodyti varnelę laukelyje
+      // Sėkmė — atstatome nesėkmių skaitiklį ir rodyti varnelę laukelyje
+      window._palmFailCount=0;
       hideMsgBar();
       setTimeout(()=>{
-        showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</span></div>');
+        showMsgBar('<div style="display:flex;align-items:center;justify-content:center;gap:10px;animation:confirmFadeIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:2px solid #d4a843;border-radius:50%;background:rgba(212,168,67,.15);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,.75)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;font-weight:600;color:rgba(212,168,67,.95);font-family:DM Sans,sans-serif">Patvirtinta</span></div>');
       },300);
 
       // Po 0.9s — švelniai pereiti į kitą ekraną
@@ -1819,7 +1826,7 @@ function capturePhoto(){
             if(camSub) camSub.style.visibility='';
             const vpWrap2=document.getElementById('cam-vp-wrap');
             if(vpWrap2){vpWrap2.style.flex='';vpWrap2.style.height='';vpWrap2.style.maxHeight='calc(100dvh - 235px)';vpWrap2.style.width='';}
-            document.getElementById('cam-title').textContent='Nufotografuokite dešinįjį delną';
+            document.getElementById('cam-title').textContent='Nufotografuok dešinįjį delną';
             camHand='right';
             updateCameraUI();
             // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
@@ -1861,7 +1868,7 @@ function capturePhoto(){
       if(camSub) camSub.style.visibility='';
       const vpWrap3=document.getElementById('cam-vp-wrap');
       if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
-      document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuokite kairįjį delną':'Nufotografuokite dešinįjį delną';
+      document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';
       shutter.disabled=false;
       shutter.style.opacity='1';
       shutter.style.pointerEvents='auto';
