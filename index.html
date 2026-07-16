@@ -375,7 +375,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:0;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:opacity .4s ease,background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.15)">
+    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:1;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:#000000;border:1px solid rgba(212,168,67,.28);border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:rgba(232,224,204,.5);letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:none">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
@@ -1667,11 +1667,11 @@ function _shutterLock(el){
   if(!el) return;
   el.dataset.locked='1';
   el.style.pointerEvents='none';
-  el.style.opacity='.4';
-  el.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
-  el.style.border='none';
-  el.style.color='#000000';
-  el.style.boxShadow='0 2px 16px rgba(212,168,67,.15)';
+  el.style.opacity='1';
+  el.style.background='#000000';
+  el.style.border='1px solid rgba(212,168,67,.28)';
+  el.style.color='rgba(232,224,204,.5)';
+  el.style.boxShadow='none';
 }
 function _shutterUnlock(el){
   if(!el) return;
