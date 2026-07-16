@@ -187,6 +187,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes encPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 @keyframes camBreathing{0%,100%{box-shadow:0 2px 12px rgba(212,168,67,.2),0 0 0 0 rgba(212,168,67,0);transform:scale(1);border:none}50%{box-shadow:0 6px 32px rgba(212,168,67,.6),0 0 0 4px rgba(212,168,67,.2),0 0 0 1px rgba(212,168,67,.4);transform:scale(1.02);border:none}}
+@keyframes guidePulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.85;transform:scale(1.035)}}
 @keyframes payBtnSpinner{
   to{transform:rotate(360deg)}
 }
@@ -347,7 +348,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="cam-wait" style="display:none"></div>
     <div id="cam-guide" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;transition:opacity .5s ease;opacity:1">
       
-      <svg id="cam-guide-svg" width="120" height="158" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2))">
+      <svg id="cam-guide-svg" width="120" height="158" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2));animation:guidePulse 2.2s ease-in-out infinite;transform-origin:center">
         
         <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
         
@@ -1404,6 +1405,7 @@ function startApp(){
           // Pulsavimas prieš išnykimą
           const guideSvgEl=document.getElementById('cam-guide-svg');
           if(guideSvgEl){
+            guideSvgEl.style.animation='none';
             guideSvgEl.style.transition='filter 0.3s ease, opacity 0.3s ease';
             guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(212,168,67,.9)) drop-shadow(0 0 6px rgba(212,168,67,.6))';
             guideSvgEl.style.opacity='0.85';
@@ -1529,6 +1531,7 @@ function setHandDetected(detected,shutter,hintTxt){
     const vp=document.getElementById('cam-viewport');
     if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
     if(guideSvg){
+      guideSvg.style.animation='none';
       ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
       guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
