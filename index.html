@@ -375,7 +375,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:18px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" onclick="capturePhoto()" disabled onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(!this.disabled) this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
@@ -1428,7 +1428,7 @@ function startApp(){
       navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
 
       const shutter=document.getElementById('cam-shutter');
-      if(shutter){shutter.disabled=true;shutter.style.opacity='0.35';}
+      if(shutter){shutter.dataset.locked='1';shutter.style.pointerEvents='none';shutter.style.opacity='0.35';}
       // Pradėti skin detection po 1s kad kamera stabilizuotusi
       setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
     };
@@ -1452,7 +1452,7 @@ function updateCameraUI(){
   // Resetinti būseną perjungiant tarp delno
   handVisible=false;
   const shutterEl=document.getElementById('cam-shutter');
-  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';shutterEl.disabled=true;}
+  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';shutterEl.dataset.locked='1';shutterEl.style.pointerEvents='none';}
   const vpEl=document.getElementById('cam-viewport');if(vpEl) vpEl.style.animation='none';
 }
 
@@ -1521,7 +1521,7 @@ function setHandDetected(detected,shutter,hintTxt){
   const guide=document.getElementById('cam-guide');
   if(detected){
     if(guide) guide.style.opacity='0';
-    shutter.disabled=false;
+    shutter.dataset.locked='0';shutter.style.pointerEvents='auto';
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
     // Breathing animacija + glow — toks pats abiejuose ekranuose
@@ -1535,7 +1535,7 @@ function setHandDetected(detected,shutter,hintTxt){
     }
   }else{
     if(guide) guide.style.opacity='1';
-    shutter.disabled=true;
+    shutter.dataset.locked='1';shutter.style.pointerEvents='none';
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
     shutter.style.animation='none';
@@ -1661,6 +1661,8 @@ function showCamToast(title, msg){
 
 function capturePhoto(){
   if(!camStream) return;
+  const shutterGuard=document.getElementById('cam-shutter');
+  if(shutterGuard && shutterGuard.dataset.locked==='1') return;
   const video=document.getElementById('cam-video');
   const canvas=document.getElementById('cam-canvas');
   const flash=document.getElementById('cam-flash');
@@ -1713,7 +1715,7 @@ function capturePhoto(){
   // PASTABA: antraštė, paantraštė ir mygtukas DABAR NEBESLEPIAMI ir
   // NEKEIČIAMI analizės/sėkmės/nesėkmės metu — taip garantuojama, kad
   // išdėstymas (ir kameros lango dydis) niekada nepasikeičia.
-  if(shutter){shutter.disabled=true;shutter.style.opacity='.4';shutter.style.pointerEvents='none';}
+  if(shutter){shutter.dataset.locked='1';shutter.style.opacity='.4';shutter.style.pointerEvents='none';}
 
   // Rodyti "Analizuojame" laukelį frozen apačioje
   function showMsgBar(html){
@@ -1788,7 +1790,7 @@ function capturePhoto(){
             if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
             // Grąžinti mygtuką
             shutterWrap.style.visibility='';
-            shutter.disabled=false;shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+            shutter.dataset.locked='0';shutter.style.pointerEvents='auto';shutter.style.opacity='1';shutter.style.pointerEvents='auto';
             shutter.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
             shutter.style.animation='camBreathing 2s ease-in-out infinite';
             const vp=document.getElementById('cam-viewport');
@@ -1835,7 +1837,7 @@ function capturePhoto(){
             // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
             const shutterR=document.getElementById('cam-shutter');
             if(shutterR){
-              shutterR.disabled=false;
+              shutterR.dataset.locked='0';shutterR.style.pointerEvents='auto';
               shutterR.style.opacity='1';
               shutterR.style.pointerEvents='auto';
               shutterR.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
@@ -1872,7 +1874,7 @@ function capturePhoto(){
       const vpWrap3=document.getElementById('cam-vp-wrap');
       if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
       document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';
-      shutter.disabled=false;
+      shutter.dataset.locked='0';shutter.style.pointerEvents='auto';
       shutter.style.opacity='1';
       shutter.style.pointerEvents='auto';
       showCamError('Klaida.','Prašome bandyti dar kartą.');
