@@ -183,7 +183,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 @keyframes rescanAnim{0%{top:4%;opacity:1}100%{top:94%;opacity:.5}}
 .cam-scan-ok{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#000000;gap:16px}
 .cam-scan-ok.active{display:flex}
-.cam-shutter-wrap{margin-top:4px;padding:0 20px 0;padding-bottom:max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;flex-shrink:0}
+.cam-shutter-wrap{margin-top:0px;padding:0 20px 0;padding-bottom:max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;flex-shrink:0}
 .cam-scan-ok-badge{width:72px;height:72px;border-radius:50%;background:#1a0f00;border:1.5px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center}
 @keyframes encPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 @keyframes camBreathing{0%,100%{box-shadow:0 2px 12px rgba(212,168,67,.2),0 0 0 0 rgba(212,168,67,0);transform:scale(1);border:none}50%{box-shadow:0 6px 32px rgba(212,168,67,.6),0 0 0 4px rgba(212,168,67,.2),0 0 0 1px rgba(212,168,67,.4);transform:scale(1.02);border:none}}
@@ -366,7 +366,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="cam-scan-line"></div>
     <div class="cam-flash" id="cam-flash"></div>
     <div class="cam-frozen" id="cam-frozen">
-      <div id="cam-msg-bar" style="display:none;position:absolute;bottom:10px;left:10px;right:10px;z-index:20;border:1px solid rgba(212,168,67,.55);border-radius:14px;background:rgba(7,4,15,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px 16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)"></div>
+      <div id="cam-msg-bar" style="display:none;position:absolute;bottom:10px;left:10px;right:10px;z-index:20;border:1px solid rgba(212,168,67,.28);border-radius:14px;background:#000000;padding:12px 16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)"></div>
     </div>
     <div class="cam-rescan" id="cam-rescan"></div>
     
@@ -375,7 +375,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:18px;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:.4;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:opacity .5s ease,transform .12s ease,background .5s ease,box-shadow .5s ease;background:linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%);border:none;border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:0 2px 16px rgba(212,168,67,.2)">
+    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:1;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:#000000;border:1px solid rgba(212,168,67,.28);border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:rgba(232,224,204,.5);letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:none">
       <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Privatumas garantuojamas</div>
@@ -1428,7 +1428,7 @@ function startApp(){
       navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
 
       const shutter=document.getElementById('cam-shutter');
-      if(shutter){shutter.dataset.locked='1';shutter.style.pointerEvents='none';shutter.style.opacity='0.35';}
+      _shutterLock(shutter);
       // Pradėti skin detection po 1s kad kamera stabilizuotusi
       setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
     };
@@ -1452,7 +1452,7 @@ function updateCameraUI(){
   // Resetinti būseną perjungiant tarp delno
   handVisible=false;
   const shutterEl=document.getElementById('cam-shutter');
-  if(shutterEl){shutterEl.style.animation='none';shutterEl.style.opacity='0.35';shutterEl.dataset.locked='1';shutterEl.style.pointerEvents='none';}
+  if(shutterEl){shutterEl.style.animation='none';_shutterLock(shutterEl);}
   const vpEl=document.getElementById('cam-viewport');if(vpEl) vpEl.style.animation='none';
 }
 
@@ -1521,7 +1521,7 @@ function setHandDetected(detected,shutter,hintTxt){
   const guide=document.getElementById('cam-guide');
   if(detected){
     if(guide) guide.style.opacity='0';
-    shutter.dataset.locked='0';shutter.style.pointerEvents='auto';
+    _shutterUnlock(shutter);
     shutter.style.opacity='1';
     shutter.style.pointerEvents='auto';
     // Breathing animacija + glow — toks pats abiejuose ekranuose
@@ -1535,7 +1535,7 @@ function setHandDetected(detected,shutter,hintTxt){
     }
   }else{
     if(guide) guide.style.opacity='1';
-    shutter.dataset.locked='1';shutter.style.pointerEvents='none';
+    _shutterLock(shutter);
     shutter.style.opacity='0.35';
     shutter.style.pointerEvents='none';
     shutter.style.animation='none';
@@ -1659,6 +1659,30 @@ function showCamToast(title, msg){
 }
 
 
+// Užrakinto (neaktyvaus) mygtuko stilius suvienodintas su mokėjimo ekrano
+// neutraliu (nepasirinkto) mokėjimo būdo mygtuku — juodas fonas, plonas
+// auksinis apvadas, o ne permatomas auksinis gradientas. Atrakinus,
+// mygtukas grįžta į ryškų auksinį gradientą su juodu tekstu.
+function _shutterLock(el){
+  if(!el) return;
+  el.dataset.locked='1';
+  el.style.pointerEvents='none';
+  el.style.opacity='1';
+  el.style.background='#000000';
+  el.style.border='1px solid rgba(212,168,67,.28)';
+  el.style.color='rgba(232,224,204,.5)';
+  el.style.boxShadow='none';
+}
+function _shutterUnlock(el){
+  if(!el) return;
+  el.dataset.locked='0';
+  el.style.pointerEvents='auto';
+  el.style.opacity='1';
+  el.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
+  el.style.border='none';
+  el.style.color='#000000';
+  el.style.boxShadow='0 2px 16px rgba(212,168,67,.2)';
+}
 function capturePhoto(){
   if(!camStream) return;
   const shutterGuard=document.getElementById('cam-shutter');
@@ -1715,7 +1739,7 @@ function capturePhoto(){
   // PASTABA: antraštė, paantraštė ir mygtukas DABAR NEBESLEPIAMI ir
   // NEKEIČIAMI analizės/sėkmės/nesėkmės metu — taip garantuojama, kad
   // išdėstymas (ir kameros lango dydis) niekada nepasikeičia.
-  if(shutter){shutter.dataset.locked='1';shutter.style.opacity='.4';shutter.style.pointerEvents='none';}
+  if(shutter){_shutterLock(shutter);}
 
   // Rodyti "Analizuojame" laukelį frozen apačioje
   function showMsgBar(html){
@@ -1771,7 +1795,7 @@ function capturePhoto(){
         // Po klaidos — grįžimas į kamerą. Jei tai jau antra ar daugiau
         // nesėkmė iš eilės, laukelį rodome ilgiau, kad vartotojas spėtų
         // perskaityti tekstą, o ne tik jį pastebėti.
-        const returnDelay=window._palmFailCount>=2?3200:1800;
+        const returnDelay=window._palmFailCount>=2?3200:2500;
         setTimeout(()=>{
           // Frozen išnyksta, video atsiranda cross-fade
           video.style.display='block';
@@ -1790,7 +1814,7 @@ function capturePhoto(){
             if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
             // Grąžinti mygtuką
             shutterWrap.style.visibility='';
-            shutter.dataset.locked='0';shutter.style.pointerEvents='auto';shutter.style.opacity='1';shutter.style.pointerEvents='auto';
+            _shutterUnlock(shutter);shutter.style.opacity='1';shutter.style.pointerEvents='auto';
             shutter.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
             shutter.style.animation='camBreathing 2s ease-in-out infinite';
             const vp=document.getElementById('cam-viewport');
@@ -1837,7 +1861,7 @@ function capturePhoto(){
             // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
             const shutterR=document.getElementById('cam-shutter');
             if(shutterR){
-              shutterR.dataset.locked='0';shutterR.style.pointerEvents='auto';
+              _shutterUnlock(shutterR);
               shutterR.style.opacity='1';
               shutterR.style.pointerEvents='auto';
               shutterR.style.background='linear-gradient(135deg,#f0c96a 0%,#d4a843 50%,#a07828 100%)';
@@ -1874,7 +1898,7 @@ function capturePhoto(){
       const vpWrap3=document.getElementById('cam-vp-wrap');
       if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
       document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';
-      shutter.dataset.locked='0';shutter.style.pointerEvents='auto';
+      _shutterUnlock(shutter);
       shutter.style.opacity='1';
       shutter.style.pointerEvents='auto';
       showCamError('Klaida.','Prašome bandyti dar kartą.');
