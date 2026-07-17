@@ -156,7 +156,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rev{background:var(--surf);border:.5px solid var(--border);border-radius:14px;padding:7px;margin-bottom:10px}
 .rev-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .rev-av{width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px}
-.rev-name{font-size:12px;font-weight:500}
+.rev-name{font-size:12px;font-weight:500;color:#e8e2d4}
 .rev-handle{font-size:10px;color:var(--muted)}
 .rev-stars{margin-left:auto;color:var(--gold);font-size:11px}
 .rev-text{font-size:13px;color:var(--muted);line-height:1.6;font-style:italic}
@@ -292,14 +292,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent 78%,rgba(7,4,15,.6) 88%,rgba(7,4,15,.95) 95%,#000000 100%)"></div>
       <div style="position:relative;z-index:3;padding:48px 24px 0;text-align:center">
         <div style="font-size:13px;letter-spacing:.2em;color:rgba(212,168,67,.65);text-transform:uppercase;margin-bottom:13px;font-family:'DM Sans',sans-serif">Skaitmeninė chiromantijos analizė</div>
-        <h1 class="serif" style="font-size:31px;font-weight:700;line-height:1.2;margin-bottom:0;color:#f0ece2">
+        <h1 class="serif" style="font-size:31px;font-weight:700;line-height:1.2;margin-bottom:0;color:#e8e2d4">
           Tavo gyvenimo<br><em class="gold">žemėlapis</em>
         </h1>
       </div>
     </div>
     
   <div class="wrap center" style="padding-top:0px;padding-bottom:4px;position:relative;z-index:3;margin-top:-30px">
-    <p style="font-size:15px;font-weight:400;color:rgba(255,255,255,.78);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
+    <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:14px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
     <div style="font-size:12px;color:rgba(255,255,255,.45);font-style:italic;margin-bottom:6px">
       Jau <span id="static-main-count" style="color:var(--gold2);font-weight:500">2 847</span> <span id="static-main-word">žmonės</span> atliko savo analizę
@@ -350,17 +350,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       
       <svg id="cam-guide-svg" width="120" height="158" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.55;transition:opacity .5s,filter .5s;display:block;margin:auto;filter:drop-shadow(0 0 8px rgba(212,168,67,.2));animation:guidePulse 2.2s ease-in-out infinite;transform-origin:center">
         
-        <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <rect id="p5" x="118" y="48" width="18" height="58" rx="9" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)"/>
         
-        <rect id="p4" x="94" y="28" width="20" height="74" rx="10" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <rect id="p4" x="94" y="28" width="20" height="74" rx="10" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)"/>
         
-        <rect id="p3" x="68" y="18" width="22" height="84" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <rect id="p3" x="68" y="18" width="22" height="84" rx="11" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)"/>
         
-        <rect id="p2" x="42" y="26" width="22" height="76" rx="11" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <rect id="p2" x="42" y="26" width="22" height="76" rx="11" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)"/>
         
-        <rect id="p1" x="4" y="72" width="16" height="52" rx="8" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)" transform="rotate(-18 12 98)"/>
+        <rect id="p1" x="4" y="72" width="16" height="52" rx="8" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)" transform="rotate(-18 12 98)"/>
         
-        <rect id="palm" x="18" y="96" width="124" height="110" rx="22" stroke="#888" stroke-width="1.5" fill="rgba(136,136,136,0.06)"/>
+        <rect id="palm" x="18" y="96" width="124" height="110" rx="22" stroke="#fff" stroke-width="1.5" fill="rgba(255,255,255,0.06)"/>
       </svg>
 
     </div>
@@ -1407,7 +1407,7 @@ function startApp(){
           if(guideSvgEl){
             guideSvgEl.style.animation='none';
             guideSvgEl.style.transition='filter 0.3s ease, opacity 0.3s ease';
-            guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(212,168,67,.9)) drop-shadow(0 0 6px rgba(212,168,67,.6))';
+            guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(255,255,255,.7)) drop-shadow(0 0 6px rgba(255,255,255,.5))';
             guideSvgEl.style.opacity='0.85';
           }
           setTimeout(()=>{
@@ -1532,9 +1532,8 @@ function setHandDetected(detected,shutter,hintTxt){
     if(vp) vp.style.animation='camGoldGlow 2.5s ease-in-out infinite';
     if(guideSvg){
       guideSvg.style.animation='none';
-      ['p1','p2','p3','p4','p5','palm'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#d4a843');el.setAttribute('fill','rgba(212,168,67,0.10)');}});
       guideSvg.style.opacity='.55';
-      guideSvg.style.filter='drop-shadow(0 0 6px rgba(212,168,67,.6))';
+      guideSvg.style.filter='drop-shadow(0 0 6px rgba(255,255,255,.4))';
     }
   }else{
     if(guide) guide.style.opacity='1';
@@ -2887,7 +2886,7 @@ function showSampleReport(e){
         <div style="width:100%;height:100%;background:rgba(212,168,67,.08);display:flex;align-items:center;justify-content:center;font-size:28px">🤲</div>
       </div>
     </div>
-    <div style="font-size:22px;font-weight:700;color:#f0ece2;font-family:'Playfair Display',serif;margin-bottom:4px">Tavo Gyvenimo Žemėlapis</div>
+    <div style="font-size:22px;font-weight:700;color:#e8e2d4;font-family:'Playfair Display',serif;margin-bottom:4px">Tavo Gyvenimo Žemėlapis</div>
     <div style="font-size:11px;color:rgba(212,168,67,.6);letter-spacing:.1em">Chiromantija · Likimo žemėlapis · Skaitmeninė analizė</div>
     <div style="width:50px;height:1px;background:rgba(212,168,67,.5);margin:12px auto 0"></div>
     <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.45);font-style:italic">Tai — pavyzdys. Tavo ataskaita bus personalizuota pagal tavo delno linijų unikalią struktūrą.</div>
