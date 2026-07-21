@@ -332,7 +332,37 @@ app.post('/validate-palm', async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
-    const promptText = 'You are a quality-control checker for a palm-reading app. Examine this image carefully before answering. Reply with exactly one word only:\nYES - if: all 5 fingers (including thumb) are visible and identifiable — the thumb may be close to the palm or at a natural angle, it does not need to be far separated. Fingertips should not be cropped/cut off by the frame edge, but they do not need extra empty margin around them — touching or nearly touching the edge is fine as long as the fingertip itself is fully shown. The palm (not the back of the hand) should generally face the camera, and most of the palm surface should be visible.\nFINGERS_MISSING - only if a fingertip is genuinely cropped out of frame, or a finger is clearly missing/hidden from view, or fingers are tightly closed together making them impossible to count, or the palm is mostly out of frame.\nTOO_CLOSE - the hand fills the entire frame with no background visible around it at all.\nSIDEWAYS - the hand is rotated showing mostly its side/edge rather than the flat palm.\nNO_HAND - no hand is visible, or only the back of the hand is shown.\nBe reasonable, not pedantic — a normal, natural hand photo with all 5 fingers visible should be YES even if the thumb sits close to the palm or a fingertip is near the frame edge. Only reject clear, obvious problems. Reply with one word only.';
+    // ═══════════════════════════════════════════════════════════════════
+    // DVIEJŲ ŽINGSNIŲ VALIDACIJA: AI grąžina TIK objektyvius, išmatuojamus
+    // vizualinius faktus (kiek pirštų matosi, koks % delno matomas, ir t.t.)
+    // — o YES/NO SPRENDIMĄ priima ŠIS KODAS pagal aiškias skaitines
+    // taisykles (žr. PALM_VALIDATION_THRESHOLDS žemiau).
+    // PRIEŽASTIS: ankstesnis variantas prašė modelio IŠKART atsakyti
+    // vienu žodžiu (YES/NO) pagal subjektyvų "be reasonable" jausmą — dėl
+    // to griežtumas nuolat svyravo (per griežta → atmesdavo geras
+    // nuotraukas; per švelnu → praleisdavo pusę delno/trūkstamą pirštą).
+    // Dabar, jei ateityje reikės koreguoti griežtumą, PAKANKA pakeisti
+    // vieną skaičių žemiau (pvz. minPalmPercent), o NE perrašinėti
+    // prompt'o žodžius ir spėlioti, kaip modelis juos interpretuos.
+    // ═══════════════════════════════════════════════════════════════════
+    const PALM_VALIDATION_THRESHOLDS = {
+      minFingersVisible: 5,      // visi 5 pirštai (su nykščiu) turi būti matomi
+      minPalmPercent: 65         // bent 65% delno paviršiaus turi būti kadre
+    };
+
+    const promptText = `Analyze this hand photo carefully and objectively. Do not decide pass/fail — just report what you observe as measurements.
+
+Reply with ONLY this JSON object, no other text, no markdown formatting:
+{"fingers_visible": <integer 0-5>, "palm_percent_visible": <integer 0-100>, "orientation": "palm" | "back" | "side", "fingertips_cropped": true | false, "hand_present": true | false}
+
+Field definitions:
+- fingers_visible: how many of the 5 fingers (including thumb) can be clearly identified and counted, even if close together or at a natural angle. A finger counts as visible even if the thumb sits close to the palm.
+- palm_percent_visible: your best estimate of what percentage of the total palm surface area is actually shown in the frame (0 = none visible, 100 = entire palm visible). If only half the palm is in frame (rest cropped out or out of shot), this should be around 50 or less.
+- orientation: "palm" if the palm (not back of hand) is facing the camera and reasonably flat to it; "side" if the hand is rotated showing mostly its edge; "back" if the back of the hand faces the camera.
+- fingertips_cropped: true only if a fingertip is genuinely cut off by the frame edge (not just close to it).
+- hand_present: false if no hand is visible at all in the image.
+
+Be precise and objective with the percentages — do not round everything to convenient numbers like 50 or 100.`;
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
@@ -348,7 +378,7 @@ app.post('/validate-palm', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 10,
+        max_tokens: 150,
         temperature: 0,
         messages: [{
           role: 'user',
@@ -361,18 +391,48 @@ app.post('/validate-palm', async (req, res) => {
     });
 
     const data = await response.json();
-    const rawAnswer = (data.content?.[0]?.text || '').trim().toUpperCase();
-    const code = rawAnswer.split(/[\s\n\r.,!?:;]/)[0].trim();
-    console.log('[validate-palm] raw:', JSON.stringify(rawAnswer), 'code:', code);
-    const valid = code === 'YES';
-    let reason = null;
-    if(!valid){
-      if(code==='TOO_CLOSE') reason='too_close';
-      else if(code==='FINGERS_MISSING') reason='fingers_missing';
-      else if(code==='SIDEWAYS') reason='sideways';
-      else reason='no_hand';
+    const rawAnswer = (data.content?.[0]?.text || '').trim();
+    console.log('[validate-palm] raw:', JSON.stringify(rawAnswer));
+
+    let facts = null;
+    try {
+      const jsonMatch = rawAnswer.match(/\{[\s\S]*\}/);
+      if (jsonMatch) facts = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('[validate-palm] JSON parse klaida:', parseErr.message);
     }
-    res.json({valid, reason});
+
+    if (!facts) {
+      // Modelis negrąžino tinkamo JSON — saugumo dėlei atmetame, kad
+      // vartotojas galėtų iš karto bandyti dar kartą (ne kliūva be atsako).
+      return res.json({ valid: false, reason: 'no_hand' });
+    }
+
+    console.log('[validate-palm] facts:', JSON.stringify(facts));
+
+    let valid = true;
+    let reason = null;
+
+    if (facts.hand_present === false) {
+      valid = false; reason = 'no_hand';
+    } else if (facts.orientation === 'back') {
+      valid = false; reason = 'no_hand';
+    } else if (facts.orientation === 'side') {
+      valid = false; reason = 'sideways';
+    } else if ((facts.fingers_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minFingersVisible || facts.fingertips_cropped === true) {
+      valid = false; reason = 'fingers_missing';
+    } else if ((facts.palm_percent_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minPalmPercent) {
+      valid = false; reason = 'low_palm_visibility';
+    } else if ((facts.palm_percent_visible ?? 0) >= 95 && (facts.fingers_visible ?? 0) === 5) {
+      // Papildoma euristika "too_close" atvejui: jei delnas užima visą kadrą
+      // (labai aukštas % + visi pirštai vos telpa), tikėtina kad per arti.
+      // Paliekama valid=true čia — modelis šio atvejo tiksliau nepraneša per
+      // šiuos laukus, todėl "too_close" toliau tikrinamas kliento pusėje
+      // (skin-area canvas patikra prieš siunčiant į šį endpoint'ą).
+    }
+
+    console.log('[validate-palm] rezultatas: valid=', valid, 'reason=', reason);
+    res.json({ valid, reason });
   } catch(e) {
     console.error('validate-palm klaida:', e.message);
     res.json({ valid: false });
