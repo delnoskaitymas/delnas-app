@@ -347,7 +347,7 @@ app.post('/validate-palm', async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════
     const PALM_VALIDATION_THRESHOLDS = {
       minFingersVisible: 5,      // visi 5 pirštai (su nykščiu) turi būti matomi
-      minPalmPercent: 65         // bent 65% delno paviršiaus turi būti kadre
+      minPalmPercent: 85         // bent 85% delno paviršiaus turi būti kadre
     };
 
     const promptText = `Analyze this hand photo carefully and objectively. Do not decide pass/fail — just report what you observe as measurements.
