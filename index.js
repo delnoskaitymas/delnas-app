@@ -352,17 +352,19 @@ app.post('/validate-palm', async (req, res) => {
 
     const promptText = `Analyze this hand photo carefully and objectively. Do not decide pass/fail — just report what you observe as measurements.
 
+IMPORTANT: Many rejected photos show only 1-2 fingers with most of the hand out of frame, or only a small sliver of palm. Do NOT assume a finger is present just because a hand is generally in the photo — you must actually see each specific finger to count it as visible. If you are unsure whether a finger is really there, mark it as NOT visible (false). Judge each finger separately and independently; do not let a general impression of "there's a hand here" inflate the count.
+
 Reply with ONLY this JSON object, no other text, no markdown formatting:
-{"fingers_visible": <integer 0-5>, "palm_percent_visible": <integer 0-100>, "orientation": "palm" | "back" | "side", "fingertips_cropped": true | false, "hand_present": true | false}
+{"thumb_visible": true|false, "index_visible": true|false, "middle_visible": true|false, "ring_visible": true|false, "pinky_visible": true|false, "palm_percent_visible": <integer 0-100>, "orientation": "palm" | "back" | "side", "fingertips_cropped": true | false, "hand_present": true | false}
 
 Field definitions:
-- fingers_visible: how many of the 5 fingers (including thumb) can be clearly identified and counted, even if close together or at a natural angle. A finger counts as visible even if the thumb sits close to the palm.
-- palm_percent_visible: your best estimate of what percentage of the total palm surface area is actually shown in the frame (0 = none visible, 100 = entire palm visible). If only half the palm is in frame (rest cropped out or out of shot), this should be around 50 or less.
+- {finger}_visible: true ONLY if that specific finger can be clearly seen and identified in the frame, from roughly its base to its tip. If most of a finger is out of frame or hidden, mark it false, even if you can see other fingers clearly.
+- palm_percent_visible: your best estimate of what percentage of the total palm surface area is actually shown in the frame (0 = none visible, 100 = entire palm visible). If only a corner or sliver of the palm is in frame, this should be a LOW number (10-30), not a default like 50.
 - orientation: "palm" if the palm (not back of hand) is facing the camera and reasonably flat to it; "side" if the hand is rotated showing mostly its edge; "back" if the back of the hand faces the camera.
-- fingertips_cropped: true only if a fingertip is genuinely cut off by the frame edge (not just close to it).
+- fingertips_cropped: true if any of the visible fingers has its tip genuinely cut off by the frame edge (not just close to it).
 - hand_present: false if no hand is visible at all in the image.
 
-Be precise and objective with the percentages — do not round everything to convenient numbers like 50 or 100.`;
+Be precise and objective — do not round everything to convenient default numbers.`;
 
     const imageBlocks = photos.map(p => ({
       type: 'image',
@@ -410,6 +412,9 @@ Be precise and objective with the percentages — do not round everything to con
 
     console.log('[validate-palm] facts:', JSON.stringify(facts));
 
+    const fingersVisibleCount = ['thumb_visible','index_visible','middle_visible','ring_visible','pinky_visible']
+      .reduce((count, key) => count + (facts[key] === true ? 1 : 0), 0);
+
     let valid = true;
     let reason = null;
 
@@ -419,11 +424,11 @@ Be precise and objective with the percentages — do not round everything to con
       valid = false; reason = 'no_hand';
     } else if (facts.orientation === 'side') {
       valid = false; reason = 'sideways';
-    } else if ((facts.fingers_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minFingersVisible || facts.fingertips_cropped === true) {
+    } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible || facts.fingertips_cropped === true) {
       valid = false; reason = 'fingers_missing';
     } else if ((facts.palm_percent_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minPalmPercent) {
       valid = false; reason = 'low_palm_visibility';
-    } else if ((facts.palm_percent_visible ?? 0) >= 95 && (facts.fingers_visible ?? 0) === 5) {
+    } else if ((facts.palm_percent_visible ?? 0) >= 95 && fingersVisibleCount === 5) {
       // Papildoma euristika "too_close" atvejui: jei delnas užima visą kadrą
       // (labai aukštas % + visi pirštai vos telpa), tikėtina kad per arti.
       // Paliekama valid=true čia — modelis šio atvejo tiksliau nepraneša per
