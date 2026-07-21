@@ -1543,6 +1543,38 @@ function _pointInFrame(pt){
   return pt && pt.x>=FRAME_MARGIN && pt.x<=(1-FRAME_MARGIN) && pt.y>=FRAME_MARGIN && pt.y<=(1-FRAME_MARGIN);
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// DELNAS ar NUGARĖLĖ? MediaPipe taškai atrodo PANAŠIAI abiem atvejais —
+// vien taškų BUVIMAS kadre nepasako, kuri rankos pusė atsukta į kamerą.
+// Sprendžiame pagal taškų IŠSIDĖSTYMO KRYPTĮ (wrist → index_mcp →
+// pinky_mcp "sukimosi" kryptį vaizdo plokštumoje), derinant su MediaPipe
+// nustatyta rankos puse (Left/Right).
+//
+// SVARBU (kalibravimo pastaba): ženklo kryptis priklauso nuo to, kaip
+// MediaPipe interpretuoja rankos pusę su NEVEIDRODINE (rear/environment)
+// kamera šioje app'oje. Teoriškai apskaičiuota, bet REIKALINGAS
+// patikrinimas su realiu įrenginiu. Jei realiame teste paaiškės, kad
+// patikra veikia ATVIRKŠČIAI (priima nugarėlę, atmeta tikrą delną) —
+// tereikia pakeisti PALM_ORIENTATION_FLIP į true žemiau, NIEKO daugiau
+// keisti nereikia.
+// ─────────────────────────────────────────────────────────────────────
+const PALM_ORIENTATION_FLIP = false;
+
+function _isPalmFacingCamera(lm, handednessLabel){
+  if (!handednessLabel) return true; // nežinoma — nerizikuojame klaidingai atmesti
+  const wrist = lm[HAND_LM.WRIST];
+  const indexMcp = lm[HAND_LM.INDEX_MCP];
+  const pinkyMcp = lm[HAND_LM.PINKY_MCP];
+  const v1x = indexMcp.x - wrist.x, v1y = indexMcp.y - wrist.y;
+  const v2x = pinkyMcp.x - wrist.x, v2y = pinkyMcp.y - wrist.y;
+  const cross = v1x * v2y - v1y * v2x; // taškų "sukimosi" kryptis (winding)
+  const isRightHand = handednessLabel === 'Right';
+  let palmFacing = isRightHand ? (cross < 0) : (cross > 0);
+  if (PALM_ORIENTATION_FLIP) palmFacing = !palmFacing;
+  console.log('[handLandmarker] orientacija: handedness=', handednessLabel, 'cross=', cross.toFixed(4), '-> palmFacing=', palmFacing);
+  return palmFacing;
+}
+
 // Pagrindinė patikros funkcija. Grąžina:
 //   {ok:false, unavailable:true}                — MediaPipe neprieinamas, naudoti atsarginį (serverio) variantą
 //   {ok:true, valid:true, reason:null}           — nuotrauka priimtina
@@ -1564,6 +1596,8 @@ async function analyzeHandLandmarksLocal(canvasEl){
   }
 
   const lm = result.landmarks[0]; // 21 taškas, x/y normalizuoti [0,1] kadro atžvilgiu
+  const handednessLabel = (result.handedness && result.handedness[0] && result.handedness[0][0])
+    ? result.handedness[0][0].categoryName : null;
 
   let fingersVisible = 0;
   for (const key in FINGER_LM_GROUPS) {
@@ -1572,6 +1606,7 @@ async function analyzeHandLandmarksLocal(canvasEl){
   }
 
   const palmBaseFullyVisible = PALM_BASE_LM.every(idx => _pointInFrame(lm[idx]));
+  const palmFacingCamera = _isPalmFacingCamera(lm, handednessLabel);
 
   // Apytikslis delno "užpildymo" kadre įvertinimas — riešo ir vidurinio
   // piršto MCP sąnario atstumas normalizuotose koordinatėse. Kuo didesnis,
@@ -1580,8 +1615,11 @@ async function analyzeHandLandmarksLocal(canvasEl){
   const midMcp = lm[HAND_LM.MIDDLE_MCP];
   const palmSpan = Math.hypot(wrist.x - midMcp.x, wrist.y - midMcp.y);
 
-  console.log('[handLandmarker] fingersVisible=', fingersVisible, 'palmBaseFullyVisible=', palmBaseFullyVisible, 'palmSpan=', palmSpan.toFixed(3));
+  console.log('[handLandmarker] fingersVisible=', fingersVisible, 'palmBaseFullyVisible=', palmBaseFullyVisible, 'palmFacingCamera=', palmFacingCamera, 'palmSpan=', palmSpan.toFixed(3));
 
+  if (!palmFacingCamera) {
+    return { ok:true, valid:false, reason:'back_hand' };
+  }
   if (fingersVisible < 5) {
     return { ok:true, valid:false, reason:'fingers_missing' };
   }
@@ -1945,6 +1983,7 @@ function capturePhoto(){
           'fingers_missing':['Sistema nemato visų pirštų.','Prašome plačiau išskėsti plaštaką ir bandyti dar kartą.'],
           'sideways':['Delnas pasuktas kampu.','Kad analizė būtų tiksli, laikykite jį tiesiai prieš kamerą.'],
           'low_palm_visibility':['Per mažai delno matosi.','Patraukite ranką taip, kad visas delnas tilptų kadre.'],
+          'back_hand':['Matoma rankos nugarėlė.','Apsukite ranką taip, kad delnas (vidinė pusė) būtų atsuktas į kamerą.'],
           'no_hand':['Sistema nematė delno.','Įsitikinkite, kad esate gerai apšviestoje vietoje ir delnas yra vaizdo centre.']
         };
         const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
