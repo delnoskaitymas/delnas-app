@@ -1979,15 +1979,15 @@ function capturePhoto(){
         window._palmFailCount=(window._palmFailCount||0)+1;
         // Konkreti klaidos žinutė pagal priežastį
         const msgs={
-          'too_close':['Nuotrauka per arti.','Atitraukite ranką šiek tiek toliau – taip sistema geriau matys visą delną.'],
-          'fingers_missing':['Sistema nemato visų pirštų.','Prašome plačiau išskėsti plaštaką ir bandyti dar kartą.'],
-          'sideways':['Delnas pasuktas kampu.','Kad analizė būtų tiksli, laikykite jį tiesiai prieš kamerą.'],
-          'low_palm_visibility':['Per mažai delno matosi.','Patraukite ranką taip, kad visas delnas tilptų kadre.'],
-          'back_hand':['Matoma rankos nugarėlė.','Apsukite ranką taip, kad delnas (vidinė pusė) būtų atsuktas į kamerą.'],
-          'no_hand':['Sistema nematė delno.','Įsitikinkite, kad esate gerai apšviestoje vietoje ir delnas yra vaizdo centre.']
+          'too_close':['Pabandyk atsitraukti','Patrauk ranką toliau, kad visas delnas tilptų ekrane.'],
+          'fingers_missing':['Išskėsk pirštus','Laikyk pirštus atskirai vienas nuo kito, kad sistema juos aptiktų.'],
+          'sideways':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
+          'low_palm_visibility':['Pabandyk atsitraukti','Patrauk ranką toliau, kad visas delnas tilptų ekrane.'],
+          'back_hand':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
+          'no_hand':['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.']
         };
-        const [title,msg]=msgs[v.reason]||['Sistema nematė delno.','Išskėskite pirštus ir bandykite dar kartą.'];
-        const encourage=window._palmFailCount>=2?'<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko – bandyk dar kartą ✨</div>':'';
+        const [title,msg]=msgs[v.reason]||['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.'];
+        const encourage='<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko – bandyk dar kartą ✨</div>';
         // Rodyti klaidos laukelį frozen apačioje
         hideMsgBar();
         setTimeout(()=>{
