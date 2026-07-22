@@ -701,6 +701,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       <div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:10px 0">✦ Laukiame tavęs po 3 mėnesių.</div>
     </div>
+    <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
 <script src="https://js.stripe.com/v3/"></script>
@@ -2835,6 +2836,17 @@ function displayResult(r){
   // apsauga jei kas nors nepavyktų (žr. initScrollReveal() aukščiau)
   initScrollReveal();
   const actionEl=document.getElementById('r-action');if(actionEl) actionEl.style.display='none';
+  // Užsakymo numeris — rodomas pačioje rezultato ekrano apačioje.
+  const orderNumEl=document.getElementById('r-order-number');
+  if(orderNumEl) orderNumEl.textContent=window._orderNumber?`Užsakymo numeris: ${window._orderNumber}`:'';
+  // Pranešimas į pagalba@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
+  // tiksliai tuo momentu, kai atidaromas rezultato ekranas (šis kodas
+  // vykdomas kaskart, kai realiai užpildomas turinys rezultatų ekrane).
+  if(window._orderNumber && !window._orderNotifySent){
+    window._orderNotifySent=true;
+    fetch('/notify-order-complete',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({orderNumber:window._orderNumber})}).catch(e=>console.error('[notify-order-complete] klaida:',e));
+  }
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
@@ -3508,6 +3520,13 @@ function proceedToPayment(){
   if(err) err.style.display='none';
   window._userName=name;window.userName=name;
   window._userEmail=email;window.userEmail=email;
+  // Sugeneruoti vienetinį užsakymo numerį IŠ KARTO, kai tik gautas vardas
+  // ir el. paštas (dar prieš mokėjimą) — jis bus parodytas rezultato
+  // ekrane ir naudojamas pranešimui į pagalba@delnaskaitymas.lt.
+  fetch('/register-order',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,email})}).then(r=>r.json()).then(d=>{
+      if(d&&d.orderNumber) window._orderNumber=d.orderNumber;
+    }).catch(e=>console.error('[register-order] klaida:',e));
   // Atnaujinti bgSessionId su vardu (analizė jau vyksta fone)
   if(window.bgSessionId){
     fetch('/update-session-name',{method:'POST',headers:{'Content-Type':'application/json'},
