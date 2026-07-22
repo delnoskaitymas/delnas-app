@@ -223,7 +223,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-ls::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 100%);pointer-events:none}
 .pm-ls:active{transform:scale(.97)}
 .pm-ls.sel{background:#000000;border:1px solid var(--gold);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 10px rgba(212,168,67,.35),0 0 2px rgba(212,168,67,.5);transition:all .2s ease}
-.pm-ls.dim{opacity:1;background:#000000;border:1px solid rgba(150,142,128,.4);box-shadow:none}
+.pm-ls.dim{opacity:1;background:#000000;border:1px solid rgba(212,168,67,.32);box-shadow:none}
 .pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);box-shadow:none}
 .pm-ls-name{font-size:13px;font-weight:700;color:#e8e2d4;letter-spacing:.02em;text-shadow:none;transition:all .25s ease}
@@ -512,7 +512,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Gauti mano asmeninį žemėlapį →</button>
-    <div style="text-align:center;margin-top:4px;display:flex;flex-direction:column;align-items:center;gap:5px">
+    <div style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Vienintelė eilutė: saugumas + garantija (garantijos frazė yra paspaudžiama nuoroda) -->
       <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 dienų pinigų grąžinimo garantija</button></span>
       <!-- Logotipai -->
