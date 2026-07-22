@@ -454,14 +454,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
     <!-- Kaina + laikmatis — tos pačios spalvos/rėmelio stilius kaip analizės ekrano punktai -->
     <div id="price-info-block" class="pay-anim-item">
-      <div style="background:linear-gradient(135deg,rgba(212,168,67,.09),rgba(212,168,67,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:18px;padding:12px 18px;position:relative;overflow:hidden;box-shadow:0 0 28px rgba(212,168,67,.2),0 0 60px rgba(212,168,67,.06),inset 0 1px 0 rgba(255,255,255,.06)">
+      <div style="background:linear-gradient(135deg,rgba(212,168,67,.09),rgba(212,168,67,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:18px;padding:9px 18px 15px;position:relative;overflow:hidden;box-shadow:0 0 28px rgba(212,168,67,.2),0 0 60px rgba(212,168,67,.06),inset 0 1px 0 rgba(255,255,255,.06)">
         <!-- Viršutinė subtili linija -->
         <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent)"></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:14px;min-height:34px">
           <!-- Kaina -->
           <div style="display:flex;align-items:baseline;gap:7px">
             <span style="font-size:11px;color:rgba(255,255,255,.55);text-decoration:line-through;letter-spacing:.02em">15,99 €</span>
-            <span style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">9,99<span style="font-size:14px;font-weight:400;margin-left:1px">€</span></span>
+            <span style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">9,99<span style="font-size:15px;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
           </div>
           <!-- Skiriamoji linija -->
           <div style="width:1px;height:34px;background:linear-gradient(180deg,transparent,rgba(212,168,67,.3),transparent);flex-shrink:0"></div>
@@ -1054,12 +1054,11 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   bringPaySuccessIntoView();
   finalizePayProgressBar();
 
-  // Pažadas, kuris išsipildo praėjus TIK minimaliam vizualinės animacijos
-  // laikui (600ms — tiek, kad varnelės "pop" animacija spėtų suveikti ir
-  // nebūtų trūkčiojanti), o NE dirbtinai primestam 2.5s laukimui. Jei
-  // rezultatai jau paruošti (dažnas atvejis, nes fono analizė prasideda
-  // gerokai prieš mokėjimą), pereinama į juos BEVEIK IŠKART — jokio
-  // nereikalingo laukimo ekrano.
+  // Pažadas, kuris išsipildo praėjus BENT 2.5s nuo sėkmės ekrano
+  // pasirodymo — vartotojas turi turi spėti pamatyti varnelę + "Mokėjimas
+  // sėkmingas!" tekstą, net jei rezultatai serveryje jau paruošti anksčiau.
+  // Po šio laiko go('s-result') atlieka švelnų (fade) perėjimą į rezultatų
+  // ekraną.
   const minDisplay=new Promise((resolve)=>{
     if(paySection){
       paySection.style.transition='opacity .4s ease';
@@ -1102,10 +1101,13 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           const sw=document.getElementById('pay-still-working');
           if(sw) sw.style.opacity='1';
         },1500);
-        setTimeout(resolve,600);
+        // Sėkmės ekranas ("Mokėjimas sėkmingas!") turi būti rodomas LYGIAI
+        // 2.5s, tada švelniai (go() fade animacija) pereiti į rezultatų
+        // ekraną — net jei rezultatai jau paruošti anksčiau.
+        setTimeout(resolve,2500);
       },250);
     } else {
-      setTimeout(resolve,600);
+      setTimeout(resolve,2500);
     }
   });
 
