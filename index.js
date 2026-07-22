@@ -81,6 +81,35 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
+// --- Užsakymo numerių sistema ---
+// Kai vartotojas įveda vardą + el. paštą (dar PRIEŠ mokėjimą), sugeneruojame
+// vienetinį užsakymo numerį ir laikinai išsaugome vardą+el.paštą+numerį.
+// Šie duomenys naudojami TIK tam, kad:
+//   1) užsakymo numeris būtų parodytas rezultato ekrane;
+//   2) atidarius rezultato ekraną, į pagalba@delnaskaitymas.lt būtų
+//      išsiųstas pranešimas su šio kliento vardu, el. paštu ir numeriu.
+// Po to, kai šis pranešimas sėkmingai išsiunčiamas, įrašas IŠ KARTO
+// ištrinamas — jo ilgiau saugoti nereikia (žr. /notify-order-complete).
+const pendingOrders = new Map();
+
+function generateOrderNumber() {
+  let num;
+  do {
+    num = 'DLN-' + Math.floor(100000 + Math.random() * 900000);
+  } while (pendingOrders.has(num));
+  return num;
+}
+
+// Apsauginis išvalymas — jei dėl kokios nors priežasties (vartotojas
+// nebaigė proceso, tinklo klaida ir pan.) /notify-order-complete niekada
+// nebuvo iškviestas, įrašas vis tiek nelieka amžinai atmintyje.
+setInterval(() => {
+  const now = Date.now();
+  for (const [num, entry] of pendingOrders.entries()) {
+    if (now - entry.createdAt > 6 * 60 * 60 * 1000) pendingOrders.delete(num);
+  }
+}, 60 * 60 * 1000);
+
 const mailer = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
@@ -552,6 +581,51 @@ app.post('/update-session-name', (req, res) => {
     entry.email = email || entry.email;
   }
   res.json({ ok: true });
+});
+
+// Vartotojas ką tik įvedė vardą + el. paštą (dar prieš mokėjimą) —
+// sugeneruojame ir laikinai išsaugome vienetinį užsakymo numerį.
+app.post('/register-order', (req, res) => {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'Trūksta vardo arba el. pašto' });
+    const orderNumber = generateOrderNumber();
+    pendingOrders.set(orderNumber, { name, email, createdAt: Date.now(), notified: false });
+    console.log(`[register-order] sukurtas ${orderNumber} (${name}, ${email})`);
+    res.json({ orderNumber });
+  } catch (err) {
+    console.error('[register-order] klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą —
+// išsiunčiame pranešimą į pagalba@delnaskaitymas.lt su vardu, el. paštu ir
+// užsakymo numeriu, o TADA IŠ KARTO ištriname įrašą (nebereikia jo saugoti).
+app.post('/notify-order-complete', async (req, res) => {
+  try {
+    const { orderNumber } = req.body;
+    if (!orderNumber) return res.status(400).json({ error: 'Trūksta orderNumber' });
+    const entry = pendingOrders.get(orderNumber);
+    if (!entry) {
+      // Arba jau išsiųsta anksčiau, arba įrašas pasenęs/nerastas —
+      // klientui saugu tiesiog laikyti tai sėkmingu (idempotentiškumas).
+      console.log(`[notify-order-complete] ${orderNumber} nerastas (jau išsiųstas arba pasenęs)`);
+      return res.json({ ok: true, alreadyHandled: true });
+    }
+    await mailer.sendMail({
+      from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
+      to: 'pagalba@delnaskaitymas.lt',
+      subject: `Naujas užsakymas: ${orderNumber}`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${orderNumber}</p><p><strong>Vardas:</strong> ${entry.name}</p><p><strong>El. paštas:</strong> ${entry.email}</p></div>`
+    });
+    pendingOrders.delete(orderNumber);
+    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į pagalba@delnaskaitymas.lt ir ištrintas iš atminties`);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[notify-order-complete] klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/analyze-palm', async (req, res) => {
