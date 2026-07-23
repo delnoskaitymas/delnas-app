@@ -1000,6 +1000,16 @@ function bringPaySuccessIntoView(){
 }
 
 async function fetchResultsAndNavigate(sessionId,paymentIntent){
+ // Apsauga nuo dvigubo/lygiagretaus iškvietimo — jei ši funkcija dėl kokios
+ // nors priežasties (pvz. dvigubas mygtuko paspaudimas, lėtas tinklas)
+ // būtų iškviesta antrą kartą kol pirmasis vykdymas dar nebaigtas, NEBĖRA
+ // antro mokėjimo patvirtinimo/token'o kūrimo — token'as sukuriamas ir
+ // naudojamas TIK VIENĄ KARTĄ per sėkmingą apmokėjimą.
+ if(window._fetchResultsInProgress){
+   console.log('[fetchResultsAndNavigate] jau vykdoma, antras iškvietimas ignoruojamas');
+   return;
+ }
+ window._fetchResultsInProgress=true;
  // Pagalbinė funkcija: fetch() SU AIŠKIU LAIKO LIMITU. Standartinis fetch()
  // gali laukti NERIBOTĄ laiką, jei tinklo užklausa "pakimba" (serverio
  // triktis, nutrūkęs ryšys be klaidos) — tai reiškia, kad VIENAS pakibęs
@@ -1156,7 +1166,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         const ar=await fetchWithTimeout('/analyze-palm',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
-        },100000);
+        },15000);
         ad=await ar.json();
         updatePayDiag('atsakymas #'+(attempt+1)+': '+(ad&&ad.pending?'dar ruošiama':(ad&&ad.error?'KLAIDA: '+ad.error:'gauta')));
       }catch(fetchErr){
@@ -1195,6 +1205,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   await minDisplay;
   successDiv.remove();
   _navigated=true;clearTimeout(_watchdog);
+  window._fetchResultsInProgress=false;
 
   if(finalAd){
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
@@ -1224,6 +1235,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   // kode), vartotojas NIEKADA neliks įstrigęs tuščiame/juodame ekrane
   console.error('fetchResultsAndNavigate kritinė klaida:',outerErr);
   _navigated=true;clearTimeout(_watchdog);
+  window._fetchResultsInProgress=false;
   go('s-result');
   setTimeout(()=>{
     const rc=document.getElementById('r-char');
