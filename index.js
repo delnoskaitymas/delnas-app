@@ -6,10 +6,58 @@ const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
+// --- Saugumo HTTP antraštės ---
+// PASTABA: contentSecurityPolicy/crossOriginEmbedderPolicy/crossOriginResourcePolicy
+// SĄMONINGAI išjungti, kad nesulaužytų esamo puslapio (jis naudoja daug inline
+// <script>/<style>, bei kviečia išorinius CDN resursus — Stripe.js, cdnjs,
+// MediaPipe WASM/modelį, Google Fonts). Visos KITOS helmet saugumo antraštės
+// (X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security ir kt.)
+// lieka įjungtos ir nekeičia jokios esamos funkcijos.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false
+}));
+
+// --- Užklausų dažnio ribojimas (Rate Limiting) jautriems endpoint'ams ---
+// Apsaugo nuo botų/piktnaudžiavimo ant mokėjimo, analizės ir registracijos
+// endpoint'ų. Neveikia paprasto puslapio naršymo ar statinių failų.
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min.
+  max: 60,                  // iki 60 užklausų per 15 min. iš vieno IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Per daug užklausų. Bandykite dar kartą po kelių minučių.' }
+});
+
+// --- Įvedimo duomenų validavimo pagalbinės funkcijos ---
+function isValidEmail(email) {
+  return typeof email === 'string' && email.length > 0 && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+function isValidName(name) {
+  return typeof name === 'string' && name.trim().length > 0 && name.trim().length <= 100;
+}
+function isValidOrderNumber(orderNumber) {
+  return typeof orderNumber === 'string' && /^DLN-\d{6}$/.test(orderNumber);
+}
+function isValidPhotosArray(photos) {
+  if (!Array.isArray(photos) || photos.length === 0 || photos.length > 4) return false;
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  return photos.every(p => p && typeof p.data === 'string' && p.data.length > 0 && p.data.length < 12_000_000 &&
+    (!p.type || allowedTypes.includes(p.type)));
+}
+// Apsaugo nuo HTML/turinio įterpimo (injection), kai vartotojo įvestas vardas
+// ar el. paštas patenka į siunčiamų el. laiškų HTML šabloną.
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
 app.use(express.static(path.join(__dirname, '.'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('index.html')) {
@@ -46,8 +94,8 @@ setInterval(async () => {
         await mailer.sendMail({
           from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
           to: r.email,
-          subject: `${r.name ? r.name + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? r.name + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">ATLIKTI NAUJĄ ANALIZĘ →</a></div></div>`
+          subject: `${r.name ? escapeHtml(r.name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
+          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">ATLIKTI NAUJĄ ANALIZĘ →</a></div></div>`
         });
         console.log(`Priminimas išsiųstas: ${r.email}`);
       } catch(e) {
@@ -357,10 +405,11 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 }
 
 // --- ENDPOINT: Greita delno validacija ---
-app.post('/validate-palm', async (req, res) => {
+app.post('/validate-palm', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
+    if (!isValidPhotosArray(photos)) return res.status(400).json({ valid: false, reason: 'no_hand' });
     // ═══════════════════════════════════════════════════════════════════
     // DVIEJŲ ŽINGSNIŲ VALIDACIJA: AI grąžina TIK objektyvius, išmatuojamus
     // vizualinius faktus (kiek pirštų matosi, koks % delno matomas, ir t.t.)
@@ -474,12 +523,14 @@ Be precise and objective — do not round everything to convenient default numbe
 });
 
 // --- ENDPOINT: Paleisti foninę analizę ---
-app.post('/start-analysis', async (req, res) => {
+app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
     console.log(`[start-analysis] gauta sessionId=${sessionId||'(nėra)'} photos=${photos?photos.length:0}`);
     if (!photos || photos.length === 0) return res.status(400).json({ error: 'Nėra nuotraukų' });
     if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
+    if (typeof sessionId !== 'string' || sessionId.length > 200) return res.status(400).json({ error: 'Neteisingas sessionId' });
+    if (!isValidPhotosArray(photos)) return res.status(400).json({ error: 'Neteisingas nuotraukų formatas' });
 
     if (analysisCache.has(sessionId)) {
       console.log(`[start-analysis] sessionId=${sessionId} JAU YRA cache (dublikatas), grąžinam started:true be naujo paleidimo`);
@@ -526,9 +577,11 @@ app.get('/analysis-status', async (req, res) => {
 
 // --- ENDPOINT: Gauti analizės rezultatą ---
 // --- Checkout sesija Revolut/Klarna ---
-app.post('/create-checkout', async (req, res) => {
+app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { email, name, amount, currency } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
@@ -573,8 +626,10 @@ async function sendResultEmail(email, name, result) {
 }
 
 // Atnaujinti sesijos vardą ir el. paštą
-app.post('/update-session-name', (req, res) => {
+app.post('/update-session-name', sensitiveLimiter, (req, res) => {
   const { sessionId, name, email } = req.body;
+  if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+  if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
   if (sessionId && analysisCache.has(sessionId)) {
     const entry = analysisCache.get(sessionId);
     entry.name = name || entry.name;
@@ -585,10 +640,10 @@ app.post('/update-session-name', (req, res) => {
 
 // Vartotojas ką tik įvedė vardą + el. paštą (dar prieš mokėjimą) —
 // sugeneruojame ir laikinai išsaugome vienetinį užsakymo numerį.
-app.post('/register-order', (req, res) => {
+app.post('/register-order', sensitiveLimiter, (req, res) => {
   try {
     const { name, email } = req.body;
-    if (!name || !email) return res.status(400).json({ error: 'Trūksta vardo arba el. pašto' });
+    if (!isValidName(name) || !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas vardas arba el. paštas' });
     const orderNumber = generateOrderNumber();
     pendingOrders.set(orderNumber, { name, email, createdAt: Date.now(), notified: false });
     console.log(`[register-order] sukurtas ${orderNumber} (${name}, ${email})`);
@@ -602,10 +657,10 @@ app.post('/register-order', (req, res) => {
 // Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą —
 // išsiunčiame pranešimą į pagalba@delnaskaitymas.lt su vardu, el. paštu ir
 // užsakymo numeriu, o TADA IŠ KARTO ištriname įrašą (nebereikia jo saugoti).
-app.post('/notify-order-complete', async (req, res) => {
+app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
   try {
     const { orderNumber } = req.body;
-    if (!orderNumber) return res.status(400).json({ error: 'Trūksta orderNumber' });
+    if (!isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
     const entry = pendingOrders.get(orderNumber);
     if (!entry) {
       // Arba jau išsiųsta anksčiau, arba įrašas pasenęs/nerastas —
@@ -617,7 +672,7 @@ app.post('/notify-order-complete', async (req, res) => {
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
       to: 'pagalba@delnaskaitymas.lt',
       subject: `Naujas užsakymas: ${orderNumber}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${orderNumber}</p><p><strong>Vardas:</strong> ${entry.name}</p><p><strong>El. paštas:</strong> ${entry.email}</p></div>`
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber)}</p><p><strong>Vardas:</strong> ${escapeHtml(entry.name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(entry.email)}</p></div>`
     });
     pendingOrders.delete(orderNumber);
     console.log(`[notify-order-complete] ${orderNumber} išsiųstas į pagalba@delnaskaitymas.lt ir ištrintas iš atminties`);
@@ -628,9 +683,15 @@ app.post('/notify-order-complete', async (req, res) => {
   }
 });
 
-app.post('/analyze-palm', async (req, res) => {
+app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, name, email, token, sessionId } = req.body;
+
+    if (typeof token !== 'string' || token.length === 0) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
+    if (photos && photos.length > 0 && !isValidPhotosArray(photos)) return res.status(400).json({ error: 'Neteisingas nuotraukų formatas' });
 
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
@@ -717,8 +778,8 @@ app.post('/analyze-palm', async (req, res) => {
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
       to: tokenEntry.email,
-      subject: `${userName ? userName + ' — ' : ''}Tavo gyvenimo žemėlapis ✦`,
-      html: buildEmailHtml(userName, result)
+      subject: `${userName ? escapeHtml(userName) + ' — ' : ''}Tavo gyvenimo žemėlapis ✦`,
+      html: buildEmailHtml(escapeHtml(userName), result)
     }).catch(e => console.error('Laiško klaida:', e.message));
 
     res.json(result);
@@ -751,9 +812,11 @@ function pills(arr) {
   return `<div style="margin-bottom:12px">${(arr||[]).map(d=>`<span style="background:rgba(212,168,67,0.1);border:0.5px solid rgba(212,168,67,0.3);border-radius:50px;padding:4px 12px;font-size:12px;color:#f0c96a;display:inline-block;margin:3px">${d}</span>`).join('')}</div>`;
 }
 
-app.post('/create-payment', async (req, res) => {
+app.post('/create-payment', sensitiveLimiter, async (req, res) => {
   try {
     const { name, email } = req.body;
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 999,
       currency: 'eur',
@@ -767,9 +830,14 @@ app.post('/create-payment', async (req, res) => {
   }
 });
 
-app.post('/verify-payment-intent', async (req, res) => {
+app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentIntentId, name, email } = req.body;
+    if (typeof paymentIntentId !== 'string' || paymentIntentId.length === 0 || paymentIntentId.length > 200) {
+      return res.status(400).json({ paid: false, error: 'Neteisingas paymentIntentId' });
+    }
+    if (name && !isValidName(name)) return res.status(400).json({ paid: false, error: 'Neteisingas vardo formatas' });
+    if (email && !isValidEmail(email)) return res.status(400).json({ paid: false, error: 'Neteisingas el. pašto formatas' });
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
     if (pi.status === 'succeeded') {
       const token = createToken(name || pi.metadata.name || '', email || pi.metadata.email || '');
@@ -800,10 +868,11 @@ app.get('/stripe-key', (req, res) => {
   res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
-app.post('/schedule-reminder', async (req, res) => {
+app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
   try {
     const { email, name } = req.body;
-    if (!email || !email.includes('@')) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     const reminders = loadReminders();
     if (reminders.find(r => r.email === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
     reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
@@ -847,10 +916,11 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // Išsaugoti analizę
-app.post('/share-result', (req, res) => {
+app.post('/share-result', sensitiveLimiter, (req, res) => {
   try {
     const { result } = req.body;
     if (!result || !result.prigimtines_stiprybes) return res.status(400).json({ error: 'Nėra rezultato' });
+    if (JSON.stringify(result).length > 200_000) return res.status(400).json({ error: 'Rezultatas per didelis' });
     const id = crypto.randomBytes(8).toString('hex');
     const data = loadShared();
     data[id] = { result, createdAt: Date.now() };
