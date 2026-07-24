@@ -92,7 +92,7 @@ setInterval(async () => {
     if (now >= r.sendAt) {
       try {
         await mailer.sendMail({
-          from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
+          from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
           to: r.email,
           subject: `${r.name ? escapeHtml(r.name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
           html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">ATLIKTI NAUJĄ ANALIZĘ →</a></div></div>`
@@ -148,6 +148,46 @@ function generateOrderNumber() {
   return num;
 }
 
+// Iškviečiama IŠ KARTO, kai mokėjimas patvirtinamas sėkmingu (žr.
+// /verify-payment-intent ir /verify-payment). Išsiunčia DU laiškus:
+//   1) Klientui — užsakymo patvirtinimas su jo užsakymo numeriu
+//      (siuntėjas: uzsakymai@delnaskaitymas.lt / CLIENT_EMAIL_FROM).
+//   2) Administratoriui (info@delnaskaitymas.lt) — pranešimas apie naują
+//      mokėjimą, su kliento duomenimis, paslauga ir suma.
+// Apsaugota nuo dvigubo siuntimo (entry.orderConfirmed žyma) — ĮRAŠO
+// PAČIO neištriname čia, nes jis vėliau vis dar reikalingas
+// /notify-order-complete (siunčiamas atidarius rezultato ekraną).
+function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
+  try {
+    let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
+    const name = (entry && entry.name) || fallbackName || '';
+    const email = (entry && entry.email) || fallbackEmail || '';
+    if (!email) return; // nėra kam siųsti
+    if (entry && entry.orderConfirmed) return; // jau išsiųsta anksčiau
+    if (entry) entry.orderConfirmed = true;
+
+    const displayOrderNumber = orderNumber || '(nėra numerio)';
+
+    // 1) Klientui — užsakymo patvirtinimas
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
+      to: email,
+      subject: `Užsakymo patvirtinimas — ${displayOrderNumber}`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em">${escapeHtml(displayOrderNumber)}</p><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.75)">Tavo asmeninė delno analizė šiuo metu ruošiama. Kai tik ji bus paruošta, atsiųsime ją atskiru laišku PDF formatu.</p></div>`
+    }).catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant klientui:', e.message));
+
+    // 2) Administratoriui (info@) — pranešimas apie naują mokėjimą
+    mailer.sendMail({
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `Naujas užsakymas #${displayOrderNumber}`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> 9,99 €</p></div>`
+    }).catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
+  } catch (e) {
+    console.error('[sendPaymentSuccessEmails] bendra klaida:', e.message);
+  }
+}
+
 // Apsauginis išvalymas — jei dėl kokios nors priežasties (vartotojas
 // nebaigė proceso, tinklo klaida ir pan.) /notify-order-complete niekada
 // nebuvo iškviestas, įrašas vis tiek nelieka amžinai atmintyje.
@@ -158,9 +198,21 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
+// --- El. pašto adresų paskirtis ---
+// AUTENTIFIKACIJA (prisijungimas prie SMTP serverio): info@delnaskaitymas.lt
+//   — tai pagrindinė paskyra, prie kurios pririštas slaptažodis (EMAIL_USER).
+//   Jei EMAIL_USER kintamasis nenustatytas, atgalinis suderinamumas su
+//   senesne konfigūracija — naudojamas EMAIL_FROM.
+// SIUNTĖJAS klientams (užsakymų patvirtinimai, PDF rezultatai):
+//   uzsakymai@delnaskaitymas.lt (EMAIL_FROM).
+// GAVĖJAS administraciniams pranešimams apie naujus mokėjimus:
+//   info@delnaskaitymas.lt (ADMIN_EMAIL).
+const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'uzsakymai@delnaskaitymas.lt';
+const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
+
 const mailer = nodemailer.createTransport({
   service: 'gmail',
-  auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
+  auth: { user: process.env.EMAIL_USER || process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
 });
 
 // --- JSON taisymo pagalbinė funkcija ---
@@ -669,7 +721,7 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
       return res.json({ ok: true, alreadyHandled: true });
     }
     await mailer.sendMail({
-      from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: 'pagalba@delnaskaitymas.lt',
       subject: `Naujas užsakymas: ${orderNumber}`,
       html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber)}</p><p><strong>Vardas:</strong> ${escapeHtml(entry.name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(entry.email)}</p></div>`
@@ -682,6 +734,39 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Klientas iškviečia šį endpoint'ą TIKSLIAI TADA, kai atsidaro rezultato
+// ekranas — PDF (sugeneruotas kliento pusėje, tas pats, kaip "Atsisiųsti
+// PDF" mygtukas) išsiunčiamas į vartotojo el. paštą iš
+// uzsakymai@delnaskaitymas.lt.
+app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
+  try {
+    const { email, name, orderNumber, pdfBase64 } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
+    if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
+      return res.status(400).json({ error: 'Neteisingas arba per didelis PDF turinys' });
+    }
+    await mailer.sendMail({
+      from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
+      to: email,
+      subject: `${name ? escapeHtml(name) + ' — ' : ''}Tavo gyvenimo žemėlapis (PDF) ✦`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:16px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Tavo asmeninė delno analizė paruošta${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8)">Pridėtame PDF faile rasi pilną savo delno skaitymo analizę.${orderNumber ? ' Užsakymo numeris: <strong>' + escapeHtml(orderNumber) + '</strong>.' : ''}</p></div>`,
+      attachments: [{
+        filename: name ? `${name.replace(/\s+/g, '-')}-delno-skaitymas.pdf` : 'delno-skaitymas.pdf',
+        content: pdfBase64,
+        encoding: 'base64'
+      }]
+    });
+    console.log(`[email-result-pdf] PDF išsiųstas į ${email}`);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[email-result-pdf] klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
   try {
@@ -774,13 +859,10 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     if (userName) result.userName = userName;
 
     // Priminimas užregistruojamas tik kai vartotojas pats paspaudžia mygtuką (/schedule-reminder)
-
-    mailer.sendMail({
-      from: `"Delno Skaitymas" <${process.env.EMAIL_FROM}>`,
-      to: tokenEntry.email,
-      subject: `${userName ? escapeHtml(userName) + ' — ' : ''}Tavo gyvenimo žemėlapis ✦`,
-      html: buildEmailHtml(escapeHtml(userName), result)
-    }).catch(e => console.error('Laiško klaida:', e.message));
+    // PASTABA: pilnas rezultatų el. laiškas klientui ČIA NEBESIUNČIAMAS —
+    // dabar jis siunčiamas PDF formatu iš /email-result-pdf endpoint'o,
+    // kurį klientas iškviečia TIKSLIAI TADA, kai atsidaro rezultato ekranas
+    // (žr. /email-result-pdf žemiau).
 
     res.json(result);
 
@@ -832,7 +914,7 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
 
 app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
   try {
-    const { paymentIntentId, name, email } = req.body;
+    const { paymentIntentId, name, email, orderNumber } = req.body;
     if (typeof paymentIntentId !== 'string' || paymentIntentId.length === 0 || paymentIntentId.length > 200) {
       return res.status(400).json({ paid: false, error: 'Neteisingas paymentIntentId' });
     }
@@ -840,8 +922,11 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
     if (email && !isValidEmail(email)) return res.status(400).json({ paid: false, error: 'Neteisingas el. pašto formatas' });
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
     if (pi.status === 'succeeded') {
-      const token = createToken(name || pi.metadata.name || '', email || pi.metadata.email || '');
-      res.json({ paid: true, token, name: name || pi.metadata.name || '', email: email || pi.metadata.email || '' });
+      const finalName = name || pi.metadata.name || '';
+      const finalEmail = email || pi.metadata.email || '';
+      const token = createToken(finalName, finalEmail);
+      sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
+      res.json({ paid: true, token, name: finalName, email: finalEmail });
     } else {
       res.json({ paid: false, status: pi.status });
     }
@@ -854,8 +939,11 @@ app.get('/verify-payment', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
     if (session.payment_status === 'paid') {
-      const token = createToken(session.metadata?.name || '', session.metadata?.email || '');
-      res.json({ paid: true, name: session.metadata?.name || '', email: session.metadata?.email || '', token });
+      const finalName = session.metadata?.name || '';
+      const finalEmail = session.metadata?.email || '';
+      const token = createToken(finalName, finalEmail);
+      sendPaymentSuccessEmails(req.query.orderNumber, finalName, finalEmail);
+      res.json({ paid: true, name: finalName, email: finalEmail, token });
     } else {
       res.json({ paid: false });
     }
