@@ -913,12 +913,15 @@ async function verifyAndProceed(sessionId){
   const _pl=sessionStorage.getItem('photoLeft')||photoLeft||window._savedPhotoLeft;
   const _pr=sessionStorage.getItem('photoRight')||photoRight||window._savedPhotoRight;
   const _bg=sessionStorage.getItem('bgSessionId')||window.bgSessionId;
+  const _on=sessionStorage.getItem('orderNumber')||window._orderNumber;
   if(_pl&&_pl.length>100) window._savedPhotoLeft=_pl;
   if(_pr&&_pr.length>100) window._savedPhotoRight=_pr;
   if(_bg) window.bgSessionId=_bg;
+  if(_on) window._orderNumber=_on;
   sessionStorage.removeItem('photoLeft');
   sessionStorage.removeItem('photoRight');
   sessionStorage.removeItem('bgSessionId');
+  sessionStorage.removeItem('orderNumber');
 
   go('s-loading');
   setTimeout(()=>animateLoading(),100);
@@ -1132,13 +1135,13 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     let token='',userName=window._userName||'',userEmail=window._userEmail||'';
     if(isPI){
       updatePayDiag('tikrinu mokėjimą (PI)...');
-      const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail})},20000);
+      const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
-      const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId,{},20000);
+      const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||''),{},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
@@ -1253,7 +1256,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
 
 
 async function onPaymentSuccess(name,email){
-  const vRes=await fetch('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:window._paymentIntentId,name,email})});
+  const vRes=await fetch('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:window._paymentIntentId,name,email,orderNumber:window._orderNumber||''})});
   const vData=await vRes.json();
   if(!vData.paid) throw new Error('Mokėjimas nepatvirtintas');
   window.palmToken=vData.token;window.userName=vData.name||name;
@@ -2859,6 +2862,9 @@ function displayResult(r){
     fetch('/notify-order-complete',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({orderNumber:window._orderNumber})}).catch(e=>console.error('[notify-order-complete] klaida:',e));
   }
+  // PDF rezultatų laiškas klientui — siunčiamas TIKSLIAI TADA, kai
+  // atsidaro rezultato ekranas (iš uzsakymai@delnaskaitymas.lt).
+  sendResultPdfEmail(r);
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
@@ -2885,14 +2891,16 @@ async function registerReminder(){
   }
 }
 
-function downloadPDF(){
-  const r = window._palmResult;
-  if(!r){ alert('Rezultatai nerasti.'); return; }
+// Bendra PDF sudarymo funkcija — naudojama TIEK atsisiuntimo mygtukui,
+// TIEK naujam PDF rezultatų laiško siuntimui (žr. sendResultPdfEmail()).
+// PASTABA: čia pataisyta anksčiau egzistavusi klaida — kintamasis "y"
+// (vertikali pozicija PDF puslapyje) niekada nebūdavo inicijuotas prieš
+// pirmą panaudojimą.
+function buildResultPdfDoc(r, name){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const name = window.userName || '';
   const W = 210; const margin = 18; const maxW = W - margin*2;
-  
+  let y = 20;
 
   // Šriftas
   doc.setFont('helvetica');
@@ -2953,8 +2961,39 @@ function downloadPDF(){
   doc.setTextColor(150,130,100);
   doc.text('✦ Šis skaitymas sukurtas tik tau — delnas.lt', W/2, 290, {align:'center'});
 
+  return doc;
+}
+
+function downloadPDF(){
+  const r = window._palmResult;
+  if(!r){ alert('Rezultatai nerasti.'); return; }
+  const name = window.userName || '';
+  const doc = buildResultPdfDoc(r, name);
   const fileName = name ? name.replace(/\s+/g,'-')+'-delno-skaitymas.pdf' : 'delno-skaitymas.pdf';
   doc.save(fileName);
+}
+
+// Siunčiama TIKSLIAI TADA, kai atsidaro rezultato ekranas — sugeneruoja tą
+// patį PDF (kaip atsisiuntimo mygtukas), konvertuoja į base64 ir paprašo
+// serverio (/email-result-pdf) išsiųsti jį kaip laiško priedą į vartotojo
+// el. paštą iš uzsakymai@delnaskaitymas.lt. Apsaugota nuo dvigubo siuntimo.
+function sendResultPdfEmail(r){
+  try{
+    if(window._pdfEmailSent) return;
+    if(!window._userEmail){ console.log('[sendResultPdfEmail] nėra el. pašto, praleidžiama'); return; }
+    window._pdfEmailSent=true;
+    const name = window.userName || '';
+    const doc = buildResultPdfDoc(r, name);
+    const dataUri = doc.output('datauristring');
+    const base64 = dataUri.split(',').pop();
+    fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64})})
+      .then(r=>r.json()).then(d=>{
+        if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
+      }).catch(e=>console.error('[sendResultPdfEmail] tinklo klaida:',e));
+  }catch(e){
+    console.error('[sendResultPdfEmail] klaida generuojant PDF:',e);
+  }
 }
 
 async function shareTo(platform){
@@ -3223,6 +3262,7 @@ function _savePhotos(){
   sessionStorage.setItem('photoLeft',photoLeft||window._savedPhotoLeft||'');
   sessionStorage.setItem('photoRight',photoRight||window._savedPhotoRight||'');
   sessionStorage.setItem('bgSessionId',window.bgSessionId||'');
+  sessionStorage.setItem('orderNumber',window._orderNumber||'');
 }
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
