@@ -914,14 +914,20 @@ async function verifyAndProceed(sessionId){
   const _pr=sessionStorage.getItem('photoRight')||photoRight||window._savedPhotoRight;
   const _bg=sessionStorage.getItem('bgSessionId')||window.bgSessionId;
   const _on=sessionStorage.getItem('orderNumber')||window._orderNumber;
+  const _un=sessionStorage.getItem('userName')||window._userName||window.userName;
+  const _ue=sessionStorage.getItem('userEmail')||window._userEmail||window.userEmail;
   if(_pl&&_pl.length>100) window._savedPhotoLeft=_pl;
   if(_pr&&_pr.length>100) window._savedPhotoRight=_pr;
   if(_bg) window.bgSessionId=_bg;
   if(_on) window._orderNumber=_on;
+  if(_un){ window._userName=_un; window.userName=_un; }
+  if(_ue){ window._userEmail=_ue; window.userEmail=_ue; }
   sessionStorage.removeItem('photoLeft');
   sessionStorage.removeItem('photoRight');
   sessionStorage.removeItem('bgSessionId');
   sessionStorage.removeItem('orderNumber');
+  sessionStorage.removeItem('userName');
+  sessionStorage.removeItem('userEmail');
 
   go('s-loading');
   setTimeout(()=>animateLoading(),100);
@@ -2854,17 +2860,27 @@ function displayResult(r){
   // Užsakymo numeris — rodomas pačioje rezultato ekrano apačioje.
   const orderNumEl=document.getElementById('r-order-number');
   if(orderNumEl) orderNumEl.textContent=window._orderNumber?`Užsakymo numeris: ${window._orderNumber}`:'';
-  // Pranešimas į uzsakymai@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
-  // tiksliai tuo momentu, kai atidaromas rezultato ekranas (šis kodas
-  // vykdomas kaskart, kai realiai užpildomas turinys rezultatų ekrane).
-  if(window._orderNumber && !window._orderNotifySent){
-    window._orderNotifySent=true;
-    fetch('/notify-order-complete',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({orderNumber:window._orderNumber})}).catch(e=>console.error('[notify-order-complete] klaida:',e));
+  // SVARBU: šis blokas (laiškų siuntimo iškvietimai) apgaubtas try/catch IR
+  // patalpintas ČIA, displayResult() PRADŽIOJE, kad net jei KAŽKAS VĖLIAU
+  // šioje funkcijoje (DOM renderinimas ir pan.) mestų klaidą, laiškų
+  // siuntimo užklausos VIS TIEK būtų iškviestos — anksčiau, jei ši funkcija
+  // nutrūkdavo klaida PRIEŠ pasiekiant šį kodą, laiškai apskritai
+  // nebūdavo išsiunčiami, be jokio pastebimo pėdsako.
+  try{
+    console.log('[displayResult] laiškų siuntimo blokas pasiektas. orderNumber=',window._orderNumber,'userEmail=',window._userEmail);
+    // Pranešimas į uzsakymai@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
+    // tiksliai tuo momentu, kai atidaromas rezultato ekranas.
+    if(window._orderNumber && !window._orderNotifySent){
+      window._orderNotifySent=true;
+      fetch('/notify-order-complete',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({orderNumber:window._orderNumber})}).catch(e=>console.error('[notify-order-complete] klaida:',e));
+    }
+    // PDF rezultatų laiškas klientui — siunčiamas TIKSLIAI TADA, kai
+    // atsidaro rezultato ekranas (iš uzsakymai@delnaskaitymas.lt).
+    sendResultPdfEmail(r);
+  }catch(emailBlockErr){
+    console.error('[displayResult] klaida laiškų siuntimo bloke:',emailBlockErr);
   }
-  // PDF rezultatų laiškas klientui — siunčiamas TIKSLIAI TADA, kai
-  // atsidaro rezultato ekranas (iš uzsakymai@delnaskaitymas.lt).
-  sendResultPdfEmail(r);
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
@@ -2979,6 +2995,7 @@ function downloadPDF(){
 // el. paštą iš uzsakymai@delnaskaitymas.lt. Apsaugota nuo dvigubo siuntimo.
 function sendResultPdfEmail(r){
   try{
+    console.log('[sendResultPdfEmail] iškviesta. _pdfEmailSent=',window._pdfEmailSent,'_userEmail=',window._userEmail);
     if(window._pdfEmailSent) return;
     if(!window._userEmail){ console.log('[sendResultPdfEmail] nėra el. pašto, praleidžiama'); return; }
     window._pdfEmailSent=true;
@@ -2990,6 +3007,7 @@ function sendResultPdfEmail(r){
       body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64})})
       .then(r=>r.json()).then(d=>{
         if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
+        else console.log('[sendResultPdfEmail] serveris patvirtino išsiuntimą');
       }).catch(e=>console.error('[sendResultPdfEmail] tinklo klaida:',e));
   }catch(e){
     console.error('[sendResultPdfEmail] klaida generuojant PDF:',e);
@@ -3263,6 +3281,8 @@ function _savePhotos(){
   sessionStorage.setItem('photoRight',photoRight||window._savedPhotoRight||'');
   sessionStorage.setItem('bgSessionId',window.bgSessionId||'');
   sessionStorage.setItem('orderNumber',window._orderNumber||'');
+  sessionStorage.setItem('userName',window._userName||window.userName||'');
+  sessionStorage.setItem('userEmail',window._userEmail||window.userEmail||'');
 }
 
 // ── Stripe Payment Element — vieningas komponentas ──────────────────
