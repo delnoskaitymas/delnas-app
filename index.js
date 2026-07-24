@@ -166,8 +166,9 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
     let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
     const name = (entry && entry.name) || fallbackName || '';
     const email = (entry && entry.email) || fallbackEmail || '';
-    if (!email) return; // nėra kam siųsti
-    if (entry && entry.orderConfirmed) return; // jau išsiųsta anksčiau
+    console.log(`[sendPaymentSuccessEmails] iškviesta orderNumber=${orderNumber||'(nėra)'} entryRastas=${!!entry} email=${email||'(nėra)'}`);
+    if (!email) { console.log('[sendPaymentSuccessEmails] nėra el. pašto, praleidžiama'); return; }
+    if (entry && entry.orderConfirmed) { console.log('[sendPaymentSuccessEmails] jau išsiųsta anksčiau, praleidžiama'); return; }
     if (entry) entry.orderConfirmed = true;
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
@@ -178,7 +179,8 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
       to: email,
       subject: `Užsakymo patvirtinimas — ${displayOrderNumber}`,
       html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em">${escapeHtml(displayOrderNumber)}</p><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.75)">Tavo asmeninė delno analizė šiuo metu ruošiama. Kai tik ji bus paruošta, atsiųsime ją atskiru laišku PDF formatu.</p></div>`
-    }).catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant klientui:', e.message));
+    }).then(() => console.log(`[sendPaymentSuccessEmails] klientui išsiųsta į ${email}`))
+      .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant klientui:', e.message));
 
     // 2) Administratoriui (info@) — pranešimas apie naują mokėjimą
     mailer.sendMail({
@@ -186,7 +188,8 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
       to: ADMIN_EMAIL,
       subject: `Naujas užsakymas #${displayOrderNumber}`,
       html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> 9,99 €</p></div>`
-    }).catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
+    }).then(() => console.log(`[sendPaymentSuccessEmails] administratoriui išsiųsta į ${ADMIN_EMAIL}`))
+      .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
   } catch (e) {
     console.error('[sendPaymentSuccessEmails] bendra klaida:', e.message);
   }
