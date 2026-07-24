@@ -134,7 +134,7 @@ setInterval(() => {
 // vienetinį užsakymo numerį ir laikinai išsaugome vardą+el.paštą+numerį.
 // Šie duomenys naudojami TIK tam, kad:
 //   1) užsakymo numeris būtų parodytas rezultato ekrane;
-//   2) atidarius rezultato ekraną, į pagalba@delnaskaitymas.lt būtų
+//   2) atidarius rezultato ekraną, į uzsakymai@delnaskaitymas.lt būtų
 //      išsiųstas pranešimas su šio kliento vardu, el. paštu ir numeriu.
 // Po to, kai šis pranešimas sėkmingai išsiunčiamas, įrašas IŠ KARTO
 // ištrinamas — jo ilgiau saugoti nereikia (žr. /notify-order-complete).
@@ -707,7 +707,7 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
 });
 
 // Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą —
-// išsiunčiame pranešimą į pagalba@delnaskaitymas.lt su vardu, el. paštu ir
+// išsiunčiame pranešimą į uzsakymai@delnaskaitymas.lt su vardu, el. paštu ir
 // užsakymo numeriu, o TADA IŠ KARTO ištriname įrašą (nebereikia jo saugoti).
 app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
   try {
@@ -722,12 +722,12 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
     }
     await mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-      to: 'pagalba@delnaskaitymas.lt',
+      to: 'uzsakymai@delnaskaitymas.lt',
       subject: `Naujas užsakymas: ${orderNumber}`,
       html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber)}</p><p><strong>Vardas:</strong> ${escapeHtml(entry.name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(entry.email)}</p></div>`
     });
     pendingOrders.delete(orderNumber);
-    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į pagalba@delnaskaitymas.lt ir ištrintas iš atminties`);
+    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į uzsakymai@delnaskaitymas.lt ir ištrintas iš atminties`);
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-order-complete] klaida:', err);
