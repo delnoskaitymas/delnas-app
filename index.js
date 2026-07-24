@@ -11,6 +11,10 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
+// Railway (kaip ir dauguma hostingų) veikia už reverse proxy, kuris prideda
+// X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
+// "ERR_ERL_UNEXPECTED_X_FORWARDED_FOR" ir negali teisingai atpažinti IP.
+app.set('trust proxy', 1);
 app.use(cors());
 // --- Saugumo HTTP antraštės ---
 // PASTABA: contentSecurityPolicy/crossOriginEmbedderPolicy/crossOriginResourcePolicy
@@ -452,7 +456,23 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('JSON nerastas');
 
-  const result = parseJsonLenient(jsonMatch[0]);
+  let result;
+  try {
+    result = parseJsonLenient(jsonMatch[0]);
+  } catch (parseErr) {
+    // Diagnostikai: parodome tekstą APLINK klaidos pozicijoje (ne visą —
+    // kad log'ai liktų skaitomi), kad ateityje būtų galima tiksliai
+    // nustatyti, KODĖL AI atsakymo JSON tapo neteisingas šioje vietoje.
+    const posMatch = parseErr.message.match(/position (\d+)/);
+    const pos = posMatch ? parseInt(posMatch[1], 10) : null;
+    if (pos !== null) {
+      const snippet = jsonMatch[0].slice(Math.max(0, pos - 150), pos + 150);
+      console.error(`[runPalmAnalysis] JSON klaida ties pozicija ${pos}, tekstas aplink klaidą:\n---\n${snippet}\n---`);
+    } else {
+      console.error('[runPalmAnalysis] JSON klaida (be pozicijos), pirmi 500 simboliai:', jsonMatch[0].slice(0, 500));
+    }
+    throw parseErr;
+  }
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
   return result;
@@ -837,14 +857,29 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         } else if (entry && entry.status === 'pending') {
           console.log(`[analyze-palm] sessionId=${sessionId} -> VIS DAR pending po 8s laukimo, grąžinam 202`);
           return res.status(202).json({ pending: true, sessionId });
+        } else if (entry && entry.status === 'error') {
+          // Ta pati apsauga kaip aukščiau — grąžiname klaidą IŠKART, o NE
+          // triname cache ir paleidžiame naują brangų AI kvietimą.
+          console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė nepavyko laukimo lango metu (${entry.error}), grąžinam klaidą IŠKART`);
+          analysisCache.delete(sessionId);
+          return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: uzsakymai@delnaskaitymas.lt' });
         } else {
           console.log(`[analyze-palm] sessionId=${sessionId} -> statusas tapo '${entry&&entry.status}', triname cache`);
-          // status === 'error' arba įrašas dingo — cache nebenaudingas
+          // įrašas dingo (nenumatyta situacija) — cache nebenaudingas
           analysisCache.delete(sessionId);
         }
       } else {
-        console.log(`[analyze-palm] sessionId=${sessionId} -> netikėtas statusas '${cached.status}', triname cache`);
+        // status === 'error' — fono analizė JAU KARTĄ NEPAVYKO (pvz. AI
+        // atsakymo JSON nebuvo įmanoma apdoroti). SVARBU: ČIA ANKSČIAU
+        // ištrindavome cache ir PALEISDAVOME VISIŠKAI NAUJĄ, MOKAMĄ AI
+        // analizę nuo nulio — o kadangi klientas bando kas ~3s iki 20
+        // kartų, TAI REIŠKĖ IKI 20 PAKARTOTINIŲ BRANGIŲ AI KVIETIMŲ vienai
+        // nepavykusiai nuotraukų porai, jei klaida buvo nuosekli (ne
+        // atsitiktinė). Dabar VIETOJ TO iškart grąžiname jau žinomą
+        // klaidą klientui — jokio naujo AI kvietimo, jokio kartojimo.
+        console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė ANKSČIAU NEPAVYKO (${cached.error}), grąžinam klaidą IŠKART (be pakartotinio AI kvietimo)`);
         analysisCache.delete(sessionId);
+        return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: uzsakymai@delnaskaitymas.lt' });
       }
     }
 
