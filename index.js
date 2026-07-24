@@ -211,7 +211,9 @@ const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'uzsakymai@delnaskaitymas.lt
 const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
 
 const mailer = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.EMAIL_HOST || 'smtp.zoho.eu',
+  port: parseInt(process.env.EMAIL_PORT || '465', 10),
+  secure: (process.env.EMAIL_SECURE || 'true') === 'true', // true = SSL (465), false = STARTTLS (587)
   auth: { user: process.env.EMAIL_USER || process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
 });
 
