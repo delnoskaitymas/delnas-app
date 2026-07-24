@@ -1,7 +1,6 @@
 // v25 — švariai perrašyta
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
@@ -217,12 +216,51 @@ setInterval(() => {
 const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'uzsakymai@delnaskaitymas.lt';
 const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
 
-const mailer = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.zoho.eu',
-  port: parseInt(process.env.EMAIL_PORT || '465', 10),
-  secure: (process.env.EMAIL_SECURE || 'true') === 'true', // true = SSL (465), false = STARTTLS (587)
-  auth: { user: process.env.EMAIL_USER || process.env.EMAIL_FROM, pass: process.env.EMAIL_PASS }
-});
+// ═══════════════════════════════════════════════════════════════════════
+// EL. LAIŠKŲ SIUNTIMAS PER RESEND HTTP API (nebe SMTP/nodemailer)
+// ═══════════════════════════════════════════════════════════════════════
+// PRIEŽASTIS PAKEISTI: patikrinome realiais bandymais — visi laiškai per
+// SMTP (smtp.zoho.eu, tiek 465, tiek 587 portai) KABĖDAVO be jokio
+// atsakymo, kol suveikdavo laiko limitas. Tai reiškia, kad hostingas
+// (Railway) blokuoja arba numeta išeinantį SMTP srautą — dažna debesijos
+// platformų praktika prieš šlamštą. HTTP užklausimai (per 443 portą, kaip
+// ir visi kiti šios app'os kvietimai į Stripe/Anthropic) NĖRA blokuojami,
+// todėl Resend (siunčia laiškus per HTTPS API, ne SMTP) yra patikimas
+// sprendimas šioje aplinkoje.
+//
+// BŪTINAS ŽINGSNIS PRIEŠ NAUDOJANT: Railway aplinkos kintamuosiuose turi
+// būti nustatytas RESEND_API_KEY (gaunamas resend.com paskyroje), o
+// domenas delnaskaitymas.lt turi būti PATVIRTINTAS (verified) Resend
+// panelėje (Domains → Add Domain → pridėti jų nurodytus DNS įrašus), kad
+// būtų galima siųsti iš uzsakymai@/info@delnaskaitymas.lt adresų.
+async function sendEmail({ from, to, subject, html, attachments }) {
+  const payload = {
+    from,
+    to: Array.isArray(to) ? to : [to],
+    subject,
+    html
+  };
+  if (attachments && attachments.length) {
+    payload.attachments = attachments.map(a => ({ filename: a.filename, content: a.content }));
+  }
+  const resp = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`Resend API klaida (${resp.status}): ${errText}`);
+  }
+  return resp.json();
+}
+// Suderinamumo sluoksnis — kad NEREIKĖTŲ perrašinėti kiekvieno
+// mailer.sendMail({...}) iškvietimo žemiau, "mailer" objektas paliekamas
+// su ta pačia .sendMail() sąsaja, bet viduje naudoja sendEmail() (Resend).
+const mailer = { sendMail: (opts) => sendEmail(opts) };
 
 // --- JSON taisymo pagalbinė funkcija ---
 // PRIEŽASTIS: AI modelis generuoja JSON, kuriame ilgi laisvo teksto laukai
