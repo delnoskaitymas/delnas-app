@@ -266,7 +266,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <p style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 10px">Tačiau, jei per <strong style="color:var(--gold2)">14 dienų</strong> pajusi, kad rezultatai neatitiko tavo lūkesčių, mes norime tai ištaisyti.</p>
       <p style="font-size:11px;color:var(--gold2);font-weight:600;margin:0 0 8px">Kaip veikia mūsų 14 dienų garantija:</p>
       <div style="font-size:11px;color:rgba(255,255,255,.68);line-height:1.6;display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
-        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(255,255,255,.85)">Parašyk mums:</strong> Atsiųsk el. laišką adresu <strong style="color:rgba(212,168,67,.85)">uzsakymai@delnaskaitymas.lt</strong> nurodydamas savo užsakymo numerį.</span></div>
+        <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">1.</span><span><strong style="color:rgba(255,255,255,.85)">Parašyk mums:</strong> Atsiųsk el. laišką adresu <strong style="color:rgba(212,168,67,.85)">info@delnaskaitymas.lt</strong> nurodydamas savo užsakymo numerį.</span></div>
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(255,255,255,.85)">Trumpas atsiliepimas:</strong> Būsime dėkingi, jei trumpai parašysi, ko pritrūko – tai padeda mums kasdien tobulinti savo sistemą.</span></div>
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(255,255,255,.85)">Sprendimas:</strong> Mes nedelsdami peržiūrėsime tavo užklausą ir grąžinsime pinigus. Mūsų tikslas – laimingas vartotojas, todėl visus prašymus sprendžiame palankiai.</span></div>
       </div>
@@ -938,7 +938,7 @@ async function verifyAndProceed(sessionId){
   go('s-result');
   setTimeout(()=>{
     const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: uzsakymai@delnaskaitymas.lt</p>';
+    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: info@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1052,7 +1052,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      go('s-result');
      setTimeout(()=>{
        const rc=document.getElementById('r-char');
-       if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: uzsakymai@delnaskaitymas.lt</p>';
+       if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: info@delnaskaitymas.lt</p>';
        const rn=document.getElementById('res-name');
        if(rn) rn.textContent='Tavo asmeninė delnų analizė';
        document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1248,7 +1248,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   go('s-result');
   setTimeout(()=>{
     const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: uzsakymai@delnaskaitymas.lt</p>';
+    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: info@delnaskaitymas.lt</p>';
     const rn=document.getElementById('res-name');
     if(rn) rn.textContent='Tavo asmeninė delnų analizė';
     document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -2868,7 +2868,7 @@ function displayResult(r){
   // nebūdavo išsiunčiami, be jokio pastebimo pėdsako.
   try{
     console.log('[displayResult] laiškų siuntimo blokas pasiektas. orderNumber=',window._orderNumber,'userEmail=',window._userEmail);
-    // Pranešimas į uzsakymai@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
+    // Pranešimas į info@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
     // tiksliai tuo momentu, kai atidaromas rezultato ekranas.
     if(window._orderNumber && !window._orderNotifySent){
       window._orderNotifySent=true;
@@ -3620,7 +3620,7 @@ function proceedToPayment(){
   window._userEmail=email;window.userEmail=email;
   // Sugeneruoti vienetinį užsakymo numerį IŠ KARTO, kai tik gautas vardas
   // ir el. paštas (dar prieš mokėjimą) — jis bus parodytas rezultato
-  // ekrane ir naudojamas pranešimui į uzsakymai@delnaskaitymas.lt.
+  // ekrane ir naudojamas pranešimui į info@delnaskaitymas.lt.
   fetch('/register-order',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name,email})}).then(r=>r.json()).then(d=>{
       if(d&&d.orderNumber) window._orderNumber=d.orderNumber;
