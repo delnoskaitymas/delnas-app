@@ -2977,8 +2977,6 @@ function buildResultPdfDoc(r, name){
   // Kiekvienas naujas puslapis TURI būti iš naujo užpildytas juodai
   // (žr. newPage() žemiau), nes jsPDF pagal nutylėjimą naujus puslapius
   // sukuria baltus.
-  // PASTABA dėl paraščių: margin PADIDINTAS (18→20mm), kad tekstas
-  // niekada nesiliestų su lapo kraštu ir nenusikirstų dešinėje pusėje.
   // ═══════════════════════════════════════════════════════════════════
   const GOLD    = [212, 168, 67];   // --gold  #d4a843
   const GOLD2   = [240, 201, 106];  // --gold2 #f0c96a
@@ -2997,7 +2995,10 @@ function buildResultPdfDoc(r, name){
   }
 
   fillDark();
-  let y = 20;
+  // Daugiau vietos nuo pat viršaus (buvo 20 — dabar tekstas/nuotrauka
+  // pradedama žemiau, kad dokumentas "kvėpuotų", o ne prasidėtų iš karto
+  // prie paties lapo krašto).
+  let y = 32;
 
   // Šriftas — įterptas Noto Sans su pilnu lietuviškų raidžių palaikymu
   // (žr. registerPdfFonts() aukščiau — helvetica NEPALAIKO ė/į/š/ų/ū/č/ž/ą)
@@ -3050,7 +3051,8 @@ function buildResultPdfDoc(r, name){
         doc.restoreGraphicsState();
       }catch(ringErr){ /* jei GState nepalaikomas, tenkinamės vienu žiedu */ }
 
-      y = cy + rad + 10;
+      // Daugiau tarpo tarp nuotraukos ir antraštės (buvo 10 — dabar 18)
+      y = cy + rad + 18;
     }catch(e){
       // SVARBU: jei klaida įvyko PO clip(), bet PRIEŠ restoreGraphicsState(),
       // būtina vis tiek atstatyti grafikos būseną — kitaip visas likęs
@@ -3061,18 +3063,24 @@ function buildResultPdfDoc(r, name){
   }
 
   // Viršelio antraštė — LYGIAI TOKS PATS tekstas, koks rodomas rezultatų
-  // ekrane virš analizės (žr. displayResult(): resNameEl.textContent).
-  // Šalia jo NIEKAS kitas nerašoma (jokios papildomos paantraštės ar
-  // pasveikinimo sakinių) — tik ši viena antraštė, kaip ir ekrane.
-  // PASTABA: ekrane naudojamas simbolis "✦", bet įterptas (apkarpytas)
-  // PDF šriftas jo nepalaiko (žr. registerPdfFonts() pastabą apie tai),
-  // todėl čia, kaip ir kitur šiame PDF, naudojamas "•".
+  // ekrane virš analizės (žr. displayResult(): resNameEl.textContent),
+  // TIK be taško/bulleto prieš vardą. Šalia jo nerašoma jokia kita eilutė,
+  // IŠSKYRUS paantraštę žemiau — tą pačią, kuri rodoma ekrane po vardu.
   doc.setFont('NotoSans','bold');
-  doc.setFontSize(20);
+  doc.setFontSize(22);
   doc.setTextColor(...GOLD2);
-  const coverHeading = name ? `• ${name}, tavo asmeninis gyvenimo žemėlapis` : '• Tavo asmeninė delnų analizė';
+  const coverHeading = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
   doc.text(doc.splitTextToSize(coverHeading, maxW), W/2, y, {align:'center'});
-  y += 14;
+  y += 11;
+
+  // Paantraštė — tiksliai ta pati, kuri rodoma rezultatų ekrane po vardu
+  // (.result-subtitle: "Chiromantija · Likimo žemėlapis · Skaitmeninė
+  // analizė", CSS rodoma didžiosiomis raidėmis).
+  doc.setFont('NotoSans','normal');
+  doc.setFontSize(11);
+  doc.setTextColor(...MUTED);
+  doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
+  y += 18;
 
   // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
   // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
@@ -3088,11 +3096,15 @@ function buildResultPdfDoc(r, name){
     ['VII · Pažangą stabdančios kliūtys', r.klutys, r.klutys_insights],
   ];
 
-  const BODY_FONT_SIZE = 16;   // pagrindinio teksto šriftas
-  const LINE_H = 7.4;          // tarpas tarp pagrindinio teksto eilučių
-  const INSIGHT_FONT_SIZE = 12.5;
-  const INSIGHT_LINE_H = 5.8;  // tarpas tarp įžvalgų/sąrašo eilučių
-  const PAGE_BOTTOM = 270;     // apatinė riba, po kurios pereinama į naują puslapį
+  // Šriftų dydžiai ir tarpai — visi ŽYMIAI padidinti / atlaisvinti, kad
+  // dokumentas "kvėpuotų", o ne atrodytų suspaustas.
+  const BODY_FONT_SIZE = 18;    // pagrindinio teksto šriftas
+  const LINE_H = 9;             // tarpas tarp pagrindinio teksto eilučių
+  const PARA_GAP = 5;           // papildomas tarpas TARP SAKINIŲ/pastraipų
+  const INSIGHT_FONT_SIZE = 14; // įžvalgų/sąrašo šriftas
+  const INSIGHT_LINE_H = 7.4;   // tarpas tarp įžvalgų/sąrašo eilučių
+  const INSIGHT_GAP = 4;        // tarpas tarp atskirų įžvalgų/punktų
+  const PAGE_BOTTOM = 266;      // apatinė riba, po kurios pereinama į naują puslapį
 
   // Bendra pagalbinė f-ja bulletų sąrašui (įžvalgos arba stiprybių sąrašas)
   // piešti — auksinė (gold2), su "•" ženkleliu, kaip ekrano .insight-text
@@ -3106,7 +3118,7 @@ function buildResultPdfDoc(r, name){
     items.forEach(txt => {
       // PASTABA: plotis skaičiuojamas taip, kad kartu su bulleto įtrauka
       // (margin+3) tekstas NIEKADA neišeitų už dešinės paraštės.
-      const bulletWidth = maxW - 5;
+      const bulletWidth = maxW - 6;
       const bulletLines = doc.splitTextToSize('•  ' + txt, bulletWidth);
       const neededH = bulletLines.length * INSIGHT_LINE_H;
       if(y + neededH > PAGE_BOTTOM && neededH <= (PAGE_BOTTOM - 20)){
@@ -3119,7 +3131,30 @@ function buildResultPdfDoc(r, name){
         doc.text(bl, margin + 3, y);
         y += INSIGHT_LINE_H;
       });
-      y += 2; // nedidelis tarpas tarp atskirų punktų
+      y += INSIGHT_GAP;
+    });
+  }
+
+  // Pagrindinio teksto piešimas SAKINYS PO SAKINIO (kaip formatText()
+  // ekrane suskaido tekstą į atskiras <p> pastraipas su tarpu tarp jų) —
+  // taip tarp sakinių/pastraipų atsiranda papildomas "oras", o ne vienas
+  // ištisai suspaustas tekstо blokas.
+  function drawBodyText(text){
+    const sentences = text.split(/\.\s+/).map(s=>s.trim()).filter(Boolean)
+      .map(s => s.endsWith('.') ? s : s + '.');
+    (sentences.length ? sentences : [text]).forEach(sentence => {
+      const lines = doc.splitTextToSize(sentence, maxW);
+      lines.forEach((line, idx) => {
+        const remaining = lines.length - idx;
+        // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
+        // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
+        // puslapį, kad neliktų vienišos "uodegytės".
+        if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
+        else if(y > PAGE_BOTTOM){ y = newPage(); }
+        doc.text(line, margin, y);
+        y += LINE_H;
+      });
+      y += PARA_GAP;
     });
   }
 
@@ -3133,33 +3168,25 @@ function buildResultPdfDoc(r, name){
     // už dešinės paraštės ir nusikirsdavo.
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
-    const lines = doc.splitTextToSize(text, maxW);
+    const wholeLines = doc.splitTextToSize(text, maxW); // tik pradinei apytikslei apskaičiavimo patikrai
     // Apsauga nuo "vienišos" antraštės puslapio apačioje: jei nebelieka
     // vietos bent antraštei + 2 teksto eilutėms, šis skyrius pradedamas
     // iš naujo puslapio (o ne paliekamas antraštė be teksto po ja).
-    const neededForStart = 8 + LINE_H * Math.min(2, lines.length);
+    const neededForStart = 11 + LINE_H * Math.min(2, wholeLines.length);
     if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
     // Skyriaus pavadinimas (auksinis, pusjuodis, kaip .rs-label ekrane)
     doc.setFont('NotoSans','bold');
-    doc.setFontSize(14);
+    doc.setFontSize(16);
     doc.setTextColor(...GOLD);
     doc.text(title.toUpperCase(), margin, y);
-    y += 8;
-    // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body)
+    y += 12;
+    // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body),
+    // piešiamas sakinys po sakinio su tarpais tarp jų.
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
     doc.setTextColor(...BODY);
-    lines.forEach((line, idx) => {
-      const remaining = lines.length - idx;
-      // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
-      // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
-      // puslapį, kad neliktų vienišos "uodegytės".
-      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
-      else if(y > PAGE_BOTTOM){ y = newPage(); }
-      doc.text(line, margin, y);
-      y += LINE_H;
-    });
-    y += 2;
+    drawBodyText(text);
+    y += 3;
     // Įžvalgų sąrašas (jei yra) — tas pats turinys, kaip insight-cards
     // ekrane, tik be pačių kortelių fono/ikonų, kaip tekstinis sąrašas.
     // Prieš pradedant sąrašą, patikriname, ar telpa bent viena eilutė —
@@ -3173,11 +3200,11 @@ function buildResultPdfDoc(r, name){
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
-    y += 3;
+    y += 5;
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
-    y += 9;
+    y += 14;
   });
 
   // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
@@ -3215,7 +3242,7 @@ function downloadPDF(){
   if(!r){ alert('Rezultatai nerasti.'); return; }
   const name = window.userName || '';
   const doc = buildResultPdfDoc(r, name);
-  const fileName = name ? name.replace(/\s+/g,'-')+'-delno-skaitymas.pdf' : 'delno-skaitymas.pdf';
+  const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
   doc.save(fileName);
 }
 
