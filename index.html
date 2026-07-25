@@ -977,7 +977,7 @@ async function initiatePayment(){
     if(window._payMethod==='revolut'){
       // Revolut — per Stripe Checkout (vienintelis veikiantis būdas be Stripe UI)
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',amount:999,currency:'eur'})});
+        body:JSON.stringify({email,name,method:'revolut',amount:999,currency:'eur',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
       const data=await res.json();
       if(data.url){_savePhotos();window.location.href=data.url;}
       else throw new Error(data.error||'Klaida');
@@ -1147,9 +1147,15 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
-      const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||''),{},20000);
+      const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||'')+'&bgSessionId='+encodeURIComponent(window.bgSessionId||''),{},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      // SVARBU: jei naršyklės sessionStorage per Stripe Checkout peradresavimą
+      // "pametė" bgSessionId/orderNumber (žinoma iOS Safari problema), čia
+      // juos atstatome iš PATIKIMO serverio atsakymo (Stripe metadata) —
+      // tai VEIKS net jei sessionStorage aukščiau grąžino tuščią reikšmę.
+      if(vd.bgSessionId) window.bgSessionId=vd.bgSessionId;
+      if(vd.orderNumber) window._orderNumber=vd.orderNumber;
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     }
     if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
@@ -3574,7 +3580,7 @@ async function quickPay(method){
   try{
     const res=await fetch('/create-checkout',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,amount:999,currency:'eur'})});
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,amount:999,currency:'eur',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
