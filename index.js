@@ -154,7 +154,7 @@ function generateOrderNumber() {
 // Iškviečiama IŠ KARTO, kai mokėjimas patvirtinamas sėkmingu (žr.
 // /verify-payment-intent ir /verify-payment). Išsiunčia DU laiškus:
 //   1) Klientui — užsakymo patvirtinimas su jo užsakymo numeriu
-//      (siuntėjas: uzsakymai@delnaskaitymas.lt / CLIENT_EMAIL_FROM).
+//      (siuntėjas: CLIENT_EMAIL_FROM — dabar info@delnaskaitymas.lt).
 //   2) Administratoriui (info@delnaskaitymas.lt) — pranešimas apie naują
 //      mokėjimą, su kliento duomenimis, paslauga ir suma.
 // Apsaugota nuo dvigubo siuntimo (entry.orderConfirmed žyma) — ĮRAŠO
@@ -210,10 +210,12 @@ setInterval(() => {
 //   Jei EMAIL_USER kintamasis nenustatytas, atgalinis suderinamumas su
 //   senesne konfigūracija — naudojamas EMAIL_FROM.
 // SIUNTĖJAS klientams (užsakymų patvirtinimai, PDF rezultatai):
-//   uzsakymai@delnaskaitymas.lt (EMAIL_FROM).
+//   info@delnaskaitymas.lt (EMAIL_FROM). PASTABA: anksčiau čia buvo
+//   uzsakymai@delnaskaitymas.lt, bet ta pašto dėžutė buvo ištrinta Zoho
+//   sistemoje — dabar viskas nukreipta į vienintelį veikiantį adresą.
 // GAVĖJAS administraciniams pranešimams apie naujus mokėjimus:
 //   info@delnaskaitymas.lt (ADMIN_EMAIL).
-const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'uzsakymai@delnaskaitymas.lt';
+const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'info@delnaskaitymas.lt';
 const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -801,7 +803,7 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
 // Klientas iškviečia šį endpoint'ą TIKSLIAI TADA, kai atsidaro rezultato
 // ekranas — PDF (sugeneruotas kliento pusėje, tas pats, kaip "Atsisiųsti
 // PDF" mygtukas) išsiunčiamas į vartotojo el. paštą iš
-// uzsakymai@delnaskaitymas.lt.
+// info@delnaskaitymas.lt (CLIENT_EMAIL_FROM).
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
     const { email, name, orderNumber, pdfBase64 } = req.body;
