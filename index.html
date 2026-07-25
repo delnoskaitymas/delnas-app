@@ -3024,31 +3024,30 @@ function buildResultPdfDoc(r, name){
   doc.setFontSize(30);
   doc.setTextColor(...BRAND_GOLD);
   doc.text('DELNAS — Gyvenimo žemėlapis', W/2, y, {align:'center'});
-  y += 12;
+  y += 11;
   if(name){
     doc.setFontSize(20);
     doc.setTextColor(120, 100, 60);
     doc.text(name, W/2, y, {align:'center'});
-    y += 11;
+    y += 9;
   }
   doc.setDrawColor(...BRAND_GOLD);
   doc.setLineWidth(0.5);
   doc.line(margin, y, W-margin, y);
-  y += 10;
+  y += 8;
 
-  // Trumpas asmeniškas pasveikinimas, pratęsiantis el. laiško nuotaiką —
-  // tas pats ramus, įkvepiantis, asmeniškas tonas kaip laiško tekste.
+  // Trumpas asmeniškas pasveikinimas, pratęsiantis el. laiško nuotaiką.
   doc.setFont('NotoSans','normal');
   doc.setFontSize(12);
   doc.setTextColor(120, 100, 60);
-  const greeting = (name ? name + ', šis' : 'Šis') + ' skaitymas atspindi tai, kas jau yra Tavyje — ramus, asmeniškas žvilgsnis į savo kelią.';
+  const greeting = (name ? name + ', tavo' : 'Tavo') + ' gyvenimo žemėlapio šifras paruoštas.';
   doc.text(doc.splitTextToSize(greeting, maxW), W/2, y, {align:'center'});
-  y += 14;
+  y += 10;
 
   doc.setDrawColor(220,200,160);
   doc.setLineWidth(0.3);
   doc.line(margin, y, W-margin, y);
-  y += 12;
+  y += 9;
 
   const sections = [
     ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes],
@@ -3060,43 +3059,67 @@ function buildResultPdfDoc(r, name){
     ['VII · Pažangą stabdančios kliūtys', r.klutys],
   ];
 
+  const LINE_H = 8.2;      // tarpas tarp teksto eilučių (sumažintas iš 9.5)
+  const PAGE_BOTTOM = 268; // apatinė riba, po kurios pereinama į naują puslapį
+
   sections.forEach(([title, text]) => {
     if(!text) return;
-    // Patikrinti ar reikia naujo puslapio
-    if(y > 235){ doc.addPage(); y = 20; }
-    // Skyriaus pavadinimas (šriftas padidintas, daugiau tarpo iki teksto)
+    const lines = doc.splitTextToSize(text, maxW);
+    // Apsauga nuo "vienišos" antraštės puslapio apačioje: jei nebelieka
+    // vietos bent antraštei + 2 teksto eilutėms, šis skyrius pradedamas
+    // iš naujo puslapio (o ne paliekamas antraštė be teksto po ja).
+    const neededForStart = 9 + LINE_H * Math.min(2, lines.length);
+    if(y + neededForStart > PAGE_BOTTOM){ doc.addPage(); y = 20; }
+    // Skyriaus pavadinimas
     doc.setFontSize(18);
     doc.setTextColor(...BRAND_GOLD);
     doc.text(title.toUpperCase(), margin, y);
-    y += 11;
-    // Tekstas (šriftas ŽYMIAI padidintas, didesnis tarpas tarp eilučių)
+    y += 9;
+    // Tekstas
     doc.setFontSize(18);
     doc.setTextColor(30,30,30);
-    const lines = doc.splitTextToSize(text, maxW);
-    lines.forEach(line => {
-      if(y > 270){ doc.addPage(); y = 20; }
+    lines.forEach((line, idx) => {
+      const remaining = lines.length - idx;
+      // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
+      // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
+      // puslapį, kad neliktų vienišos "uodegytės".
+      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ doc.addPage(); y = 20; }
+      else if(y > PAGE_BOTTOM){ doc.addPage(); y = 20; }
       doc.text(line, margin, y);
-      y += 9.5;
+      y += LINE_H;
     });
-    y += 7;
+    y += 5;
     doc.setDrawColor(220,200,160);
     doc.setLineWidth(0.2);
     doc.line(margin, y, W-margin, y);
-    y += 14;
+    y += 10;
   });
 
-  // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę,
-  // kad PDF ir el. laiškas jaustųsi kaip viena visuma (ta pati auksinė
-  // prekės ženklo spalva ir tas pats ramus tonas, kaip laiško tekste).
+  // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
+  // Vieta skaičiuojama DINAMIŠKAI (ne fiksuotu y), kad ji visada turėtų
+  // gražų, kvėpuojantį tarpą virš turinio — nekimbtų prie paskutinės
+  // teksto eilutės ir nepaliktų didelio tuščio tarpo prieš save. Jei ant
+  // esamo puslapio nebelieka pakankamai vietos, footeris keliauja į naują
+  // (švarų) puslapį, o ne prilimpa prie krašto.
+  const footerLine1 = 'Dėkojame, kad patikėjote savo gyvenimo žemėlapį mums.';
+  const footerLine2 = 'Daugiau įžvalgų ir tęsinį rasi: delnaskaitymas.lt';
+  const footerGap = 18;    // kvėpuojantis tarpas virš footerio
+  const footerBlockH = 26; // apytikslis viso footerio aukštis (linija + 2 eilutės)
+  let footerY = y + footerGap;
+  if(footerY + footerBlockH > 282){
+    doc.addPage();
+    y = 20;
+    footerY = y + 55; // vizualiai subalansuota vieta ant tuščio puslapio
+  }
   doc.setDrawColor(...BRAND_GOLD);
   doc.setLineWidth(0.3);
-  doc.line(W/2 - 30, 274, W/2 + 30, 274);
+  doc.line(W/2 - 30, footerY, W/2 + 30, footerY);
   doc.setFont('NotoSans','normal');
-  doc.setFontSize(11);
+  doc.setFontSize(13);
   doc.setTextColor(150,130,100);
-  doc.text('Dėkojame, kad patikėjote savo gyvenimo žemėlapį mums.', W/2, 282, {align:'center'});
+  doc.text(footerLine1, W/2, footerY + 11, {align:'center'});
   doc.setTextColor(...BRAND_GOLD);
-  doc.textWithLink('Daugiau įžvalgų ir tęsinį rasi: delnaskaitymas.lt', W/2, 289, {align:'center', url:'https://delnaskaitymas.lt'});
+  doc.textWithLink(footerLine2, W/2, footerY + 20, {align:'center', url:'https://delnaskaitymas.lt'});
 
   return doc;
 }
