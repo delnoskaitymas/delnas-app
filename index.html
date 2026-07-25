@@ -2947,20 +2947,20 @@ function buildResultPdfDoc(r, name){
   doc.setFont('NotoSans','normal');
 
   // Antraštė
-  doc.setFontSize(20);
+  doc.setFontSize(25);
   doc.setTextColor(180, 130, 40);
   doc.text('DELNAS — Gyvenimo žemėlapis', W/2, y, {align:'center'});
-  y += 8;
+  y += 10;
   if(name){
-    doc.setFontSize(13);
+    doc.setFontSize(16);
     doc.setTextColor(120, 100, 60);
     doc.text(name, W/2, y, {align:'center'});
-    y += 6;
+    y += 8;
   }
   doc.setDrawColor(180,130,40);
   doc.setLineWidth(0.3);
   doc.line(margin, y, W-margin, y);
-  y += 8;
+  y += 10;
 
   const sections = [
     ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes],
@@ -2975,31 +2975,31 @@ function buildResultPdfDoc(r, name){
   sections.forEach(([title, text]) => {
     if(!text) return;
     // Patikrinti ar reikia naujo puslapio
-    if(y > 260){ doc.addPage(); y = 20; }
+    if(y > 250){ doc.addPage(); y = 20; }
     // Skyriaus pavadinimas
-    doc.setFontSize(9);
+    doc.setFontSize(13);
     doc.setTextColor(180,130,40);
     doc.text(title.toUpperCase(), margin, y);
-    y += 5;
+    y += 7;
     // Tekstas
-    doc.setFontSize(10);
-    doc.setTextColor(40,40,40);
+    doc.setFontSize(14);
+    doc.setTextColor(30,30,30);
     const lines = doc.splitTextToSize(text, maxW);
     lines.forEach(line => {
-      if(y > 275){ doc.addPage(); y = 20; }
+      if(y > 273){ doc.addPage(); y = 20; }
       doc.text(line, margin, y);
-      y += 5;
+      y += 7;
     });
     y += 4;
     doc.setDrawColor(220,200,160);
     doc.setLineWidth(0.2);
     doc.line(margin, y, W-margin, y);
-    y += 6;
+    y += 8;
   });
 
   // Apatinė dalis (✦ pakeista į • — pasirinktas šrifto apkarpymas
   // (subsetting) neįtraukė dekoratyvinio žvaigždutės simbolio ✦)
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setTextColor(150,130,100);
   doc.text('• Šis skaitymas sukurtas tik tau — DELNAS · delnaskaitymas.lt', W/2, 290, {align:'center'});
 
