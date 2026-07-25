@@ -1144,6 +1144,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
       if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      if(vd.email){ window._userEmail=vd.email; window.userEmail=vd.email; }
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
@@ -1156,6 +1157,14 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       // tai VEIKS net jei sessionStorage aukščiau grąžino tuščią reikšmę.
       if(vd.bgSessionId) window.bgSessionId=vd.bgSessionId;
       if(vd.orderNumber) window._orderNumber=vd.orderNumber;
+      // SVARBU: taip pat atstatome el. paštą IR vardą iš serverio atsakymo —
+      // anksčiau tai buvo praleista, todėl window._userEmail likdavo tuščias
+      // po Stripe Checkout peradresavimo, ir dėl to PDF rezultatų laiškas
+      // klientui (sendResultPdfEmail) tyliai NEBŪDAVO siunčiamas (funkcija
+      // pati atsisako veikti be el. pašto) — nors serveris jį PUIKIAI
+      // žinojo iš Stripe metadata visą laiką.
+      if(vd.email){ window._userEmail=vd.email; window.userEmail=vd.email; }
+      if(vd.name){ window._userName=vd.name; window.userName=vd.name; }
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     }
     if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
