@@ -696,10 +696,12 @@ app.get('/analysis-status', async (req, res) => {
 // --- Checkout sesija Revolut/Klarna ---
 app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, amount, currency } = req.body;
+    const { email, name, amount, currency, bgSessionId, orderNumber } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
-    
+    if (bgSessionId && (typeof bgSessionId !== 'string' || bgSessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas bgSessionId' });
+    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
       line_items: [{
@@ -713,7 +715,13 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       mode: 'payment',
       locale: 'lt',
       customer_email: email,
-      metadata: { name: name || '', email },
+      // SVARBU: bgSessionId ir orderNumber saugomi ČIA, Stripe pusėje —
+      // kai vartotojas peradresuojamas per Stripe Checkout (Revolut Pay) ir
+      // grįžta atgal, naršyklės sessionStorage KAI KADA "pamiršta" šiuos
+      // duomenis (ypač iOS Safari, dėl griežtos tarpsvetaininės apsaugos).
+      // Stripe metadata yra PATIKIMAS, serverio pusės šaltinis, nepriklausantis
+      // nuo naršyklės saugyklos elgsenos.
+      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '' },
       success_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/`
     });
@@ -1021,9 +1029,13 @@ app.get('/verify-payment', async (req, res) => {
     if (session.payment_status === 'paid') {
       const finalName = session.metadata?.name || '';
       const finalEmail = session.metadata?.email || '';
+      // Pirmenybė Stripe metadata (patikimas šaltinis) — atsarginis
+      // variantas req.query, jei metadata dėl kokios nors priežasties tuščia.
+      const finalBgSessionId = session.metadata?.bgSessionId || req.query.bgSessionId || '';
+      const finalOrderNumber = session.metadata?.orderNumber || req.query.orderNumber || '';
       const token = createToken(finalName, finalEmail);
-      sendPaymentSuccessEmails(req.query.orderNumber, finalName, finalEmail);
-      res.json({ paid: true, name: finalName, email: finalEmail, token });
+      sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
+      res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber });
     } else {
       res.json({ paid: false });
     }
