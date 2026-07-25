@@ -156,10 +156,14 @@ function generateOrderNumber() {
 //   1) Klientui — užsakymo patvirtinimas su jo užsakymo numeriu
 //      (siuntėjas: CLIENT_EMAIL_FROM — dabar info@delnaskaitymas.lt).
 //   2) Administratoriui (info@delnaskaitymas.lt) — pranešimas apie naują
-//      mokėjimą, su kliento duomenimis, paslauga ir suma.
+//      mokėjimą, su kliento duomenimis (vardu, el. paštu), paslauga ir
+//      suma. TAI VIENINTELIS administracinis laiškas apie šį užsakymą —
+//      /notify-order-complete (žr. žemiau) daugiau ANTRO tokio laiško
+//      NEBESIUNČIA, kad į info@ ateitų tik VIENAS pranešimas per užsakymą.
 // Apsaugota nuo dvigubo siuntimo (entry.orderConfirmed žyma) — ĮRAŠO
 // PAČIO neištriname čia, nes jis vėliau vis dar reikalingas
-// /notify-order-complete (siunčiamas atidarius rezultato ekraną).
+// /notify-order-complete (tvarko atminties išvalymą, atidarius rezultato
+// ekraną).
 function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
   try {
     let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
@@ -873,28 +877,20 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
   }
 });
 
-// Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą —
-// išsiunčiame pranešimą į info@delnaskaitymas.lt su vardu, el. paštu ir
-// užsakymo numeriu, o TADA IŠ KARTO ištriname įrašą (nebereikia jo saugoti).
+// Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą.
+// PASTABA (pakeitimas): administratoriui (info@) apie šį užsakymą JAU
+// išsiųstas VIENINTELIS pranešimas — žr. sendPaymentSuccessEmails() aukščiau,
+// kuri iškviečiama IŠ KARTO po sėkmingo mokėjimo ir turi pilną kliento
+// informaciją (vardą, el. paštą, užsakymo numerį, sumą). Kad į info@
+// nebūtų siunčiami DU laiškai apie tą patį užsakymą, čia administracinis
+// laiškas NEBESIUNČIAMAS — šis endpoint'as dabar tik išvalo laikiną įrašą
+// iš atminties (nebereikia jo saugoti, kai rezultato ekranas jau atidarytas).
 app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
   try {
     const { orderNumber } = req.body;
     if (!isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
-    const entry = pendingOrders.get(orderNumber);
-    if (!entry) {
-      // Arba jau išsiųsta anksčiau, arba įrašas pasenęs/nerastas —
-      // klientui saugu tiesiog laikyti tai sėkmingu (idempotentiškumas).
-      console.log(`[notify-order-complete] ${orderNumber} nerastas (jau išsiųstas arba pasenęs)`);
-      return res.json({ ok: true, alreadyHandled: true });
-    }
-    await mailer.sendMail({
-      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-      to: ADMIN_EMAIL,
-      subject: `Naujas užsakymas: ${orderNumber}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber)}</p><p><strong>Vardas:</strong> ${escapeHtml(entry.name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(entry.email)}</p></div>`
-    });
-    pendingOrders.delete(orderNumber);
-    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į ${ADMIN_EMAIL} ir ištrintas iš atminties`);
+    const existed = pendingOrders.delete(orderNumber);
+    console.log(`[notify-order-complete] ${orderNumber} — įrašas ${existed ? 'ištrintas iš atminties' : 'nerastas (jau ištrintas arba pasenęs)'} (administracinis laiškas jau išsiųstas anksčiau, žr. sendPaymentSuccessEmails)`);
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-order-complete] klaida:', err);
