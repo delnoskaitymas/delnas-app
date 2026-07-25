@@ -3005,13 +3005,29 @@ function buildResultPdfDoc(r, name){
   doc.setFont('NotoSans','normal');
 
   // Delno nuotrauka viršuje — apskritime, kaip ir rezultatų ekrane.
-  // Fonas jau juodas, todėl užtenka plono auksinio žiedo aplink nuotrauką.
+  // Švelnus švytėjimas (keli vis platesni, vis skaidresni auksiniai
+  // apskritimai) imituoja ekrane esantį animuotą box-shadow švytėjimą
+  // aplink nuotrauką, o du ploni žiedai (vietoj vieno storo) atrodo
+  // žymiai rafinuočiau ir mažiau grubiai/statiškai.
   const heroPhoto = getHeroPhotoDataUrl();
   if(heroPhoto){
     let gstateSaved = false;
     try{
-      const rad = 20; // apskritimo spindulys (mm) — šiek tiek sumažintas, kad viršelis būtų kompaktiškesnis
+      const rad = 20; // apskritimo spindulys (mm)
       const cx = W/2, cy = y + rad;
+
+      // Švelnus švytėjimas aplink nuotrauką
+      try{
+        [[rad+7,0.05],[rad+4.5,0.09],[rad+2.2,0.14]].forEach(([r0,op])=>{
+          doc.saveGraphicsState();
+          doc.setGState(new doc.GState({opacity:op}));
+          doc.setFillColor(...GOLD);
+          doc.circle(cx,cy,r0,'F');
+          doc.restoreGraphicsState();
+        });
+      }catch(glowErr){ /* GState gali būti nepalaikomas — švytėjimą tiesiog praleidžiame */ }
+
+      // Pati nuotrauka, apkarpyta apskritimu
       doc.saveGraphicsState();
       gstateSaved = true;
       doc.circle(cx, cy, rad, null);
@@ -3020,9 +3036,20 @@ function buildResultPdfDoc(r, name){
       doc.addImage(heroPhoto, 'JPEG', cx-rad, cy-rad, rad*2, rad*2);
       doc.restoreGraphicsState();
       gstateSaved = false;
+
+      // Du ploni auksiniai žiedai (vidinis ryškesnis, išorinis blankesnis)
+      // vietoj vieno storo apvado — švelnesnis, elegantiškesnis kraštas.
       doc.setDrawColor(...GOLD);
-      doc.setLineWidth(0.7);
+      doc.setLineWidth(0.5);
       doc.circle(cx, cy, rad, 'S');
+      try{
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({opacity:0.45}));
+        doc.setLineWidth(0.3);
+        doc.circle(cx, cy, rad+2, 'S');
+        doc.restoreGraphicsState();
+      }catch(ringErr){ /* jei GState nepalaikomas, tenkinamės vienu žiedu */ }
+
       y = cy + rad + 10;
     }catch(e){
       // SVARBU: jei klaida įvyko PO clip(), bet PRIEŠ restoreGraphicsState(),
@@ -3033,25 +3060,19 @@ function buildResultPdfDoc(r, name){
     }
   }
 
-  // Viršelis — TIK vienas, asmeniškas įvadas (be pasikartojančių frazių:
-  // anksčiau čia buvo antraštė + vardo eilutė + paantraštė + atskiras
-  // pasveikinimo sakinys, kurie visi kartojo tuos pačius žodžius
-  // "gyvenimo žemėlapis" / vardą kelis kartus).
+  // Viršelio antraštė — LYGIAI TOKS PATS tekstas, koks rodomas rezultatų
+  // ekrane virš analizės (žr. displayResult(): resNameEl.textContent).
+  // Šalia jo NIEKAS kitas nerašoma (jokios papildomos paantraštės ar
+  // pasveikinimo sakinių) — tik ši viena antraštė, kaip ir ekrane.
+  // PASTABA: ekrane naudojamas simbolis "✦", bet įterptas (apkarpytas)
+  // PDF šriftas jo nepalaiko (žr. registerPdfFonts() pastabą apie tai),
+  // todėl čia, kaip ir kitur šiame PDF, naudojamas "•".
   doc.setFont('NotoSans','bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...GOLD);
-  doc.text('DELNAS', W/2, y, {align:'center'});
-  y += 10;
-  doc.setFont('NotoSans','normal');
-  doc.setFontSize(17);
+  doc.setFontSize(20);
   doc.setTextColor(...GOLD2);
-  const introLine = (name ? name + ', tavo' : 'Tavo') + ' asmeninis gyvenimo žemėlapis';
-  doc.text(introLine, W/2, y, {align:'center'});
-  y += 8;
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(W/2-15, y, W/2+15, y);
-  y += 12;
+  const coverHeading = name ? `• ${name}, tavo asmeninis gyvenimo žemėlapis` : '• Tavo asmeninė delnų analizė';
+  doc.text(doc.splitTextToSize(coverHeading, maxW), W/2, y, {align:'center'});
+  y += 14;
 
   // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
   // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
