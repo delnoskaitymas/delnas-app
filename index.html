@@ -929,8 +929,7 @@ async function verifyAndProceed(sessionId){
   sessionStorage.removeItem('userName');
   sessionStorage.removeItem('userEmail');
 
-  go('s-loading');
-  setTimeout(()=>animateLoading(),100);
+  go('s-info');
   // Naudoti fetchResultsAndNavigate - viena funkcija viskam
   await fetchResultsAndNavigate(sessionId,null);
  }catch(e){
