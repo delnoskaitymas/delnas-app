@@ -924,7 +924,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       subject: `${name ? escapeHtml(name) + ' — ' : ''}Tavo gyvenimo žemėlapis (PDF) ✦`,
       html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:16px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Tavo asmeninė delno analizė paruošta${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8)">Pridėtame PDF faile rasi pilną savo delno skaitymo analizę.${orderNumber ? ' Užsakymo numeris: <strong>' + escapeHtml(orderNumber) + '</strong>.' : ''}</p>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
-        filename: name ? `${name.replace(/\s+/g, '-')}-delno-skaitymas.pdf` : 'delno-skaitymas.pdf',
+        filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
         encoding: 'base64'
       }]
