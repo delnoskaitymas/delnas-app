@@ -181,7 +181,7 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: `Užsakymo patvirtinimas — ${displayOrderNumber}`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em">${escapeHtml(displayOrderNumber)}</p><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.75)">Tavo asmeninė delno analizė šiuo metu ruošiama. Kai tik ji bus paruošta, atsiųsime ją atskiru laišku PDF formatu.</p></div>`
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em">${escapeHtml(displayOrderNumber)}</p><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.75)">Tavo asmeninė delno analizė šiuo metu ruošiama. Kai tik ji bus paruošta, atsiųsime ją atskiru laišku PDF formatu.</p>${EMAIL_FOOTER_HTML}</div>`
     }).then(() => console.log(`[sendPaymentSuccessEmails] klientui išsiųsta į ${email}`))
       .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant klientui:', e.message));
 
@@ -221,6 +221,13 @@ setInterval(() => {
 //   info@delnaskaitymas.lt (ADMIN_EMAIL).
 const CLIENT_EMAIL_FROM = process.env.EMAIL_FROM || 'info@delnaskaitymas.lt';
 const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
+
+// Vientisas prekės ženklo įvaizdis (brand identity) — ta pati subtili
+// auksinė nuoroda į svetainę pridedama VISŲ klientui siunčiamų laiškų
+// apačioje, kad el. laiškas ir PDF failas jaustųsi kaip viena visuma
+// (žr. buildResultPdfDoc() kliento pusėje — ten naudojama TA PATI
+// auksinė spalva #d4a843 ir tas pats "delnaskaitymas.lt" paminėjimas).
+const EMAIL_FOOTER_HTML = `<div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(212,168,67,.2);text-align:center"><a href="https://delnaskaitymas.lt" style="color:#d4a843;text-decoration:none;font-size:12px;letter-spacing:.04em">delnaskaitymas.lt</a></div>`;
 
 // ═══════════════════════════════════════════════════════════════════════
 // EL. LAIŠKŲ SIUNTIMAS PER RESEND HTTP API (nebe SMTP/nodemailer)
@@ -915,7 +922,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: `${name ? escapeHtml(name) + ' — ' : ''}Tavo gyvenimo žemėlapis (PDF) ✦`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:16px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Tavo asmeninė delno analizė paruošta${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8)">Pridėtame PDF faile rasi pilną savo delno skaitymo analizę.${orderNumber ? ' Užsakymo numeris: <strong>' + escapeHtml(orderNumber) + '</strong>.' : ''}</p></div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:16px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Tavo asmeninė delno analizė paruošta${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8)">Pridėtame PDF faile rasi pilną savo delno skaitymo analizę.${orderNumber ? ' Užsakymo numeris: <strong>' + escapeHtml(orderNumber) + '</strong>.' : ''}</p>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-delno-skaitymas.pdf` : 'delno-skaitymas.pdf',
         content: pdfBase64,
