@@ -2977,14 +2977,26 @@ function buildResultPdfDoc(r, name){
 
   // Delno nuotrauka viršuje — apskritime, kaip ir rezultatų ekrane.
   // Apkarpoma apskritimu naudojant jsPDF path-clipping (circle → clip →
-  // discardPath → addImage), tada aplink apvedamas plonas auksinis apvadas,
-  // vizualiai atkartojantis ekrane matomą žiedą.
+  // discardPath → addImage). PRIEŠ tai nupiešiamas tamsus fono apskritimas
+  // + auksinis žiedas (tos pačios prekės ženklo spalvos, kaip el. laiškuose)
+  // — tai sukuria kontrastingą "medalioną", kad nuotrauka niekada
+  // "nepasimestų" baltame PDF fone, nepriklausomai nuo pačios nuotraukos
+  // atspalvių.
+  const BRAND_GOLD = [212, 168, 67];   // tas pats auksinis kaip el. laiškuose (#d4a843)
+  const BRAND_DARK = [10, 8, 14];      // tas pats tamsus fonas kaip el. laiškuose (#07040f)
   const heroPhoto = getHeroPhotoDataUrl();
   if(heroPhoto){
     let gstateSaved = false;
     try{
       const rad = 22; // apskritimo spindulys (mm)
-      const cx = W/2, cy = y + rad;
+      const cx = W/2, cy = y + rad + 4;
+      // Tamsus fono "medalionas" — suteikia kontrastą baltame fone
+      doc.setFillColor(...BRAND_DARK);
+      doc.circle(cx, cy, rad + 3, 'F');
+      doc.setDrawColor(...BRAND_GOLD);
+      doc.setLineWidth(1);
+      doc.circle(cx, cy, rad + 1.5, 'S');
+      // Pati nuotrauka, apkarpyta apskritimu
       doc.saveGraphicsState();
       gstateSaved = true;
       doc.circle(cx, cy, rad, null);
@@ -2993,10 +3005,11 @@ function buildResultPdfDoc(r, name){
       doc.addImage(heroPhoto, 'JPEG', cx-rad, cy-rad, rad*2, rad*2);
       doc.restoreGraphicsState();
       gstateSaved = false;
-      doc.setDrawColor(180,130,40);
+      // Plonas auksinis apvadas ant pačios nuotraukos krašto
+      doc.setDrawColor(...BRAND_GOLD);
       doc.setLineWidth(0.6);
       doc.circle(cx, cy, rad, 'S');
-      y += rad*2 + 12;
+      y = cy + rad + 3 + 12;
     }catch(e){
       // SVARBU: jei klaida įvyko PO clip(), bet PRIEŠ restoreGraphicsState(),
       // būtina vis tiek atstatyti grafikos būseną — kitaip visas likęs
@@ -3006,9 +3019,10 @@ function buildResultPdfDoc(r, name){
     }
   }
 
-  // Antraštė (šriftas ŽYMIAI padidintas skaitomumui)
+  // Antraštė (šriftas ŽYMIAI padidintas skaitomumui; auksinė spalva
+  // suvienodinta su el. laiškų prekės ženklo akcentu)
   doc.setFontSize(30);
-  doc.setTextColor(180, 130, 40);
+  doc.setTextColor(...BRAND_GOLD);
   doc.text('DELNAS — Gyvenimo žemėlapis', W/2, y, {align:'center'});
   y += 12;
   if(name){
@@ -3017,10 +3031,24 @@ function buildResultPdfDoc(r, name){
     doc.text(name, W/2, y, {align:'center'});
     y += 11;
   }
-  doc.setDrawColor(180,130,40);
+  doc.setDrawColor(...BRAND_GOLD);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, W-margin, y);
+  y += 10;
+
+  // Trumpas asmeniškas pasveikinimas, pratęsiantis el. laiško nuotaiką —
+  // tas pats ramus, įkvepiantis, asmeniškas tonas kaip laiško tekste.
+  doc.setFont('NotoSans','normal');
+  doc.setFontSize(12);
+  doc.setTextColor(120, 100, 60);
+  const greeting = (name ? name + ', šis' : 'Šis') + ' skaitymas atspindi tai, kas jau yra Tavyje — ramus, asmeniškas žvilgsnis į savo kelią.';
+  doc.text(doc.splitTextToSize(greeting, maxW), W/2, y, {align:'center'});
+  y += 14;
+
+  doc.setDrawColor(220,200,160);
   doc.setLineWidth(0.3);
   doc.line(margin, y, W-margin, y);
-  y += 14;
+  y += 12;
 
   const sections = [
     ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes],
@@ -3038,7 +3066,7 @@ function buildResultPdfDoc(r, name){
     if(y > 235){ doc.addPage(); y = 20; }
     // Skyriaus pavadinimas (šriftas padidintas, daugiau tarpo iki teksto)
     doc.setFontSize(18);
-    doc.setTextColor(180,130,40);
+    doc.setTextColor(...BRAND_GOLD);
     doc.text(title.toUpperCase(), margin, y);
     y += 11;
     // Tekstas (šriftas ŽYMIAI padidintas, didesnis tarpas tarp eilučių)
@@ -3057,11 +3085,18 @@ function buildResultPdfDoc(r, name){
     y += 14;
   });
 
-  // Apatinė dalis (✦ pakeista į • — pasirinktas šrifto apkarpymas
-  // (subsetting) neįtraukė dekoratyvinio žvaigždutės simbolio ✦)
-  doc.setFontSize(12);
+  // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę,
+  // kad PDF ir el. laiškas jaustųsi kaip viena visuma (ta pati auksinė
+  // prekės ženklo spalva ir tas pats ramus tonas, kaip laiško tekste).
+  doc.setDrawColor(...BRAND_GOLD);
+  doc.setLineWidth(0.3);
+  doc.line(W/2 - 30, 274, W/2 + 30, 274);
+  doc.setFont('NotoSans','normal');
+  doc.setFontSize(11);
   doc.setTextColor(150,130,100);
-  doc.text('• Šis skaitymas sukurtas tik tau — DELNAS · delnaskaitymas.lt', W/2, 290, {align:'center'});
+  doc.text('Dėkojame, kad patikėjote savo gyvenimo žemėlapį mums.', W/2, 282, {align:'center'});
+  doc.setTextColor(...BRAND_GOLD);
+  doc.textWithLink('Daugiau įžvalgų ir tęsinį rasi: delnaskaitymas.lt', W/2, 289, {align:'center', url:'https://delnaskaitymas.lt'});
 
   return doc;
 }
