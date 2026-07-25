@@ -2876,7 +2876,7 @@ function displayResult(r){
         body:JSON.stringify({orderNumber:window._orderNumber})}).catch(e=>console.error('[notify-order-complete] klaida:',e));
     }
     // PDF rezultatų laiškas klientui — siunčiamas TIKSLIAI TADA, kai
-    // atsidaro rezultato ekranas (iš uzsakymai@delnaskaitymas.lt).
+    // atsidaro rezultato ekranas (iš info@delnaskaitymas.lt).
     sendResultPdfEmail(r);
   }catch(emailBlockErr){
     console.error('[displayResult] klaida laiškų siuntimo bloke:',emailBlockErr);
@@ -3018,7 +3018,7 @@ function downloadPDF(){
 // Siunčiama TIKSLIAI TADA, kai atsidaro rezultato ekranas — sugeneruoja tą
 // patį PDF (kaip atsisiuntimo mygtukas), konvertuoja į base64 ir paprašo
 // serverio (/email-result-pdf) išsiųsti jį kaip laiško priedą į vartotojo
-// el. paštą iš uzsakymai@delnaskaitymas.lt. Apsaugota nuo dvigubo siuntimo.
+// el. paštą iš info@delnaskaitymas.lt. Apsaugota nuo dvigubo siuntimo.
 function sendResultPdfEmail(r){
   try{
     console.log('[sendResultPdfEmail] iškviesta. _pdfEmailSent=',window._pdfEmailSent,'_userEmail=',window._userEmail);
