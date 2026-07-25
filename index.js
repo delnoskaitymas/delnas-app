@@ -315,16 +315,109 @@ function repairJsonString(text) {
   return out;
 }
 
-// Bando JSON.parse() įprastai; jei nepavyksta — bando pataisytą versiją.
-// Jei ir tai nepavyksta, meta ORIGINALIĄ klaidą (informatyvesnė log'ams).
+// ═══════════════════════════════════════════════════════════════════════
+// SCHEMOS PAGRINDU VEIKIANTIS JSON TAISYMAS (patikimesnis nei aukščiau
+// esantis repairJsonString)
+// ═══════════════════════════════════════════════════════════════════════
+// PRIEŽASTIS: repairJsonString sprendžia "ar ši kabutė yra TIKRA eilutės
+// pabaiga?" pagal tai, ar po jos (praleidus tarpus) eina , } ] ar : — bet
+// šis spėjimas KLYSTA, kai AI teksto VIDUJE pacituoja frazę kabutėse
+// (pvz. „pasiruošę") ir po tos citatos SAKINYJE natūraliai eina kablelis
+// — tai atrodo LYGIAI TAIP PAT, kaip tikra JSON eilutės pabaiga su
+// kableliu po jos, todėl algoritmas KLAIDINGAI uždaro eilutę per anksti.
+//
+// Kadangi ŽINOME TIKSLŲ šio JSON objekto raktų sąrašą (jis visada tas
+// pats, apibrėžtas prompt'e), GALIME PATIKIMIAU: surasti VISŲ žinomų
+// raktų pozicijas tekste, ir VISKĄ tarp vieno rakto reikšmės pradžios ir
+// kito rakto pradžios laikyti VIENU reikšmės lauku — apsaugant JAME
+// esančias kabutes VISAS, nesvarbu, kas po jų eina.
+const ANALYSIS_JSON_SCHEMA = [
+  ['prigimtines_stiprybes', 'string'], ['prigimtines_insights', 'array'],
+  ['gyvenimo_tikslas', 'string'], ['gyvenimo_insights', 'array'],
+  ['santykiai', 'string'], ['santykiai_insights', 'array'],
+  ['finansai', 'string'], ['finansai_insights', 'array'],
+  ['pokyciai', 'string'], ['pokyciai_insights', 'array'],
+  ['galimybes', 'string'], ['galimybes_insights', 'array'],
+  ['stiprybes_sarasas', 'array'],
+  ['klutys', 'string'], ['klutys_insights', 'array']
+];
+
+function _escapeAllQuotesInside(str) {
+  // Pirma "atrišame" jau galimai apsaugotas kabutes, kad neuždvigubintume,
+  // tada apsaugome VISAS — tai saugu, nes šis segmentas TURI būti vientisas
+  // teksto laukas, o ne JSON struktūra.
+  return str.replace(/\\"/g, '"').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '');
+}
+
+function repairJsonBySchema(text) {
+  const positions = [];
+  for (const [key] of ANALYSIS_JSON_SCHEMA) {
+    const re = new RegExp('"' + key + '"\\s*:', 'g');
+    const m = re.exec(text);
+    if (m) positions.push({ key, matchEnd: m.index + m[0].length });
+  }
+  if (positions.length === 0) return null; // nė vieno žinomo rakto nerasta — negalime taisyti šiuo būdu
+  positions.sort((a, b) => a.matchEnd - b.matchEnd);
+
+  const typeByKey = Object.fromEntries(ANALYSIS_JSON_SCHEMA);
+  let result = '{';
+  for (let idx = 0; idx < positions.length; idx++) {
+    const cur = positions[idx];
+    const segmentEnd = idx + 1 < positions.length ? text.lastIndexOf('"' + positions[idx + 1].key + '"', positions[idx + 1].matchEnd) : text.length;
+    let raw = text.slice(cur.matchEnd, segmentEnd).trim();
+    raw = raw.replace(/,\s*$/, ''); // nuimame galinį kablelį, pridėsime patys
+
+    let fixedValue;
+    if (typeByKey[cur.key] === 'array') {
+      // Masyvo elementai — trumpos frazės, žymiai mažesnė rizika, kad
+      // viduje bus pašalinių kabučių, todėl saugu naudoti paprastesnį
+      // (char-by-char) taisymą TIK šiam segmentui.
+      let arrInner = raw;
+      if (!arrInner.startsWith('[')) arrInner = '[' + arrInner;
+      if (!arrInner.trim().endsWith(']')) arrInner = arrInner + ']';
+      try {
+        fixedValue = JSON.stringify(JSON.parse(arrInner));
+      } catch (e) {
+        try {
+          fixedValue = JSON.stringify(JSON.parse(repairJsonString(arrInner)));
+        } catch (e2) {
+          fixedValue = '[]';
+        }
+      }
+    } else {
+      // String laukas — PIRMA ir PASKUTINĖ kabutė šiame segmente yra
+      // TIKROS ribos (nes segmentas apibrėžtas pagal ŽINOMĄ kito rakto
+      // poziciją, o ne pagal spėjimą) — VISKAS tarp jų yra vieno teksto
+      // lauko turinys, nesvarbu, kiek kabučių jame yra.
+      let inner = raw;
+      if (inner.startsWith('"')) inner = inner.slice(1);
+      if (inner.endsWith('"')) inner = inner.slice(0, -1);
+      fixedValue = '"' + _escapeAllQuotesInside(inner) + '"';
+    }
+    result += '"' + cur.key + '":' + fixedValue + (idx + 1 < positions.length ? ',' : '');
+  }
+  result += '}';
+  return result;
+}
+
+// Bando JSON.parse() įprastai; jei nepavyksta — bando schemos pagrindu
+// pataisytą versiją (patikimiausia); jei ir tai nepavyksta — bando senesnį
+// bendrą taisymą kaip paskutinę atsarginę priemonę.
+// Jei NIEKAS nepavyksta, meta ORIGINALIĄ klaidą (informatyvesnė log'ams).
 function parseJsonLenient(text) {
   try {
     return JSON.parse(text);
   } catch (originalErr) {
     try {
+      const schemaFixed = repairJsonBySchema(text);
+      if (schemaFixed) return JSON.parse(schemaFixed);
+    } catch (schemaErr) {
+      console.error('[parseJsonLenient] schemos taisymas nepavyko:', schemaErr.message);
+    }
+    try {
       return JSON.parse(repairJsonString(text));
     } catch (repairErr) {
-      console.error('[parseJsonLenient] taisymas irgi nepavyko:', repairErr.message);
+      console.error('[parseJsonLenient] bendras taisymas irgi nepavyko:', repairErr.message);
       throw originalErr;
     }
   }
@@ -434,6 +527,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
 - DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
+- KRITIŠKAI SVARBU (JSON formatui): NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje, nei akcentuojant žodį/frazę, nei kaip citatos ženklo — NET IR VIENĄ KARTĄ, nes tai sugadina JSON struktūrą. Jei nori pabrėžti ar "iškelti" žodį/frazę, naudok TIK paprastą kablelinę kabutę 'štai taip' (apostrofus), niekada ne „lietuviškas" ar tiesiogines dvigubas kabutes. Tai taikoma VISUR — visuose skyriuose ir insights laukuose.
 - Kiekvienas žodis ir sakinys turi turėti prasmę ir svorį — jokių tuščių, niekuo neprisidedančių žodžių ar sakinio dalių
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
 - Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
