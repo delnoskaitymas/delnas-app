@@ -137,7 +137,7 @@ setInterval(() => {
 // vienetinį užsakymo numerį ir laikinai išsaugome vardą+el.paštą+numerį.
 // Šie duomenys naudojami TIK tam, kad:
 //   1) užsakymo numeris būtų parodytas rezultato ekrane;
-//   2) atidarius rezultato ekraną, į uzsakymai@delnaskaitymas.lt būtų
+//   2) atidarius rezultato ekraną, į info@delnaskaitymas.lt būtų
 //      išsiųstas pranešimas su šio kliento vardu, el. paštu ir numeriu.
 // Po to, kai šis pranešimas sėkmingai išsiunčiamas, įrašas IŠ KARTO
 // ištrinamas — jo ilgiau saugoti nereikia (žr. /notify-order-complete).
@@ -770,7 +770,7 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
 });
 
 // Atidarius rezultato ekraną, klientas iškviečia šį endpoint'ą —
-// išsiunčiame pranešimą į uzsakymai@delnaskaitymas.lt su vardu, el. paštu ir
+// išsiunčiame pranešimą į info@delnaskaitymas.lt su vardu, el. paštu ir
 // užsakymo numeriu, o TADA IŠ KARTO ištriname įrašą (nebereikia jo saugoti).
 app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
   try {
@@ -785,12 +785,12 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
     }
     await mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-      to: 'uzsakymai@delnaskaitymas.lt',
+      to: ADMIN_EMAIL,
       subject: `Naujas užsakymas: ${orderNumber}`,
       html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas užbaigtas užsakymas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber)}</p><p><strong>Vardas:</strong> ${escapeHtml(entry.name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(entry.email)}</p></div>`
     });
     pendingOrders.delete(orderNumber);
-    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į uzsakymai@delnaskaitymas.lt ir ištrintas iš atminties`);
+    console.log(`[notify-order-complete] ${orderNumber} išsiųstas į ${ADMIN_EMAIL} ir ištrintas iš atminties`);
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-order-complete] klaida:', err);
@@ -903,7 +903,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           // triname cache ir paleidžiame naują brangų AI kvietimą.
           console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė nepavyko laukimo lango metu (${entry.error}), grąžinam klaidą IŠKART`);
           analysisCache.delete(sessionId);
-          return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: uzsakymai@delnaskaitymas.lt' });
+          return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
         } else {
           console.log(`[analyze-palm] sessionId=${sessionId} -> statusas tapo '${entry&&entry.status}', triname cache`);
           // įrašas dingo (nenumatyta situacija) — cache nebenaudingas
@@ -920,7 +920,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         // klaidą klientui — jokio naujo AI kvietimo, jokio kartojimo.
         console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė ANKSČIAU NEPAVYKO (${cached.error}), grąžinam klaidą IŠKART (be pakartotinio AI kvietimo)`);
         analysisCache.delete(sessionId);
-        return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: uzsakymai@delnaskaitymas.lt' });
+        return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
       }
     }
 
