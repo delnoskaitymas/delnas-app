@@ -2967,7 +2967,34 @@ function getHeroPhotoDataUrl(){
 function buildResultPdfDoc(r, name){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210; const margin = 18; const maxW = W - margin*2;
+  const W = 210, H = 297; const margin = 18; const maxW = W - margin*2;
+
+  // ═══════════════════════════════════════════════════════════════════
+  // TAMSUS FONAS — PDF dabar vizualiai atkartoja rezultatų ekraną
+  // (#s-result): juodas fonas (--bg:#000000), auksinės antraštės
+  // (--gold:#d4a843 / --gold2:#f0c96a) ir švelniai pilkas pagrindinis
+  // tekstas (rgba(255,255,255,.68)), kaip .rs-label / .rs-body CSS.
+  // Kiekvienas naujas puslapis TURI būti iš naujo užpildytas juodai
+  // (žr. newPage() žemiau), nes jsPDF pagal nutylėjimą naujus puslapius
+  // sukuria baltus.
+  // ═══════════════════════════════════════════════════════════════════
+  const GOLD    = [212, 168, 67];   // --gold  #d4a843
+  const GOLD2   = [240, 201, 106];  // --gold2 #f0c96a
+  const BODY    = [173, 173, 173];  // rgba(255,255,255,.68) ant juodo fono
+  const MUTED   = [153, 153, 153];  // rgba(255,255,255,.6)
+  const DIVIDER = [70, 58, 30];     // labai subtili auksinė linija tamsiame fone
+
+  function fillDark(){
+    doc.setFillColor(0,0,0);
+    doc.rect(0,0,W,H,'F');
+  }
+  function newPage(){
+    doc.addPage();
+    fillDark();
+    return 20;
+  }
+
+  fillDark();
   let y = 20;
 
   // Šriftas — įterptas Noto Sans su pilnu lietuviškų raidžių palaikymu
@@ -2976,27 +3003,14 @@ function buildResultPdfDoc(r, name){
   doc.setFont('NotoSans','normal');
 
   // Delno nuotrauka viršuje — apskritime, kaip ir rezultatų ekrane.
-  // Apkarpoma apskritimu naudojant jsPDF path-clipping (circle → clip →
-  // discardPath → addImage). PRIEŠ tai nupiešiamas tamsus fono apskritimas
-  // + auksinis žiedas (tos pačios prekės ženklo spalvos, kaip el. laiškuose)
-  // — tai sukuria kontrastingą "medalioną", kad nuotrauka niekada
-  // "nepasimestų" baltame PDF fone, nepriklausomai nuo pačios nuotraukos
-  // atspalvių.
-  const BRAND_GOLD = [212, 168, 67];   // tas pats auksinis kaip el. laiškuose (#d4a843)
-  const BRAND_DARK = [10, 8, 14];      // tas pats tamsus fonas kaip el. laiškuose (#07040f)
+  // Fonas jau juodas, todėl papildomo kontrastinio disko nebereikia —
+  // užtenka plono auksinio žiedo, tiksliai kaip aplink nuotrauką ekrane.
   const heroPhoto = getHeroPhotoDataUrl();
   if(heroPhoto){
     let gstateSaved = false;
     try{
       const rad = 22; // apskritimo spindulys (mm)
-      const cx = W/2, cy = y + rad + 4;
-      // Tamsus fono "medalionas" — suteikia kontrastą baltame fone
-      doc.setFillColor(...BRAND_DARK);
-      doc.circle(cx, cy, rad + 3, 'F');
-      doc.setDrawColor(...BRAND_GOLD);
-      doc.setLineWidth(1);
-      doc.circle(cx, cy, rad + 1.5, 'S');
-      // Pati nuotrauka, apkarpyta apskritimu
+      const cx = W/2, cy = y + rad;
       doc.saveGraphicsState();
       gstateSaved = true;
       doc.circle(cx, cy, rad, null);
@@ -3005,11 +3019,10 @@ function buildResultPdfDoc(r, name){
       doc.addImage(heroPhoto, 'JPEG', cx-rad, cy-rad, rad*2, rad*2);
       doc.restoreGraphicsState();
       gstateSaved = false;
-      // Plonas auksinis apvadas ant pačios nuotraukos krašto
-      doc.setDrawColor(...BRAND_GOLD);
-      doc.setLineWidth(0.6);
+      doc.setDrawColor(...GOLD);
+      doc.setLineWidth(0.7);
       doc.circle(cx, cy, rad, 'S');
-      y = cy + rad + 3 + 12;
+      y = cy + rad + 12;
     }catch(e){
       // SVARBU: jei klaida įvyko PO clip(), bet PRIEŠ restoreGraphicsState(),
       // būtina vis tiek atstatyti grafikos būseną — kitaip visas likęs
@@ -3019,80 +3032,119 @@ function buildResultPdfDoc(r, name){
     }
   }
 
-  // Antraštė (šriftas ŽYMIAI padidintas skaitomumui; auksinė spalva
-  // suvienodinta su el. laiškų prekės ženklo akcentu)
-  doc.setFontSize(30);
-  doc.setTextColor(...BRAND_GOLD);
+  // Antraštė
+  doc.setFont('NotoSans','bold');
+  doc.setFontSize(28);
+  doc.setTextColor(...GOLD);
   doc.text('DELNAS — Gyvenimo žemėlapis', W/2, y, {align:'center'});
   y += 11;
   if(name){
-    doc.setFontSize(20);
-    doc.setTextColor(120, 100, 60);
-    doc.text(name, W/2, y, {align:'center'});
-    y += 9;
+    doc.setFontSize(19);
+    doc.setTextColor(...GOLD2);
+    doc.text(name + ', tavo asmeninis gyvenimo žemėlapis', W/2, y, {align:'center'});
+    y += 8;
   }
-  doc.setDrawColor(...BRAND_GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(margin, y, W-margin, y);
+  // Paantraštė — ta pati, kuri rodoma po vardu rezultatų ekrane
+  doc.setFont('NotoSans','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...MUTED);
+  doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
   y += 8;
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.5);
+  doc.line(W/2-15, y, W/2+15, y);
+  y += 10;
 
   // Trumpas asmeniškas pasveikinimas, pratęsiantis el. laiško nuotaiką.
   doc.setFont('NotoSans','normal');
   doc.setFontSize(12);
-  doc.setTextColor(120, 100, 60);
+  doc.setTextColor(...GOLD2);
   const greeting = (name ? name + ', tavo' : 'Tavo') + ' gyvenimo žemėlapio šifras paruoštas.';
   doc.text(doc.splitTextToSize(greeting, maxW), W/2, y, {align:'center'});
-  y += 10;
+  y += 12;
 
-  doc.setDrawColor(220,200,160);
-  doc.setLineWidth(0.3);
-  doc.line(margin, y, W-margin, y);
-  y += 9;
-
+  // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
+  // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
+  // mygtukų, dalinimosi/priminimo blokų ir kursyvinių paantraščių
+  // (✦ frazių), kurios ekrane yra tik dekoratyvios, ne pati analizė.
   const sections = [
-    ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes],
-    ['II · Gyvenimo kryptis ir tikslai', r.gyvenimo_tikslas],
-    ['III · Bendravimo būdas ir jo įtaka santykiams', r.santykiai],
-    ['IV · Finansinis potencialas', r.finansai],
-    ['V · Unikalus sėkmės raktas', r.galimybes],
-    ['VI · Svarbiausi artėjantys pokyčiai', r.pokyciai],
-    ['VII · Pažangą stabdančios kliūtys', r.klutys],
+    ['I · Prigimtinės stiprybės ir charakteris', r.prigimtines_stiprybes, r.prigimtines_insights, r.stiprybes_sarasas],
+    ['II · Gyvenimo kryptis ir tikslai', r.gyvenimo_tikslas, r.gyvenimo_insights],
+    ['III · Bendravimo būdas ir jo įtaka santykiams', r.santykiai, r.santykiai_insights],
+    ['IV · Finansinis potencialas', r.finansai, r.finansai_insights],
+    ['V · Unikalus sėkmės raktas', r.galimybes, r.galimybes_insights],
+    ['VI · Svarbiausi artėjantys pokyčiai', r.pokyciai, r.pokyciai_insights],
+    ['VII · Pažangą stabdančios kliūtys', r.klutys, r.klutys_insights],
   ];
 
-  const LINE_H = 8.2;      // tarpas tarp teksto eilučių (sumažintas iš 9.5)
-  const PAGE_BOTTOM = 268; // apatinė riba, po kurios pereinama į naują puslapį
+  const LINE_H = 8.2;       // tarpas tarp pagrindinio teksto eilučių
+  const INSIGHT_LINE_H = 6.4; // tarpas tarp įžvalgų/sąrašo eilučių (mažesnis šriftas)
+  const PAGE_BOTTOM = 268;  // apatinė riba, po kurios pereinama į naują puslapį
 
-  sections.forEach(([title, text]) => {
+  // Bendra pagalbinė f-ja bulletų sąrašui (įžvalgos arba stiprybių sąrašas)
+  // piešti — auksinė (gold2), pusjuodė, su "•" ženkleliu, kaip ekrano
+  // .insight-text kortelėse.
+  function drawBulletList(items){
+    if(!items || !items.length) return;
+    doc.setFont('NotoSans','bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...GOLD2);
+    items.forEach(txt => {
+      const bulletLines = doc.splitTextToSize('•  ' + txt, maxW - 4);
+      bulletLines.forEach((bl, i) => {
+        if(y > PAGE_BOTTOM){ y = newPage(); }
+        doc.text(bl, margin + 2, y);
+        y += INSIGHT_LINE_H;
+      });
+      y += 1.5; // nedidelis tarpas tarp atskirų įžvalgų
+    });
+  }
+
+  sections.forEach(([title, text, insights, pills]) => {
     if(!text) return;
     const lines = doc.splitTextToSize(text, maxW);
     // Apsauga nuo "vienišos" antraštės puslapio apačioje: jei nebelieka
     // vietos bent antraštei + 2 teksto eilutėms, šis skyrius pradedamas
     // iš naujo puslapio (o ne paliekamas antraštė be teksto po ja).
     const neededForStart = 9 + LINE_H * Math.min(2, lines.length);
-    if(y + neededForStart > PAGE_BOTTOM){ doc.addPage(); y = 20; }
-    // Skyriaus pavadinimas
-    doc.setFontSize(18);
-    doc.setTextColor(...BRAND_GOLD);
+    if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
+    // Skyriaus pavadinimas (auksinis, pusjuodis, kaip .rs-label ekrane)
+    doc.setFont('NotoSans','bold');
+    doc.setFontSize(15);
+    doc.setTextColor(...GOLD);
     doc.text(title.toUpperCase(), margin, y);
-    y += 9;
-    // Tekstas
+    y += 10;
+    // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body)
+    doc.setFont('NotoSans','normal');
     doc.setFontSize(18);
-    doc.setTextColor(30,30,30);
+    doc.setTextColor(...BODY);
     lines.forEach((line, idx) => {
       const remaining = lines.length - idx;
       // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
       // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
       // puslapį, kad neliktų vienišos "uodegytės".
-      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ doc.addPage(); y = 20; }
-      else if(y > PAGE_BOTTOM){ doc.addPage(); y = 20; }
+      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
+      else if(y > PAGE_BOTTOM){ y = newPage(); }
       doc.text(line, margin, y);
       y += LINE_H;
     });
-    y += 5;
-    doc.setDrawColor(220,200,160);
-    doc.setLineWidth(0.2);
+    y += 3;
+    // Įžvalgų sąrašas (jei yra) — tas pats turinys, kaip insight-cards
+    // ekrane, tik be pačių kortelių fono/ikonų, kaip tekstinis sąrašas.
+    if(insights && insights.length){
+      if(y + INSIGHT_LINE_H*2 > PAGE_BOTTOM){ y = newPage(); }
+      drawBulletList(insights);
+    }
+    // I skyriuje ekrane papildomai rodomas stiprybių sąrašas (r-gifts-pills)
+    if(pills && pills.length){
+      if(y + INSIGHT_LINE_H*2 > PAGE_BOTTOM){ y = newPage(); }
+      drawBulletList(pills);
+    }
+    y += 4;
+    doc.setDrawColor(...DIVIDER);
+    doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
-    y += 10;
+    y += 11;
   });
 
   // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
@@ -3100,25 +3152,24 @@ function buildResultPdfDoc(r, name){
   // gražų, kvėpuojantį tarpą virš turinio — nekimbtų prie paskutinės
   // teksto eilutės ir nepaliktų didelio tuščio tarpo prieš save. Jei ant
   // esamo puslapio nebelieka pakankamai vietos, footeris keliauja į naują
-  // (švarų) puslapį, o ne prilimpa prie krašto.
+  // (švarų, taip pat juodą) puslapį, o ne prilimpa prie krašto.
   const footerLine1 = 'Dėkojame, kad patikėjote savo gyvenimo žemėlapį mums.';
   const footerLine2 = 'Daugiau įžvalgų ir tęsinį rasi: delnaskaitymas.lt';
   const footerGap = 18;    // kvėpuojantis tarpas virš footerio
   const footerBlockH = 26; // apytikslis viso footerio aukštis (linija + 2 eilutės)
   let footerY = y + footerGap;
   if(footerY + footerBlockH > 282){
-    doc.addPage();
-    y = 20;
+    y = newPage();
     footerY = y + 55; // vizualiai subalansuota vieta ant tuščio puslapio
   }
-  doc.setDrawColor(...BRAND_GOLD);
+  doc.setDrawColor(...GOLD);
   doc.setLineWidth(0.3);
   doc.line(W/2 - 30, footerY, W/2 + 30, footerY);
   doc.setFont('NotoSans','normal');
   doc.setFontSize(13);
-  doc.setTextColor(150,130,100);
+  doc.setTextColor(...MUTED);
   doc.text(footerLine1, W/2, footerY + 11, {align:'center'});
-  doc.setTextColor(...BRAND_GOLD);
+  doc.setTextColor(...GOLD2);
   doc.textWithLink(footerLine2, W/2, footerY + 20, {align:'center', url:'https://delnaskaitymas.lt'});
 
   return doc;
