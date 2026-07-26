@@ -3154,7 +3154,7 @@ function buildResultPdfDoc(r, name){
   // visos nesutelpa į esamą puslapį, jos visos KARTU perkeliamos į
   // naują puslapį (o ne suskaidomos, paliekant 1-2 "pakibusias" eilutes,
   // po kurių iškart sekantys punktai atrodo atsitiktinai "sušokę").
-  const MIN_KEEP_LINES = 3;
+  const MIN_KEEP_LINES = 2;
   function drawBodyText(text){
     const lines = doc.splitTextToSize(text, maxW);
     lines.forEach((line, idx) => {
