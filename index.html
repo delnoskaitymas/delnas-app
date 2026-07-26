@@ -3124,9 +3124,14 @@ function buildResultPdfDoc(r, name){
       const bulletWidth = maxW - 6;
       const bulletLines = doc.splitTextToSize('•  ' + txt, bulletWidth);
       const neededH = bulletLines.length * INSIGHT_LINE_H;
-      if(y + neededH > PAGE_BOTTOM && neededH <= (PAGE_BOTTOM - 20)){
-        // Visas punktas telpa į vieną puslapį — geriau pradėti jį iš
-        // naujo puslapio, nei suskaidyti per pusę.
+      const remainingOnPage = PAGE_BOTTOM - y;
+      // SVARBU: punktas perkeliamas VISAS į naują puslapį TIK tada, kai
+      // esamame puslapyje liko labai mažai vietos (<40mm) — anksčiau
+      // punktas buvo perkeliamas VISADA, kai jis nesutilpo, net jei
+      // puslapyje dar likdavo daug (pvz. 80mm) vietos. Tai palikdavo
+      // dideles tuščias juodas sritis, o po to sekantys punktai/brūkšnys
+      // dar kartą "pasimesdavo" kitame puslapyje.
+      if(neededH <= (PAGE_BOTTOM - 20) && neededH > remainingOnPage && remainingOnPage < 40){
         y = newPage();
       }
       bulletLines.forEach(bl => {
