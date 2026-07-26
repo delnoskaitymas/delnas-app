@@ -3118,7 +3118,7 @@ function buildResultPdfDoc(r, name){
     doc.setFont('NotoSans','bold');
     doc.setFontSize(INSIGHT_FONT_SIZE);
     doc.setTextColor(...GOLD2);
-    items.forEach(txt => {
+    items.forEach((txt, i) => {
       // PASTABA: plotis skaičiuojamas taip, kad kartu su bulleto įtrauka
       // (margin+3) tekstas NIEKADA neišeitų už dešinės paraštės.
       const bulletWidth = maxW - 6;
@@ -3134,7 +3134,10 @@ function buildResultPdfDoc(r, name){
         doc.text(bl, margin + 3, y);
         y += INSIGHT_LINE_H;
       });
-      y += INSIGHT_GAP;
+      // Tarpas TIK tarp punktų — po PASKUTINIO punkto NEBEDEDAME (kitaip
+      // jis sudėtų su prieš-brūkšnio tarpu ir prieš liniją susidarytų
+      // pernelyg didelis tuščias plotas).
+      if(i < items.length - 1) y += INSIGHT_GAP;
     });
   }
 
@@ -3201,7 +3204,7 @@ function buildResultPdfDoc(r, name){
     let sectionH = 13 /* antraštė */ + bodyLines.length * LINE_H + 4;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
-    sectionH += 3 + 4; // tarpas + skiriamoji linija + tarpas po ja
+    sectionH += 3 + 6; // tarpas + skiriamoji linija + tarpas po ja
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
@@ -3245,13 +3248,14 @@ function buildResultPdfDoc(r, name){
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
-    // Tarpas tarp skyrių — panaikintas didelis tarpas, kad temos nebūtų
-    // per toli vienos nuo kitų.
+    // Tarpas tarp skyrių — kompaktiškas, bet su pakankamu tarpu, kad
+    // skiriamoji linija (brūkšniai) NIEKADA neuž liptų ant teksto virš
+    // jos ar sekančios temos antraštės po jos.
     y += 3;
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
-    y += 4;
+    y += 6;
   });
 
   // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
