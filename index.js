@@ -583,14 +583,16 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   ];
 
   let step2Data;
-  // SVARBU: anksčiau pakartotinis bandymas vykdavo TIK jei klaidos tipas
-  // buvo tiksliai 'overloaded_error' — bet kokia KITA laikina Anthropic
-  // API klaida (pvz. 'rate_limit_error', 'api_error', trumpalaikis
-  // tinklo trikdis) iškart nutraukdavo bandymą BE pakartojimo, o
-  // klientui rodydavosi klaidinantis "Tuščias Claude atsakymas" (nes
-  // step2Data.content tokiu atveju tiesiog nebūna). Dabar bandoma
-  // pakartotinai ir šiais atvejais.
-  const RETRYABLE_ERROR_TYPES = ['overloaded_error', 'api_error', 'rate_limit_error'];
+  // SVARBU: 'invalid_request_error' beveik VISADA yra NELAIKINA klaida
+  // (pvz. pasiektas API naudojimo/išlaidų limitas, netinkamas užklausimo
+  // formatas) — kartojant tą patį kvietimą gaunama LYGIAI TA PATI klaida,
+  // tik švaistomas laikas (patvirtinta realiuose Deploy Logs: 3 bandymai,
+  // visi su ta pačia "usage limits" klaida). Todėl ŠIO tipo klaidoms
+  // NEBEBANDOME pakartotinai — iškart pasiduodame ir aiškiai užloginame.
+  // Kitiems (tikrai laikiniems) tipams — 'overloaded_error', 'api_error',
+  // 'rate_limit_error' ir trumpalaikiams tinklo trikdžiams — pakartotinis
+  // bandymas prasmingas.
+  const NON_RETRYABLE_ERROR_TYPES = ['invalid_request_error', 'authentication_error', 'permission_error'];
   for (let attempt = 1; attempt <= 3; attempt++) {
     let r;
     try {
@@ -620,12 +622,12 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
       if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
       throw new Error('Tuščias Claude atsakymas (tinklo klaida)');
     }
-    // SVARBU: bet kokia API klaida (ne tik konkretūs tipai) reiškia, kad
-    // step2Data.content NEBUS — todėl bandome pakartotinai bet kurios
-    // klaidos atveju, ne tik iš anksto žinomo sąrašo. Tai apsaugo ir nuo
-    // dar nematytų/naujų klaidos tipų, kuriuos Anthropic API gali grąžinti.
     if (step2Data?.error) {
       console.log(`Žingsnis 2 klaida (${step2Data.error.type}: ${step2Data.error.message||''}), bandymas ${attempt}/3...`);
+      if (NON_RETRYABLE_ERROR_TYPES.includes(step2Data.error.type)) {
+        console.error(`[runPalmAnalysis] NELAIKINA klaida (${step2Data.error.type}) — pakartotinis bandymas praleidžiamas.`);
+        break;
+      }
       if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
     }
     break;
