@@ -3096,11 +3096,11 @@ function buildResultPdfDoc(r, name){
     ['VII · Pažangą stabdančios kliūtys', r.klutys, r.klutys_insights],
   ];
 
-  // Šriftų dydžiai ir tarpai — visi ŽYMIAI padidinti / atlaisvinti, kad
-  // dokumentas "kvėpuotų", o ne atrodytų suspaustas.
+  // Šriftų dydžiai ir tarpai. PAGRINDINIS TEKSTAS piešiamas KOMPAKTIŠKAI
+  // (be papildomo "oro" tarp žodžių/eilučių/pastraipų) — antraštės,
+  // poraštė ir temų (skyrių) pavadinimai/atstumai NELIEČIAMI.
   const BODY_FONT_SIZE = 18;    // pagrindinio teksto šriftas
-  const LINE_H = 9;             // tarpas tarp pagrindinio teksto eilučių
-  const PARA_GAP = 5;           // papildomas tarpas TARP SAKINIŲ/pastraipų
+  const LINE_H = 7;             // tarpas tarp pagrindinio teksto eilučių — kompaktiškas
   const INSIGHT_FONT_SIZE = 14; // įžvalgų/sąrašo šriftas
   const INSIGHT_LINE_H = 7.4;   // tarpas tarp įžvalgų/sąrašo eilučių
   const INSIGHT_GAP = 4;        // tarpas tarp atskirų įžvalgų/punktų
@@ -3135,26 +3135,19 @@ function buildResultPdfDoc(r, name){
     });
   }
 
-  // Pagrindinio teksto piešimas SAKINYS PO SAKINIO (kaip formatText()
-  // ekrane suskaido tekstą į atskiras <p> pastraipas su tarpu tarp jų) —
-  // taip tarp sakinių/pastraipų atsiranda papildomas "oras", o ne vienas
-  // ištisai suspaustas tekstо blokas.
+  // Pagrindinio teksto piešimas VIENU ištisiniu bloku (be papildomo "oro"
+  // tarp sakinių/pastraipų — tik įprastas tarpas TARP EILUČIŲ, LINE_H).
   function drawBodyText(text){
-    const sentences = text.split(/\.\s+/).map(s=>s.trim()).filter(Boolean)
-      .map(s => s.endsWith('.') ? s : s + '.');
-    (sentences.length ? sentences : [text]).forEach(sentence => {
-      const lines = doc.splitTextToSize(sentence, maxW);
-      lines.forEach((line, idx) => {
-        const remaining = lines.length - idx;
-        // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
-        // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
-        // puslapį, kad neliktų vienišos "uodegytės".
-        if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
-        else if(y > PAGE_BOTTOM){ y = newPage(); }
-        doc.text(line, margin, y);
-        y += LINE_H;
-      });
-      y += PARA_GAP;
+    const lines = doc.splitTextToSize(text, maxW);
+    lines.forEach((line, idx) => {
+      const remaining = lines.length - idx;
+      // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
+      // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
+      // puslapį, kad neliktų vienišos "uodegytės".
+      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
+      else if(y > PAGE_BOTTOM){ y = newPage(); }
+      doc.text(line, margin, y);
+      y += LINE_H;
     });
   }
 
