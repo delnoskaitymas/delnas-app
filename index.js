@@ -1202,12 +1202,15 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+// PASTABA: bendras "catch-all" maršrutas (app.get('*', ...)) PERKELTAS į
+// patį failo GALĄ (žr. žemiau, prieš app.listen) — anksčiau jis buvo ČIA,
+// PRIEŠ /shared/:id, /store-pdf ir /pdf/:id maršrutus. Kadangi Express
+// GET maršrutus tikrina TIKSLIAI tokia tvarka, kokia jie užregistruoti
+// kode, šis bendras maršrutas PERIMDAVO visas šias užklausas PIRMIAU,
+// grąžindamas paprasčiausią index.html (pradinį ekraną) vietoj TIKROS PDF
+// nuorodos ar dalinimosi rezultato — būtent todėl "Kopijuoti nuorodą"
+// nuoroda visada vesdavo į pagrindinį programėlės ekraną, o ne parodydavo
+// PDF failą.
 
 // --- Dalinimosi rezultatai (saugomi faile) ---
 // SVARBU: jei SHARED_STORAGE_DIR nenustatytas, failas saugomas TIESIOG
@@ -1285,9 +1288,9 @@ const pdfCache = new Map();
 setInterval(() => {
   const now = Date.now();
   for (const [id, entry] of pdfCache.entries()) {
-    if (now - entry.createdAt > 48 * 60 * 60 * 1000) pdfCache.delete(id);
+    if (now - entry.createdAt > 60 * 60 * 1000) pdfCache.delete(id);
   }
-}, 60 * 60 * 1000);
+}, 15 * 60 * 1000);
 
 app.post('/store-pdf', sensitiveLimiter, (req, res) => {
   try {
@@ -1316,6 +1319,19 @@ app.get('/pdf/:id', (req, res) => {
   } catch (e) {
     res.status(500).send('Nepavyko atidaryti PDF.');
   }
+});
+
+// SVARBU: šis bendras "catch-all" maršrutas TURI būti PASKUTINIS
+// registruotas GET maršrutas šiame faile — jis veikia kaip atsarginis
+// variantas TIK toms užklausoms, kurios neatitiko NĖ VIENO aukščiau
+// esančio konkretaus maršruto (pvz. /pdf/:id, /shared/:id). Jei jis būtų
+// registruotas ANKSČIAU, jis perimtų visas vėlesnes užklausas pirmiau,
+// nei jos pasiektų savo tikruosius apdorotojus.
+app.get('*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
