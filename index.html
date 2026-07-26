@@ -3267,52 +3267,54 @@ function buildResultPdfDoc(r, name){
     doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
     y += 6;
+    // Apsauga: jei po brūkšnio liko labai mažai vietos (<15mm), linija
+    // paliekama "pakibusi" prie paties puslapio krašto — tokiu atveju iš
+    // karto pereinama į naują puslapį, kad sekanti tema pradėtų švariai.
+    if(PAGE_BOTTOM - y < 15){ y = newPage(); }
   });
 
-  // Apatinė dalis — trumpas padėkos tekstas + aktyvi nuoroda į svetainę
-  // (paspaudus "delnaskaitymas.lt" PDF skaitytuvas atidaro programėlę,
-  // kad vartotojas galėtų kartoti analizę iš naujo). Vieta skaičiuojama
+  // Apatinė dalis — trumpas padėkos tekstas + aktyvus MYGTUKAS į svetainę
+  // (paspaudus jį PDF skaitytuvas atidaro programėlę, kad vartotojas
+  // galėtų kartoti analizę iš naujo). BE ilgos skiriamosios linijos prieš
+  // šį tekstą — pašalinta pagal pageidavimą. Vieta skaičiuojama
   // DINAMIŠKAI (ne fiksuotu y), kad ji visada turėtų gražų, kvėpuojantį
-  // tarpą virš turinio — nekimbtų prie paskutinės teksto eilutės ir
-  // nepaliktų didelio tuščio tarpo prieš save. Jei ant esamo puslapio
-  // nebelieka pakankamai vietos, footeris keliauja į naują (švarų, taip
-  // pat juodą) puslapį — TAČIAU tada rodomas ARTI viršaus (nedidelis,
-  // vienodas tarpas), o ne pakabinamas per vidurį tuščio puslapio.
+  // tarpą virš turinio ir nepaliktų didelio tuščio tarpo prieš save. Jei
+  // ant esamo puslapio nebelieka pakankamai vietos, visas blokas
+  // keliauja į naują (švarų, taip pat juodą) puslapį.
   const footerLine1 = 'Dėkojame, kad patikėjai mums savo delno analizę.';
-  const footerPrefix = 'Daugiau įžvalgų ir naujų atradimų rasi: ';
-  const footerLinkLabel = 'delnaskaitymas.lt';
-  const footerUrl = 'https://delnaskaitymas.lt';
+  const footerLine2 = 'Daugiau įžvalgų ir naujų atradimų rasi:';
+  const footerBtnLabel = 'delnaskaitymas.lt';
+  const footerUrl = 'https://www.delnaskaitymas.lt';
   const footerGap = 14;    // kvėpuojantis tarpas virš footerio
-  const footerBlockH = 24; // apytikslis viso footerio aukštis (linija + 2 eilutės)
+  const footerBlockH = 34; // apytikslis viso bloko aukštis (2 eilutės + mygtukas)
   let footerY = y + footerGap;
   if(footerY + footerBlockH > 282){
     y = newPage();
     footerY = y + 14; // tas pats kvėpuojantis tarpas, kaip ir įprastai — ne per vidurį tuščio puslapio
   }
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.3);
-  doc.line(W/2 - 30, footerY, W/2 + 30, footerY);
   doc.setFont('NotoSans','normal');
   doc.setFontSize(13);
   doc.setTextColor(...MUTED);
-  doc.text(footerLine1, W/2, footerY + 11, {align:'center'});
-  // "delnaskaitymas.lt" piešiamas ATSKIRAI (auksine spalva + pabraukimas)
-  // ir sudedamas TIKSLIAI kartu su prefiksu, kad visas sakinys liktų
-  // sucentruotas, o nuoroda aiškiai atrodytų paspaudžiama.
-  const linkLineY = footerY + 20;
-  const prefixW = doc.getTextWidth(footerPrefix);
-  const linkW = doc.getTextWidth(footerLinkLabel);
-  const lineStartX = W/2 - (prefixW + linkW) / 2;
-  doc.setTextColor(...MUTED);
-  doc.text(footerPrefix, lineStartX, linkLineY);
+  doc.text(footerLine1, W/2, footerY, {align:'center'});
+  doc.text(footerLine2, W/2, footerY + 9, {align:'center'});
+
+  // Trumpas aktyvus mygtukas su užrašu "delnaskaitymas.lt" — paspaudus
+  // nukelia į PILNĄ adresą (https://www.delnaskaitymas.lt), kad
+  // vartotojas galėtų iš naujo įeiti į programėlę ir kartoti analizę.
+  doc.setFont('NotoSans','bold');
+  doc.setFontSize(13);
+  const btnLabelW = doc.getTextWidth(footerBtnLabel);
+  const btnPadX = 7, btnH = 9;
+  const btnW = btnLabelW + btnPadX * 2;
+  const btnX = W/2 - btnW/2;
+  const btnY = footerY + 16;
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(btnX, btnY, btnW, btnH, 2, 2, 'S');
   doc.setTextColor(...GOLD2);
-  doc.textWithLink(footerLinkLabel, lineStartX + prefixW, linkLineY, {url: footerUrl});
-  doc.setDrawColor(...GOLD2);
-  doc.setLineWidth(0.3);
-  doc.line(lineStartX + prefixW, linkLineY + 1.3, lineStartX + prefixW + linkW, linkLineY + 1.3);
-  // Papildomas (nedidelis) aktyvus paspaudimo plotas aplink pačią nuorodą,
-  // kad ją būtų lengviau paspausti telefone.
-  doc.link(lineStartX + prefixW - 1, linkLineY - 4, linkW + 2, 6.5, { url: footerUrl });
+  doc.text(footerBtnLabel, W/2, btnY + btnH/2 + 3.2, {align:'center'});
+  // Visas mygtuko stačiakampis yra paspaudžiamas (ne tik pats tekstas).
+  doc.link(btnX, btnY, btnW, btnH, { url: footerUrl });
 
   return doc;
 }
