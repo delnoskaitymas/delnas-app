@@ -1275,5 +1275,48 @@ app.get('/shared/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// --- Laikinas PDF saugojimas dalinimuisi (atmintyje, su TTL) ---
+// Naudojama "Kopijuoti nuorodą" mygtukui rezultatų ekrane: vietoj to, kad
+// bandytume visą PDF turinį sutalpinti pačiame URL (kas anksčiau pasirodė
+// nepatikima — per ilgą tekstą sugadindavo įvairios pasiuntimo programos),
+// PDF laikinai saugomas serverio atmintyje, o nukopijuojama TRUMPA nuoroda,
+// kuri, atidaryta, tiesiog parodo/atsiunčia tą patį PDF failą.
+const pdfCache = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, entry] of pdfCache.entries()) {
+    if (now - entry.createdAt > 48 * 60 * 60 * 1000) pdfCache.delete(id);
+  }
+}, 60 * 60 * 1000);
+
+app.post('/store-pdf', sensitiveLimiter, (req, res) => {
+  try {
+    const { pdfBase64, fileName } = req.body;
+    if (!pdfBase64 || typeof pdfBase64 !== 'string' || pdfBase64.length > 15_000_000) {
+      return res.status(400).json({ error: 'Netinkami PDF duomenys' });
+    }
+    const id = crypto.randomBytes(8).toString('hex');
+    const safeFileName = String(fileName || 'gyvenimo-zemelapis.pdf').replace(/[^\w.\-]/g, '_');
+    pdfCache.set(id, { data: pdfBase64, fileName: safeFileName, createdAt: Date.now() });
+    const host = req.headers.host || process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app';
+    res.json({ url: `https://${host}/pdf/${id}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/pdf/:id', (req, res) => {
+  const entry = pdfCache.get(req.params.id);
+  if (!entry) return res.status(404).send('Šis PDF nebegalioja arba nerastas.');
+  try {
+    const buf = Buffer.from(entry.data, 'base64');
+    res.set('Content-Type', 'application/pdf');
+    res.set('Content-Disposition', `inline; filename="${entry.fileName}"`);
+    res.send(buf);
+  } catch (e) {
+    res.status(500).send('Nepavyko atidaryti PDF.');
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DELNAS v25 veikia: http://localhost:${PORT}`));
