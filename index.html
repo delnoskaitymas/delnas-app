@@ -3209,7 +3209,7 @@ function buildResultPdfDoc(r, name){
     let sectionH = 13 /* antraštė */ + bodyLines.length * LINE_H + 4;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
-    sectionH += 3 + 11; // tarpas + skiriamoji linija + tarpas po ja
+    sectionH += 3 + 16; // tarpas + skiriamoji linija + tarpas po ja
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
@@ -3266,7 +3266,7 @@ function buildResultPdfDoc(r, name){
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.5);
     doc.line(margin, y, W-margin, y);
-    y += 11;
+    y += 16;
     // Apsauga: jei po brūkšnio liko labai mažai vietos (<15mm), linija
     // paliekama "pakibusi" prie paties puslapio krašto — tokiu atveju iš
     // karto pereinama į naują puslapį, kad sekanti tema pradėtų švariai.
