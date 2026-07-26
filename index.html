@@ -3151,6 +3151,21 @@ function buildResultPdfDoc(r, name){
     });
   }
 
+  // Įvertina, kiek vietos (mm) užimtų punktų sąrašas (įžvalgos arba
+  // stiprybių sąrašas), NEPIEŠIANT jo — naudojama sprendžiant, ar visas
+  // skyrius sutilps viename puslapyje.
+  function estimateBulletsHeight(items){
+    if(!items || !items.length) return 0;
+    doc.setFont('NotoSans','bold');
+    doc.setFontSize(INSIGHT_FONT_SIZE);
+    let h = 0;
+    items.forEach(txt => {
+      const bl = doc.splitTextToSize('•  ' + txt, maxW - 6);
+      h += bl.length * INSIGHT_LINE_H + INSIGHT_GAP;
+    });
+    return h;
+  }
+
   sections.forEach(([title, text, insights, pills]) => {
     if(!text) return;
     // SVARBU: šriftas (šeima + dydis) nustatomas PRIEŠ splitTextToSize() —
@@ -3161,20 +3176,40 @@ function buildResultPdfDoc(r, name){
     // už dešinės paraštės ir nusikirsdavo.
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
-    const wholeLines = doc.splitTextToSize(text, maxW); // tik pradinei apytikslei apskaičiavimo patikrai
-    // Apsauga nuo "vienišos" antraštės puslapio apačioje: jei nebelieka
-    // vietos bent antraštei + 2 teksto eilutėms, šis skyrius pradedamas
-    // iš naujo puslapio (o ne paliekamas antraštė be teksto po ja).
-    const neededForStart = 11 + LINE_H * Math.min(2, wholeLines.length);
-    if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
+    const bodyLines = doc.splitTextToSize(text, maxW);
+
+    // ─── VISO SKYRIAUS (antraštė + tekstas + įžvalgos + sąrašas) apytikslis
+    // aukštis — kad būtų galima nuspręsti, ar geriau visą skyrių perkelti
+    // į NAUJĄ puslapį, o ne leisti jam persiskelti per vidurį (dėl ko
+    // punktai su taškais likdavo "pakibę" ankstesnio puslapio apačioje
+    // arba naujo puslapio viršuje, atskirti nuo savo antraštės).
+    let sectionH = 12 /* antraštė */ + bodyLines.length * LINE_H + 3;
+    sectionH += estimateBulletsHeight(insights);
+    sectionH += estimateBulletsHeight(pills);
+    sectionH += 5 + 14; // tarpas + skiriamoji linija + tarpas po ja
+
+    const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
+    const remainingOnPage = PAGE_BOTTOM - y;
+
+    if(sectionH <= freshPageCapacity && sectionH > remainingOnPage){
+      // Visas skyrius TELPA į vieną puslapį, bet NETELPA į likusią esamo
+      // puslapio vietą — geriau iškart pradėti jį iš naujo, švaraus
+      // puslapio, nei leisti jam persiskelti per vidurį.
+      y = newPage();
+    } else {
+      // Skyrius per ilgas, kad bet kuriuo atveju tilptų į vieną puslapį —
+      // bent jau užtikriname, kad antraštė neliktų vieniša be teksto.
+      const neededForStart = 11 + LINE_H * Math.min(2, bodyLines.length);
+      if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
+    }
+
     // Skyriaus pavadinimas (auksinis, pusjuodis, kaip .rs-label ekrane)
     doc.setFont('NotoSans','bold');
     doc.setFontSize(16);
     doc.setTextColor(...GOLD);
     doc.text(title.toUpperCase(), margin, y);
     y += 12;
-    // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body),
-    // piešiamas sakinys po sakinio su tarpais tarp jų.
+    // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body)
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
     doc.setTextColor(...BODY);
