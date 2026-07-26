@@ -3203,7 +3203,7 @@ function buildResultPdfDoc(r, name){
     let sectionH = 12 /* antraštė */ + bodyLines.length * LINE_H + 3;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
-    sectionH += 3 + 6; // tarpas + skiriamoji linija + tarpas po ja
+    sectionH += 3 + 13; // tarpas + skiriamoji linija + tarpas po ja
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
@@ -3247,12 +3247,13 @@ function buildResultPdfDoc(r, name){
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
-    // Tarpas tarp skyrių — sumažintas, kad nebūtų didelių tuščių plotų.
+    // Tarpas tarp skyrių: prieš liniją mažas, o PO linijos iki kitos
+    // temos — didesnis (buvo per arti brūkšnių ir kitos antraštės).
     y += 3;
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
-    y += 6;
+    y += 13;
   });
 
   // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
