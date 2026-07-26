@@ -1301,7 +1301,12 @@ app.post('/store-pdf', sensitiveLimiter, (req, res) => {
     const id = crypto.randomBytes(8).toString('hex');
     const safeFileName = String(fileName || 'gyvenimo-zemelapis.pdf').replace(/[^\w.\-]/g, '_');
     pdfCache.set(id, { data: pdfBase64, fileName: safeFileName, createdAt: Date.now() });
-    const host = req.headers.host || process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app';
+    // SVARBU: visada naudojame prekės ženklo domeną (www.delnaskaitymas.lt),
+    // o NE tą, kurį atsiuntė naršyklė (req.headers.host) — anksčiau
+    // nukopijuota nuoroda rodydavo neapdorotą Railway subdomeną
+    // (delnas-app-production.up.railway.app), kuris atrodo neprofesionaliai
+    // ir nesutampa su prekės ženklu, kurį vartotojai atpažįsta.
+    const host = 'www.delnaskaitymas.lt';
     res.json({ url: `https://${host}/pdf/${id}` });
   } catch (e) {
     res.status(500).json({ error: e.message });
