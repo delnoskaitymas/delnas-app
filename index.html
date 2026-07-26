@@ -928,6 +928,44 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(sessionId) verifyAndProceed(sessionId);
 });
 
+// Rodo PILNĄ, tvarkingą klaidos ekraną, kai analizė nepavyko sugeneruoti
+// (pvz. AI grąžino tuščią atsakymą). ANKSČIAU šiais atvejais klaidos
+// pranešimas (dažnai vidinis techninis tekstas, pvz. "Tuščias Claude
+// atsakymas") būdavo įrašomas TIK į I skyriaus tekstą, o VISI kiti
+// skyriai (II-VII), PDF mygtukas, dalinimosi ir priminimo blokai likdavo
+// matomi TUŠTI/statiniai — dėl to ekranas atrodydavo sulūžęs ir
+// painus (žr. ekrano nuotrauką, kur rodomas "Tuščias Claude atsakymas").
+// Dabar visi šie tušti/nereikalingi blokai PASLEPIAMI, o rodomas vienas
+// aiškus, draugiškas pranešimas.
+function showAnalysisError(){
+  const rn=document.getElementById('res-name');
+  if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+  document.querySelectorAll('#s-result .rs, #s-result .result-final').forEach(el=>{ el.style.display='none'; });
+  const pdfBtn = document.querySelector('#s-result button[onclick="downloadPDF()"]');
+  if(pdfBtn && pdfBtn.parentElement) pdfBtn.parentElement.style.display='none';
+  const storyBtn = document.querySelector('#s-result button[onclick="shareStory()"]');
+  if(storyBtn){
+    const wrap = storyBtn.closest('div[style*="linear-gradient"]');
+    if(wrap) wrap.style.display='none';
+  }
+  const reminderWrap = document.getElementById('reminder-wrap');
+  if(reminderWrap && reminderWrap.parentElement) reminderWrap.parentElement.style.display='none';
+  const orderNum = document.getElementById('r-order-number');
+  if(orderNum) orderNum.style.display='none';
+
+  const rc=document.getElementById('r-char');
+  if(rc){
+    rc.innerHTML = '<div style="text-align:center;padding:24px 8px">'
+      + '<div style="font-size:15px;color:var(--gold2);font-weight:600;margin-bottom:10px;font-family:\'Playfair Display\',serif">Analizės sugeneruoti nepavyko</div>'
+      + '<div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:16px">Atsiprašome — įvyko klaida ruošiant tavo asmeninį gyvenimo žemėlapį. Tavo mokėjimas užregistruotas, ir mes greitai su tavimi susisieksime.</div>'
+      + '<div style="font-size:12px;color:var(--muted);line-height:1.6">Prašome susisiekti: <a href="mailto:info@delnaskaitymas.lt" style="color:var(--gold2)">info@delnaskaitymas.lt</a></div>'
+      + '</div>';
+  }
+  document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
+    el.style.opacity='1';el.style.transform='none';
+  });
+}
+
 async function verifyAndProceed(sessionId){
  try{
   // Išsaugoti nuotraukas iš sessionStorage
@@ -956,15 +994,7 @@ async function verifyAndProceed(sessionId){
  }catch(e){
   console.error('verifyAndProceed klaida:',e);
   go('s-result');
-  setTimeout(()=>{
-    const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: info@delnaskaitymas.lt</p>';
-    const rn=document.getElementById('res-name');
-    if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-    document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
-      el.style.opacity='1';el.style.transform='none';
-    });
-  },50);
+  setTimeout(()=>{ showAnalysisError(); },50);
  }
 }
 
@@ -1262,17 +1292,12 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // animaciją. Dabar animaciją valdo initScrollReveal() (kviečiama iš
     // pačios displayResult()), todėl čia daugiau NIEKO nedarome su .rs-reveal.
   } else {
-    // Rodyti klaidą rezultatų ekrane
+    // Rodyti klaidą rezultatų ekrane (log'e išlieka finalErr diagnostikai,
+    // bet vartotojui rodomas aiškus, pilnas, draugiškas ekranas — ne
+    // vidinis techninis pranešimas šalia tuščių skyrių).
+    console.error('[fetchResultsAndNavigate] analizė nepavyko:', finalErr);
     go('s-result');
-    setTimeout(()=>{
-      const rc=document.getElementById('r-char');
-      if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">'+finalErr+'</p>';
-      const rn=document.getElementById('res-name');
-      if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-      document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
-        el.style.opacity='1';el.style.transform='none';
-      });
-    },50);
+    setTimeout(()=>{ showAnalysisError(); },50);
   }
  }catch(outerErr){
   // Garantuota apsauga — kad ir kas nutiktų (net netikėta JS klaida animacijos
@@ -1281,15 +1306,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   _navigated=true;clearTimeout(_watchdog);
   window._fetchResultsInProgress=false;
   go('s-result');
-  setTimeout(()=>{
-    const rc=document.getElementById('r-char');
-    if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Įvyko klaida. Prašome susisiekti: info@delnaskaitymas.lt</p>';
-    const rn=document.getElementById('res-name');
-    if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-    document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
-      el.style.opacity='1';el.style.transform='none';
-    });
-  },50);
+  setTimeout(()=>{ showAnalysisError(); },50);
  }
 }
 
