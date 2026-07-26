@@ -3070,8 +3070,13 @@ function buildResultPdfDoc(r, name){
   doc.setFontSize(22);
   doc.setTextColor(...GOLD2);
   const coverHeading = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
-  doc.text(doc.splitTextToSize(coverHeading, maxW), W/2, y, {align:'center'});
-  y += 11;
+  const headingLines = doc.splitTextToSize(coverHeading, maxW);
+  doc.text(headingLines, W/2, y, {align:'center'});
+  // SVARBU: tarpas iki poraštės priklauso NUO TO, kiek eilučių užėmė
+  // antraštė — jei vardas ilgas ir antraštė nusileidžia į 2 eilutes,
+  // anksčiau naudotas FIKSUOTAS tarpas (11mm, tinkantis tik 1 eilutei)
+  // priversdavo poraštę užsikloti ant antros antraštės eilutės.
+  y += headingLines.length * 8.8 + 4;
 
   // Paantraštė — tiksliai ta pati, kuri rodoma rezultatų ekrane po vardu
   // (.result-subtitle: "Chiromantija · Likimo žemėlapis · Skaitmeninė
@@ -3137,15 +3142,23 @@ function buildResultPdfDoc(r, name){
 
   // Pagrindinio teksto piešimas VIENU ištisiniu bloku (be papildomo "oro"
   // tarp sakinių/pastraipų — tik įprastas tarpas TARP EILUČIŲ, LINE_H).
+  // "Našlaičių/įdėtinių eilučių" (orphans/widows) apsauga: paskutinės
+  // pastraipos eilutės NIEKADA nepaliekamos vienos/dviejų puslapio
+  // viršuje ar apačioje — jei jų liko MIN_KEEP_LINES ar mažiau ir jos
+  // visos nesutelpa į esamą puslapį, jos visos KARTU perkeliamos į
+  // naują puslapį (o ne suskaidomos, paliekant 1-2 "pakibusias" eilutes,
+  // po kurių iškart sekantys punktai atrodo atsitiktinai "sušokę").
+  const MIN_KEEP_LINES = 3;
   function drawBodyText(text){
     const lines = doc.splitTextToSize(text, maxW);
     lines.forEach((line, idx) => {
       const remaining = lines.length - idx;
-      // Jei liktų tik trupinys eilučių šio puslapio apačioje, o dauguma
-      // teksto keliautų į kitą puslapį — geriau iškart pereiti į naują
-      // puslapį, kad neliktų vienišos "uodegytės".
-      if(y > PAGE_BOTTOM - LINE_H && remaining > 1){ y = newPage(); }
-      else if(y > PAGE_BOTTOM){ y = newPage(); }
+      if(remaining <= MIN_KEEP_LINES){
+        const neededH = remaining * LINE_H;
+        if(y + neededH > PAGE_BOTTOM){ y = newPage(); }
+      } else if(y > PAGE_BOTTOM){
+        y = newPage();
+      }
       doc.text(line, margin, y);
       y += LINE_H;
     });
@@ -3198,8 +3211,9 @@ function buildResultPdfDoc(r, name){
       y = newPage();
     } else {
       // Skyrius per ilgas, kad bet kuriuo atveju tilptų į vieną puslapį —
-      // bent jau užtikriname, kad antraštė neliktų vieniša be teksto.
-      const neededForStart = 11 + LINE_H * Math.min(2, bodyLines.length);
+      // bent jau užtikriname, kad antraštė neliktų vieniša be teksto
+      // (mažiausiai MIN_KEEP_LINES eilutės po ja, kaip ir "orphans" CSS taisyklė).
+      const neededForStart = 11 + LINE_H * Math.min(MIN_KEEP_LINES, bodyLines.length);
       if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
     }
 
