@@ -940,7 +940,16 @@ window.addEventListener('DOMContentLoaded',async()=>{
 function showAnalysisError(){
   const rn=document.getElementById('res-name');
   if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-  document.querySelectorAll('#s-result .rs, #s-result .result-final').forEach(el=>{ el.style.display='none'; });
+  // SVARBU: pirmasis .rs blokas TURI likti matomas — jame (per #r-char)
+  // rodomas pats klaidos pranešimas. Anksčiau ČIA BUVO BUGAS: visi .rs
+  // blokai (įskaitant PIRMĄJĮ) būdavo paslepiami PRIEŠ įrašant pranešimą
+  // į #r-char, todėl pranešimas būdavo įrašomas į elementą, kurio TĖVAS
+  // jau paslėptas — vartotojas matydavo tuščią juodą plotą be jokio
+  // teksto (žr. ekrano nuotrauką).
+  const allRs = document.querySelectorAll('#s-result .rs');
+  const firstRs = allRs[0];
+  allRs.forEach((el, i) => { if(i > 0) el.style.display='none'; });
+  document.querySelectorAll('#s-result .result-final').forEach(el=>{ el.style.display='none'; });
   const pdfBtn = document.querySelector('#s-result button[onclick="downloadPDF()"]');
   if(pdfBtn && pdfBtn.parentElement) pdfBtn.parentElement.style.display='none';
   const storyBtn = document.querySelector('#s-result button[onclick="shareStory()"]');
@@ -953,9 +962,11 @@ function showAnalysisError(){
   const orderNum = document.getElementById('r-order-number');
   if(orderNum) orderNum.style.display='none';
 
-  const rc=document.getElementById('r-char');
-  if(rc){
-    rc.innerHTML = '<div style="text-align:center;padding:24px 8px">'
+  // Pačiam PIRMAJAM blokui — pakeičiame VISĄ jo turinį (net "I ·" antraštę
+  // pašalindami, kad neatrodytų kaip skyriaus pavadinimas be teksto),
+  // paliekant TIK aiškų, draugišką klaidos pranešimą.
+  if(firstRs){
+    firstRs.innerHTML = '<div style="text-align:center;padding:8px 4px">'
       + '<div style="font-size:15px;color:var(--gold2);font-weight:600;margin-bottom:10px;font-family:\'Playfair Display\',serif">Analizės sugeneruoti nepavyko</div>'
       + '<div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:16px">Atsiprašome — įvyko klaida ruošiant tavo asmeninį gyvenimo žemėlapį. Tavo mokėjimas užregistruotas, ir mes greitai su tavimi susisieksime.</div>'
       + '<div style="font-size:12px;color:var(--muted);line-height:1.6">Prašome susisiekti: <a href="mailto:info@delnaskaitymas.lt" style="color:var(--gold2)">info@delnaskaitymas.lt</a></div>'
