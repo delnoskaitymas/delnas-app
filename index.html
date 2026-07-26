@@ -3082,7 +3082,7 @@ function buildResultPdfDoc(r, name){
   // (.result-subtitle: "Chiromantija · Likimo žemėlapis · Skaitmeninė
   // analizė", CSS rodoma didžiosiomis raidėmis).
   doc.setFont('NotoSans','normal');
-  doc.setFontSize(11);
+  doc.setFontSize(13);
   doc.setTextColor(...MUTED);
   doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
   y += 18;
@@ -3192,27 +3192,32 @@ function buildResultPdfDoc(r, name){
     const bodyLines = doc.splitTextToSize(text, maxW);
 
     // ─── VISO SKYRIAUS (antraštė + tekstas + įžvalgos + sąrašas) apytikslis
-    // aukštis — kad būtų galima nuspręsti, ar geriau visą skyrių perkelti
-    // į NAUJĄ puslapį, o ne leisti jam persiskelti per vidurį (dėl ko
-    // punktai su taškais likdavo "pakibę" ankstesnio puslapio apačioje
-    // arba naujo puslapio viršuje, atskirti nuo savo antraštės).
+    // aukštis. Naudojamas TIK tam, kad NEVERTA pradėti naujo skyriaus
+    // labai arti puslapio apačios (kai liko mažai naudingos vietos) —
+    // TAČIAU jei puslapyje dar liko daug vietos (net jei visas skyrius
+    // ten ir netilptų), NEBEŠOKAME į naują puslapį vien dėl to, nes tai
+    // palikdavo dideles tuščias juodas sritis puslapio apačioje. Vietoj
+    // to pasikliaujame widow/orphan apsauga (MIN_KEEP_LINES) ir punktų
+    // sąrašo vientisumu (drawBulletList), kurie jau apsaugo nuo negražių
+    // persiskyrimų.
     let sectionH = 12 /* antraštė */ + bodyLines.length * LINE_H + 3;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
-    sectionH += 5 + 14; // tarpas + skiriamoji linija + tarpas po ja
+    sectionH += 4 + 9; // tarpas + skiriamoji linija + tarpas po ja
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
+    const MIN_USEFUL_REMAIN = 70; // jei liko mažiau nei tiek mm — neverta pradėti čia
 
-    if(sectionH <= freshPageCapacity && sectionH > remainingOnPage){
-      // Visas skyrius TELPA į vieną puslapį, bet NETELPA į likusią esamo
-      // puslapio vietą — geriau iškart pradėti jį iš naujo, švaraus
-      // puslapio, nei leisti jam persiskelti per vidurį.
+    if(sectionH <= freshPageCapacity && remainingOnPage < MIN_USEFUL_REMAIN){
+      // Puslapyje liko labai mažai naudingos vietos, o visas skyrius
+      // sutilptų į vieną švarų puslapį — verta jį ten perkelti.
       y = newPage();
     } else {
-      // Skyrius per ilgas, kad bet kuriuo atveju tilptų į vieną puslapį —
-      // bent jau užtikriname, kad antraštė neliktų vieniša be teksto
-      // (mažiausiai MIN_KEEP_LINES eilutės po ja, kaip ir "orphans" CSS taisyklė).
+      // Arba skyrius per ilgas, kad bet kuriuo atveju tilptų į vieną
+      // puslapį, arba liko pakankamai vietos pradėti čia — bent jau
+      // užtikriname, kad antraštė neliktų vieniša be teksto (mažiausiai
+      // MIN_KEEP_LINES eilutės po ja, kaip ir "orphans" CSS taisyklė).
       const neededForStart = 11 + LINE_H * Math.min(MIN_KEEP_LINES, bodyLines.length);
       if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
     }
@@ -3242,11 +3247,12 @@ function buildResultPdfDoc(r, name){
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
-    y += 5;
+    // Tarpas tarp skyrių — sumažintas, kad nebūtų didelių tuščių plotų.
+    y += 4;
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W-margin, y);
-    y += 14;
+    y += 9;
   });
 
   // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
