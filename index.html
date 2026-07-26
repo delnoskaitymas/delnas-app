@@ -2982,7 +2982,7 @@ function buildResultPdfDoc(r, name){
   const GOLD2   = [240, 201, 106];  // --gold2 #f0c96a
   const BODY    = [173, 173, 173];  // rgba(255,255,255,.68) ant juodo fono
   const MUTED   = [153, 153, 153];  // rgba(255,255,255,.6)
-  const DIVIDER = [70, 58, 30];     // labai subtili auksinė linija tamsiame fone
+  const DIVIDER = [140, 112, 55];   // aiškiai matoma auksinė linija (buvo per silpna, beveik nematoma ant juodo fono)
 
   function fillDark(){
     doc.setFillColor(0,0,0);
@@ -3209,7 +3209,7 @@ function buildResultPdfDoc(r, name){
     let sectionH = 13 /* antraštė */ + bodyLines.length * LINE_H + 4;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
-    sectionH += 3 + 6; // tarpas + skiriamoji linija + tarpas po ja
+    sectionH += 3 + 11; // tarpas + skiriamoji linija + tarpas po ja
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
@@ -3264,9 +3264,9 @@ function buildResultPdfDoc(r, name){
     // jos ar sekančios temos antraštės po jos.
     y += 3;
     doc.setDrawColor(...DIVIDER);
-    doc.setLineWidth(0.3);
+    doc.setLineWidth(0.5);
     doc.line(margin, y, W-margin, y);
-    y += 6;
+    y += 11;
     // Apsauga: jei po brūkšnio liko labai mažai vietos (<15mm), linija
     // paliekama "pakibusi" prie paties puslapio krašto — tokiu atveju iš
     // karto pereinama į naują puslapį, kad sekanti tema pradėtų švariai.
