@@ -3496,6 +3496,23 @@ async function copyPdfLink(){
   }
 }
 
+// Piešia centruotą suvyniotą tekstą (naudojama antraštei, kuri gali
+// užimti kelias eilutes ilgo vardo atveju) ir grąžina Y poziciją PO
+// paskutinės eilutės.
+function drawWrappedCenteredText(ctx, text, cx, yTop, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = ''; const lines = [];
+  words.forEach(w => {
+    const test = line + w + ' ';
+    if(ctx.measureText(test).width > maxWidth && line){ lines.push(line.trim()); line = w + ' '; }
+    else line = test;
+  });
+  if(line) lines.push(line.trim());
+  let y = yTop;
+  lines.forEach(l => { ctx.fillText(l, cx, y); y += lineHeight; });
+  return y;
+}
+
 // Piešia kairiuoju krašto lygiavimu suvyniotą pastraipą (naudojama pilnam
 // I skyriaus tekstui kortelėje) ir grąžina Y poziciją PO paskutinės
 // eilutės — kad tolimesni elementai (mygtukas) būtų dedami DINAMIŠKAI,
@@ -3530,86 +3547,132 @@ function drawRoundedRect(ctx, x, y, w, h, r){
   ctx.closePath();
 }
 
-// Sukuria "istorijos" formato (1080×1920) kortelę su VISU I skyriaus
-// (Prigimtinės stiprybės ir charakteris) tekstu + mygtuko stiliaus,
-// pilnu šio app adresu apačioje. Vieta mygtukui skaičiuojama
-// DINAMIŠKAI, priklausomai nuo to, kiek eilučių realiai užėmė tekstas.
+// Sukuria "istorijos" kortelę, atkartojančią rezultatų ekraną NUO PAT
+// VIRŠAUS: delno ikoną, antraštę, poantraštę, ir VISĄ I skyrių (tekstą +
+// auksinius įžvalgų sakinius), su aiškiu, mygtuko stiliaus, PILNU
+// svetainės adresu apačioje. Aukštis apkarpomas iki realiai panaudoto
+// turinio ilgio, kad neliktų didelio tuščio juodo ploto.
 async function buildStoryCardBlob(){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
   const sectionTitle = 'I · PRIGIMTINĖS STIPRYBĖS IR CHARAKTERIS';
   const sectionText = r.prigimtines_stiprybes || '';
-  const W = 1080, H = 1920;
+  const insights = [...(r.prigimtines_insights || []), ...(r.stiprybes_sarasas || [])];
+  const W = 1080, H_MAX = 2600;
   const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
+  canvas.width = W; canvas.height = H_MAX;
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = '#000000';
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, W, H_MAX);
 
-  // Švelnus auksinis švytėjimas viršuje (radialinis gradientas)
-  const glow = ctx.createRadialGradient(W/2, 260, 40, W/2, 260, 700);
+  const glow = ctx.createRadialGradient(W/2, 320, 40, W/2, 320, 780);
   glow.addColorStop(0, 'rgba(212,168,67,.14)');
   glow.addColorStop(1, 'rgba(212,168,67,0)');
   ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
-
-  // Plonas auksinis rėmelis
-  ctx.strokeStyle = 'rgba(212,168,67,.5)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(28, 28, W-56, H-56);
+  ctx.fillRect(0, 0, W, H_MAX);
 
   const margin = 90;
   const maxWidth = W - margin*2;
+  let y = 140;
 
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#d4a843';
-  ctx.font = '600 32px "DM Sans", sans-serif';
-  ctx.fillText('✦ DELNAS · GYVENIMO ŽEMĖLAPIS', W/2, 130);
-
-  let titleY = 220;
-  if(name){
-    ctx.fillStyle = '#f0c96a';
-    ctx.font = '700 46px "Playfair Display", Georgia, serif';
-    ctx.fillText(`${name}, tavo gyvenimo žemėlapis`, W/2, 210);
-    titleY = 300;
+  // Delno nuotrauka viršuje — ta pati, kuri rodoma rezultatų ekrane
+  const heroPhotoUrl = getHeroPhotoDataUrl();
+  if(heroPhotoUrl){
+    try{
+      const img = await new Promise((resolve, reject) => {
+        const im = new Image();
+        im.onload = () => resolve(im);
+        im.onerror = reject;
+        im.src = heroPhotoUrl;
+      });
+      const rad = 130;
+      const cx = W/2, cy = y + rad;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, cx-rad, cy-rad, rad*2, rad*2);
+      ctx.restore();
+      ctx.strokeStyle = '#d4a843';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.stroke();
+      y = cy + rad + 55;
+    }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti delno nuotraukos:', e); }
   }
 
-  ctx.fillStyle = '#d4a843';
-  ctx.font = '700 36px "DM Sans", sans-serif';
-  ctx.fillText(sectionTitle, W/2, titleY);
+  // Antraštė (tas pats tekstas, kaip rezultatų ekrane)
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f0c96a';
+  ctx.font = '700 50px "Playfair Display", Georgia, serif';
+  const headingText = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninis gyvenimo žemėlapis';
+  y = drawWrappedCenteredText(ctx, headingText, W/2, y+45, maxWidth, 62) + 15;
 
-  // Visas I skyriaus tekstas — kairiuoju krašto lygiavimu, kad ilga
-  // pastraipa būtų patogiai skaitoma.
+  // Poantraštė (tiksliai ta pati, kuri rodoma po vardu ekrane)
+  ctx.fillStyle = 'rgba(245,238,216,.55)';
+  ctx.font = '600 25px "DM Sans", sans-serif';
+  ctx.fillText('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y);
+  y += 45;
+
+  ctx.strokeStyle = 'rgba(212,168,67,.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W/2-60, y); ctx.lineTo(W/2+60, y); ctx.stroke();
+  y += 75;
+
+  // I skyriaus antraštė
+  ctx.fillStyle = '#d4a843';
+  ctx.font = '700 38px "DM Sans", sans-serif';
+  ctx.fillText(sectionTitle, W/2, y);
+  y += 70;
+
+  // Visas I skyriaus tekstas
   ctx.textAlign = 'left';
   ctx.fillStyle = '#f5eed8';
   ctx.font = '400 36px Georgia, serif';
-  const bodyStartY = titleY + 90;
-  const afterTextY = drawWrappedParagraph(ctx, sectionText, margin, bodyStartY, maxWidth, 52);
+  y = drawWrappedParagraph(ctx, sectionText, margin, y, maxWidth, 52) + 45;
 
-  // Kvietimas + mygtukas su PILNU šio app adresu — vieta skaičiuojama
-  // DINAMIŠKAI, priklausomai nuo to, kiek vietos realiai užėmė tekstas
-  // (o ne fiksuotoje vietoje, kuri galėtų susikirsti su ilgesniu tekstu).
-  const btnTextY = Math.min(afterTextY + 70, H - 220);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(245,238,216,.7)';
-  ctx.font = '400 28px "DM Sans", sans-serif';
-  ctx.fillText('Atrask savo pilną gyvenimo žemėlapį', W/2, btnTextY);
+  // Auksiniai įžvalgų sakiniai (tie patys, kaip ekrano insight-cards)
+  if(insights.length){
+    ctx.fillStyle = '#f0c96a';
+    ctx.font = '700 33px "DM Sans", sans-serif';
+    insights.forEach(txt => {
+      y = drawWrappedParagraph(ctx, '•  ' + txt, margin+10, y, maxWidth-10, 45) + 18;
+    });
+    y += 15;
+  }
 
-  // "Šio app" pilnas adresas — dinamiškai imamas iš dabartinio puslapio,
-  // kad visada atitiktų tikrą, veikiančią programėlės vietą.
-  const appAddress = window.location.host;
-  ctx.font = '700 38px "DM Sans", sans-serif';
-  const btnPadX = 34, btnH = 74;
-  const btnW = Math.min(ctx.measureText(appAddress).width + btnPadX*2, W-160);
-  const btnX = (W - btnW) / 2, btnTopY = btnTextY + 28;
+  // Aiškus, mygtuko stiliaus, PILNAS svetainės adresas — vieta
+  // skaičiuojama DINAMIŠKAI, priklausomai nuo to, kiek vietos užėmė
+  // tekstas aukščiau.
+  const btnLabel = 'https://www.delnaskaitymas.lt';
+  ctx.font = '700 34px "DM Sans", sans-serif';
+  const btnPadX = 30, btnH = 76;
+  const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-140);
+  const btnX = (W - btnW) / 2, btnY = y + 25;
   ctx.fillStyle = '#d4a843';
-  drawRoundedRect(ctx, btnX, btnTopY, btnW, btnH, btnH/2);
+  drawRoundedRect(ctx, btnX, btnY, btnW, btnH, btnH/2);
   ctx.fill();
   ctx.fillStyle = '#07040f';
-  ctx.fillText(appAddress, W/2, btnTopY + btnH/2 + 13);
+  ctx.textAlign = 'center';
+  ctx.fillText(btnLabel, W/2, btnY + btnH/2 + 12);
+  y = btnY + btnH + 60;
 
-  return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+  // Apkarpome iki realiai panaudoto aukščio, kad neliktų tuščio juodo
+  // ploto po turiniu.
+  const finalHeight = Math.min(H_MAX, Math.round(y));
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = W; finalCanvas.height = finalHeight;
+  finalCanvas.getContext('2d').drawImage(canvas, 0, 0, W, finalHeight, 0, 0, W, finalHeight);
+  // Plonas auksinis rėmelis aplink VISĄ galutinę kortelę
+  const fctx = finalCanvas.getContext('2d');
+  fctx.strokeStyle = 'rgba(212,168,67,.5)';
+  fctx.lineWidth = 3;
+  fctx.strokeRect(14, 14, W-28, finalHeight-28);
+
+  return new Promise(resolve => finalCanvas.toBlob(b => resolve(b), 'image/png'));
 }
 
 // Pagrindinis "Dalintis istorija" mygtuko veiksmas — bando atidaryti
