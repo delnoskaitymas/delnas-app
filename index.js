@@ -1168,7 +1168,18 @@ app.get('*', (req, res) => {
 });
 
 // --- Dalinimosi rezultatai (saugomi faile) ---
-const SHARED_FILE = path.join(__dirname, 'shared_results.json');
+// SVARBU: jei SHARED_STORAGE_DIR nenustatytas, failas saugomas TIESIOG
+// konteinerio faile ("ephemeral" Railway failų sistemoje) — kiekvieną
+// kartą, kai programa iš naujo deploy'inama (nauja versija įkeliama),
+// šis failas IŠTRINAMAS ir visos anksčiau sugeneruotos dalinimosi
+// nuorodos nustoja veikti ("Ši analizė nebegalioja arba nerasta").
+// Kad nuorodos išliktų veikiančios TARP deploy'ų, Railway projekte
+// reikia pridėti nuolatinį Volume (Settings → Volumes), sumontuoti jį,
+// pvz., į "/data", ir nustatyti aplinkos kintamąjį
+// SHARED_STORAGE_DIR=/data — tada šis failas bus saugomas ten ir
+// išliks nepaliestas net po deploy'inimo.
+const SHARED_STORAGE_DIR = process.env.SHARED_STORAGE_DIR || __dirname;
+const SHARED_FILE = path.join(SHARED_STORAGE_DIR, 'shared_results.json');
 
 function loadShared() {
   try {
