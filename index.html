@@ -3083,7 +3083,13 @@ function buildResultPdfDoc(r, name){
   doc.setFontSize(15);
   doc.setTextColor(...MUTED);
   doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
-  y += 20;
+  y += 12;
+  // Trumpas skiriamasis brūkšnys tarp poantraštės ir pirmos temos —
+  // trūko vizualaus atskyrimo prieš pat "I · ..." antraštę.
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.5);
+  doc.line(W/2 - 15, y, W/2 + 15, y);
+  y += 14;
 
   // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
   // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
