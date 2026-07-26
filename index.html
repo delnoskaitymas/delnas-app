@@ -3250,6 +3250,12 @@ function buildResultPdfDoc(r, name){
     }
     // I skyriuje ekrane papildomai rodomas stiprybių sąrašas (r-gifts-pills)
     if(pills && pills.length){
+      // SVARBU: jei prieš tai buvo nubraižytas įžvalgų sąrašas, tarp jo
+      // paskutinio punkto ir šio sąrašo PIRMO punkto reikia tarpo —
+      // drawBulletList() savaime tarpo po savo PASKUTINIO punkto nededa
+      // (kad neatsirastų dvigubo tarpo prieš brūkšnį), todėl jį reikia
+      // pridėti čia, tarp DVIEJŲ atskirų sąrašų.
+      if(insights && insights.length) y += INSIGHT_GAP;
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
@@ -3263,16 +3269,19 @@ function buildResultPdfDoc(r, name){
     y += 6;
   });
 
-  // Apatinė dalis — trumpas padėkos tekstas + subtili nuoroda į svetainę.
-  // Vieta skaičiuojama DINAMIŠKAI (ne fiksuotu y), kad ji visada turėtų
-  // gražų, kvėpuojantį tarpą virš turinio — nekimbtų prie paskutinės
-  // teksto eilutės ir nepaliktų didelio tuščio tarpo prieš save. Jei ant
-  // esamo puslapio nebelieka pakankamai vietos, footeris keliauja į naują
-  // (švarų, taip pat juodą) puslapį — TAČIAU tada rodomas ARTI viršaus
-  // (nedidelis, vienodas tarpas), o ne pakabinamas per vidurį tuščio
-  // puslapio, kad paskutinis puslapis neatrodytų su didele tuščia sritimi.
-  const footerLine1 = 'Dėkojame, kad patikėjote savo gyvenimo žemėlapį mums.';
-  const footerLine2 = 'Daugiau įžvalgų ir tęsinį rasi: delnaskaitymas.lt';
+  // Apatinė dalis — trumpas padėkos tekstas + aktyvi nuoroda į svetainę
+  // (paspaudus "delnaskaitymas.lt" PDF skaitytuvas atidaro programėlę,
+  // kad vartotojas galėtų kartoti analizę iš naujo). Vieta skaičiuojama
+  // DINAMIŠKAI (ne fiksuotu y), kad ji visada turėtų gražų, kvėpuojantį
+  // tarpą virš turinio — nekimbtų prie paskutinės teksto eilutės ir
+  // nepaliktų didelio tuščio tarpo prieš save. Jei ant esamo puslapio
+  // nebelieka pakankamai vietos, footeris keliauja į naują (švarų, taip
+  // pat juodą) puslapį — TAČIAU tada rodomas ARTI viršaus (nedidelis,
+  // vienodas tarpas), o ne pakabinamas per vidurį tuščio puslapio.
+  const footerLine1 = 'Dėkojame, kad patikėjai mums savo delno analizę.';
+  const footerPrefix = 'Daugiau įžvalgų ir naujų atradimų rasi: ';
+  const footerLinkLabel = 'delnaskaitymas.lt';
+  const footerUrl = 'https://delnaskaitymas.lt';
   const footerGap = 14;    // kvėpuojantis tarpas virš footerio
   const footerBlockH = 24; // apytikslis viso footerio aukštis (linija + 2 eilutės)
   let footerY = y + footerGap;
@@ -3287,8 +3296,23 @@ function buildResultPdfDoc(r, name){
   doc.setFontSize(13);
   doc.setTextColor(...MUTED);
   doc.text(footerLine1, W/2, footerY + 11, {align:'center'});
+  // "delnaskaitymas.lt" piešiamas ATSKIRAI (auksine spalva + pabraukimas)
+  // ir sudedamas TIKSLIAI kartu su prefiksu, kad visas sakinys liktų
+  // sucentruotas, o nuoroda aiškiai atrodytų paspaudžiama.
+  const linkLineY = footerY + 20;
+  const prefixW = doc.getTextWidth(footerPrefix);
+  const linkW = doc.getTextWidth(footerLinkLabel);
+  const lineStartX = W/2 - (prefixW + linkW) / 2;
+  doc.setTextColor(...MUTED);
+  doc.text(footerPrefix, lineStartX, linkLineY);
   doc.setTextColor(...GOLD2);
-  doc.textWithLink(footerLine2, W/2, footerY + 20, {align:'center', url:'https://delnaskaitymas.lt'});
+  doc.textWithLink(footerLinkLabel, lineStartX + prefixW, linkLineY, {url: footerUrl});
+  doc.setDrawColor(...GOLD2);
+  doc.setLineWidth(0.3);
+  doc.line(lineStartX + prefixW, linkLineY + 1.3, lineStartX + prefixW + linkW, linkLineY + 1.3);
+  // Papildomas (nedidelis) aktyvus paspaudimo plotas aplink pačią nuorodą,
+  // kad ją būtų lengviau paspausti telefone.
+  doc.link(lineStartX + prefixW - 1, linkLineY - 4, linkW + 2, 6.5, { url: footerUrl });
 
   return doc;
 }
