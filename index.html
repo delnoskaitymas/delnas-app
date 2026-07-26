@@ -3616,23 +3616,41 @@ async function buildStoryCardBlob(){
     y = drawWrappedCentered(ctx, `„${txt}"`, W/2, y, maxWidth, 56) + 35;
   });
 
-  // Mygtukas su svetainės adresu — vizualiai aiškus apačioje
+  // Kvietimas + mygtukas su svetainės adresu — vieta skaičiuojama
+  // DINAMIŠKAI, TIESIOG PO paskutiniu teiginiu (o ne fiksuotu atstumu nuo
+  // apačios) — anksčiau fiksuota vieta palikdavo didelį tuščią juodą
+  // tarpą, kai teiginių tekstas būdavo trumpas.
+  y += 15;
+  ctx.fillStyle = 'rgba(245,238,216,.55)';
+  ctx.font = '400 26px "DM Sans", sans-serif';
+  ctx.fillText('Atrask savo pilną gyvenimo žemėlapį', W/2, y);
+  y += 55;
+
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
   const btnPadX = 32, btnH = 76;
   const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-140);
-  const btnX = (W - btnW) / 2, btnY = H - 165;
+  const btnX = (W - btnW) / 2, btnY = y;
   ctx.fillStyle = '#d4a843';
   drawRoundedRectPath(ctx, btnX, btnY, btnW, btnH, btnH/2);
   ctx.fill();
   ctx.fillStyle = '#07040f';
   ctx.fillText(btnLabel, W/2, btnY + btnH/2 + 13);
+  const contentBottom = btnY + btnH + 60;
 
-  ctx.fillStyle = 'rgba(245,238,216,.55)';
-  ctx.font = '400 26px "DM Sans", sans-serif';
-  ctx.fillText('Atrask savo pilną gyvenimo žemėlapį', W/2, btnY - 22);
+  // Apkarpome iki realiai panaudoto aukščio (bet ne daugiau nei
+  // pradinis H, ir ne mažiau nei protingas minimumas), kad neliktų
+  // tuščio juodo ploto po mygtuku.
+  const finalHeight = Math.max(700, Math.min(H, Math.round(contentBottom)));
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = W; finalCanvas.height = finalHeight;
+  const fctx = finalCanvas.getContext('2d');
+  fctx.drawImage(canvas, 0, 0, W, finalHeight, 0, 0, W, finalHeight);
+  fctx.strokeStyle = 'rgba(212,168,67,.5)';
+  fctx.lineWidth = 4;
+  fctx.strokeRect(24, 24, W-48, finalHeight-48);
 
-  return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+  return new Promise(resolve => finalCanvas.toBlob(b => resolve(b), 'image/png'));
 }
 
 // Pagrindinis "Dalintis istorija" mygtuko veiksmas. Dalinamės PAVEIKSLĖLIU
@@ -3646,7 +3664,10 @@ async function shareStory(){
     if(!blob){ alert('Nepavyko sukurti kortelės. Bandykite dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
     const appUrl = 'https://www.delnaskaitymas.lt';
-    const shareText = `Atrask savo gyvenimo žemėlapį: ${appUrl}`;
+    // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
+    // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
+    // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
+    const shareText = 'Atrask savo gyvenimo žemėlapį ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
