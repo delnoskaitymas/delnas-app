@@ -570,34 +570,58 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   ];
 
   let step2Data;
+  // SVARBU: anksčiau pakartotinis bandymas vykdavo TIK jei klaidos tipas
+  // buvo tiksliai 'overloaded_error' — bet kokia KITA laikina Anthropic
+  // API klaida (pvz. 'rate_limit_error', 'api_error', trumpalaikis
+  // tinklo trikdis) iškart nutraukdavo bandymą BE pakartojimo, o
+  // klientui rodydavosi klaidinantis "Tuščias Claude atsakymas" (nes
+  // step2Data.content tokiu atveju tiesiog nebūna). Dabar bandoma
+  // pakartotinai ir šiais atvejais.
+  const RETRYABLE_ERROR_TYPES = ['overloaded_error', 'api_error', 'rate_limit_error'];
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 10000,
-        temperature: 0.2,
-        messages: [
-          { role: 'user', content: step2Content },
-          { role: 'assistant', content: '{' }
-        ]
-      })
-    });
-    step2Data = await r.json();
-    if (step2Data?.error?.type === 'overloaded_error') {
-      console.log(`Žingsnis 2 perkrautas, bandymas ${attempt}/3...`);
+    let r;
+    try {
+      r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 10000,
+          temperature: 0.2,
+          messages: [
+            { role: 'user', content: step2Content },
+            { role: 'assistant', content: '{' }
+          ]
+        })
+      });
+      step2Data = await r.json();
+    } catch (networkErr) {
+      // Trumpalaikis tinklo trikdis (fetch() pats metė klaidą) — taip
+      // pat verta pakartoti, o ne iškart pasiduoti.
+      console.log(`Žingsnis 2 tinklo klaida, bandymas ${attempt}/3: ${networkErr.message}`);
+      step2Data = null;
+      if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
+      throw new Error('Tuščias Claude atsakymas (tinklo klaida)');
+    }
+    if (step2Data?.error && RETRYABLE_ERROR_TYPES.includes(step2Data.error.type)) {
+      console.log(`Žingsnis 2 klaida (${step2Data.error.type}), bandymas ${attempt}/3...`);
       if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
       continue;
     }
     break;
   }
 
-  if (!step2Data.content || step2Data.content.length === 0) throw new Error('Tuščias Claude atsakymas');
+  if (!step2Data || !step2Data.content || step2Data.content.length === 0) {
+    // Diagnostikai: jei tai buvo API klaida (ne tiesiog netikėtai tuščias
+    // atsakymas), užloginame TIKSLŲ jos tipą/pranešimą — anksčiau ši
+    // informacija tiesiog dingdavo, o klaida atrodydavo nepaaiškinama.
+    if (step2Data?.error) console.error('[runPalmAnalysis] Žingsnis 2 galutinė klaida:', JSON.stringify(step2Data.error));
+    throw new Error('Tuščias Claude atsakymas');
+  }
   if (step2Data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
 
   const rawText = '{' + step2Data.content.map(b => b.text || '').join('');
