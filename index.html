@@ -686,8 +686,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – pasidalink šia įžvalga arba pakviesk jį sužinoti savo unikalų sėkmės raktą.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis istorija</button>
-        <button onclick="shareTo('friend')" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti draugui</button>
-        <button id="copy-btn" onclick="shareTo('copy')" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12a5 5 0 015-5h3v2h-3a3 3 0 000 6h3v2h-3a5 5 0 01-5-5zm7-1h6v2h-6v-2zm4-4h3a5 5 0 010 10h-3v-2h3a3 3 0 000-6h-3V7z"/></svg>Kopijuoti nuorodą</button>
+        <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti draugui</button>
+        <button id="copy-btn" onclick="downloadPDF()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L11 13.586V4a1 1 0 011-1zM5 19a1 1 0 011-1h12a1 1 0 110 2H6a1 1 0 01-1-1z"/></svg>Atsisiųsti PDF</button>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
@@ -3425,57 +3425,39 @@ function sendResultPdfEmail(r){
 // veiks, kol tik egzistuoja pati programėlė, nepriklausomai nuo to, kiek
 // kartų buvo deploy'inta. URL būna ilgesnis, bet tai nesvarbu — WhatsApp,
 // SMS ir kitos programos jį rodo tiesiog kaip paspaudžiamą nuorodą.
-async function getShareUrl(){
-  if(window._shareUrl) return window._shareUrl;
-  if(!window._palmResult) return window.location.href;
+// "Siųsti draugui" — dalinamasi TIKSLIAI TUO PAČIU PDF failu, koks
+// išsiunčiamas į vartotojo el. paštą (žr. downloadPDF()/sendResultPdfEmail()),
+// o NE nuoroda. ANKSČIAU čia buvo bandoma dalintis savarankišku URL, kuriame
+// visas rezultatas užkoduotas base64 formatu tiesiog pačiame adrese — bet
+// toks itin ilgas URL (kelių tūkstančių simbolių) pasirodė NEPATIKIMAS:
+// jį persiunčiant per WhatsApp/Messenger/Facebook ar kopijuojant rankiniu
+// būdu, jis būdavo nutrūkstamas/sugadinamas kitų programų, todėl atidarius
+// gautą nuorodą sistema tiesiog rodydavo "nerasta" arba pradinį puslapį.
+// PDF failas šios problemos neturi — jis persiunčiamas kaip visuma, o ne
+// kaip lengvai sugadinamas tekstas.
+async function sharePdfToFriend(){
   try{
-    const resultStr = JSON.stringify(window._palmResult);
-    const b64 = btoa(unescape(encodeURIComponent(resultStr)));
-    // base64url — saugu naudoti tiesiog URL kelio segmente (be /, +, =)
-    const token = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    const url = window.location.origin + '/shared/' + token;
-    window._shareUrl = url;
-    return url;
+    const r = window._palmResult;
+    if(!r){ alert('Rezultatai nerasti.'); return; }
+    const name = window.userName || '';
+    const doc = buildResultPdfDoc(r, name);
+    const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
+    const blob = doc.output('blob');
+    const file = new File([blob], fileName, {type:'application/pdf'});
+    const shareText = name
+      ? `${name} gyvenimo žemėlapis 🤚 Tikslumas šokiravo — bandyk pati! Atrask savo: delnaskaitymas.lt`
+      : `Atlikau delnų analizę 🤚 Tikslumas šokiravo — bandyk ir tu! Atrask savo: delnaskaitymas.lt`;
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText});
+      return;
+    }
+    // Atsarginis variantas (naršyklė nepalaiko failų dalinimosi) — tiesiog
+    // atsisiunčiame PDF, kad vartotojas galėtų jį rankiniu būdu prisegti
+    // prie žinutės bet kurioje programoje.
+    doc.save(fileName);
   }catch(e){
-    console.error('[getShareUrl] nepavyko sukurti dalinimosi nuorodos:', e);
-    return window.location.href;
-  }
-}
-
-async function shareTo(platform){
-  const shareUrl = await getShareUrl();
-
-  const name=window.userName||'';
-  const text=name
-    ? `${name} gyvenimo žemėlapis 🤚 Tikslumas šokiravo — bandyk pati! #delnaskaitymas #chiromantija #lietuva`
-    : `Atlikau delnų analizę 🤚 Tikslumas šokiravo — bandyk ir tu! #delnaskaitymas #chiromantija #lietuva`;
-  const encodedText=encodeURIComponent(text);
-  const encodedUrl=encodeURIComponent(shareUrl);
-
-  function copyWithFeedback(str, btn){
-    navigator.clipboard.writeText(str).then(()=>{
-      if(btn){const o=btn.textContent;btn.textContent='✅ Nukopijuota!';setTimeout(()=>btn.textContent=o,2000);}
-    });
-  }
-
-  switch(platform){
-    case 'whatsapp':window.open('https://wa.me/?text='+encodedText+'%20'+encodedUrl,'_blank');break;
-    case 'facebook':window.open('https://www.facebook.com/sharer/sharer.php?u='+encodedUrl,'_blank');break;
-    case 'instagram':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=instagram]'));break;
-    case 'tiktok':copyWithFeedback(text+'\n'+shareUrl, document.querySelector('[onclick*=tiktok]'));break;
-    case 'native':if(navigator.share){navigator.share({title:'Mano gyvenimo žemėlapis',text,url:shareUrl});}else{copyWithFeedback(shareUrl,null);}break;
-    case 'friend':
-      // "Siųsti draugui" — pirmiausia bandome įrenginio dalinimosi meniu
-      // (aprėpia WhatsApp, Messenger, SMS ir kt.), o jei nepalaikoma —
-      // atsarginis variantas yra tiesioginė WhatsApp nuoroda. ABIEM
-      // atvejais naudojamas TAS PATS unikalus /shared/:id URL.
-      if(navigator.share){
-        navigator.share({title:'Mano gyvenimo žemėlapis',text,url:shareUrl}).catch(()=>{});
-      }else{
-        window.open('https://wa.me/?text='+encodedText+'%20'+encodedUrl,'_blank');
-      }
-      break;
-    case 'copy':copyWithFeedback(shareUrl, document.getElementById('copy-btn'));break;
+    console.error('[sharePdfToFriend] klaida:', e);
+    alert('Nepavyko paruošti PDF dalinimuisi. Bandykite dar kartą.');
   }
 }
 
@@ -3607,10 +3589,15 @@ async function buildStoryCardBlob(){
 // programa jį palaiko.
 async function shareStory(){
   try{
-    const [blob, shareUrl] = await Promise.all([buildStoryCardBlob(), getShareUrl()]);
-    if(!blob){ shareTo('native'); return; }
+    const blob = await buildStoryCardBlob();
+    if(!blob){ alert('Nepavyko sukurti kortelės. Bandykite dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
-    const shareText = `Atrask savo gyvenimo žemėlapį: ${shareUrl}`;
+    // SVARBU: dalinamės TIK pačia kortele, BE jokio ilgo/trapaus URL tekste —
+    // pati kortelė jau turi "www.delnaskaitymas.lt" mygtuką nupieštą ant
+    // jos. Anksčiau čia buvo pridedamas visas (labai ilgas) savarankiškas
+    // dalinimosi URL kaip tekstas — jis atrodydavo kaip nesuprantama
+    // simbolių krūva prie gražios kortelės ir gadino visą įspūdį.
+    const shareText = 'Atrask savo gyvenimo žemėlapį ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText});
       return;
@@ -3622,7 +3609,7 @@ async function shareStory(){
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }catch(e){
     console.error('[shareStory] klaida:', e);
-    shareTo('native');
+    alert('Nepavyko pasidalinti. Bandykite dar kartą.');
   }
 }
 
@@ -3813,7 +3800,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 async function shareSection(){
   const hero=document.querySelector('.result-hero');
   const section=document.querySelector('.rs.rs-feat');
-  if(!section){shareTo('native');return;}
+  if(!section){return;}
   const wrapper=document.createElement('div');
   wrapper.style.cssText='position:fixed;left:-9999px;top:0;background:#000000;width:390px;padding:0';
   if(hero) wrapper.appendChild(hero.cloneNode(true));
@@ -3832,18 +3819,17 @@ async function shareSection(){
     const canvas=await html2canvas(wrapper,{backgroundColor:'#000000',scale:2,useCORS:true,logging:false});
     document.body.removeChild(wrapper);
     canvas.toBlob(async(blob)=>{
-      if(!blob){shareTo('native');return;}
+      if(!blob){return;}
       const file=new File([blob],'delnas-analize.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare({files:[file]})){
         await navigator.share({title:'Mano gyvenimo žemėlapis',text:`${window.userName||'Mano'} gyvenimo žemėlapis — bandyk pati! #delnaskaitymas`,files:[file]});
       }else{
         const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='delnas-analize.png';a.click();
-        setTimeout(()=>shareTo('native'),500);
       }
     },'image/png');
   }catch(e){
     if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
-    shareTo('native');
+    console.error('[shareSection] klaida:', e);
   }
 }
 
