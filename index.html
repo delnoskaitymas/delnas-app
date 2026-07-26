@@ -687,7 +687,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis istorija</button>
         <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti draugui</button>
-        <button id="copy-btn" onclick="downloadPDF()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L11 13.586V4a1 1 0 011-1zM5 19a1 1 0 011-1h12a1 1 0 110 2H6a1 1 0 01-1-1z"/></svg>Atsisiųsti PDF</button>
+        <button id="copy-btn" onclick="copyPdfLink()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12a5 5 0 015-5h3v2h-3a3 3 0 000 6h3v2h-3a5 5 0 01-5-5zm7-1h6v2h-6v-2zm4-4h3a5 5 0 010 10h-3v-2h3a3 3 0 000-6h-3V7z"/></svg>Kopijuoti nuorodą</button>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
@@ -3461,44 +3461,61 @@ async function sharePdfToFriend(){
   }
 }
 
-// Renkasi VIENĄ trumpą (5–8 žodžių) teiginį, apibūdinantį PAGRINDINĘ
-// vartotojo stiprybę / ryškiausią charakterio savybę — TIK iš I/II
-// skyriaus (prigimtinės stiprybės, charakteris, gyvenimo kryptis), o ne
-// atsitiktinę citatą iš bet kurio skyriaus. Tai užtikrina, kad kortelė
-// iškart aiškiai apibūdina žmogų, o ne skamba kaip abstrakti "nesąmonė".
-function pickShareQuote(r){
-  const pool = [
-    ...(r.stiprybes_sarasas || []),
-    ...(r.prigimtines_insights || []),
-    ...(r.gyvenimo_insights || []),
-  ];
-  const wordCount = t => t.trim().split(/\s+/).length;
-  // Pirmenybė TRUMPIEMS (5-8 žodžių) teiginiams — kortelė turi likti
-  // vizualiai švari, be perteklinės informacijos.
-  const ideal = pool.filter(t => wordCount(t) >= 5 && wordCount(t) <= 8);
-  const candidates = ideal.length ? ideal : pool;
-  if(!candidates.length) return 'Tavo delnas atskleidžia daugiau, nei manai';
-  let quote = candidates[Math.floor(Math.random()*candidates.length)].trim();
-  // Apsauga: jei vis tiek per ilgas, apkarpome iki 8 žodžių, kad kortelė
-  // niekada neiškraipytų dizaino keliomis papildomomis eilutėmis.
-  const words = quote.split(/\s+/);
-  if(words.length > 8) quote = words.slice(0, 8).join(' ');
-  return quote;
+// "Kopijuoti nuorodą" — sugeneruoja TĄ PATĮ PDF, laikinai išsaugo jį
+// serveryje (žr. /store-pdf endpoint'ą, atmintyje su TTL) ir nukopijuoja
+// TRUMPĄ, tikrą nuorodą į jį. ANKSČIAU čia buvo naudojamas savarankiškas
+// (be serverio) URL su visu rezultatu, užkoduotu base64 formatu pačiame
+// adrese — bet toks itin ilgas URL pasirodė nepatikimas persiunčiant per
+// įvairias programas (jos jį nutrūkdavo/sugadindavo). Ši nuoroda trumpa
+// ir patikima — atidaryta, ji tiesiog parodo/atsiunčia PDF failą.
+async function copyPdfLink(){
+  const btn = document.getElementById('copy-btn');
+  const originalHtml = btn ? btn.innerHTML : null;
+  try{
+    const r = window._palmResult;
+    if(!r){ alert('Rezultatai nerasti.'); return; }
+    if(btn) btn.innerHTML = '⏳ Ruošiama...';
+    const name = window.userName || '';
+    const doc = buildResultPdfDoc(r, name);
+    const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    const resp = await fetch('/store-pdf', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ pdfBase64, fileName })
+    });
+    if(!resp.ok) throw new Error('Serverio klaida ('+resp.status+')');
+    const data = await resp.json();
+    if(!data.url) throw new Error('Serveris negrąžino nuorodos');
+    await navigator.clipboard.writeText(data.url);
+    if(btn){ btn.innerHTML = '✅ Nukopijuota!'; setTimeout(()=>{ if(originalHtml) btn.innerHTML = originalHtml; }, 2500); }
+  }catch(e){
+    console.error('[copyPdfLink] klaida:', e);
+    if(btn && originalHtml) btn.innerHTML = originalHtml;
+    alert('Nepavyko nukopijuoti nuorodos. Bandykite dar kartą.');
+  }
 }
 
-// Paprastas teksto laužymas canvas'e pagal turimą plotį.
-function wrapCanvasText(ctx, text, cx, cy, maxWidth, lineHeight){
+// Piešia kairiuoju krašto lygiavimu suvyniotą pastraipą (naudojama pilnam
+// I skyriaus tekstui kortelėje) ir grąžina Y poziciją PO paskutinės
+// eilutės — kad tolimesni elementai (mygtukas) būtų dedami DINAMIŠKAI,
+// priklausomai nuo to, koks ilgas realiai yra tekstas.
+function drawWrappedParagraph(ctx, text, x, yTop, maxWidth, lineHeight){
   const words = text.split(' ');
-  let line = ''; const lines = [];
+  let line = '';
+  let y = yTop;
   words.forEach(w => {
     const test = line + w + ' ';
-    if(ctx.measureText(test).width > maxWidth && line){ lines.push(line.trim()); line = w + ' '; }
-    else line = test;
+    if(ctx.measureText(test).width > maxWidth && line){
+      ctx.fillText(line.trim(), x, y);
+      line = w + ' ';
+      y += lineHeight;
+    } else {
+      line = test;
+    }
   });
-  if(line) lines.push(line.trim());
-  const startY = cy - (lines.length - 1) * lineHeight / 2;
-  lines.forEach((l, i) => ctx.fillText(l, cx, startY + i * lineHeight));
-  return lines.length;
+  if(line){ ctx.fillText(line.trim(), x, y); y += lineHeight; }
+  return y;
 }
 
 // Nupiešia užapvalintą stačiakampį (canvas neturi universalaus roundRect
@@ -3513,15 +3530,16 @@ function drawRoundedRect(ctx, x, y, w, h, r){
   ctx.closePath();
 }
 
-// Sukuria kvadratinę "istorijos" kortelę (1080×1080) su viena trumpa,
-// aiškia stiprybe iš analizės + PILNAI matomu, mygtuko stiliaus svetainės
-// adresu. Tai — pagrindinis "viral loop" mechanizmas: žmonės dalinasi ne
-// visu savo asmeniniu rezultatu, o vienu intriguojančiu faktu apie save.
+// Sukuria "istorijos" formato (1080×1920) kortelę su VISU I skyriaus
+// (Prigimtinės stiprybės ir charakteris) tekstu + mygtuko stiliaus,
+// pilnu šio app adresu apačioje. Vieta mygtukui skaičiuojama
+// DINAMIŠKAI, priklausomai nuo to, kiek eilučių realiai užėmė tekstas.
 async function buildStoryCardBlob(){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
-  const quote = pickShareQuote(r);
-  const W = 1080, H = 1080;
+  const sectionTitle = 'I · PRIGIMTINĖS STIPRYBĖS IR CHARAKTERIS';
+  const sectionText = r.prigimtines_stiprybes || '';
+  const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -3529,9 +3547,9 @@ async function buildStoryCardBlob(){
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
 
-  // Švelnus auksinis švytėjimas centre (radialinis gradientas)
-  const glow = ctx.createRadialGradient(W/2, H/2, 40, W/2, H/2, 620);
-  glow.addColorStop(0, 'rgba(212,168,67,.16)');
+  // Švelnus auksinis švytėjimas viršuje (radialinis gradientas)
+  const glow = ctx.createRadialGradient(W/2, 260, 40, W/2, 260, 700);
+  glow.addColorStop(0, 'rgba(212,168,67,.14)');
   glow.addColorStop(1, 'rgba(212,168,67,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
@@ -3541,41 +3559,55 @@ async function buildStoryCardBlob(){
   ctx.lineWidth = 3;
   ctx.strokeRect(28, 28, W-56, H-56);
 
+  const margin = 90;
+  const maxWidth = W - margin*2;
+
   ctx.textAlign = 'center';
-
-  // Prekės ženklo eilutė viršuje
   ctx.fillStyle = '#d4a843';
-  ctx.font = '600 34px "DM Sans", sans-serif';
-  ctx.fillText('✦ DELNAS · GYVENIMO ŽEMĖLAPIS', W/2, 150);
+  ctx.font = '600 32px "DM Sans", sans-serif';
+  ctx.fillText('✦ DELNAS · GYVENIMO ŽEMĖLAPIS', W/2, 130);
 
-  // Pati stiprybė — didelė, centre, TIK viena trumpa eilutė/dvi (5-8 žodžiai)
-  ctx.fillStyle = '#f5eed8';
-  ctx.font = '700 64px Georgia, "Playfair Display", serif';
-  wrapCanvasText(ctx, `„${quote}"`, W/2, H/2 - 40, W - 180, 80);
-
+  let titleY = 220;
   if(name){
-    ctx.fillStyle = 'rgba(245,238,216,.6)';
-    ctx.font = 'italic 32px Georgia, serif';
-    ctx.fillText(`— ${name} gyvenimo žemėlapis`, W/2, H/2 + 190);
+    ctx.fillStyle = '#f0c96a';
+    ctx.font = '700 46px "Playfair Display", Georgia, serif';
+    ctx.fillText(`${name}, tavo gyvenimo žemėlapis`, W/2, 210);
+    titleY = 300;
   }
 
-  // Kvietimas apačioje
+  ctx.fillStyle = '#d4a843';
+  ctx.font = '700 36px "DM Sans", sans-serif';
+  ctx.fillText(sectionTitle, W/2, titleY);
+
+  // Visas I skyriaus tekstas — kairiuoju krašto lygiavimu, kad ilga
+  // pastraipa būtų patogiai skaitoma.
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#f5eed8';
+  ctx.font = '400 36px Georgia, serif';
+  const bodyStartY = titleY + 90;
+  const afterTextY = drawWrappedParagraph(ctx, sectionText, margin, bodyStartY, maxWidth, 52);
+
+  // Kvietimas + mygtukas su PILNU šio app adresu — vieta skaičiuojama
+  // DINAMIŠKAI, priklausomai nuo to, kiek vietos realiai užėmė tekstas
+  // (o ne fiksuotoje vietoje, kuri galėtų susikirsti su ilgesniu tekstu).
+  const btnTextY = Math.min(afterTextY + 70, H - 220);
+  ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(245,238,216,.7)';
   ctx.font = '400 28px "DM Sans", sans-serif';
-  ctx.fillText('Atrask savo gyvenimo žemėlapį', W/2, H - 210);
+  ctx.fillText('Atrask savo pilną gyvenimo žemėlapį', W/2, btnTextY);
 
-  // Pilnas svetainės adresas kaip AIŠKUS MYGTUKAS (užapvalintas
-  // stačiakampis su auksiniu fonu) — ne vien tekstas be jokio akcento.
-  const btnLabel = 'www.delnaskaitymas.lt';
-  ctx.font = '700 42px "DM Sans", sans-serif';
-  const btnPadX = 34, btnH = 78;
-  const btnW = ctx.measureText(btnLabel).width + btnPadX*2;
-  const btnX = (W - btnW) / 2, btnY = H - 175;
+  // "Šio app" pilnas adresas — dinamiškai imamas iš dabartinio puslapio,
+  // kad visada atitiktų tikrą, veikiančią programėlės vietą.
+  const appAddress = window.location.host;
+  ctx.font = '700 38px "DM Sans", sans-serif';
+  const btnPadX = 34, btnH = 74;
+  const btnW = Math.min(ctx.measureText(appAddress).width + btnPadX*2, W-160);
+  const btnX = (W - btnW) / 2, btnTopY = btnTextY + 28;
   ctx.fillStyle = '#d4a843';
-  drawRoundedRect(ctx, btnX, btnY, btnW, btnH, btnH/2);
+  drawRoundedRect(ctx, btnX, btnTopY, btnW, btnH, btnH/2);
   ctx.fill();
   ctx.fillStyle = '#07040f';
-  ctx.fillText(btnLabel, W/2, btnY + btnH/2 + 14);
+  ctx.fillText(appAddress, W/2, btnTopY + btnH/2 + 13);
 
   return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
 }
