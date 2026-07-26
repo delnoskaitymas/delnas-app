@@ -2995,10 +2995,9 @@ function buildResultPdfDoc(r, name){
   }
 
   fillDark();
-  // Daugiau vietos nuo pat viršaus (buvo 20 — dabar tekstas/nuotrauka
-  // pradedama žemiau, kad dokumentas "kvėpuotų", o ne prasidėtų iš karto
-  // prie paties lapo krašto).
-  let y = 32;
+  // Daugiau vietos nuo pat viršaus, kad turinys neprasidėtų iš karto prie
+  // paties lapo krašto (dokumentas turi "kvėpuoti").
+  let y = 42;
 
   // Šriftas — įterptas Noto Sans su pilnu lietuviškų raidžių palaikymu
   // (žr. registerPdfFonts() aukščiau — helvetica NEPALAIKO ė/į/š/ų/ū/č/ž/ą)
@@ -3014,7 +3013,7 @@ function buildResultPdfDoc(r, name){
   if(heroPhoto){
     let gstateSaved = false;
     try{
-      const rad = 20; // apskritimo spindulys (mm)
+      const rad = 26; // apskritimo spindulys (mm) — padidintas (buvo 20)
       const cx = W/2, cy = y + rad;
 
       // Švelnus švytėjimas aplink nuotrauką
@@ -3051,8 +3050,7 @@ function buildResultPdfDoc(r, name){
         doc.restoreGraphicsState();
       }catch(ringErr){ /* jei GState nepalaikomas, tenkinamės vienu žiedu */ }
 
-      // Daugiau tarpo tarp nuotraukos ir antraštės (buvo 10 — dabar 18)
-      y = cy + rad + 18;
+      y = cy + rad + 16;
     }catch(e){
       // SVARBU: jei klaida įvyko PO clip(), bet PRIEŠ restoreGraphicsState(),
       // būtina vis tiek atstatyti grafikos būseną — kitaip visas likęs
@@ -3067,7 +3065,7 @@ function buildResultPdfDoc(r, name){
   // TIK be taško/bulleto prieš vardą. Šalia jo nerašoma jokia kita eilutė,
   // IŠSKYRUS paantraštę žemiau — tą pačią, kuri rodoma ekrane po vardu.
   doc.setFont('NotoSans','bold');
-  doc.setFontSize(25);
+  doc.setFontSize(28);
   doc.setTextColor(...GOLD2);
   const coverHeading = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
   const headingLines = doc.splitTextToSize(coverHeading, maxW);
@@ -3075,18 +3073,17 @@ function buildResultPdfDoc(r, name){
   // SVARBU: tarpas iki poraštės priklauso NUO TO, kiek eilučių užėmė
   // antraštė — jei vardas ilgas ir antraštė nusileidžia į 2 eilutes,
   // anksčiau naudotas FIKSUOTAS tarpas priversdavo poraštę užsikloti ant
-  // antros antraštės eilutės. Tarpas sumažintas, kad poraštė būtų arčiau
-  // antraštės (buvo per toli).
-  y += headingLines.length * 10 + 1;
+  // antros antraštės eilutės.
+  y += headingLines.length * 11.2 + 1;
 
   // Paantraštė — tiksliai ta pati, kuri rodoma rezultatų ekrane po vardu
   // (.result-subtitle: "Chiromantija · Likimo žemėlapis · Skaitmeninė
   // analizė", CSS rodoma didžiosiomis raidėmis).
   doc.setFont('NotoSans','normal');
-  doc.setFontSize(13);
+  doc.setFontSize(15);
   doc.setTextColor(...MUTED);
   doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
-  y += 18;
+  y += 20;
 
   // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
   // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
