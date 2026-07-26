@@ -3067,16 +3067,17 @@ function buildResultPdfDoc(r, name){
   // TIK be taško/bulleto prieš vardą. Šalia jo nerašoma jokia kita eilutė,
   // IŠSKYRUS paantraštę žemiau — tą pačią, kuri rodoma ekrane po vardu.
   doc.setFont('NotoSans','bold');
-  doc.setFontSize(22);
+  doc.setFontSize(25);
   doc.setTextColor(...GOLD2);
   const coverHeading = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
   const headingLines = doc.splitTextToSize(coverHeading, maxW);
   doc.text(headingLines, W/2, y, {align:'center'});
   // SVARBU: tarpas iki poraštės priklauso NUO TO, kiek eilučių užėmė
   // antraštė — jei vardas ilgas ir antraštė nusileidžia į 2 eilutes,
-  // anksčiau naudotas FIKSUOTAS tarpas (11mm, tinkantis tik 1 eilutei)
-  // priversdavo poraštę užsikloti ant antros antraštės eilutės.
-  y += headingLines.length * 8.8 + 4;
+  // anksčiau naudotas FIKSUOTAS tarpas priversdavo poraštę užsikloti ant
+  // antros antraštės eilutės. Tarpas sumažintas, kad poraštė būtų arčiau
+  // antraštės (buvo per toli).
+  y += headingLines.length * 10 + 1;
 
   // Paantraštė — tiksliai ta pati, kuri rodoma rezultatų ekrane po vardu
   // (.result-subtitle: "Chiromantija · Likimo žemėlapis · Skaitmeninė
@@ -3207,7 +3208,7 @@ function buildResultPdfDoc(r, name){
 
     const freshPageCapacity = PAGE_BOTTOM - 20; // vietos kiekis tuščiame puslapyje
     const remainingOnPage = PAGE_BOTTOM - y;
-    const MIN_USEFUL_REMAIN = 70; // jei liko mažiau nei tiek mm — neverta pradėti čia
+    const MIN_USEFUL_REMAIN = 40; // jei liko mažiau nei tiek mm — neverta pradėti čia
 
     if(sectionH <= freshPageCapacity && remainingOnPage < MIN_USEFUL_REMAIN){
       // Puslapyje liko labai mažai naudingos vietos, o visas skyrius
