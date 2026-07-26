@@ -9,6 +9,19 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Paleidimo diagnostika: jei ANTHROPIC_API_KEY nenustatytas arba akivaizdžiai
+// neteisingo formato, KIEKVIENA analizė nuosekliai (ne atsitiktinai)
+// žlugtų su "Tuščias Claude atsakymas" — o priežastis (blogas/trūkstamas
+// raktas) liktų nematoma, kol kažkas neatidarytų Deploy Logs ir neieškotų
+// giliai. Šis įrašas iškart parodo, ar raktas apskritai yra, PALEIDIMO metu.
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('[STARTUP KLAIDA] ANTHROPIC_API_KEY NĖRA NUSTATYTAS — VISOS delno analizės žlugs. Patikrinkite Railway aplinkos kintamuosius.');
+} else if (!process.env.ANTHROPIC_API_KEY.startsWith('sk-ant-')) {
+  console.error(`[STARTUP ĮSPĖJIMAS] ANTHROPIC_API_KEY nustatytas, bet neatrodo teisingo formato (turėtų prasidėti "sk-ant-"). Ilgis: ${process.env.ANTHROPIC_API_KEY.length}`);
+} else {
+  console.log(`[STARTUP] ANTHROPIC_API_KEY nustatytas (${process.env.ANTHROPIC_API_KEY.slice(0,10)}...${process.env.ANTHROPIC_API_KEY.slice(-4)})`);
+}
+
 const app = express();
 // Railway (kaip ir dauguma hostingų) veikia už reverse proxy, kuris prideda
 // X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
@@ -607,10 +620,13 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
       if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
       throw new Error('Tuščias Claude atsakymas (tinklo klaida)');
     }
-    if (step2Data?.error && RETRYABLE_ERROR_TYPES.includes(step2Data.error.type)) {
-      console.log(`Žingsnis 2 klaida (${step2Data.error.type}), bandymas ${attempt}/3...`);
-      if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
-      continue;
+    // SVARBU: bet kokia API klaida (ne tik konkretūs tipai) reiškia, kad
+    // step2Data.content NEBUS — todėl bandome pakartotinai bet kurios
+    // klaidos atveju, ne tik iš anksto žinomo sąrašo. Tai apsaugo ir nuo
+    // dar nematytų/naujų klaidos tipų, kuriuos Anthropic API gali grąžinti.
+    if (step2Data?.error) {
+      console.log(`Žingsnis 2 klaida (${step2Data.error.type}: ${step2Data.error.message||''}), bandymas ${attempt}/3...`);
+      if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
     }
     break;
   }
