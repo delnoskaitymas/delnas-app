@@ -3105,11 +3105,11 @@ function buildResultPdfDoc(r, name){
   // Šriftų dydžiai ir tarpai. Tekstas turi šiek tiek "oro" tarp eilučių,
   // o tarpai TARP TEMŲ (skyrių) sumažinti, kad nesusidarytų didelės
   // tuščios juodos sritys ir viskas neatrodytų išbarstyta.
-  const BODY_FONT_SIZE = 18;    // pagrindinio teksto šriftas
-  const LINE_H = 8;              // tarpas tarp pagrindinio teksto eilučių — šiek tiek daugiau oro
-  const INSIGHT_FONT_SIZE = 14; // įžvalgų/sąrašo šriftas
-  const INSIGHT_LINE_H = 7.4;   // tarpas tarp įžvalgų/sąrašo eilučių
-  const INSIGHT_GAP = 3;        // tarpas tarp atskirų įžvalgų/punktų
+  const BODY_FONT_SIZE = 21;    // pagrindinio teksto šriftas — padidintas
+  const LINE_H = 9.5;            // tarpas tarp pagrindinio teksto eilučių
+  const INSIGHT_FONT_SIZE = 17; // įžvalgų/sąrašo (gold bullet) šriftas — padidintas
+  const INSIGHT_LINE_H = 8.8;   // tarpas tarp įžvalgų/sąrašo eilučių
+  const INSIGHT_GAP = 4;        // tarpas tarp atskirų įžvalgų/punktų
   const PAGE_BOTTOM = 266;      // apatinė riba, po kurios pereinama į naują puslapį
 
   // Bendra pagalbinė f-ja bulletų sąrašui (įžvalgos arba stiprybių sąrašas)
@@ -3201,7 +3201,7 @@ function buildResultPdfDoc(r, name){
     // to pasikliaujame widow/orphan apsauga (MIN_KEEP_LINES) ir punktų
     // sąrašo vientisumu (drawBulletList), kurie jau apsaugo nuo negražių
     // persiskyrimų.
-    let sectionH = 12 /* antraštė */ + bodyLines.length * LINE_H + 3;
+    let sectionH = 13 /* antraštė */ + bodyLines.length * LINE_H + 4;
     sectionH += estimateBulletsHeight(insights);
     sectionH += estimateBulletsHeight(pills);
     sectionH += 3 + 13; // tarpas + skiriamoji linija + tarpas po ja
@@ -3225,16 +3225,16 @@ function buildResultPdfDoc(r, name){
 
     // Skyriaus pavadinimas (auksinis, pusjuodis, kaip .rs-label ekrane)
     doc.setFont('NotoSans','bold');
-    doc.setFontSize(16);
+    doc.setFontSize(19);
     doc.setTextColor(...GOLD);
     doc.text(title.toUpperCase(), margin, y);
-    y += 9;
+    y += 13;
     // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body)
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
     doc.setTextColor(...BODY);
     drawBodyText(text);
-    y += 2;
+    y += 4;
     // Įžvalgų sąrašas (jei yra) — tas pats turinys, kaip insight-cards
     // ekrane, tik be pačių kortelių fono/ikonų, kaip tekstinis sąrašas.
     // Prieš pradedant sąrašą, patikriname, ar telpa bent viena eilutė —
