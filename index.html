@@ -876,26 +876,50 @@ window.addEventListener('DOMContentLoaded',async()=>{
   setTimeout(()=>window.scrollTo(0,1),600);
   requestWakeLock();
   // Patikrinti ar tai shared nuoroda
-  const sharedMatch = window.location.pathname.match(/^\/shared\/([a-f0-9]+)$/);
+  const sharedMatch = window.location.pathname.match(/^\/shared\/([A-Za-z0-9_-]+)$/);
   if(sharedMatch){
-    const sharedId = sharedMatch[1];
+    const token = sharedMatch[1];
+    let result = null;
+    // 1) NAUJAS, patikimas būdas — rezultatas užkoduotas TIESIOG pačiame
+    // URL (base64url), visiškai nepriklausomas nuo jokios serverio
+    // saugyklos ar Volume. Visada veiks, nesvarbu kiek kartų programa
+    // buvo deploy'inta.
     try{
-      const resp = await fetch('/shared-result/'+sharedId);
-      if(resp.ok){
-        const result = await resp.json();
-        // Rodyti rezultatų ekraną tiesiai
-        go('s-result');
-        displayResult(result);
-        // Paslėpti mokėjimo ir kitus mygtukus
-        const payBtn=document.getElementById('sticky-pay');if(payBtn)payBtn.style.display='none';
-        // Pridėti "Shared" ženkliuką
-        const hero=document.getElementById('result-hero');
-        if(hero){const badge=document.createElement('div');badge.style.cssText='font-size:11px;color:rgba(212,168,67,.6);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px';badge.textContent='✦ Pasidalinta analizė';hero.prepend(badge);}
-        return;
-      }
-    }catch(e){}
-    // Jei nerasta
-    alert('Ši analizė nebegalioja arba nerasta.');
+      const b64 = token.replace(/-/g,'+').replace(/_/g,'/');
+      const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+      result = JSON.parse(decodeURIComponent(escape(atob(padded))));
+    }catch(e){ /* ne naujo formato tokenas — bandysime senąjį būdą žemiau */ }
+    // 2) SENAS būdas (atgalinis suderinamumas su anksčiau išsiųstomis
+    // trumpomis nuorodomis, kurios rėmėsi serverio faile saugomu ID) —
+    // naudojamas TIK jei (1) nepavyko.
+    if(!result && /^[a-f0-9]+$/.test(token)){
+      try{
+        const resp = await fetch('/shared-result/'+token);
+        if(resp.ok) result = await resp.json();
+      }catch(e){}
+    }
+    if(result){
+      // Rodyti rezultatų ekraną tiesiai
+      go('s-result');
+      displayResult(result);
+      // Paslėpti mokėjimo ir kitus mygtukus
+      const payBtn=document.getElementById('sticky-pay');if(payBtn)payBtn.style.display='none';
+      // Pridėti "Shared" ženkliuką
+      const hero=document.getElementById('result-hero');
+      if(hero){const badge=document.createElement('div');badge.style.cssText='font-size:11px;color:rgba(212,168,67,.6);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px';badge.textContent='✦ Pasidalinta analizė';hero.prepend(badge);}
+      return;
+    }
+    // Jei nerasta — vietoj šiurkštaus naršyklės alert() rodome gražų,
+    // prekės ženklo stiliaus pranešimą pradžios ekrane ir iškart
+    // kviečiame pačiam pasidaryti savo analizę.
+    go('s-home');
+    const homeScreen = document.getElementById('s-home');
+    if(homeScreen){
+      const notice = document.createElement('div');
+      notice.style.cssText = 'margin:16px 16px 0;padding:14px 16px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-family:\'DM Sans\',sans-serif';
+      notice.innerHTML = '<div style="color:var(--gold2);font-size:13px;font-weight:600;margin-bottom:4px">Ši analizė nebegalioja arba nerasta</div><div style="color:var(--muted);font-size:12px">Bet gali lengvai sužinoti savo — pradėk žemiau ⬇</div>';
+      homeScreen.prepend(notice);
+    }
   }
 
   fetch('/stripe-key').then(r=>r.json()).then(d=>{window._stripeKey=d.key;}).catch(()=>{});
@@ -3356,37 +3380,32 @@ function sendResultPdfEmail(r){
   }
 }
 
-// Grąžina UNIKALŲ, TRUMPĄ dalinimosi URL (/shared/{id}), sukurtą per
-// serverio /share-result endpoint'ą. ANKSČIAU čia buvo naudojamas
-// klaidingas metodas — visas rezultatas koduojamas kaip milžiniškas
-// base64 tekstas tiesiog prie pagrindinio domeno (?shared=...), kuris
-// pasitaikius bet kokiai klaidai (ar tiesiog per ilgas URL kai kuriose
-// programose) nutylėdavo į paprastą pagrindinį (landing) puslapį — VISA
-// dalinimosi prasmė prarandama. Dabar visada naudojamas serverio jau
-// paruoštas /shared/:id maršrutas, kuris atidarytas IŠKART rodo TIK ŠIO
-// vartotojo rezultatų ekraną (žr. DOMContentLoaded logiką aukščiau).
+// Grąžina dalinimosi URL formatu /shared/{tokenas}. SVARBU: šis tokenas
+// yra PATS REZULTATAS, užkoduotas base64url formatu TIESIOG PAČIAME
+// URL kelyje — VISIŠKAI BE serverio saugyklos. Anksčiau buvo bandyta
+// naudoti serverio /share-result endpoint'ą su failu diske, bet Railway
+// projekte nėra prieinamo nuolatinio Volume (reikalauja mokamo Hobby/Pro
+// plano), todėl tas failas išnykdavo po kiekvieno deploy'inimo, o senos
+// dalinimosi nuorodos nustodavo veikti. Šis būdas visiškai nepriklauso
+// nuo jokios serverio saugyklos ar infrastruktūros — nuoroda visada
+// veiks, kol tik egzistuoja pati programėlė, nepriklausomai nuo to, kiek
+// kartų buvo deploy'inta. URL būna ilgesnis, bet tai nesvarbu — WhatsApp,
+// SMS ir kitos programos jį rodo tiesiog kaip paspaudžiamą nuorodą.
 async function getShareUrl(){
   if(window._shareUrl) return window._shareUrl;
   if(!window._palmResult) return window.location.href;
   try{
-    const resp = await fetch('/share-result', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ result: window._palmResult })
-    });
-    if(resp.ok){
-      const data = await resp.json();
-      if(data && data.url){
-        window._shareUrl = data.url;
-        return data.url;
-      }
-    }
+    const resultStr = JSON.stringify(window._palmResult);
+    const b64 = btoa(unescape(encodeURIComponent(resultStr)));
+    // base64url — saugu naudoti tiesiog URL kelio segmente (be /, +, =)
+    const token = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const url = window.location.origin + '/shared/' + token;
+    window._shareUrl = url;
+    return url;
   }catch(e){
     console.error('[getShareUrl] nepavyko sukurti dalinimosi nuorodos:', e);
+    return window.location.href;
   }
-  // Atsarginis variantas, jei serveris laikinai nepasiekiamas — geriau
-  // nei nieko, bet TAI NĖRA unikali nuoroda į šį rezultatą.
-  return window.location.href;
 }
 
 async function shareTo(platform){
