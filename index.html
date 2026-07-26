@@ -1108,18 +1108,10 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    if(_navigated)return;
    _navigated=true;
    try{
-     updatePayDiag('WATCHDOG SUVEIKĖ po 130s — priverstinis perjungimas');
-     console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 130s');
+     updatePayDiag('WATCHDOG SUVEIKĖ po 220s — priverstinis perjungimas');
+     console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 220s');
      go('s-result');
-     setTimeout(()=>{
-       const rc=document.getElementById('r-char');
-       if(rc) rc.innerHTML='<p style="color:rgba(255,255,255,.7)">Analizė užtruko ilgiau nei tikėtasi. Prašome susisiekti: info@delnaskaitymas.lt</p>';
-       const rn=document.getElementById('res-name');
-       if(rn) rn.textContent='Tavo asmeninė delnų analizė';
-       document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
-         el.style.opacity='1';el.style.transform='none';
-       });
-     },50);
+     setTimeout(()=>{ showAnalysisError(); },50);
    }catch(watchdogErr){
      // Net jei watchdog'o VIDUJE kas nors nepavyktų, bent jau pažymime tai
      // diagnostikoje, kad žinotume — problema NE tame, jog watchdog
@@ -1775,13 +1767,16 @@ function startSkinDetection(shutter,hintTxt){
       setHint('Delnas per arti — atitraukite','rgba(255,160,60,.9)',false);
       return;
     }
-    // AI tikrinimas per serverį
+    // AI tikrinimas per serverį — tas pats matmenų apribojimas kaip
+    // pagrindiniame fotografavime, kad ir šis kelias nesiųstų per didelių
+    // nuotraukų.
     const checkCanvas=document.createElement('canvas');
     const vw=video.videoWidth||1280;
     const vh=video.videoHeight||720;
-    checkCanvas.width=vw;checkCanvas.height=vh;
-    checkCanvas.getContext('2d').drawImage(video,0,0,vw,vh);
-    const imgData=checkCanvas.toDataURL('image/jpeg',0.92).split(',')[1];
+    const _cscale=Math.min(1, 1600/Math.max(vw,vh));
+    checkCanvas.width=Math.round(vw*_cscale);checkCanvas.height=Math.round(vh*_cscale);
+    checkCanvas.getContext('2d').drawImage(video,0,0,checkCanvas.width,checkCanvas.height);
+    const imgData=checkCanvas.toDataURL('image/jpeg',0.85).split(',')[1];
     setHint('Analizuojame poziciją...','rgba(212,168,67,.6)',false);
     fetch('/validate-palm',{
       method:'POST',
@@ -2004,10 +1999,21 @@ function capturePhoto(){
   setTimeout(()=>{flash.style.opacity='0';},100);
   shutterSound();
 
-  // Nufotografuoti
-  canvas.width=video.videoWidth||640;
-  canvas.height=video.videoHeight||480;
-  canvas.getContext('2d').drawImage(video,0,0);
+  // Nufotografuoti — apribojame didžiausią matmenį iki 1600px prieš
+  // konvertuojant į JPEG. SVARBU: aukštos raiškos telefonų kameros (daug
+  // Android telefonų fotografuoja 3000-4000px+ plotyje) be šio apribojimo
+  // generuodavo kelių MB dydžio nuotraukas — dvi tokios kartu VIRŠYDAVO
+  // Anthropic API leidžiamą vaizdo/užklausos dydį, todėl analizė
+  // NUOSEKLIAI (ne atsitiktinai) žlugdavo VISIEMS vartotojams su aukštos
+  // raiškos kamera. 1600px pakankamai detalu delno linijoms matyti, bet
+  // failas lieka žymiai mažesnis ir saugiai patenka į limitus.
+  {
+    const _vw0 = video.videoWidth || 640, _vh0 = video.videoHeight || 480;
+    const _scale0 = Math.min(1, 1600 / Math.max(_vw0, _vh0));
+    canvas.width = Math.round(_vw0 * _scale0);
+    canvas.height = Math.round(_vh0 * _scale0);
+  }
+  canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
   const isLeftHand=camHand==='left';
 
