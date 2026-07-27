@@ -165,18 +165,17 @@ function generateOrderNumber() {
 }
 
 // Iškviečiama IŠ KARTO, kai mokėjimas patvirtinamas sėkmingu (žr.
-// /verify-payment-intent ir /verify-payment). Išsiunčia DU laiškus:
-//   1) Klientui — užsakymo patvirtinimas su jo užsakymo numeriu
-//      (siuntėjas: CLIENT_EMAIL_FROM — dabar info@delnaskaitymas.lt).
-//   2) Administratoriui (info@delnaskaitymas.lt) — pranešimas apie naują
-//      mokėjimą, su kliento duomenimis (vardu, el. paštu), paslauga ir
-//      suma. TAI VIENINTELIS administracinis laiškas apie šį užsakymą —
-//      /notify-order-complete (žr. žemiau) daugiau ANTRO tokio laiško
-//      NEBESIUNČIA, kad į info@ ateitų tik VIENAS pranešimas per užsakymą.
-// Apsaugota nuo dvigubo siuntimo (entry.orderConfirmed žyma) — ĮRAŠO
-// PAČIO neištriname čia, nes jis vėliau vis dar reikalingas
-// /notify-order-complete (tvarko atminties išvalymą, atidarius rezultato
-// ekraną).
+// /verify-payment-intent ir /verify-payment). SVARBU (pakeitimas): čia
+// KLIENTUI laiškas NEBESIUNČIAMAS — anksčiau vartotojas gaudavo DU
+// atskirus laiškus (šį, iš karto po mokėjimo, ir antrą su PDF, kai
+// atsidaro rezultatų ekranas), o tekste jam net būdavo pasakoma "lauk
+// antro laiško". Tai kūrė nereikalingą trintį, "email fatigue" jausmą ir
+// riziką, kad vienas iš dviejų laiškų patenka į Spam. Dabar KLIENTAS gauna
+// TIK VIENĄ laišką — su užsakymo patvirtinimu IR PDF failu KARTU — žr.
+// /email-result-pdf žemiau, kuris išsiunčiamas, kai PDF jau paruoštas
+// (atidarius rezultatų ekraną).
+// Administratoriui (info@) pranešimas apie naują mokėjimą IŠLIEKA čia,
+// nes tai vidinis, ne kliento gaunamas laiškas.
 function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
   try {
     let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
@@ -189,16 +188,10 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
 
-    // 1) Klientui — užsakymo patvirtinimas
-    mailer.sendMail({
-      from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
-      to: email,
-      subject: `Užsakymo patvirtinimas — ${displayOrderNumber}`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em">${escapeHtml(displayOrderNumber)}</p><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.75)">Tavo asmeninis gyvenimo žemėlapis šiuo metu ruošiamas. Kai tik jis bus paruoštas, atsiųsime jį atskiru laišku PDF formatu.</p>${EMAIL_FOOTER_HTML}</div>`
-    }).then(() => console.log(`[sendPaymentSuccessEmails] klientui išsiųsta į ${email}`))
-      .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant klientui:', e.message));
-
-    // 2) Administratoriui (info@) — pranešimas apie naują mokėjimą
+    // Administratoriui (info@) — pranešimas apie naują mokėjimą. TAI
+    // VIENINTELIS administracinis laiškas apie šį užsakymą —
+    // /notify-order-complete (žr. žemiau) daugiau ANTRO tokio laiško
+    // NEBESIUNČIA.
     mailer.sendMail({
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
@@ -951,6 +944,13 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
 // ekranas — PDF (sugeneruotas kliento pusėje, tas pats, kaip "Atsisiųsti
 // PDF" mygtukas) išsiunčiamas į vartotojo el. paštą iš
 // info@delnaskaitymas.lt (CLIENT_EMAIL_FROM).
+// SVARBU (pakeitimas): šis laiškas dabar yra VIENINTELIS, kurį klientas
+// gauna — jame sujungtas IR užsakymo patvirtinimas (antraštė + užsakymo
+// numeris), IR PDF failas. Anksčiau tai buvo DU atskiri laiškai (vienas
+// iš karto po mokėjimo su tekstu "atsiųsime PDF vėliau", kitas su pačiu
+// PDF) — tai kūrė nereikalingą trintį, "email fatigue" jausmą ir riziką,
+// kad vienas iš dviejų laiškų patenka į Spam, o klientas susirūpinęs
+// rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
     const { email, name, orderNumber, pdfBase64 } = req.body;
@@ -963,15 +963,15 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     await mailer.sendMail({
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: email,
-      subject: `${name ? escapeHtml(name) + ' — ' : ''}Tavo gyvenimo žemėlapis (PDF) ✦`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:16px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Tavo asmeninis gyvenimo žemėlapis paruoštas${name ? ', ' + escapeHtml(name) : ''}!</div></div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8)">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.${orderNumber ? ' Užsakymo numeris: <strong>' + escapeHtml(orderNumber) + '</strong>.' : ''}</p>${EMAIL_FOOTER_HTML}</div>`,
+      subject: `${name ? escapeHtml(name) + ' — ' : ''}Mokėjimas gautas, tavo gyvenimo žemėlapis paruoštas ✦`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843">Mokėjimas gautas, ačiū${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-top:6px">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<p style="font-size:14px;line-height:1.7;text-align:center">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;text-align:center">${escapeHtml(orderNumber)}</p>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
         encoding: 'base64'
       }]
     });
-    console.log(`[email-result-pdf] PDF išsiųstas į ${email}`);
+    console.log(`[email-result-pdf] PDF (su užsakymo patvirtinimu) išsiųstas į ${email}`);
     res.json({ ok: true });
   } catch (err) {
     console.error('[email-result-pdf] klaida:', err);
