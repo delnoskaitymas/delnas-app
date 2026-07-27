@@ -3517,15 +3517,12 @@ async function buildInviteCardBlob(){
 async function inviteFriend(){
   const appUrl = 'https://www.delnaskaitymas.lt';
   const name = window.userName || '';
-  // SVARBU (gramatika): jei vardas naudojamas kaip veiksmažodžio "pakvietė"
-  // veikėjas ("Vardas pakvietė tave"), lietuvių kalba reikalauja TIKSLIOS
-  // vardininko formos (pvz. "Karolinukė", ne "Karolinuke") — o programa
-  // negali patikimai atpažinti/pataisyti vartotojo įvesto vardo linksnio.
-  // Todėl sakinys perstruktūruotas taip, kad vardas būtų naudojamas kaip
-  // kreipinys (su kableliu), o ne kaip privalomas veiksmažodžio veikėjas —
-  // tai teisinga nepriklausomai nuo to, kokia forma vardas buvo įvestas.
+  // Vardas čia yra veiksnys (vardininko linksnis) — "Vardas pakvietė
+  // tave..." — todėl BE kablelio po vardo. Registruojantis vartotojas
+  // savo vardą įveda vardininko forma (taip, kaip prisistato), todėl ši
+  // konstrukcija gramatiškai teisinga.
   const text = name
-    ? `${name}, pakvietė tave sužinoti, kas užkoduota tavo delne ✦ ${appUrl}`
+    ? `${name} pakvietė tave sužinoti, kas užkoduota tavo delne ✦ ${appUrl}`
     : `Pabandyk — sužinok, kas užkoduota tavo delne ✦ ${appUrl}`;
   try{
     const blob = await buildInviteCardBlob();
