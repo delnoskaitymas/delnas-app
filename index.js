@@ -1192,6 +1192,29 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     const { email, name } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+
+    // ═══════════════════════════════════════════════════════════════
+    // LAIKINAS TESTAVIMO REŽIMAS (ŠIUO METU AKTYVUS)
+    // Paspaudus "Primink man" mygtuką, priminimo laiškas išsiunčiamas
+    // IŠ KARTO — kad būtų galima pamatyti, kaip jis atrodo realiai.
+    // KAI PATVIRTINSITE, KAD VISKAS ATRODO GERAI IR BŪSITE PASIRUOŠĘ
+    // GAMYBAI (production) — TIESIOG IŠTRINKITE ŠĮ BLOKĄ (tarp šių dviejų
+    // eilučių su "═"), o žemiau esantis TIKRAS 90 dienų atidėto
+    // priminimo mechanizmas (jau paruoštas, neliestas) toliau veiks
+    // savarankiškai, siųsdamas laiškus tik praėjus 3 mėnesiams.
+    try {
+      await mailer.sendMail({
+        from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
+        to: email,
+        subject: `${name ? escapeHtml(name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
+        html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo Jūsų delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delno linijos keičiasi kartu su Jumis. Per 3 mėnesius Jūsų gyvenimas pasikeitė — o su juo ir tai, ką pasakoja Jūsų delnas.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(135deg,#f0c96a,#d4a843);color:#07040f;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.06em;display:inline-block">ATLIKTI NAUJĄ ANALIZĘ →</a></div></div>`
+      });
+      console.log(`[TESTAVIMO REŽIMAS] Priminimo laiškas IŠ KARTO išsiųstas: ${email}`);
+    } catch(testSendErr) {
+      console.error('[TESTAVIMO REŽIMAS] nepavyko iškart išsiųsti priminimo laiško:', testSendErr.message);
+    }
+    // ═══════════════════════════════════════════════════════════════
+
     const reminders = loadReminders();
     if (reminders.find(r => r.email === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
     reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
