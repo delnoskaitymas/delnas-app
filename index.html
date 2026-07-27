@@ -3467,15 +3467,20 @@ async function sharePdfToFriend(){
 async function inviteFriend(){
   const appUrl = 'https://www.delnaskaitymas.lt';
   const name = window.userName || '';
+  // SVARBU: nuoroda ĮTRAUKTA TIESIOG į "text" tekstą, o NE perduodama
+  // atskirame "url" lauke. Patvirtinta realiais bandymais: kai abu laukai
+  // (text IR url) perduodami kartu be failo, Facebook naudoja TIK "url"
+  // (sukuria nuorodos peržiūros kortelę), o "text" tiesiog atmeta — todėl
+  // kvietimo tekstas išnykdavo, likdavo tik tuščia nuorodos kortelė.
   const text = name
-    ? `${name} pakvietė tave atrasti, kas užkoduota tavo delne ✦`
-    : 'Pabandyk — atrask, kas užkoduota tavo delne ✦';
+    ? `${name} pakvietė tave atrasti, kas užkoduota tavo delne ✦ ${appUrl}`
+    : `Pabandyk — atrask, kas užkoduota tavo delne ✦ ${appUrl}`;
   try{
     if(navigator.share){
-      await navigator.share({ title:'DELNAS — Gyvenimo žemėlapis', text, url:appUrl });
+      await navigator.share({ title:'DELNAS — Gyvenimo žemėlapis', text });
       return;
     }
-    await navigator.clipboard.writeText(`${text} ${appUrl}`);
+    await navigator.clipboard.writeText(text);
     alert('Kvietimo nuoroda nukopijuota!');
   }catch(e){
     console.error('[inviteFriend] klaida:', e);
