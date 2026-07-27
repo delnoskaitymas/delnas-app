@@ -682,12 +682,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Išsaugok jį – tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden">
-      <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Pasidalink įžvalgomis su tais, kurie ieško atsakymų</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – pasidalink šia įžvalga arba pakviesk jį sužinoti savo unikalų sėkmės raktą.</div>
+      <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Pasidalink savo gyvenimo žemėlapiu</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – parodyk savo asmeninius rezultatus arba pakviesk jį sužinoti, kas užkoduota jo delne.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis istorija</button>
-        <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti draugui</button>
-        <button id="copy-btn" onclick="copyPdfLink()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12a5 5 0 015-5h3v2h-3a3 3 0 000 6h3v2h-3a5 5 0 01-5-5zm7-1h6v2h-6v-2zm4-4h3a5 5 0 010 10h-3v-2h3a3 3 0 000-6h-3V7z"/></svg>Kopijuoti nuorodą</button>
+        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su savybėmis</button>
+        <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti visą PDF apžvalgą draugui</button>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
@@ -3461,41 +3460,6 @@ async function sharePdfToFriend(){
   }
 }
 
-// "Kopijuoti nuorodą" — sugeneruoja TĄ PATĮ PDF, laikinai išsaugo jį
-// serveryje (žr. /store-pdf endpoint'ą, atmintyje su TTL) ir nukopijuoja
-// TRUMPĄ, tikrą nuorodą į jį. ANKSČIAU čia buvo naudojamas savarankiškas
-// (be serverio) URL su visu rezultatu, užkoduotu base64 formatu pačiame
-// adrese — bet toks itin ilgas URL pasirodė nepatikimas persiunčiant per
-// įvairias programas (jos jį nutrūkdavo/sugadindavo). Ši nuoroda trumpa
-// ir patikima — atidaryta, ji tiesiog parodo/atsiunčia PDF failą.
-async function copyPdfLink(){
-  const btn = document.getElementById('copy-btn');
-  const originalHtml = btn ? btn.innerHTML : null;
-  try{
-    const r = window._palmResult;
-    if(!r){ alert('Rezultatai nerasti.'); return; }
-    if(btn) btn.innerHTML = '⏳ Ruošiama...';
-    const name = window.userName || '';
-    const doc = buildResultPdfDoc(r, name);
-    const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
-    const resp = await fetch('/store-pdf', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ pdfBase64, fileName })
-    });
-    if(!resp.ok) throw new Error('Serverio klaida ('+resp.status+')');
-    const data = await resp.json();
-    if(!data.url) throw new Error('Serveris negrąžino nuorodos');
-    await navigator.clipboard.writeText(data.url);
-    if(btn){ btn.innerHTML = '✅ Nukopijuota!'; setTimeout(()=>{ if(originalHtml) btn.innerHTML = originalHtml; }, 2500); }
-  }catch(e){
-    console.error('[copyPdfLink] klaida:', e);
-    if(btn && originalHtml) btn.innerHTML = originalHtml;
-    alert('Nepavyko nukopijuoti nuorodos. Bandykite dar kartą.');
-  }
-}
-
 // SVARBU: PDF variantas neveikė dalinantis į Facebook (Facebook
 // dalinimosi meniu nepriima/neatpažįsta PDF failų kaip įrašo/istorijos
 // turinio — priima tik paveikslėlius). Todėl grąžiname paveikslėlio
@@ -3506,19 +3470,6 @@ async function copyPdfLink(){
 // nuoroda dalinimosi tekste (`text`/`url` laukuose) — tai leidžia
 // Facebook (ir daugumai kitų platformų) automatiškai paversti jį
 // paspaudžiama nuoroda įraše, net jei pati nuotrauka nėra paspaudžiama.
-
-// Renkasi 1-2 trumpiausius (5-9 žodžių), aiškiausius teiginius iš I/II
-// skyriaus punktų — kad kortelė liktų švari ir lengvai skaitoma vienu
-// žvilgsniu, be perteklinio teksto.
-function pickTopInsights(r, count){
-  const pool = [...(r.stiprybes_sarasas || []), ...(r.prigimtines_insights || []), ...(r.gyvenimo_insights || [])];
-  const wc = t => t.trim().split(/\s+/).length;
-  const ideal = pool.filter(t => wc(t) >= 4 && wc(t) <= 9);
-  const candidates = (ideal.length >= count ? ideal : pool).slice();
-  // Sumaišome, kad kaskart matytųsi skirtingi punktai
-  for(let i=candidates.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [candidates[i],candidates[j]]=[candidates[j],candidates[i]]; }
-  return candidates.slice(0, count);
-}
 
 function drawWrappedCentered(ctx, text, cx, yTop, maxWidth, lineHeight){
   const words = text.split(' ');
@@ -3546,12 +3497,11 @@ function drawRoundedRectPath(ctx, x, y, w, h, r){
 
 // Sukuria KOMPAKTIŠKĄ, aiškią kvadratinę (1080×1080 — universaliai
 // tinka Facebook/Instagram/WhatsApp) kortelę su delno ikona, vardu ir
-// TIK 2 svarbiausiais, trumpais teiginiais + aiškiu mygtuku su svetainės
-// adresu apačioje.
+// VISAIS auksiniais I skyriaus asmens bruožais + aiškiu mygtuku su
+// svetainės adresu apačioje.
 async function buildStoryCardBlob(){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
-  const highlights = pickTopInsights(r, 2);
   const W = 1080, H = 1080;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -3606,9 +3556,15 @@ async function buildStoryCardBlob(){
   ctx.fillStyle = '#f0c96a';
   ctx.font = '700 42px "Playfair Display", Georgia, serif';
   const headingText = name ? `${name}, tavo gyvenimo žemėlapis` : 'Tavo gyvenimo žemėlapis';
-  y = drawWrappedCentered(ctx, headingText, W/2, y, maxWidth, 52) + 45;
+  y = drawWrappedCentered(ctx, headingText, W/2, y, maxWidth, 52) + 65;
 
-  // TIK 1-2 svarbiausi, trumpi teiginiai — didelis, aiškus šriftas
+  // VISI auksiniai I skyriaus asmens bruožai (įžvalgos + stiprybių
+  // sąrašas) — ne atsitiktinai parinkti 1-2, o visi, kaip prašyta.
+  // 3-4 auksiniai I skyriaus asmens bruožai — VISI (dažnai 6-7) buvo
+  // per daug tankūs vienai "istorijos" kortelei, sumažinta iki tiek,
+  // kiek galima aprėpti vienu žvilgsniu.
+  const allTraits = [...(r.prigimtines_insights || []), ...(r.stiprybes_sarasas || [])];
+  const highlights = allTraits.slice(0, 4);
   ctx.fillStyle = '#f5eed8';
   highlights.forEach((txt, i) => {
     ctx.font = '700 44px "DM Sans", sans-serif';
@@ -3624,7 +3580,7 @@ async function buildStoryCardBlob(){
   ctx.fillStyle = 'rgba(245,238,216,.55)';
   ctx.font = '400 26px "DM Sans", sans-serif';
   ctx.fillText('Atrask tai, kas užkoduota tavo delne', W/2, y);
-  y += 40;
+  y += 22;
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
