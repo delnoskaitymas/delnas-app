@@ -643,9 +643,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="insights-mission" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kai žmogus eina savo keliu — viskas sekasi lengviau.</div>
     </div>
-    <div style="padding:0 16px 12px">
-    <button onclick="downloadPDF()" style="width:100%;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3);border-radius:12px;padding:14px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Atsisiųsti santrauką kaip PDF</button>
-  </div>
   <div class="rs rs-std rs-reveal">
       <div class="rs-label">III · Bendravimo būdas ir jo įtaka santykiams</div>
       <div class="rs-body" id="r-love"></div>
@@ -686,7 +683,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – parodyk savo asmeninius rezultatus arba pakviesk jį sužinoti, kas užkoduota jo delne.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su savybėmis</button>
-        <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti visą PDF apžvalgą draugui</button>
         <button onclick="inviteFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugą išbandyti</button>
       </div>
     </div>
@@ -3640,7 +3636,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 60;
+      y = cy + rad + 85;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
