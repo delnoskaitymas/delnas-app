@@ -680,7 +680,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden">
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">Pasidalink savo gyvenimo žemėlapiu</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – parodyk savo asmeninius rezultatus arba pakviesk jį sužinoti, kas užkoduota jo delne.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – parodyk savo asmeninius rezultatus arba pakviesk jį sužinoti, kas užkoduota jo delnuose.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su savybėmis</button>
         <button onclick="inviteFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugą išbandyti</button>
@@ -3713,7 +3713,7 @@ async function shareStory(){
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Sužinok, kas užkoduota tavo delne ✦';
+    const shareText = 'Sužinok, kas užkoduota tavo delnuose ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
