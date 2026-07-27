@@ -685,7 +685,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px;font-family:'Playfair Display',serif">Pasidalink savo gyvenimo žemėlapiu</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – parodyk savo asmeninius rezultatus arba pakviesk jį sužinoti, kas užkoduota jo delne.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su savybėmis</button>
+        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su savybėmis</button>
         <button onclick="sharePdfToFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.529 5.845L0 24l6.335-1.502A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.17-1.408l-.371-.219-3.763.893.952-3.653-.241-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Siųsti visą PDF apžvalgą draugui</button>
       </div>
     </div>
@@ -3523,9 +3523,11 @@ async function buildStoryCardBlob(){
   const margin = 100;
   const maxWidth = W - margin*2;
   ctx.textAlign = 'center';
-  let y = 130;
+  let y = 95;
 
-  // Delno nuotrauka — kompaktiška, viršuje
+  // Delno nuotrauka — kompaktiška, viršuje. Pridėtas ryškumo/kontrasto/
+  // sodrumo padidinimas IR šiltas auksinis atspalvis (overlay), kad
+  // nuotrauka atrodytų gyvesnė, o ne plokščia/pilka.
   const heroPhotoUrl = getHeroPhotoDataUrl();
   if(heroPhotoUrl){
     try{
@@ -3542,14 +3544,20 @@ async function buildStoryCardBlob(){
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.closePath();
       ctx.clip();
+      ctx.filter = 'brightness(1.3) contrast(1.25) saturate(1.6)';
       ctx.drawImage(img, cx-rad, cy-rad, rad*2, rad*2);
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.fillStyle = 'rgba(212,168,67,.4)';
+      ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+      ctx.globalCompositeOperation = 'source-over';
       ctx.restore();
       ctx.strokeStyle = '#d4a843';
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 78;
+      y = cy + rad + 60;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
