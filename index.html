@@ -3599,7 +3599,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 55;
+      y = cy + rad + 78;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
@@ -3620,11 +3620,11 @@ async function buildStoryCardBlob(){
   // DINAMIŠKAI, TIESIOG PO paskutiniu teiginiu (o ne fiksuotu atstumu nuo
   // apačios) — anksčiau fiksuota vieta palikdavo didelį tuščią juodą
   // tarpą, kai teiginių tekstas būdavo trumpas.
-  y += 15;
+  y += 30;
   ctx.fillStyle = 'rgba(245,238,216,.55)';
   ctx.font = '400 26px "DM Sans", sans-serif';
-  ctx.fillText('Atrask savo pilną gyvenimo žemėlapį', W/2, y);
-  y += 55;
+  ctx.fillText('Atrask tai, kas užkoduota tavo delne', W/2, y);
+  y += 40;
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
@@ -3667,7 +3667,7 @@ async function shareStory(){
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Atrask savo gyvenimo žemėlapį ✦';
+    const shareText = 'Atrask tai, kas užkoduota tavo delne ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
