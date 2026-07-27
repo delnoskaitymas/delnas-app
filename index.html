@@ -690,7 +690,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:16px;font-weight:400;color:#ece6d8;font-family:'Playfair Display',serif;margin-bottom:8px">Po 3 mėnesių – naujas žvilgsnis į tavo pokyčius</div>
       <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">Gyvenimas nuolat kinta. Kiekviena analizė atskleidžia vis naujus tavo kelio atsakymus.</div>
       <div id="reminder-wrap">
-        <button onclick="registerReminder()" style="width:100%;background:var(--gold);border:1.5px solid var(--gold2);border-radius:10px;padding:15px;color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;box-shadow:0 4px 18px rgba(212,168,67,.35)">✦ Primink man</button>
+        <button onclick="registerReminder()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:var(--gold2);font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">✦ Primink man</button>
       </div>
       <div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:10px 0">✦ Laukiame tavęs po 3 mėnesių.</div>
     </div>
@@ -3134,13 +3134,13 @@ function buildResultPdfDoc(r, name){
   doc.setFontSize(15);
   doc.setTextColor(...MUTED);
   doc.text('CHIROMANTIJA · LIKIMO ŽEMĖLAPIS · SKAITMENINĖ ANALIZĖ', W/2, y, {align:'center'});
-  y += 4;
+  y += 10;
   // Trumpas skiriamasis brūkšnys tarp poantraštės ir pirmos temos —
   // trūko vizualaus atskyrimo prieš pat "I · ..." antraštę.
   doc.setDrawColor(...GOLD);
   doc.setLineWidth(0.5);
   doc.line(W/2 - 15, y, W/2 + 15, y);
-  y += 14;
+  y += 20;
 
   // Skyriai: pagrindinis tekstas + įžvalgų sąrašas (ir I skyriuje —
   // papildomas stiprybių sąrašas), lygiai kaip rezultatų ekrane — TIK BE
