@@ -3445,8 +3445,8 @@ async function sharePdfToFriend(){
     const blob = doc.output('blob');
     const file = new File([blob], fileName, {type:'application/pdf'});
     const shareText = name
-      ? `${name} gyvenimo žemėlapis 🤚 Tikslumas šokiravo — bandyk pati! Atrask savo: delnaskaitymas.lt`
-      : `Atlikau delnų analizę 🤚 Tikslumas šokiravo — bandyk ir tu! Atrask savo: delnaskaitymas.lt`;
+      ? `${name} gyvenimo žemėlapis 🤚 Tikslumas šokiravo — bandyk pati! Sužinok savo: delnaskaitymas.lt`
+      : `Atlikau delnų analizę 🤚 Tikslumas šokiravo — bandyk ir tu! Sužinok savo: delnaskaitymas.lt`;
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText});
       return;
@@ -3490,7 +3490,7 @@ async function buildInviteCardBlob(){
 
   ctx.fillStyle = '#f5eed8';
   ctx.font = '600 38px "DM Sans", sans-serif';
-  ctx.fillText('Atrask, kas užkoduota tavo delne', W/2, 300);
+  ctx.fillText('Sužinok, kas užkoduota tavo delne', W/2, 300);
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
@@ -3519,8 +3519,8 @@ async function inviteFriend(){
   const appUrl = 'https://www.delnaskaitymas.lt';
   const name = window.userName || '';
   const text = name
-    ? `${name} pakvietė tave atrasti, kas užkoduota tavo delne ✦ ${appUrl}`
-    : `Pabandyk — atrask, kas užkoduota tavo delne ✦ ${appUrl}`;
+    ? `${name} pakvietė tave sužinoti, kas užkoduota tavo delne ✦ ${appUrl}`
+    : `Pabandyk — sužinok, kas užkoduota tavo delne ✦ ${appUrl}`;
   try{
     const blob = await buildInviteCardBlob();
     if(blob){
@@ -3668,10 +3668,6 @@ async function buildStoryCardBlob(){
   // apačios) — anksčiau fiksuota vieta palikdavo didelį tuščią juodą
   // tarpą, kai teiginių tekstas būdavo trumpas.
   y += 30;
-  ctx.fillStyle = 'rgba(245,238,216,.55)';
-  ctx.font = '400 26px "DM Sans", sans-serif';
-  ctx.fillText('✦ Atrask tai, kas užkoduota tavo delne', W/2, y);
-  y += 22;
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
@@ -3714,7 +3710,7 @@ async function shareStory(){
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Atrask tai, kas užkoduota tavo delne ✦';
+    const shareText = 'Sužinok, kas užkoduota tavo delne ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
