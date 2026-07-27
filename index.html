@@ -3482,17 +3482,20 @@ async function buildInviteCardBlob(){
   ctx.textAlign = 'center';
   ctx.fillStyle = '#d4a843';
   ctx.font = '700 46px "Playfair Display", Georgia, serif';
-  ctx.fillText('✦ DELNAS', W/2, 220);
+  // Optinis centravimas: kairėje esanti žvaigždutė vizualiai "traukia"
+  // tekstą į dešinę, todėl eilutė piešiama šiek tiek kairiau nuo
+  // matematinio vidurio, kad atrodytų optiškai centruota.
+  ctx.fillText('✦ DELNAS', W/2 - 14, 250);
 
   ctx.fillStyle = '#f5eed8';
   ctx.font = '600 38px "DM Sans", sans-serif';
-  ctx.fillText('Sužinok, kas užkoduota tavo delne', W/2, 300);
+  ctx.fillText('Sužinok, kas užkoduota tavo delne', W/2, 330);
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 40px "DM Sans", sans-serif';
   const btnPadX = 32, btnH = 76;
   const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-140);
-  const btnX = (W - btnW) / 2, btnY = 400;
+  const btnX = (W - btnW) / 2, btnY = 420;
   ctx.fillStyle = '#d4a843';
   drawRoundedRectPath(ctx, btnX, btnY, btnW, btnH, btnH/2);
   ctx.fill();
@@ -3514,8 +3517,15 @@ async function buildInviteCardBlob(){
 async function inviteFriend(){
   const appUrl = 'https://www.delnaskaitymas.lt';
   const name = window.userName || '';
+  // SVARBU (gramatika): jei vardas naudojamas kaip veiksmažodžio "pakvietė"
+  // veikėjas ("Vardas pakvietė tave"), lietuvių kalba reikalauja TIKSLIOS
+  // vardininko formos (pvz. "Karolinukė", ne "Karolinuke") — o programa
+  // negali patikimai atpažinti/pataisyti vartotojo įvesto vardo linksnio.
+  // Todėl sakinys perstruktūruotas taip, kad vardas būtų naudojamas kaip
+  // kreipinys (su kableliu), o ne kaip privalomas veiksmažodžio veikėjas —
+  // tai teisinga nepriklausomai nuo to, kokia forma vardas buvo įvestas.
   const text = name
-    ? `${name} pakvietė tave sužinoti, kas užkoduota tavo delne ✦ ${appUrl}`
+    ? `${name}, pakvietė tave sužinoti, kas užkoduota tavo delne ✦ ${appUrl}`
     : `Pabandyk — sužinok, kas užkoduota tavo delne ✦ ${appUrl}`;
   try{
     const blob = await buildInviteCardBlob();
@@ -3623,11 +3633,11 @@ async function buildStoryCardBlob(){
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.closePath();
       ctx.clip();
-      ctx.filter = 'brightness(1.3) contrast(1.25) saturate(1.6)';
+      ctx.filter = 'brightness(1.45) contrast(1.35) saturate(1.9)';
       ctx.drawImage(img, cx-rad, cy-rad, rad*2, rad*2);
       ctx.filter = 'none';
       ctx.globalCompositeOperation = 'overlay';
-      ctx.fillStyle = 'rgba(212,168,67,.4)';
+      ctx.fillStyle = 'rgba(212,168,67,.5)';
       ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
       ctx.globalCompositeOperation = 'source-over';
       ctx.restore();
