@@ -270,14 +270,31 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">2.</span><span><strong style="color:rgba(255,255,255,.85)">Trumpas atsiliepimas:</strong> Būsime dėkingi, jei trumpai parašysi, ko pritrūko – tai padeda mums kasdien tobulinti savo sistemą.</span></div>
         <div style="display:flex;gap:6px"><span style="color:var(--gold2);flex-shrink:0">3.</span><span><strong style="color:rgba(255,255,255,.85)">Sprendimas:</strong> Mes nedelsdami peržiūrėsime tavo užklausą ir grąžinsime pinigus. Mūsų tikslas – laimingas vartotojas, todėl visus prašymus sprendžiame palankiai.</span></div>
       </div>
-      <div style="font-size:10.5px;color:var(--muted);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15)">
+      <div style="font-size:10.5px;color:var(--muted);line-height:1.55;padding:10px;background:rgba(212,168,67,.04);border-radius:8px;border:.5px solid rgba(212,168,67,.15);margin-bottom:8px">
         <strong style="color:var(--gold2)">Svarbu:</strong> savo užsakymo numerį rasi rezultato ekrane iškart po sėkmingo apmokėjimo.
       </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.4);line-height:1.5">Tai savanoriška garantija — analizė yra skaitmeninis turinys, pateikiamas iš karto po apmokėjimo, todėl teisinė 14 dienų atsisakymo teisė jam netaikoma (žr. <a href="/naudojimosi-salygos" target="_blank" style="color:rgba(212,168,67,.6)">Naudojimosi sąlygas</a>).</div>
     </div>
     <button onclick="closeRefundPopup()" id="refund-close-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.3);animation:payBtnBreathing 3s ease-in-out infinite;flex-shrink:0">Tęsti savo žemėlapio užsakymą</button>
   </div>
 </div>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
+<div id="consent-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:360px;width:100%;background:#0a0710;border:1px solid rgba(212,168,67,.3);border-radius:20px;padding:30px 24px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div style="font-size:30px;margin-bottom:14px">✦</div>
+    <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#f0c96a;margin-bottom:16px">Prieš pradedant</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.68);line-height:1.7;margin-bottom:18px;text-align:left">
+      <div style="margin-bottom:12px">🤚 Nufotografuosime abu tavo delnus — nuotraukos naudojamos tik tavo asmeninei AI analizei, o duomenys tvarkomi konfidencialiai pagal <a href="/privatumo-politika" target="_blank" style="color:#d4a843;text-decoration:underline">Privatumo politiką</a>.</div>
+      <div>✨ Tai pramoginio pobūdžio patirtis, skirta savirefleksijai — ne finansinė ar medicininė konsultacija.</div>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:20px;cursor:pointer;text-align:left">
+      <input type="checkbox" id="consent-age" onchange="checkConsentBtn()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer">
+      <span style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Patvirtinu, kad man yra bent 18 metų, ir sutinku su <a href="/naudojimosi-salygos" target="_blank" style="color:#d4a843;text-decoration:underline">Naudojimosi sąlygomis</a>.</span>
+    </label>
+    <button id="consent-btn" onclick="acceptConsentAndStart()" disabled style="width:100%;background:linear-gradient(135deg,#f7df88,#e8b840,#b8841a);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.4);opacity:.4;transition:opacity .2s">Sutinku ir tęsiu ✦</button>
+  </div>
+</div>
+
 <div class="screen active" id="s-home">
 
     <div style="position:relative;overflow:hidden;min-height:430px;margin-top:8px">
@@ -1451,6 +1468,42 @@ let camStream=null;
 let cameraReady=false;let cameraLoading=false;
 
 function startApp(){
+  // Švelnus, vienkartinis sutikimo langas PRIEŠ pradedant fotografuoti —
+  // GDPR prasme sutikimas turi būti gaunamas PRIEŠ renkant duomenis
+  // (nuotraukas), o ne vėliau, mokėjimo ekrane. Rodomas tik VIENĄ kartą
+  // per sesiją (sessionStorage), kad nebūtų įkyrus pakartotinai
+  // testuojant/naudojant.
+  if(sessionStorage.getItem('delnasConsentGiven')==='1'){ _startAppReal(); return; }
+  const m=document.getElementById('consent-modal');
+  if(m){
+    const cb=document.getElementById('consent-age');
+    if(cb) cb.checked=false;
+    checkConsentBtn();
+    m.style.display='flex';
+    return;
+  }
+  _startAppReal();
+}
+
+function checkConsentBtn(){
+  const cb=document.getElementById('consent-age');
+  const btn=document.getElementById('consent-btn');
+  if(!cb||!btn) return;
+  btn.disabled=!cb.checked;
+  btn.style.opacity=cb.checked?'1':'.4';
+  btn.style.cursor=cb.checked?'pointer':'not-allowed';
+}
+
+function acceptConsentAndStart(){
+  const cb=document.getElementById('consent-age');
+  if(cb && !cb.checked) return; // apsauga — be amžiaus patvirtinimo netęsiame
+  try{ sessionStorage.setItem('delnasConsentGiven','1'); }catch(e){}
+  const m=document.getElementById('consent-modal');
+  if(m) m.style.display='none';
+  _startAppReal();
+}
+
+function _startAppReal(){
   // Pradedame krauti tikslų rankos-taškų (MediaPipe) aptikimo modelį iš karto,
   // fone, kol vartotojas dar mato siluetą/kamerą — kad jis būtų JAU paruoštas,
   // kai vartotojas paspaus fotografuoti mygtuką (jokio papildomo laukimo).
