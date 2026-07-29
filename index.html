@@ -942,6 +942,19 @@ window.addEventListener('DOMContentLoaded',async()=>{
   const params2=new URLSearchParams(window.location.search);
   const sessionId=params2.get('session_id');
   if(sessionId) verifyAndProceed(sessionId);
+  // Jei grįžtama iš Privatumo politikos puslapio (paspaudus "Grįžti atgal"),
+  // vėl parodome tą patį sutikimo langą, kad vartotojas galėtų tęsti nuo
+  // ten, kur sustojo, nepriklausomai nuo to, ar sutikimas šioje sesijoje
+  // jau buvo anksčiau duotas.
+  if(params2.get('consent')==='1'){
+    const cm=document.getElementById('consent-modal');
+    if(cm){
+      const cb=document.getElementById('consent-age');
+      if(cb) cb.checked=false;
+      checkConsentBtn();
+      cm.style.display='flex';
+    }
+  }
 });
 
 // Rodo PILNĄ, tvarkingą klaidos ekraną, kai analizė nepavyko sugeneruoti
