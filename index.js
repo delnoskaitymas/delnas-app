@@ -1301,7 +1301,7 @@ app.get('/shared/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Teisiniai puslapiai — Privatumo politika ir Naudojimosi sąlygos.
+// Teisiniai puslapiai — Privatumo politika, Naudojimosi sąlygos ir Impressum.
 // SVARBU: šie maršrutai TURI būti registruoti PRIEŠ bendrą "catch-all"
 // (app.get('*', ...)) maršrutą failo gale — priešingu atveju jis juos
 // perimtų pirmiau (žr. ankstesnę pastabą apie /pdf/:id bugą).
@@ -1310,6 +1310,9 @@ app.get('/privatumo-politika', (req, res) => {
 });
 app.get('/naudojimosi-salygos', (req, res) => {
   res.sendFile(path.join(__dirname, 'naudojimosi-salygos.html'));
+});
+app.get('/impressum', (req, res) => {
+  res.sendFile(path.join(__dirname, 'impressum.html'));
 });
 
 // --- Laikinas PDF saugojimas dalinimuisi (atmintyje, su TTL) ---
