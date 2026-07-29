@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum — DELNAS</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#000000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;line-height:1.7;padding:0}
+  .wrap{max-width:640px;margin:0 auto;padding:48px 24px 80px}
+  h1{font-family:Georgia,serif;color:#f0c96a;font-size:26px;margin-bottom:6px}
+  .updated{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:36px}
+  h2{font-family:Georgia,serif;color:#d4a843;font-size:18px;margin-top:36px;margin-bottom:10px}
+  p,li{font-size:14px;color:rgba(232,226,212,.85)}
+  ul{padding-left:20px}
+  li{margin-bottom:6px}
+  a{color:#d4a843}
+  .back{display:inline-block;margin-bottom:24px;color:#d4a843;text-decoration:none;font-size:13px}
+  .box{background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:16px 18px;margin:16px 0}
+  .warn{background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:16px 18px;margin:16px 0}
+  .warn strong{color:#f0c96a}
+  .fill{color:rgba(255,255,255,.4);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/?consent=1" class="back">← Grįžti atgal</a>
+  <h1>✦ Impressum</h1>
+  <div class="updated">Informacija pagal §5 Digitale-Dienste-Gesetz (DDG)</div>
+
+  <div class="warn">
+    <p><strong>Šis puslapis dar nėra pilnai užpildytas.</strong> Žemiau pažymėti laukai (<span class="fill">[užpildyti]</span>) bus atnaujinti realiais duomenimis, kai bus užbaigta veiklos registracija Vokietijoje (Gewerbeanmeldung ir Finanzamt registracija).</p>
+  </div>
+
+  <h2>Paslaugos teikėjas (Diensteanbieter)</h2>
+  <p>
+    <span class="fill">[Vardas Pavardė]</span><br>
+    <span class="fill">[Gatvė, namo numeris]</span><br>
+    <span class="fill">[Pašto kodas, miestas]</span><br>
+    Vokietija
+  </p>
+
+  <h2>Kontaktai</h2>
+  <p>
+    El. paštas: <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a><br>
+    Telefonas: <span class="fill">[jei nurodoma]</span>
+  </p>
+
+  <h2>Mokesčių informacija</h2>
+  <p>
+    Steuernummer: <span class="fill">[užpildyti po Finanzamt registracijos]</span><br>
+    USt-IdNr.: <span class="fill">[jei taikoma]</span>
+  </p>
+  <div class="box">
+    <p style="font-size:12.5px;color:rgba(255,255,255,.6)">Jei taikoma smulkaus verslo išimtis: <em>„Gemäß §19 UStG wird keine Umsatzsteuer berechnet"</em> (pagal §19 UStG PVM neskaičiuojamas).</p>
+  </div>
+
+  <h2>Atsakomybė už turinį</h2>
+  <p>Nepaisant kruopštaus turinio tikrinimo, neprisiimame atsakomybės už išorinių nuorodų turinį. Už išorinių nuorodų turinį atsako atitinkamų puslapių savininkai.</p>
+
+  <h2>Paslaugos pobūdis</h2>
+  <p>DELNAS (delnaskaitymas.lt) — pramoginio ir savirefleksijos pobūdžio dirbtinio intelekto sugeneruota chiromantijos analizė. Plačiau žr. <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygas</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politiką</a>.</p>
+
+  <h2>Ginčų sprendimas</h2>
+  <p>Europos Komisija teikia platformą elektroniniam ginčų sprendimui (OS): <a href="https://ec.europa.eu/consumers/odr" target="_blank">ec.europa.eu/consumers/odr</a>. Nesame įsipareigoję ir nesutinkame dalyvauti ginčų sprendimo procedūrose vartotojų arbitražo komisijoje.</p>
+</div>
+</body>
+</html>
