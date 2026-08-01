@@ -2426,7 +2426,7 @@ function animateLoading(){
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
     if(ppct) ppct.textContent='100%';window._currentProgress=100;
     if(pbar) pbar.style.width='100%';
-    if(ptime) ptime.textContent='Sujungiame viską į tavo žemėlapį...';
+    if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
     activateStep(7,true);
     // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
     const handFinal=document.getElementById('hand-container');
@@ -3986,33 +3986,19 @@ function startPayProgressBar(){
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
 
-  // Reset — pradedame nuo 0%
+  // Analizė šiuo metu jau TIKRAI baigta (į šį ekraną patenkama tik gavus
+  // realų bgAnalysisDone patvirtinimą — žr. animateLoading()/finishNow()),
+  // todėl čia nebėra jokio realaus proceso, kurį reikėtų vaizduoti kaip
+  // "dar vykstantį". Rodoma iš karto, be jokios dirbtinės (ir su savimi
+  // prieštaraujančios) 40s animacijos.
   bar.style.animation='none';
   bar.style.transition='none';
-  bar.style.width='0%';
+  bar.style.width='100%';
   bar.style.opacity='1';
-  if(pct)pct.textContent='99%';
-  if(txt)txt.textContent='Žemėlapis paruoštas.';
-
+  bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
   bar.getBoundingClientRect();
-
-  // Glow animacija — kaip analizės ekrane
-  bar.style.animation='payGlow 1.4s ease-in-out infinite';
-
-  // Po 300ms — pildosi ir ryškėja per 40s
-  window._payBarStartTimeout=setTimeout(()=>{
-    bar.style.transition='width 40s cubic-bezier(.04,0,.06,1), opacity 20s ease';
-    bar.style.width='100%';
-    bar.style.opacity='1';
-    if(txt)txt.textContent='Baigiame...';
-    window._payBarDoneTimeout=setTimeout(()=>{
-      bar.style.animation='none';
-      bar.style.opacity='1';
-      bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
-      if(pct)pct.textContent='100%';
-      if(txt)txt.innerHTML='Paruošta <span style="color:var(--gold2)">✓</span>';
-    },40000);
-  },300);
+  if(pct)pct.textContent='100%';
+  if(txt)txt.innerHTML='Paruošta <span style="color:var(--gold2)">✓</span>';
 }
 
 // Užbaigia progreso juostą iškart: gold, 100%, pilnai, statiškas tekstas su varnele gale
