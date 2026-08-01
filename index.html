@@ -265,7 +265,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <h3 style="font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin:0;line-height:1.3">Pinigų grąžinimo garantija</h3>
     </div>
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px">
-      <p style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 10px">Mes esame tikri, kad tavo asmeninis žemėlapis suteiks tau vertingų įžvalgų apie tavo gyvenimo kelią. Kiekviena analizė yra sugeneruota naudojant pažangiausias chiromantijos duomenų analizės metodikas.</p>
+      <p style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 10px">Mes esame tikri, kad tavo asmeninis žemėlapis suteiks tau vertingų įžvalgų apie tavo gyvenimo kelią. Kiekviena analizė sugeneruojama individualiai, pagal tavo pačio delnų linijas.</p>
       <p style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 10px">Tačiau, jei per <strong style="color:var(--gold2)">14 dienų</strong> pajusi, kad rezultatai neatitiko tavo lūkesčių, mes norime tai ištaisyti.</p>
       <p style="font-size:11px;color:var(--gold2);font-weight:600;margin:0 0 8px">Kaip veikia mūsų 14 dienų garantija:</p>
       <div style="font-size:11px;color:rgba(255,255,255,.68);line-height:1.6;display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
@@ -321,30 +321,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="wrap center" style="padding-top:0px;padding-bottom:4px;position:relative;z-index:3;margin-top:-30px">
     <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:14px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
-    <div style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:8px;letter-spacing:.02em">⏱ Užtruksi tik 2 minutes</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.45);font-style:italic;margin-bottom:6px">
-      Jau <span id="static-main-count" style="color:var(--gold2);font-weight:500">2 867</span> <span id="static-main-word">žmonės</span> išbandė
-    </div>
+    <div style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:8px;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
   </div>
   <div style="padding:0 20px">
-    <div id="rev-carousel" style="position:relative;overflow:hidden">
-      <div id="rev-slides" style="position:relative;min-height:130px;overflow:hidden">
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:1;pointer-events:auto;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌸</div><div><div class="rev-name">Monika</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">net nesitikejau kad bus taip apie mane 😳</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">☕</div><div><div class="rev-name">Tomas K.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">labai asmeniska, patiko, rekomenduoju</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌙</div><div><div class="rev-name">jpilve</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">su drauge isbandeme abi, verta</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌺</div><div><div class="rev-name">Rūta</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">santykiai aprasyti stebetinai tiksliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎯</div><div><div class="rev-name">Mantas</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">finansu dalis mane tiesiog sokiravo</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av"></div><div><div class="rev-name">Agnė</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">kiekviena karta randu ka nauja, idomu</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🔮</div><div><div class="rev-name">Lina R.</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">papasakojo net to ko niekam nesakau</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 6 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🍀</div><div><div class="rev-name">Eglė</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">netikejau iki perskaiciau – tiesiog wow</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌿</div><div><div class="rev-name">Darius</div><div class="rev-handle">Kaunas</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">charakteris aprasytas taip gerai, super</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">💫</div><div><div class="rev-name">Kristina</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">su mama darem abi, nustebom kiek sutapo</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌻</div><div><div class="rev-name">Viktorija</div><div class="rev-handle">Vilnius</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">apie kliutis parasyta taip taikliai</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 5 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🎪</div><div><div class="rev-name">Arnas</div><div class="rev-handle">Šiauliai</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">galvojau bus bendrai, bet buvo apie mane</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 2 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌈</div><div><div class="rev-name">Simona</div><div class="rev-handle">Panevėžys</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">pirma karta girdziu taip apie save 😯</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 4 d.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🦋</div><div><div class="rev-name">Jolanta</div><div class="rev-handle">Marijampolė</div></div><div class="rev-stars">★★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">apie finansus taip taikliai, nustebau</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 1 sav.</div></div>
-        <div class="rev" style="position:absolute;top:0;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .8s ease;box-sizing:border-box"><div class="rev-top"><div class="rev-av">🌊</div><div><div class="rev-name">Rokas</div><div class="rev-handle">Klaipėda</div></div><div class="rev-stars">★★★★</div></div><div class="rev-text" style="font-size:13px;line-height:1.4">santykiu dalis nustebino, kaip zinojo</div><div class="rev-tag">✦ PATVIRTINTA ANALIZĖ · prieš 3 d.</div></div>
-      </div>
 
   </div>
   <div style="text-align:center;padding:18px 20px 6px;font-size:11px;color:rgba(255,255,255,.35)">
@@ -3799,80 +3778,8 @@ async function shareStory(){
     alert('Nepavyko pasidalinti. Bandykite dar kartą.');
   }
 }
-// Karuselė
-let revCurrentSlide=0;
-let revPaused=false;
-const REV_TOTAL=15;
-function goRevSlide(n){
-  revCurrentSlide=n;
-  document.querySelectorAll('#rev-slides > .rev').forEach((el,i)=>{
-    if(i===n){el.style.opacity='1';el.style.pointerEvents='auto';}
-    else{el.style.opacity='0';el.style.pointerEvents='none';}
-  });
-  document.querySelectorAll('.rev-dot').forEach((d,i)=>{
-    d.style.background=i===n?'var(--gold)':'rgba(212,168,67,.25)';
-  });
-}
-// Pristabdyti karuselę, kai vartotojas paliečia arba užveda pelę ant atsiliepimų bloko
-const revCarouselEl=document.getElementById('rev-carousel');
-if(revCarouselEl){
-  revCarouselEl.addEventListener('touchstart',()=>{revPaused=true;},{passive:true});
-  revCarouselEl.addEventListener('touchend',()=>{setTimeout(()=>{revPaused=false;},1500);},{passive:true});
-  revCarouselEl.addEventListener('mouseenter',()=>{revPaused=true;});
-  revCarouselEl.addEventListener('mouseleave',()=>{revPaused=false;});
-}
-// Auto-rotate karuselė — švelnus cross-fade (be šokinėjimo), 2.5s intervalas, sustoja palietus/užvedus
-setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},3000);
 
-// Skaitiklių sinchronizavimas
-function syncCounters(){
-  // now handled by startStaticCountGrowth on DOMContentLoaded
-}
 
-// Live users counter — fluctuates naturally
-function startLiveCounter(){
-  const el=document.getElementById('live-count');
-  if(!el)return;
-  let base=12;
-  setInterval(()=>{
-    const delta=Math.random()<0.4?(Math.random()<0.5?1:-1):0;
-    base=Math.max(8,Math.min(19,base+delta));
-    el.textContent=base;
-  },3200);
-}
-
-// Static count slowly grows
-function startStaticCountGrowth(){
-  let val=2867;
-  function fmt(n){
-    if(n>=1000){const t=Math.floor(n/1000);const h=String(n%1000).padStart(3,'0');return t+'\u00a0'+h;}
-    return String(n);
-  }
-  // Lietuviška gramatika pagal skaičių
-  function word(n){
-    const last=n%10;
-    const last2=n%100;
-    if(last===1&&last2!==11)return'žmogus';
-    if(last>=2&&last<=9&&(last2<10||last2>20))return'žmonės';
-    return'žmonių';
-  }
-  function updateAll(){
-    const s=fmt(val);
-    const w=word(val);
-    const numIds=['pay-count','global-count'];
-    const wordIds=['pay-word'];
-    numIds.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=s;});
-    wordIds.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=w;});
-  }
-  updateAll();
-  // Skaičius visada tik auga — kas 8–20 sek. po 1
-  function tick(){
-    val+=1;
-    updateAll();
-    setTimeout(tick, 8000+Math.random()*12000);
-  }
-  setTimeout(tick, 8000+Math.random()*12000);
-}
 
 // Sample report modal — full realistic preview matching actual report design
 function showSampleReport(e){
@@ -3951,7 +3858,6 @@ function showSampleReport(e){
 
 
 window.addEventListener('DOMContentLoaded',()=>{
-  syncCounters();startLiveCounter();startStaticCountGrowth();
   // Stebėti pay-btn disabled atributą ir valdyti kvėpavimo animaciją
   const obs=new MutationObserver(()=>{
     const b=document.getElementById('pay-btn');
