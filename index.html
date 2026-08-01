@@ -4197,13 +4197,19 @@ function initPayment(){
     try{
       // KRITIŠKAI SVARBU: suma, rodoma OS mokėjimo lange, PRIVALO sutapti
       // su realiai nuskaitoma suma — todėl visada pasiimame TIKRĄ, dabartinę
-      // kainą iš /price-info prieš kuriant paymentRequest, o ne naudojame
-      // kietai įrašytą skaičių, kuris gali nesutapti su ACTIVE_PRICE_ID.
-      let activeCents=1599,activeCur='eur';
+      // kainą iš /price-info prieš kuriant paymentRequest. Jei šio patikimo
+      // šaltinio gauti nepavyksta, GERIAU NEBETĘSIAME su spėjama suma —
+      // saugiau paprašyti pasirinkti kitą mokėjimo būdą, nei rizikuoti
+      // rodyti klaidingą sumą OS mokėjimo lange.
+      let activeCents=null,activeCur='eur';
       try{
         const pi=await fetch('/price-info').then(r=>r.json());
         if(pi&&pi.active&&pi.active.amount){activeCents=pi.active.amount;activeCur=pi.active.currency||'eur';}
       }catch(e){}
+      if(!activeCents){
+        alert('Nepavyko patikrinti dabartinės kainos. Prašome pasirinkti kitą mokėjimo būdą arba bandyti dar kartą.');
+        return;
+      }
       const pr=stripeInstance.paymentRequest({
         country:'LT',currency:activeCur,
         total:{label:'Gyvenimo žemėlapis',amount:activeCents},
@@ -4243,11 +4249,19 @@ function initPayment(){
       // KRITIŠKAI SVARBU: ta pati priežastis kaip Google Pay aukščiau —
       // OS mokėjimo lange rodoma suma privalo sutapti su realiai
       // nuskaitoma suma.
-      let activeCents=1599,activeCur='eur';
+      // KRITIŠKAI SVARBU: ta pati priežastis kaip Google Pay aukščiau —
+      // OS mokėjimo lange rodoma suma privalo sutapti su realiai
+      // nuskaitoma suma. Jei patikimo šaltinio gauti nepavyksta, GERIAU
+      // NEBETĘSIAME su spėjama suma.
+      let activeCents=null,activeCur='eur';
       try{
         const pi=await fetch('/price-info').then(r=>r.json());
         if(pi&&pi.active&&pi.active.amount){activeCents=pi.active.amount;activeCur=pi.active.currency||'eur';}
       }catch(e){}
+      if(!activeCents){
+        alert('Nepavyko patikrinti dabartinės kainos. Prašome pasirinkti kitą mokėjimo būdą arba bandyti dar kartą.');
+        return;
+      }
       const pr=stripeInstance.paymentRequest({
         country:'LT',currency:activeCur,
         total:{label:'Gyvenimo žemėlapis',amount:activeCents},
