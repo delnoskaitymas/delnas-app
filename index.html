@@ -2418,7 +2418,7 @@ function animateLoading(){
     switchMicroPool(phase2Texts);
   }
 
-  function finishNow(){
+  function finishNow(forced){
     if(finished) return;
     finished=true;
     if(window._loadTickInterval){clearInterval(window._loadTickInterval);window._loadTickInterval=null;}
@@ -2427,18 +2427,32 @@ function animateLoading(){
     // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
     // anksčiau, nei vartotojas spėjo pamatyti visą 2 etapo animaciją)
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
-    if(ppct) ppct.textContent='100%';window._currentProgress=100;
-    if(pbar) pbar.style.width='100%';
-    if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
-    activateStep(7,true);
-    // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
-    const handFinal=document.getElementById('hand-container');
-    if(handFinal){
-      handFinal.style.transition='filter 0.6s ease, transform 0.5s ease';
-      handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
-      handFinal.style.transform='scale(1.05)';
+    if(forced&&!window.bgAnalysisDone){
+      // APSAUGINIS MAKSIMUMAS SUVEIKĖ, o REALAUS patvirtinimo dar nėra —
+      // NETEIGIAME, kad baigta. Rodome sąžiningą, neapibrėžtą tekstą ir
+      // leidžiame vartotojui tęsti; tikrasis rezultatas bus patikrintas
+      // (ir, jei reikia, palauktas) vėliau — arba mokėjimo ekrane
+      // (startPayProgressBar(), dabar taip pat susietas su realiu
+      // statusu), arba po apmokėjimo (fetchResultsAndNavigate()
+      // pakartotinio bandymo logika).
+      if(ppct) ppct.textContent='96%';window._currentProgress=96;
+      if(pbar) pbar.style.width='96%';
+      if(ptime) ptime.textContent='Tavo analizė netrukus bus baigta...';
+    } else {
+      if(ppct) ppct.textContent='100%';window._currentProgress=100;
+      if(pbar) pbar.style.width='100%';
+      if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
+      activateStep(7,true);
+      // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
+      // (TIK kai baigtis REALI, ne priverstinė)
+      const handFinal=document.getElementById('hand-container');
+      if(handFinal){
+        handFinal.style.transition='filter 0.6s ease, transform 0.5s ease';
+        handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
+        handFinal.style.transform='scale(1.05)';
+      }
     }
-    // Trumpa pauzė, tada fade kartu su delno glow
+    // Trumpa pauzė, tada fade
     setTimeout(()=>{
       loadScreen.style.transition='opacity 1.4s ease';
       loadScreen.style.opacity='0';
@@ -2492,7 +2506,7 @@ function animateLoading(){
     // patvirtinimas neatkeliauja, vis tiek leidžiame vartotojui tęsti
     // (likusi analizė bus užbaigta jau po apmokėjimo, kaip numatyta
     // fetchResultsAndNavigate() pakartotinio bandymo logikoje).
-    if(elapsed>=HARD_CAP) finishNow();
+    if(elapsed>=HARD_CAP) finishNow(true);
   },250);
   window._loadTickInterval=t;
 
@@ -4028,19 +4042,40 @@ function startPayProgressBar(){
   const txt=document.getElementById('pay-status-txt');
   if(!bar)return;
 
-  // Analizė šiuo metu jau TIKRAI baigta (į šį ekraną patenkama tik gavus
-  // realų bgAnalysisDone patvirtinimą — žr. animateLoading()/finishNow()),
-  // todėl čia nebėra jokio realaus proceso, kurį reikėtų vaizduoti kaip
-  // "dar vykstantį". Rodoma iš karto, be jokios dirbtinės (ir su savimi
-  // prieštaraujančios) 40s animacijos.
-  bar.style.animation='none';
-  bar.style.transition='none';
-  bar.style.width='100%';
-  bar.style.opacity='1';
-  bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
-  bar.getBoundingClientRect();
-  if(pct)pct.textContent='100%';
-  if(txt)txt.innerHTML='Paruošta <span style="color:var(--gold2)">✓</span>';
+  // Paprastai analizė šiuo metu jau TIKRAI baigta (į šį ekraną patenkama
+  // gavus realų bgAnalysisDone patvirtinimą — žr. animateLoading()/
+  // finishNow()). Bet retais atvejais (apsauginis maksimumas suveikė, arba
+  // rezultato gavimas nepavyko dėl tinklo klaidos) čia galima patekti ir
+  // NEGAVUS realaus patvirtinimo — tokiu atveju NETEIGIAME, kad paruošta,
+  // o realiai tikriname statusą ir atnaujiname tekstą, kai jis pasikeičia.
+  if(window._payStatusInterval){clearInterval(window._payStatusInterval);window._payStatusInterval=null;}
+  function showReady(){
+    bar.style.animation='none';
+    bar.style.transition='none';
+    bar.style.width='100%';
+    bar.style.opacity='1';
+    bar.style.boxShadow='0 0 10px rgba(240,201,106,.6)';
+    bar.getBoundingClientRect();
+    if(pct)pct.textContent='100%';
+    if(txt)txt.innerHTML='Paruošta <span style="color:var(--gold2)">✓</span>';
+  }
+  if(window.bgAnalysisDone){
+    showReady();
+  } else {
+    bar.style.animation='payGlow 1.4s ease-in-out infinite';
+    bar.style.transition='none';
+    bar.style.width='96%';
+    bar.style.opacity='1';
+    if(pct)pct.textContent='96%';
+    if(txt)txt.textContent='Tavo analizė netrukus bus baigta...';
+    window._payStatusInterval=setInterval(()=>{
+      if(window.bgAnalysisDone){
+        clearInterval(window._payStatusInterval);window._payStatusInterval=null;
+        bar.style.animation='none';
+        showReady();
+      }
+    },1000);
+  }
 }
 
 // Užbaigia progreso juostą iškart: gold, 100%, pilnai, statiškas tekstas su varnele gale
@@ -4049,6 +4084,7 @@ function finalizePayProgressBar(){
   clearTimeout(window._payBarDoneTimeout);
   clearInterval(window._payMsgInterval);
   clearInterval(window._payDoneInterval);
+  clearInterval(window._payStatusInterval);window._payStatusInterval=null;
   const bar=document.getElementById('pay-pbar');
   const pct=document.getElementById('pay-pct');
   const txt=document.getElementById('pay-status-txt');
