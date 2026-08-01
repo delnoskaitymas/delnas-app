@@ -730,8 +730,10 @@ let oracleAnimId=null;
 // s-result vaizdo elementus vietoj viso ekrano.
 window._loadTickInterval=null;
 window._loadStepTimeouts=[];
+window._loadStatusInterval=null;
 window._stopLoadingAnimation=function(){
   if(window._loadTickInterval){clearInterval(window._loadTickInterval);window._loadTickInterval=null;}
+  if(window._loadStatusInterval){clearInterval(window._loadStatusInterval);window._loadStatusInterval=null;}
   (window._loadStepTimeouts||[]).forEach(id=>clearTimeout(id));
   window._loadStepTimeouts=[];
   if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
@@ -2332,7 +2334,18 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
-  const totalSec=145;let elapsed=0;let pct=0;
+  // SVARBU: šis ekranas dabar susietas su REALIA foninės analizės būsena
+  // (window.bgAnalysisDone), o ne su fiksuotu laikmačiu. Progreso juosta
+  // laikui bėgant artėja prie ~96%, bet NIEKADA savaime "nebaigia" — tikrasis
+  // perėjimas įvyksta tik gavus realų patvirtinimą iš /analysis-status
+  // (žr. startBackgroundAnalysis()). MIN_DISPLAY apsaugo nuo blyksnio, jei
+  // analizė baigėsi labai greitai; HARD_CAP — apsauginis maksimumas, kad
+  // vartotojas niekada neliktų įstrigęs, jei fonui kažkas nutiktų (tokiu
+  // atveju likęs darbas užbaigiamas jau po apmokėjimo, kaip ir anksčiau
+  // veikiantis pakartotinio bandymo mechanizmas fetchResultsAndNavigate()).
+  const MIN_DISPLAY=8;
+  const HARD_CAP=170;
+  let elapsed=0;let pct=0;let finished=false;
   // Mikroteksto būsena — PRIVALOMA už intervalo ribų
   const microTexts=[
     ['Šifruojame unikalų tavo asmenybės kodą...','Lyginame tavo delno raštus su senaisiais archetipais...','Identifikuojame pamatinius tavo charakterio bruožus...','Formuojame detalų tavo psichologinį portretą...','Aiškinamės, kokia energija užkoduota tavo delne...','Atpažįstame tavo prigimtinį potencialą...','Gilinamės į tai, kas tave daro išskirtine asmenybe...'],
@@ -2401,73 +2414,90 @@ function animateLoading(){
     if(step>6){stopMicro();return;}
     if(step!==microCurrentStep||force) startMicroForStep(step);
   }
+
+  function finishNow(){
+    if(finished) return;
+    finished=true;
+    if(window._loadTickInterval){clearInterval(window._loadTickInterval);window._loadTickInterval=null;}
+    if(window._loadStatusInterval){clearInterval(window._loadStatusInterval);window._loadStatusInterval=null;}
+    stopMicro();
+    // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
+    // anksčiau, nei dekoratyvi 1-6 žingsnių animacija spėjo juos "pereiti")
+    [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
+    if(ppct) ppct.textContent='100%';window._currentProgress=100;
+    if(pbar) pbar.style.width='100%';
+    if(ptime) ptime.textContent='Sujungiame viską į tavo žemėlapį...';
+    activateStep(7,true);
+    // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
+    const handFinal=document.getElementById('hand-container');
+    if(handFinal){
+      handFinal.style.transition='filter 0.6s ease, transform 0.5s ease';
+      handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
+      handFinal.style.transform='scale(1.05)';
+    }
+    // Trumpa pauzė, tada fade kartu su delno glow
+    setTimeout(()=>{
+      loadScreen.style.transition='opacity 1.4s ease';
+      loadScreen.style.opacity='0';
+      setTimeout(()=>{
+        loadScreen.style.opacity='';
+        loadScreen.style.transition='';
+        if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
+        if(window._userName&&window._userEmail){
+          if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
+        } else {
+          go('s-order');initOrderScreen();requestWakeLock();
+        }
+      },1400);
+    },1200);
+  }
+
   const t=setInterval(()=>{
+    if(finished) return;
     elapsed+=0.25;
-    // Ease-out progresija: greita pradžia, sinchronizuotas lėtėjimas nuo 90%
-    // 0-50%: greitas (pirmos 60s iš 110s)
-    // 50-90%: vidutinis
-    // 90-99%: labai lėtas — sinchronizuotas su mikrotekstais (300ms intervalas)
-    if(elapsed<=20) pct=(elapsed/20)*30;                   // 0→30% per 20s (greita)
-    else if(elapsed<=40) pct=30+(elapsed-20)/20*20;        // 30→50% per 20s
-    else if(elapsed<=65) pct=50+(elapsed-40)/25*22;        // 50→72% per 25s (vidutinis)
-    else if(elapsed<=85) pct=72+(elapsed-65)/20*10;        // 72→82% per 20s
-    else if(elapsed<=100) pct=82+(elapsed-85)/15*8;        // 82→90% per 15s (lėtėja)
-    else if(elapsed<=115) pct=90+(elapsed-100)/15*4;       // 90→94% per 15s (lėtai)
-    else if(elapsed<=127) pct=94+(elapsed-115)/12*3;       // 94→97% per 12s (labai lėtai)
-    else if(elapsed<=135) pct=97+(elapsed-127)/8*1;        // 97→98% per 8s (ties finalu)
-    else pct=98;                                            // sustoja ties 98% — 99% su varnele
-    pct=Math.min(pct,98);  // max 98% čia — 99% rodomas tik su paskutine varnele
+    // Ease-out progresija iki ~96% — tik vizualinis "vis dar dirbama"
+    // indikatorius laukiant realaus patvirtinimo, NE pats užbaigimo signalas.
+    if(elapsed<=20) pct=(elapsed/20)*30;
+    else if(elapsed<=40) pct=30+(elapsed-20)/20*20;
+    else if(elapsed<=65) pct=50+(elapsed-40)/25*22;
+    else if(elapsed<=85) pct=72+(elapsed-65)/20*10;
+    else if(elapsed<=100) pct=82+(elapsed-85)/15*8;
+    else if(elapsed<=130) pct=90+(elapsed-100)/30*5;
+    else pct=95+Math.min((elapsed-130)/40,1)*1; // labai lėtai artėja prie 96%, bet nepasiekia savaime
+    pct=Math.min(pct,96);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
     const processMsg=['Atrandamos prigimtinės stiprybės...','Nubrėžiama gyvenimo kryptis...','Analizuojamas bendravimo stilius...','Atskleidžiamas finansinio klestėjimo potencialas...','Atrandamas unikalus sėkmės raktas...','Numatomi ateities pokyčiai ir galimybės...','Identifikuojamos pažangą stabdančios kliūtys...'];
-    // Tekstas keičiasi kartu su varnele (kas 15s, sinchronizuota su activateStep)
     const msgIdx=Math.min(Math.floor(elapsed/15),6);
     const stepIdx=window._currentStep>0?window._currentStep-1:msgIdx;
     if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
     updateMicroText(stepIdx);
-    if(elapsed>=totalSec){
-      clearInterval(t);stopMicro();
-      if(ppct) ppct.textContent='99%';window._currentProgress=99;
-      // Ties 99% pagrindinis sakinys prie progreso juostos pakeičiamas į
-      // "rezultatyvų" — signalizuoja, kad procesas baigiamas, o ne strigo.
-      // Šis pakeitimas galioja TIK šiuo momentu — visą kitą laiką (0-98%)
-      // sakinys lieka toks, koks buvo (processMsg masyvas nekeičiamas).
-      if(ptime) ptime.textContent='Sujungiame viską į tavo žemėlapį...';
-      activateStep(7,true);
-      // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
-      const handFinal=document.getElementById('hand-container');
-      if(handFinal){
-        handFinal.style.transition='filter 0.6s ease, transform 0.5s ease';
-        // sepia+saturate "sušildo" spalvą į gyvą auksinę, brightness padidina spindesį
-        handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
-        handFinal.style.transform='scale(1.05)';
-      }
-      // 2.5s pause, tada fade kartu su delno glow
-      setTimeout(()=>{
-        loadScreen.style.transition='opacity 1.4s ease';
-        loadScreen.style.opacity='0';
-        setTimeout(()=>{
-          loadScreen.style.opacity='';
-          loadScreen.style.transition='';
-          if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-          if(window._userName&&window._userEmail){
-            if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
-          } else {
-            go('s-order');initOrderScreen();requestWakeLock();
-          }
-        },1400);
-      },2500);
-    }
+    // Apsauginis maksimumas — jei dėl kokių nors priežasčių realus
+    // patvirtinimas neatkeliauja, vis tiek leidžiame vartotojui tęsti
+    // (likusi analizė bus užbaigta jau po apmokėjimo, kaip numatyta
+    // fetchResultsAndNavigate() pakartotinio bandymo logikoje).
+    if(elapsed>=HARD_CAP) finishNow();
   },250);
   window._loadTickInterval=t;
+
+  // Realaus statuso tikrinimas — kas 1s, po minimalaus rodymo laiko,
+  // klausiame, ar foninė analizė (startBackgroundAnalysis()) jau tikrai
+  // baigta. TAI yra vienintelis šaltinis, nuo kurio priklauso, kada šis
+  // ekranas realiai užsibaigia.
+  window._loadStatusInterval=setInterval(()=>{
+    if(finished) return;
+    if(elapsed<MIN_DISPLAY) return;
+    if(window.bgAnalysisDone) finishNow();
+  },1000);
+
   window._loadStepTimeouts=[
     setTimeout(()=>{activateStep(1,false);},500),
-    setTimeout(()=>{activateStep(1,true);setTimeout(()=>{activateStep(2,false);},50);},15000),
-    setTimeout(()=>{activateStep(2,true);setTimeout(()=>{activateStep(3,false);},50);},30000),
-    setTimeout(()=>{activateStep(3,true);setTimeout(()=>{activateStep(4,false);},50);},45000),
-    setTimeout(()=>{activateStep(4,true);setTimeout(()=>{activateStep(5,false);},50);},60000),
-    setTimeout(()=>{activateStep(5,true);setTimeout(()=>{activateStep(6,false);},50);},75000),
-    setTimeout(()=>{activateStep(6,true);setTimeout(()=>{activateStep(7,false);},50);},90000)
+    setTimeout(()=>{if(!finished){activateStep(1,true);setTimeout(()=>{if(!finished)activateStep(2,false);},50);}},15000),
+    setTimeout(()=>{if(!finished){activateStep(2,true);setTimeout(()=>{if(!finished)activateStep(3,false);},50);}},30000),
+    setTimeout(()=>{if(!finished){activateStep(3,true);setTimeout(()=>{if(!finished)activateStep(4,false);},50);}},45000),
+    setTimeout(()=>{if(!finished){activateStep(4,true);setTimeout(()=>{if(!finished)activateStep(5,false);},50);}},60000),
+    setTimeout(()=>{if(!finished){activateStep(5,true);setTimeout(()=>{if(!finished)activateStep(6,false);},50);}},75000),
+    setTimeout(()=>{if(!finished){activateStep(6,true);setTimeout(()=>{if(!finished)activateStep(7,false);},50);}},90000)
   ];
 }
 
