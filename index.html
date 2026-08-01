@@ -37,6 +37,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #consent-age{background:#f0ece1}
 #consent-age:checked{background:#d4a843}
 #consent-age:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);font-size:12px;line-height:1;color:#000000;font-weight:700}
+#consent-withdrawal{background:#f0ece1}
+#consent-withdrawal:checked{background:#d4a843}
+#consent-withdrawal:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);font-size:11px;line-height:1;color:#000000;font-weight:700}
 @keyframes bulletIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fuOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px)}}
@@ -290,9 +293,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="margin-bottom:12px">✋ Paprašysime nufotografuoti abu tavo delnus — nuotraukos naudojamos tik tavo asmeninei AI analizei, o duomenys tvarkomi konfidencialiai pagal <a href="/privatumo-politika" target="_blank" style="color:#d4a843;text-decoration:underline">Privatumo politiką</a>.</div>
       <div><span style="color:#d4a843">✦</span> Tai pramoginio pobūdžio patirtis, skirta pažvelgti į save — ne finansinė ar medicininė konsultacija.</div>
     </div>
-    <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:20px;cursor:pointer;text-align:left">
+    <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;cursor:pointer;text-align:left">
       <input type="checkbox" id="consent-age" onchange="checkConsentBtn()" style="margin-top:2px;width:17px;height:17px;flex-shrink:0;-webkit-appearance:none;appearance:none;cursor:pointer;border:none;border-radius:4px;position:relative">
       <span style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Patvirtinu, kad man yra 18 metų, ir sutinku su <a href="/naudojimosi-salygos" target="_blank" style="color:#d4a843;text-decoration:underline">Naudojimosi sąlygomis</a>.</span>
+    </label>
+    <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:20px;cursor:pointer;text-align:left">
+      <input type="checkbox" id="consent-withdrawal" onchange="checkConsentBtn()" style="margin-top:2px;width:17px;height:17px;flex-shrink:0;-webkit-appearance:none;appearance:none;cursor:pointer;border:none;border-radius:4px;position:relative">
+      <span style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo, ir suprantu, kad dėl to prarandu 14 dienų atsisakymo teisę (žr. Naudojimosi sąlygų 4 skyrių).</span>
     </label>
     <button id="consent-btn" onclick="acceptConsentAndStart()" disabled style="width:100%;background:linear-gradient(135deg,#f7df88,#e8b840,#b8841a);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.4);opacity:.4;transition:opacity .2s">Sutinku ir tęsiu ✦</button>
   </div>
@@ -931,7 +938,9 @@ window.addEventListener('DOMContentLoaded',async()=>{
     const cm=document.getElementById('consent-modal');
     if(cm){
       const cb=document.getElementById('consent-age');
+      const cw=document.getElementById('consent-withdrawal');
       if(cb) cb.checked=false;
+      if(cw) cw.checked=false;
       checkConsentBtn();
       cm.style.display='flex';
     }
@@ -1484,16 +1493,19 @@ function startApp(){
 
 function checkConsentBtn(){
   const cb=document.getElementById('consent-age');
+  const cw=document.getElementById('consent-withdrawal');
   const btn=document.getElementById('consent-btn');
-  if(!cb||!btn) return;
-  btn.disabled=!cb.checked;
-  btn.style.opacity=cb.checked?'1':'.4';
-  btn.style.cursor=cb.checked?'pointer':'not-allowed';
+  if(!cb||!cw||!btn) return;
+  const ok=cb.checked&&cw.checked;
+  btn.disabled=!ok;
+  btn.style.opacity=ok?'1':'.4';
+  btn.style.cursor=ok?'pointer':'not-allowed';
 }
 
 function acceptConsentAndStart(){
   const cb=document.getElementById('consent-age');
-  if(cb && !cb.checked) return; // apsauga — be amžiaus patvirtinimo netęsiame
+  const cw=document.getElementById('consent-withdrawal');
+  if((cb && !cb.checked) || (cw && !cw.checked)) return; // apsauga — be abiejų patvirtinimų netęsiame
   try{ sessionStorage.setItem('delnasConsentGiven','1'); }catch(e){}
   const m=document.getElementById('consent-modal');
   if(m) m.style.display='none';
