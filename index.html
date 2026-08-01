@@ -4195,9 +4195,18 @@ function initPayment(){
     if(cWrap)cWrap.style.display='none';
     // Google Pay per PaymentRequest API
     try{
+      // KRITIŠKAI SVARBU: suma, rodoma OS mokėjimo lange, PRIVALO sutapti
+      // su realiai nuskaitoma suma — todėl visada pasiimame TIKRĄ, dabartinę
+      // kainą iš /price-info prieš kuriant paymentRequest, o ne naudojame
+      // kietai įrašytą skaičių, kuris gali nesutapti su ACTIVE_PRICE_ID.
+      let activeCents=1599,activeCur='eur';
+      try{
+        const pi=await fetch('/price-info').then(r=>r.json());
+        if(pi&&pi.active&&pi.active.amount){activeCents=pi.active.amount;activeCur=pi.active.currency||'eur';}
+      }catch(e){}
       const pr=stripeInstance.paymentRequest({
-        country:'LT',currency:'eur',
-        total:{label:'Gyvenimo žemėlapis',amount:999},
+        country:'LT',currency:activeCur,
+        total:{label:'Gyvenimo žemėlapis',amount:activeCents},
         requestPayerName:false,requestPayerEmail:false,
         disableWallets:['link','browserCard']
       });
@@ -4212,7 +4221,7 @@ function initPayment(){
       window._googlePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',amount:999})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||''})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
@@ -4231,9 +4240,17 @@ function initPayment(){
     const btn=document.getElementById('pay-btn');
     // Apple Pay per PaymentRequest (tik Safari iOS)
     try{
+      // KRITIŠKAI SVARBU: ta pati priežastis kaip Google Pay aukščiau —
+      // OS mokėjimo lange rodoma suma privalo sutapti su realiai
+      // nuskaitoma suma.
+      let activeCents=1599,activeCur='eur';
+      try{
+        const pi=await fetch('/price-info').then(r=>r.json());
+        if(pi&&pi.active&&pi.active.amount){activeCents=pi.active.amount;activeCur=pi.active.currency||'eur';}
+      }catch(e){}
       const pr=stripeInstance.paymentRequest({
-        country:'LT',currency:'eur',
-        total:{label:'Gyvenimo žemėlapis',amount:999},
+        country:'LT',currency:activeCur,
+        total:{label:'Gyvenimo žemėlapis',amount:activeCents},
         requestPayerName:false,requestPayerEmail:false,
         disableWallets:['link','browserCard']
       });
@@ -4243,7 +4260,7 @@ function initPayment(){
       window._applePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',amount:999})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||''})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
