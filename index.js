@@ -113,18 +113,45 @@ function saveReminders(reminders) {
   try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
 }
 
+// --- Priminimų "nebenoriu gauti" (unsubscribe) saugykla ---
+// Reikalinga pagal ES ePrivacy direktyvą (perkelta į LT Elektroninių ryšių
+// įstatymą) — kiekvienas tiesioginės rinkodaros el. laiškas privalo turėti
+// paprastą, nemokamą būdą atsisakyti tolimesnių tokių laiškų.
+const REMINDER_BLACKLIST_FILE = path.join(__dirname, 'reminder-blacklist.json');
+
+function loadReminderBlacklist() {
+  try {
+    if (fs.existsSync(REMINDER_BLACKLIST_FILE)) return JSON.parse(fs.readFileSync(REMINDER_BLACKLIST_FILE, 'utf8'));
+  } catch(e) {}
+  return [];
+}
+
+function saveReminderBlacklist(list) {
+  try { fs.writeFileSync(REMINDER_BLACKLIST_FILE, JSON.stringify(list, null, 2)); } catch(e) {}
+}
+
+function isReminderBlacklisted(email) {
+  const list = loadReminderBlacklist();
+  return list.includes((email || '').toLowerCase());
+}
+
+
 setInterval(async () => {
   const reminders = loadReminders();
   const now = Date.now();
   const remaining = [];
   for (const r of reminders) {
     if (now >= r.sendAt) {
+      if (isReminderBlacklisted(r.email)) {
+        console.log(`Priminimas praleistas (unsubscribe): ${r.email}`);
+        continue; // pašalinamas iš sąrašo, laiškas nesiunčiamas
+      }
       try {
         await mailer.sendMail({
           from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
           to: r.email,
           subject: `${r.name ? escapeHtml(r.name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Atnaujinti žemėlapį →</a></div></div>`
+          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Atnaujinti žemėlapį →</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div></div>`
         });
         console.log(`Priminimas išsiųstas: ${r.email}`);
       } catch(e) {
@@ -1199,6 +1226,34 @@ app.get('/stripe-key', (req, res) => {
   res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
+// Priminimo laiškų atsisakymas (unsubscribe) — pasiekiamas iš laiško nuorodos.
+// Pašalina laukiantį (dar neišsiųstą) priminimą IR įtraukia el. paštą į
+// "nebenoriu gauti" sąrašą, kad ateityje pakartotinis "Primink man"
+// paspaudimas šio adreso vėl automatiškai neužregistruotų.
+app.get('/unsubscribe-reminder', (req, res) => {
+  const email = (req.query.email || '').toString().trim().toLowerCase();
+  const page = (title, text) => `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title} — DELNAS</title><style>body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}.box{max-width:400px}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p><p style="margin-top:24px"><a href="/">← Grįžti į DELNAS</a></p></div></body></html>`;
+
+  if (!isValidEmail(email)) {
+    return res.status(400).send(page('Klaida', 'Netinkamas el. pašto adresas nuorodoje.'));
+  }
+
+  try {
+    const blacklist = loadReminderBlacklist();
+    if (!blacklist.includes(email)) {
+      blacklist.push(email);
+      saveReminderBlacklist(blacklist);
+    }
+    const reminders = loadReminders();
+    const filtered = reminders.filter(r => r.email.toLowerCase() !== email);
+    if (filtered.length !== reminders.length) saveReminders(filtered);
+    res.send(page('Atsisakyta', 'Daugiau šių priminimo laiškų negausite. Jei persigalvosite, tiesiog vėl paspauskite „Primink man" rezultatų puslapyje.'));
+  } catch (e) {
+    console.error('/unsubscribe-reminder klaida:', e.message);
+    res.status(500).send(page('Klaida', 'Nepavyko apdoroti prašymo. Parašykite mums: info@delnaskaitymas.lt'));
+  }
+});
+
 // Realios kainos tiesiogiai iš Stripe katalogo — kad UI rodomas perbrauktas
 // "įprastas" skaičius ir aktyvi akcijos kaina VISADA sutaptų su tuo, kas
 // realiai užregistruota Stripe (Product catalog), o ne liktų kietai įrašytas
@@ -1237,6 +1292,13 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
 
+    // Jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių priminimų"
+    // nuorodą laiške — negrąžiname klaidos, tiesiog neregistruojame naujo
+    // priminimo (jo pasirinkimas lieka galioti).
+    if (isReminderBlacklisted(email)) {
+      return res.json({ ok: true, message: 'Sutikimas priminimams anksčiau atšauktas' });
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // LAIKINAS TESTAVIMO REŽIMAS (ŠIUO METU AKTYVUS)
     // Paspaudus "Primink man" mygtuką, priminimo laiškas išsiunčiamas
@@ -1251,7 +1313,7 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
         from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
         to: email,
         subject: `${name ? escapeHtml(name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-        html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Atnaujinti žemėlapį →</a></div></div>`
+        html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Atnaujinti žemėlapį →</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div></div>`
       });
       console.log(`[TESTAVIMO REŽIMAS] Priminimo laiškas IŠ KARTO išsiųstas: ${email}`);
     } catch(testSendErr) {
