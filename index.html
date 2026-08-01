@@ -2255,11 +2255,11 @@ function capturePhoto(){
 }
 
 
-window.bgSessionId=null;window.bgAnalysisDone=false;window.bgAnalysisError=null;
+window.bgSessionId=null;window.bgAnalysisDone=false;window.bgAnalysisError=null;window.bgAnalysisStep=1;
 
 function startBackgroundAnalysis(){
   window.bgSessionId=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now();
-  window.bgAnalysisDone=false;window.bgAnalysisError=null;
+  window.bgAnalysisDone=false;window.bgAnalysisError=null;window.bgAnalysisStep=1;
   // Išsaugoti sessionStorage kad išliktų po puslapio atnaujinimo
   sessionStorage.setItem('bgSessionId',window.bgSessionId);
   sessionStorage.setItem('photoLeft',photoLeft||'');
@@ -2271,10 +2271,11 @@ function startBackgroundAnalysis(){
   .then(r=>r.json()).then(d=>{if(d.started) console.log('Foninė analizė paleista:',window.bgSessionId);else console.warn('Analizė nepaleista:',d.error);}).catch(e=>console.warn('start-analysis klaida:',e));
   const checkInterval=setInterval(()=>{
     fetch(`/analysis-status?sessionId=${window.bgSessionId}`).then(r=>r.json()).then(d=>{
-      if(d.status==='done'){window.bgAnalysisDone=true;clearInterval(checkInterval);}
+      if(d.status==='done'){window.bgAnalysisDone=true;window.bgAnalysisStep=3;clearInterval(checkInterval);}
       else if(d.status==='error'){window.bgAnalysisDone=true;window.bgAnalysisError='Įvyko klaida. Prašome bandyti dar kartą.';clearInterval(checkInterval);}
+      else if(d.status==='step2'){window.bgAnalysisStep=2;}
     }).catch(()=>{});
-  },3000);
+  },2000);
 }
 
 
@@ -2334,85 +2335,58 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
-  // SVARBU: šis ekranas dabar susietas su REALIA foninės analizės būsena
-  // (window.bgAnalysisDone), o ne su fiksuotu laikmačiu. Progreso juosta
-  // laikui bėgant artėja prie ~96%, bet NIEKADA savaime "nebaigia" — tikrasis
-  // perėjimas įvyksta tik gavus realų patvirtinimą iš /analysis-status
-  // (žr. startBackgroundAnalysis()). MIN_DISPLAY apsaugo nuo blyksnio, jei
-  // analizė baigėsi labai greitai; HARD_CAP — apsauginis maksimumas, kad
-  // vartotojas niekada neliktų įstrigęs, jei fonui kažkas nutiktų (tokiu
-  // atveju likęs darbas užbaigiamas jau po apmokėjimo, kaip ir anksčiau
-  // veikiantis pakartotinio bandymo mechanizmas fetchResultsAndNavigate()).
-  const MIN_DISPLAY=8;
+  // ŠIS EKRANAS RODO TIK 2 REALIUS SERVERIO ETAPUS (žr. runPalmAnalysis()
+  // index.js faile): (1) delno bruožų atpažinimas, (2) pilnos analizės
+  // generavimas. Žemiau išvardinti 7 punktai NĖRA atskirai, individualiai
+  // sekami serverio įvykiai — jie visi generuojami VIENU bendru užklausimu
+  // per (2) etapą, todėl visi kartu pažymimi kaip "vykdomi" TIKSLIAI tuo
+  // momentu, kai serveris realiai patvirtina, kad prasidėjo 2 etapas — o
+  // ne dirbtinai, vienas po kito, pagal laikrodį (kaip buvo anksčiau).
+  const MIN_DISPLAY=6;
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
-  // Mikroteksto būsena — PRIVALOMA už intervalo ribų
-  const microTexts=[
-    ['Šifruojame unikalų tavo asmenybės kodą...','Lyginame tavo delno raštus su senaisiais archetipais...','Identifikuojame pamatinius tavo charakterio bruožus...','Formuojame detalų tavo psichologinį portretą...','Aiškinamės, kokia energija užkoduota tavo delne...','Atpažįstame tavo prigimtinį potencialą...','Gilinamės į tai, kas tave daro išskirtine asmenybe...'],
-    ['Analizuojame tavo gyvenimo vektorius...','Gryniname tavo vidinės motyvacijos šaltinius...','Atrandame paslėptus tavo tikslų orientyrus...','Vertiname tavo asmeninio augimo kryptį...','Sekame tavo gyvenimo kelio vingius...','Sudarome tavo ateities gaires...','Dėliojame tavo gyvenimo žemėlapio taškus...'],
-    ['Nagrinėjame tavo emocinio ryšio modelius...','Vertiname bendravimo stiliaus dinamiką...','Atrandame, kaip tavo energija veikia aplinkinius...','Analizuojame socialinio bendravimo dėsningumus...','Ieškome harmonijos tavo santykių pasaulyje...','Vertiname tavo gebėjimą kurti gilius ryšius...','Aiškinamės, kaip tavo asmenybė atsiskleidžia tarp žmonių...'],
-    ['Vertiname tavo finansinės sėkmės galimybes...','Skaičiuojame tavo materialinės gerovės potencialą...','Aptinkame tavo pinigų pritraukimo „magnetus"...','Analizuojame tavo unikalų ryšį su materialiu pasauliu...','Ieškome tavo klestėjimo ir augimo ženklų...','Vertiname karjeros ir gerovės perspektyvas...','Tyrinėjame tavo paslėptus finansinius talentus...'],
-    ['Ieškome tavo sėkmės formulės...','Atrandame stipriausią tavo gyvenimo pranašumą...','Sudarome tavo asmeninę pergalės strategiją...','Išskiriame tai, kas tave daro stipria asmenybe...','Aptinkame tavo „slaptąjį ginklą" gyvenimo iššūkiams...','Vertiname tai, kas tau visada atveria duris į sėkmę...','Gryniname tavo unikalų kelią į pripažinimą...'],
-    ['Analizuojame tavo ateities galimybių langus...','Vertiname laukiančius asmeninės transformacijos etapus...','Skenuojame artėjančias gyvenimo permainų bangas...','Žiūrime, kas tavo kelyje netrukus pasikeis į gerą...','Ieškome svarbių etapų, kurie tavęs laukia...','Aptinkame ženklus, rodančius naujų galimybių pradžią...'],
-    ['Identifikuojame pasąmoninius tavo stabdžius...','Atrandame kasdienybės trikdžius, stabdančius tavo sėkmę...','Išryškiname tai, kas neleidžia tau visiškai atsiskleisti...','Aiškinamės, kaip atblokuoti tavo tikrąjį potencialą...']
-  ];
-  let microTimer=null;
-  let microCurrentStep=-1;
-  let microCurrentIdx=0;
-  let microGen=0; // generation counter — užkerta kelią race condition
+  let phaseShown=1;let phase2StartElapsed=null;
+
+  const phase1Texts=['Atpažįstame delno linijas ir formą...','Nustatome pirštų ir delno proporcijas...','Vertiname vizualinius delno požymius...','Fiksuojame charakteringus delno bruožus...'];
+  const phase2Texts=['Šifruojame unikalų tavo asmenybės kodą...','Lyginame tavo delno raštus su senaisiais archetipais...','Formuojame detalų tavo psichologinį portretą...','Analizuojame tavo gyvenimo vektorius...','Atrandame paslėptus tavo tikslų orientyrus...','Nagrinėjame tavo emocinio ryšio modelius...','Vertiname tavo finansinės sėkmės galimybes...','Ieškome tavo sėkmės formulės...','Analizuojame tavo ateities galimybių langus...','Identifikuojame pasąmoninius tavo stabdžius...','Dėliojame tavo gyvenimo žemėlapio taškus...','Gilinamės į tai, kas tave daro išskirtine asmenybe...'];
+
+  let microTimer=null;let microGen=0;let microPool=phase1Texts;
 
   function getMicroInterval(){
     const p=window._currentProgress||0;
-    if(p>=99) return null;
-    if(p>=97) return 3500;
-    if(p>=94) return 2500;
-    if(p>=90) return 1500;
-    if(p>=70) return 800;
-    return 500;
+    if(p>=94) return 3000;
+    if(p>=80) return 1800;
+    return 1000;
   }
-
-  function microShowCurrent(gen,step,idx){
-    // gen — generation ID, jei pasikeitė, šis ciklas ignoruojamas
+  function microShowCurrent(gen,idx){
     if(gen!==microGen) return;
     const mt=document.getElementById('micro-text');
-    if(!mt||step<0||step>6) return;
-    const msgs=microTexts[step];
-    if(!msgs||!msgs.length) return;
-    const txt=msgs[idx%msgs.length];
-    mt.style.transition='opacity 0.15s ease';
-    mt.style.opacity='0';
+    if(!mt) return;
+    const txt=microPool[idx%microPool.length];
+    mt.style.transition='opacity 0.15s ease';mt.style.opacity='0';
     setTimeout(()=>{
-      if(gen!==microGen) return; // pasitikriname po fade
-      mt.textContent=txt;
-      mt.style.opacity='1';
-      const interval=getMicroInterval();
-      if(interval===null) return;
-      microTimer=setTimeout(()=>{
-        microShowCurrent(gen,step,idx+1);
-      },interval);
+      if(gen!==microGen) return;
+      mt.textContent=txt;mt.style.opacity='1';
+      microTimer=setTimeout(()=>{microShowCurrent(gen,idx+1);},getMicroInterval());
     },150);
   }
-
-  function startMicroForStep(step){
-    microGen++; // naujas generation — sustabdo visus senus ciklus
-    if(microTimer){clearTimeout(microTimer);microTimer=null;}
-    microCurrentStep=step;
-    microCurrentIdx=0;
-    microShowCurrent(microGen,step,0);
+  function switchMicroPool(pool){
+    microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
+    microPool=pool;microShowCurrent(microGen,0);
   }
-
   function stopMicro(){
-    microGen++;
-    if(microTimer){clearTimeout(microTimer);microTimer=null;}
-    microCurrentStep=-1;
+    microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
     const mt=document.getElementById('micro-text');
     if(mt){mt.style.transition='opacity 0.3s ease';mt.style.opacity='0';}
   }
   window._stopMicroText=stopMicro;
+  switchMicroPool(phase1Texts);
 
-  function updateMicroText(step,force){
-    if(step>6){stopMicro();return;}
-    if(step!==microCurrentStep||force) startMicroForStep(step);
+  // REALUS perėjimas į 2 etapą — visi 7 punktai pažymimi kaip "vykdomi"
+  // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui).
+  function activatePhase2Visuals(){
+    [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
+    switchMicroPool(phase2Texts);
   }
 
   function finishNow(){
@@ -2422,7 +2396,7 @@ function animateLoading(){
     if(window._loadStatusInterval){clearInterval(window._loadStatusInterval);window._loadStatusInterval=null;}
     stopMicro();
     // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
-    // anksčiau, nei dekoratyvi 1-6 žingsnių animacija spėjo juos "pereiti")
+    // anksčiau, nei vartotojas spėjo pamatyti visą 2 etapo animaciją)
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
     if(ppct) ppct.textContent='100%';window._currentProgress=100;
     if(pbar) pbar.style.width='100%';
@@ -2455,23 +2429,33 @@ function animateLoading(){
   const t=setInterval(()=>{
     if(finished) return;
     elapsed+=0.25;
-    // Ease-out progresija iki ~96% — tik vizualinis "vis dar dirbama"
-    // indikatorius laukiant realaus patvirtinimo, NE pats užbaigimo signalas.
-    if(elapsed<=20) pct=(elapsed/20)*30;
-    else if(elapsed<=40) pct=30+(elapsed-20)/20*20;
-    else if(elapsed<=65) pct=50+(elapsed-40)/25*22;
-    else if(elapsed<=85) pct=72+(elapsed-65)/20*10;
-    else if(elapsed<=100) pct=82+(elapsed-85)/15*8;
-    else if(elapsed<=130) pct=90+(elapsed-100)/30*5;
-    else pct=95+Math.min((elapsed-130)/40,1)*1; // labai lėtai artėja prie 96%, bet nepasiekia savaime
+    // Tikriname REALŲ etapą — jei serveris jau patvirtino 2 etapo pradžią,
+    // bet mūsų ekranas to dar nerodė, perjungiame VIZUALIAI TIK DABAR.
+    const realStep=window.bgAnalysisStep||1;
+    if(realStep>=2&&phaseShown<2){
+      phaseShown=2;phase2StartElapsed=elapsed;
+      activatePhase2Visuals();
+    }
+    if(phaseShown<2){
+      // 1 etapas: delno bruožų atpažinimas — paprastai greitas
+      pct=Math.min((elapsed/15)*20,20);
+      if(ptime) ptime.textContent='Atpažįstame tavo delno bruožus ir charakterio kodą...';
+    } else {
+      // 2 etapas: pilnos analizės generavimas — ilgesnis, todėl lėtesnė,
+      // laipsniškai lėtėjanti kreivė iki ~96% (vizualinis įvertis, laukiant
+      // realaus patvirtinimo — NE pats užbaigimo signalas)
+      const e2=elapsed-(phase2StartElapsed||0);
+      if(e2<=20) pct=20+(e2/20)*20;
+      else if(e2<=45) pct=40+(e2-20)/25*20;
+      else if(e2<=70) pct=60+(e2-45)/25*15;
+      else if(e2<=100) pct=75+(e2-70)/30*13;
+      else if(e2<=130) pct=88+(e2-100)/30*6;
+      else pct=94+Math.min((e2-130)/40,1)*2;
+      if(ptime) ptime.textContent='Generuojame tavo asmeninę analizę...';
+    }
     pct=Math.min(pct,96);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
-    const processMsg=['Atrandamos prigimtinės stiprybės...','Nubrėžiama gyvenimo kryptis...','Analizuojamas bendravimo stilius...','Atskleidžiamas finansinio klestėjimo potencialas...','Atrandamas unikalus sėkmės raktas...','Numatomi ateities pokyčiai ir galimybės...','Identifikuojamos pažangą stabdančios kliūtys...'];
-    const msgIdx=Math.min(Math.floor(elapsed/15),6);
-    const stepIdx=window._currentStep>0?window._currentStep-1:msgIdx;
-    if(ptime) ptime.textContent=processMsg[Math.min(stepIdx,6)];
-    updateMicroText(stepIdx);
     // Apsauginis maksimumas — jei dėl kokių nors priežasčių realus
     // patvirtinimas neatkeliauja, vis tiek leidžiame vartotojui tęsti
     // (likusi analizė bus užbaigta jau po apmokėjimo, kaip numatyta
@@ -2489,17 +2473,8 @@ function animateLoading(){
     if(elapsed<MIN_DISPLAY) return;
     if(window.bgAnalysisDone) finishNow();
   },1000);
-
-  window._loadStepTimeouts=[
-    setTimeout(()=>{activateStep(1,false);},500),
-    setTimeout(()=>{if(!finished){activateStep(1,true);setTimeout(()=>{if(!finished)activateStep(2,false);},50);}},15000),
-    setTimeout(()=>{if(!finished){activateStep(2,true);setTimeout(()=>{if(!finished)activateStep(3,false);},50);}},30000),
-    setTimeout(()=>{if(!finished){activateStep(3,true);setTimeout(()=>{if(!finished)activateStep(4,false);},50);}},45000),
-    setTimeout(()=>{if(!finished){activateStep(4,true);setTimeout(()=>{if(!finished)activateStep(5,false);},50);}},60000),
-    setTimeout(()=>{if(!finished){activateStep(5,true);setTimeout(()=>{if(!finished)activateStep(6,false);},50);}},75000),
-    setTimeout(()=>{if(!finished){activateStep(6,true);setTimeout(()=>{if(!finished)activateStep(7,false);},50);}},90000)
-  ];
 }
+
 
 function activateStep(n,done){
   window._currentStep=n;
