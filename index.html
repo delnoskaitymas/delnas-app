@@ -1438,6 +1438,8 @@ async function onPaymentSuccess(name,email){
       body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
     }).then(r=>r.json()).then(result=>{
       if(result.error&&result.error.includes('NEDELNAS')){
+        alert('Nepavyko atpažinti delno vienoje iš nuotraukų. Prašome nufotografuoti dar kartą — apmokėjimas jau įvykdytas, papildomai mokėti NEREIKĖS.');
+        window._postPaymentRetry=true;
         camHand='left';photoLeft=null;photoRight=null;go('s-camera');return;
       }
       resultReady=result;
@@ -1577,7 +1579,25 @@ function _startAppReal(){
       setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
     };
   })
-  .catch(()=>{/* kameros klaida ignoruojama */});
+  .catch((err)=>{
+    console.error('[camera] getUserMedia klaida:',err&&err.name,err&&err.message);
+    const errEl=document.getElementById('cam-error');
+    if(!errEl) return;
+    let title='Nepavyko pasiekti kameros';
+    let msg='Patikrinkite, ar naršyklė turi leidimą naudoti kamerą, ir bandykite dar kartą.';
+    if(err&&(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')){
+      title='Kameros leidimas neduotas';
+      msg='Šiai programėlei reikia kameros prieigos, kad galėtumėte nufotografuoti delnus. Įjunkite kameros leidimą naršyklės nustatymuose (paprastai — paspaudus spynos/informacijos ikoną prie adreso lauko) ir bandykite dar kartą.';
+    } else if(err&&err.name==='NotFoundError'){
+      title='Kamera nerasta';
+      msg='Šiame įrenginyje nepavyko rasti kameros. Pabandykite su kitu įrenginiu, turinčiu kamerą.';
+    } else if(err&&err.name==='NotReadableError'){
+      title='Kamera užimta';
+      msg='Panašu, kad kamerą šiuo metu naudoja kita programėlė. Uždarykite ją ir bandykite dar kartą.';
+    }
+    errEl.style.cssText='display:flex!important;position:absolute;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:rgba(5,5,5,.92);backdrop-filter:blur(8px)';
+    errEl.innerHTML='<div style="font-size:26px;color:#d4a843">⚠</div><div style="font-size:15px;font-weight:700;color:#f0c96a;font-family:\'Playfair Display\',serif">'+title+'</div><div style="font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.6;max-width:280px">'+msg+'</div><button onclick="document.getElementById(\'cam-error\').style.display=\'none\';_startAppReal()" style="margin-top:6px;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:11px 22px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;color:#000;cursor:pointer">Bandyti dar kartą</button>';
+  });
 }
 
 function openCameraScreen(){startApp();}
@@ -2230,9 +2250,19 @@ function capturePhoto(){
             if(frozen){frozen.style.display='none';frozen.style.backgroundImage='';frozen.style.opacity='';}
             stopCamera();
             setTimeout(()=>{
-              startBackgroundAnalysis();
-              go('s-order');
-              initOrderScreen();
+              if(window._postPaymentRetry){
+                // Pakartotinis bandymas PO SĖKMINGO apmokėjimo (ankstesnė
+                // nuotrauka buvo atmesta kaip netinkama) — apmokėjimo
+                // EKRANO NEBERODOME, nes vartotojas jau apmokėjo. Naudojame
+                // TĄ PATĮ palmToken, tik naują sessionId naujai analizei.
+                startBackgroundAnalysis();
+                go('s-loading');
+                setTimeout(()=>animateLoading(),100);
+              } else {
+                startBackgroundAnalysis();
+                go('s-order');
+                initOrderScreen();
+              }
             },80);
           },300);
         },1500);
@@ -2342,7 +2372,6 @@ function animateLoading(){
   // per (2) etapą, todėl visi kartu pažymimi kaip "vykdomi" TIKSLIAI tuo
   // momentu, kai serveris realiai patvirtina, kad prasidėjo 2 etapas — o
   // ne dirbtinai, vienas po kito, pagal laikrodį (kaip buvo anksčiau).
-  const MIN_DISPLAY=6;
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
   let phaseShown=1;let phase2StartElapsed=null;
@@ -2417,7 +2446,10 @@ function animateLoading(){
         loadScreen.style.opacity='';
         loadScreen.style.transition='';
         if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
-        if(window._userName&&window._userEmail){
+        if(window._postPaymentRetry){
+          window._postPaymentRetry=false;
+          finalizeRetryAfterPayment();
+        } else if(window._userName&&window._userEmail){
           if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
         } else {
           go('s-order');initOrderScreen();requestWakeLock();
@@ -2464,17 +2496,52 @@ function animateLoading(){
   },250);
   window._loadTickInterval=t;
 
-  // Realaus statuso tikrinimas — kas 1s, po minimalaus rodymo laiko,
-  // klausiame, ar foninė analizė (startBackgroundAnalysis()) jau tikrai
-  // baigta. TAI yra vienintelis šaltinis, nuo kurio priklauso, kada šis
-  // ekranas realiai užsibaigia.
+  // Realaus statuso tikrinimas — kas 1s klausiame, ar foninė analizė
+  // (startBackgroundAnalysis()) jau tikrai baigta. TAI yra vienintelis
+  // šaltinis, nuo kurio priklauso, kada šis ekranas realiai užsibaigia.
   window._loadStatusInterval=setInterval(()=>{
     if(finished) return;
-    if(elapsed<MIN_DISPLAY) return;
     if(window.bgAnalysisDone) finishNow();
   },1000);
+
+  // Patikriname IŠ KARTO, be jokio delsimo — jei analizė jau buvo baigta
+  // dar PRIEŠ pasirodant šiam ekranui (pvz. vartotojas ilgiau pildė vardo/
+  // el.pašto formą, ir foninė analizė per tą laiką jau spėjo baigtis),
+  // ekranas neturi dirbtinai "vaidinti", kad dar dirbama — iš karto rodome
+  // realią, jau pasiektą būseną.
+  if(window.bgAnalysisDone) finishNow();
 }
 
+
+// Naudojama TIK po sėkmingo apmokėjimo, kai ankstesnė nuotrauka buvo
+// atmesta (NEDELNAS) ir vartotojas nufotografavo iš naujo. Naudoja JAU
+// apmokėtą window.palmToken su nauju sessionId — apmokėjimo ekranas
+// NEBERODOMAS, nes vartotojas jau sumokėjo už šią analizę.
+async function finalizeRetryAfterPayment(){
+  try{
+    const photoData=[];
+    if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
+    if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
+    const r=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({photos:photoData,name:window.userName||window._userName||'',email:window._userEmail||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
+    const result=await r.json();
+    if(result&&result.error&&result.error.includes('NEDELNAS')){
+      alert('Deja, vėl nepavyko atpažinti delno. Prašome pabandyti nufotografuoti dar kartą — apmokėjimas jau įvykdytas, papildomai mokėti NEREIKĖS.');
+      window._postPaymentRetry=true;
+      camHand='left';photoLeft=null;photoRight=null;go('s-camera');
+      return;
+    }
+    if(!result||result.error){
+      alert('Įvyko klaida gaunant rezultatą. Jūsų apmokėjimas įvykdytas — parašykite mums info@delnaskaitymas.lt ir padėsime iš karto.');
+      return;
+    }
+    displayResult(result);
+    go('s-result');
+  }catch(e){
+    console.error('[finalizeRetryAfterPayment] klaida:',e);
+    alert('Įvyko klaida gaunant rezultatą. Jūsų apmokėjimas įvykdytas — parašykite mums info@delnaskaitymas.lt ir padėsime iš karto.');
+  }
+}
 
 function activateStep(n,done){
   window._currentStep=n;
