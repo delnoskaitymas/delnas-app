@@ -484,19 +484,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="background:linear-gradient(135deg,rgba(212,168,67,.09),rgba(212,168,67,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:18px;padding:9px 18px 15px;position:relative;overflow:hidden;box-shadow:0 0 28px rgba(212,168,67,.2),0 0 60px rgba(212,168,67,.06),inset 0 1px 0 rgba(255,255,255,.06)">
         <!-- Viršutinė subtili linija -->
         <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent)"></div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:14px;min-height:34px">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:34px">
           <!-- Kaina -->
-          <div style="display:flex;align-items:baseline;gap:7px">
-            <span style="font-size:11px;color:rgba(255,255,255,.55);text-decoration:line-through;letter-spacing:.02em">15,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
-            <span style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">9,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
-          </div>
-          <!-- Skiriamoji linija -->
-          <div style="width:1px;height:34px;background:linear-gradient(180deg,transparent,rgba(212,168,67,.3),transparent);flex-shrink:0"></div>
-          <!-- Laikmatis -->
-          <div id="countdown-wrap" style="display:flex;flex-direction:column;align-items:center;gap:3px">
-            <span style="font-size:8.5px;color:rgba(212,168,67,.5);font-weight:400;letter-spacing:.04em"><span style="color:var(--gold2);margin-right:2px">✦</span>Speciali kaina tau galioja dar:</span>
-            <span id="countdown-timer" style="font-size:16px;font-weight:700;color:var(--gold2);letter-spacing:.08em;font-variant-numeric:tabular-nums;line-height:1.1;text-shadow:0 0 12px rgba(212,168,67,.4)">05:00</span>
-          </div>
+          <span id="price-promo" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">15,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
         </div>
       </div>
     </div>
@@ -946,6 +936,11 @@ window.addEventListener('DOMContentLoaded',async()=>{
   }
 
   fetch('/stripe-key').then(r=>r.json()).then(d=>{window._stripeKey=d.key;}).catch(()=>{});
+  fetch('/price-info').then(r=>r.json()).then(d=>{
+    const fmt=c=>(c.amount/100).toFixed(2).replace('.',',');
+    const promoEl=document.getElementById('price-promo');
+    if(promoEl&&d.active) promoEl.innerHTML=fmt(d.active)+'<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span>';
+  }).catch(()=>{/* liks statinis numatytasis skaičius */});
   const params2=new URLSearchParams(window.location.search);
   const sessionId=params2.get('session_id');
   if(sessionId) verifyAndProceed(sessionId);
@@ -1462,7 +1457,7 @@ async function onPaymentSuccess(name,email){
       const errEl=document.getElementById('order-err');
       if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
       if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}
-      go('s-info');applyDefaultPayMethod();startCountdown();startPayProgressBar();
+      go('s-info');applyDefaultPayMethod();startPayProgressBar();
     });
   }
 
@@ -2465,7 +2460,7 @@ function animateLoading(){
           loadScreen.style.transition='';
           if(oracleAnimId){cancelAnimationFrame(oracleAnimId);oracleAnimId=null;}
           if(window._userName&&window._userEmail){
-            if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startCountdown();startPayProgressBar();
+            if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
           } else {
             go('s-order');initOrderScreen();requestWakeLock();
           }
@@ -3830,23 +3825,6 @@ if(revCarouselEl){
 setInterval(()=>{if(!revPaused) goRevSlide((revCurrentSlide+1)%REV_TOTAL);},3000);
 
 // Skaitiklių sinchronizavimas
-function startCountdown(){
-  if(window._countdownIv){clearInterval(window._countdownIv);window._countdownIv=null;}
-  if(window._countdown2Iv){clearInterval(window._countdown2Iv);window._countdown2Iv=null;}
-  const fmt=n=>(n<10?'0':'')+n;
-  const w=document.getElementById('countdown-wrap');
-  if(w){w.innerHTML='<span style="font-size:9px;color:rgba(212,168,67,.55);font-weight:400;letter-spacing:.03em"><span style="color:var(--gold2);margin-right:2px">✦</span>Speciali kaina tau galioja dar:</span><span id="countdown-timer" style="font-size:14px;font-weight:600;color:var(--gold2);letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2">05:00</span>';}
-  const end=Date.now()+5*60*1000;
-  window._countdownIv=setInterval(()=>{
-    const rem=Math.max(0,end-Date.now());
-    const el=document.getElementById('countdown-timer');
-    if(el)el.textContent=fmt(Math.floor(rem/60000))+':'+fmt(Math.floor((rem%60000)/1000));
-    if(rem<=0){
-      clearInterval(window._countdownIv);window._countdownIv=null;
-      if(w){w.innerHTML='<span style="font-size:10px;color:rgba(212,168,67,.9);font-weight:600;line-height:1.4"><span style="color:var(--gold2);margin-right:3px">✦</span>Paskutinė galimybė įsigyti už specialią kainą</span>';}
-    }
-  },500);
-}
 function syncCounters(){
   // now handled by startStaticCountGrowth on DOMContentLoaded
 }
