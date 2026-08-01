@@ -481,7 +481,7 @@ function parseJsonLenient(text) {
 }
 
 // --- Pagrindinė Claude analizės funkcija ---
-async function runPalmAnalysis(photos, name) {
+async function runPalmAnalysis(photos, name, sessionId) {
 
   const imageBlocks = photos.map(p => ({
     type: 'image',
@@ -559,6 +559,13 @@ Grąžink TIKTAI JSON:
   }
 
   // Žingsnis 2: Pilna analizė
+  // Pažymime REALŲ tarpinį statusą (jei ši analizė susieta su fone
+  // vykstančia sesija) — tai leidžia klientui rodyti tikslų, realų
+  // antrą etapą, o ne dirbtinai suskaidytus 7 "žingsnius".
+  if (sessionId) {
+    const entry = analysisCache.get(sessionId);
+    if (entry && entry.status === 'pending') entry.status = 'step2';
+  }
   const bruozaiText = bruozai.length > 0
     ? `Vizualiniai delno parametrai:\n${bruozai.map((b, i) => `${i+1}. ${b}`).join('\n')}\n\n`
     : '';
@@ -846,7 +853,7 @@ app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
 
     res.json({ started: true, sessionId });
 
-    runPalmAnalysis(photos, req.body.name || '')
+    runPalmAnalysis(photos, req.body.name || '', sessionId)
       .then(result => {
         const entry = analysisCache.get(sessionId);
         if (entry) { entry.status = 'done'; entry.result = result; console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ BAIGTA sėkmingai`); }
