@@ -23,6 +23,19 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 const app = express();
+
+// --- Stripe Price ID'ai (Product catalog: "Delno skaitymo asmeninė analizė") ---
+const STRIPE_PRICE_ID_PROMO = 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
+const STRIPE_PRICE_ID_REGULAR = 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
+// ACTIVE_PRICE_ID nurodo, kuri kaina ŠIUO METU realiai taikoma checkout metu.
+// Kol 9,99 € akcija dar nebuvo realiai taikyta bent tam tikrą laikotarpį,
+// parduodame už TIKRĄ, įprastą kainą (15,99 €) — kad vėliau, jei norėsite
+// paleisti 9,99 € akciją su perbrauktu 15,99 €, tai turėtų teisėtą, realiai
+// taikytos kainos pagrindą (ES Omnibus direktyvos reikalavimas dėl nuolaidų
+// atskaitos taško). Kai būsite pasiruošę pradėti akciją, pakeiskite šią
+// konstantą į STRIPE_PRICE_ID_PROMO.
+const ACTIVE_PRICE_ID = STRIPE_PRICE_ID_REGULAR;
+
 // Railway (kaip ir dauguma hostingų) veikia už reverse proxy, kuris prideda
 // X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
 // "ERR_ERL_UNEXPECTED_X_FORWARDED_FOR" ir negali teisingai atpažinti IP.
@@ -196,7 +209,7 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `Naujas užsakymas #${displayOrderNumber}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> 9,99 €</p></div>`
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> 15,99 €</p></div>`
     }).then(() => console.log(`[sendPaymentSuccessEmails] administratoriui išsiųsta į ${ADMIN_EMAIL}`))
       .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
   } catch (e) {
@@ -836,7 +849,7 @@ app.get('/analysis-status', async (req, res) => {
 // --- Checkout sesija Revolut/Klarna ---
 app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, amount, currency, bgSessionId, orderNumber } = req.body;
+    const { email, name, bgSessionId, orderNumber } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (bgSessionId && (typeof bgSessionId !== 'string' || bgSessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas bgSessionId' });
@@ -845,11 +858,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
       line_items: [{
-        price_data: {
-          currency: currency || 'eur',
-          product_data: { name: 'Gyvenimo žemėlapis — Delnų analizė' },
-          unit_amount: amount || 999
-        },
+        price: ACTIVE_PRICE_ID,
         quantity: 1
       }],
       mode: 'payment',
@@ -1126,10 +1135,13 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     const { name, email } = req.body;
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    // Suma imama TIESIOGIAI iš Stripe Price objekto (ne kietai įrašyta), kad
+    // kaina visada sutaptų su Product catalog įrašu (speciali_kaina, 9,99 €).
+    const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 999,
-      currency: 'eur',
-      metadata: { name: name || '', email: email || '' },
+      amount: activePrice.unit_amount,
+      currency: activePrice.currency,
+      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID },
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
     });
@@ -1185,6 +1197,38 @@ app.get('/verify-payment', async (req, res) => {
 
 app.get('/stripe-key', (req, res) => {
   res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
+});
+
+// Realios kainos tiesiogiai iš Stripe katalogo — kad UI rodomas perbrauktas
+// "įprastas" skaičius ir aktyvi akcijos kaina VISADA sutaptų su tuo, kas
+// realiai užregistruota Stripe (Product catalog), o ne liktų kietai įrašytas
+// tekstas, galintis nesutapti pasikeitus kainai dashboard'e.
+let _priceInfoCache = null;
+let _priceInfoCacheAt = 0;
+app.get('/price-info', async (req, res) => {
+  try {
+    if (_priceInfoCache && (Date.now() - _priceInfoCacheAt) < 5 * 60 * 1000) {
+      return res.json(_priceInfoCache);
+    }
+    const [promo, regular] = await Promise.all([
+      stripe.prices.retrieve(STRIPE_PRICE_ID_PROMO),
+      stripe.prices.retrieve(STRIPE_PRICE_ID_REGULAR)
+    ]);
+    const activePrice = ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO ? promo : regular;
+    _priceInfoCache = {
+      promo: { amount: promo.unit_amount, currency: promo.currency },
+      regular: { amount: regular.unit_amount, currency: regular.currency },
+      active: { amount: activePrice.unit_amount, currency: activePrice.currency },
+      isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO
+    };
+    _priceInfoCacheAt = Date.now();
+    res.json(_priceInfoCache);
+  } catch (err) {
+    console.error('/price-info klaida:', err);
+    // Atsarginis variantas, jei Stripe API laikinai nepasiekiamas —
+    // rodomos dabartinės žinomos vertės, kad kainodaros blokas neliktų tuščias.
+    res.json({ promo: { amount: 999, currency: 'eur' }, regular: { amount: 1599, currency: 'eur' }, active: { amount: 1599, currency: 'eur' }, isPromoActive: false });
+  }
 });
 
 app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
