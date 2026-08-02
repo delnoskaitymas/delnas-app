@@ -25,8 +25,25 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const app = express();
 
 // --- Stripe Price ID'ai (Product catalog: "Delno skaitymo asmeninė analizė") ---
-const STRIPE_PRICE_ID_PROMO = 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
-const STRIPE_PRICE_ID_REGULAR = 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
+// LIVE ir TEST rėžimai Stripe'e turi VISIŠKAI ATSKIRUS Price ID'us — test
+// raktu (sk_test_...) negalima pasiekti live Price objekto, ir atvirkščiai.
+// Todėl Price ID'ai dabar imami iš aplinkos kintamųjų (su live reikšmėmis
+// kaip numatytuoju atveju), kad testinį/gyvą režimą būtų galima perjungti
+// vien per Railway "Variables", nekeičiant kodo.
+//
+// TEST REŽIMUI ĮJUNGTI (Railway → Variables):
+//   STRIPE_SECRET_KEY       = sk_test_...
+//   STRIPE_PUBLISHABLE_KEY  = pk_test_...
+//   STRIPE_PRICE_ID_PROMO   = price_... (test režimo Price ID, 9,99 €)
+//   STRIPE_PRICE_ID_REGULAR = price_... (test režimo Price ID, 15,99 €)
+// (Test Price ID'us gausite Stripe Dashboard, perjungę viršuje "Test mode",
+// tada Product catalog → sukurkite/pasižiūrėkite tuos pačius produktus.)
+//
+// GRĮŽTI Į LIVE: tiesiog ištrinkite šiuos 4 kintamuosius iš Railway
+// Variables (arba įrašykite atgal sk_live_/pk_live_ ir live Price ID'us) —
+// kodas automatiškai naudos numatytąsias (live) reikšmes žemiau.
+const STRIPE_PRICE_ID_PROMO = process.env.STRIPE_PRICE_ID_PROMO || 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
+const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
 // ACTIVE_PRICE_ID nurodo, kuri kaina ŠIUO METU realiai taikoma checkout metu.
 // Kol 9,99 € akcija dar nebuvo realiai taikyta bent tam tikrą laikotarpį,
 // parduodame už TIKRĄ, įprastą kainą (15,99 €) — kad vėliau, jei norėsite
@@ -35,6 +52,18 @@ const STRIPE_PRICE_ID_REGULAR = 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € �
 // atskaitos taško). Kai būsite pasiruošę pradėti akciją, pakeiskite šią
 // konstantą į STRIPE_PRICE_ID_PROMO.
 const ACTIVE_PRICE_ID = STRIPE_PRICE_ID_REGULAR;
+
+// Paleidimo diagnostika: įspėja, jei Stripe rakto rėžimas (test/live)
+// neatitinka to, kas įprastai tikimasi — padeda greitai pastebėti būtent
+// tokią klaidą, kokią matėte anksčiau ("test mode key" vs "live" Price).
+if (process.env.STRIPE_SECRET_KEY) {
+  const stripeMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_test_') ? 'TEST' :
+                      process.env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'LIVE' : 'NEŽINOMAS';
+  console.log(`[STARTUP] Stripe raktas nustatytas rėžimu: ${stripeMode}. Naudojami Price ID'ai: PROMO=${STRIPE_PRICE_ID_PROMO}, REGULAR=${STRIPE_PRICE_ID_REGULAR}`);
+  if (stripeMode === 'TEST' && (STRIPE_PRICE_ID_PROMO.startsWith('price_1Tzgxj') || STRIPE_PRICE_ID_REGULAR.startsWith('price_1Tzgxj'))) {
+    console.error('[STARTUP ĮSPĖJIMAS] STRIPE_SECRET_KEY yra TEST rėžimo, bet naudojami numatytieji (LIVE) Price ID\'ai — mokėjimai žlugs. Nustatykite STRIPE_PRICE_ID_PROMO ir STRIPE_PRICE_ID_REGULAR aplinkos kintamuosius su TEST rėžimo Price ID\'ais.');
+  }
+}
 
 // Railway (kaip ir dauguma hostingų) veikia už reverse proxy, kuris prideda
 // X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
@@ -108,6 +137,19 @@ app.use(express.json({ limit: '50mb' }));
 // nuolatinį Volume (Settings → Volumes), sumontuoti jį, pvz., į "/data",
 // ir nustatyti aplinkos kintamąjį SHARED_STORAGE_DIR=/data.
 const SHARED_STORAGE_DIR = process.env.SHARED_STORAGE_DIR || __dirname;
+// Paleidimo diagnostika: iš karto Deploy Logs parodo, ar SHARED_STORAGE_DIR
+// realiai naudojamas (t.y. Railway Volume prijungtas ir kintamasis
+// nustatytas), ar naudojama numatytoji (efemerinė) __dirname reikšmė.
+if (process.env.SHARED_STORAGE_DIR) {
+  try {
+    fs.accessSync(SHARED_STORAGE_DIR, fs.constants.W_OK);
+    console.log(`[STARTUP] SHARED_STORAGE_DIR nustatytas ir PASIEKIAMAS RAŠYMUI: ${SHARED_STORAGE_DIR} (Volume veikia teisingai — reminders.json, reminder-blacklist.json, shared_results.json bus patvarūs)`);
+  } catch (e) {
+    console.error(`[STARTUP KLAIDA] SHARED_STORAGE_DIR nustatytas (${SHARED_STORAGE_DIR}), BET NEPASIEKIAMAS rašymui: ${e.message} — patikrinkite, ar Volume Mount Path Railway'uje tiksliai sutampa su šia reikšme.`);
+  }
+} else {
+  console.warn(`[STARTUP ĮSPĖJIMAS] SHARED_STORAGE_DIR NENUSTATYTAS — naudojama efemerinė __dirname saugykla (${SHARED_STORAGE_DIR}). reminders.json/reminder-blacklist.json/shared_results.json BUS IŠTRINTI kito deploy'inimo metu. Nustatykite SHARED_STORAGE_DIR aplinkos kintamąjį Railway Variables skiltyje.`);
+}
 
 // --- Priminimų saugykla ---
 const REMINDERS_FILE = path.join(SHARED_STORAGE_DIR, 'reminders.json');
