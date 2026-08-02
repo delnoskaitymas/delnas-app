@@ -14,7 +14,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;position:fixed;overflow:hidden}
-#app-wrap{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#app-wrap{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 html{height:100%;height:100dvh}
 body{min-height:100vh;min-height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 :root{--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
@@ -98,9 +98,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pbar-fill{height:100%;background:linear-gradient(90deg,#a07828,#f0c96a);border-radius:50px;width:0%;transition:width .6s linear}
 .pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(212,168,67,.6);font-style:italic}
 .load-steps{display:grid;gap:3px;width:100%;max-width:340px}
-.ls{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid rgba(212,168,67,.1);border-top:.5px solid rgba(255,255,255,.08);border-right:.5px solid rgba(255,255,255,.05);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px)}
-.ls.active{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0);box-shadow:2px 0 10px rgba(212,168,67,.08)}
-.ls.done{border-left:2px solid var(--gold);background:rgba(212,168,67,.06);opacity:1;transform:translateX(0)}
+.ls{display:flex;align-items:center;gap:8px;background:#000000;border:1px solid rgba(212,168,67,.28);border-left:2px solid rgba(212,168,67,.1);border-radius:8px;padding:7px 10px;transition:all .4s ease;opacity:.22;transform:translateX(-2px);box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset}
+.ls.active{border:1px solid rgba(212,168,67,.55);border-left:2px solid var(--gold);background:#000000;opacity:1;transform:translateX(0);box-shadow:0 4px 18px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.02) inset,2px 0 10px rgba(212,168,67,.08)}
+.ls.done{border:1px solid rgba(212,168,67,.45);border-left:2px solid var(--gold);background:#000000;opacity:1;transform:translateX(0);box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset}
 .ls-icon{width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ls.active .ls-icon{background:rgba(212,168,67,.15);border-color:var(--gold)}
 .ls.done .ls-icon{background:rgba(212,168,67,.18);border-color:var(--gold)}
@@ -243,8 +243,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
 }
 @keyframes ls7glow{
-  0%,100%{box-shadow:0 0 8px rgba(212,168,67,.15),0 0 0 rgba(212,168,67,0);opacity:1}
-  50%{box-shadow:0 0 22px rgba(212,168,67,.6),0 0 40px rgba(212,168,67,.2);opacity:.85}
+  0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset,0 0 8px rgba(212,168,67,.15);opacity:1}
+  50%{box-shadow:0 4px 18px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.02) inset,0 0 22px rgba(212,168,67,.6),0 0 40px rgba(212,168,67,.2);opacity:.85}
 }
 @keyframes ls7textblink{
   0%,100%{color:rgba(255,255,255,.95)}
@@ -2413,16 +2413,16 @@ function animateLoading(){
 
   // REALUS perėjimas į 2 etapą — visi 7 punktai pažymimi kaip "vykdomi"
   // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui).
-  // Pirmas 2 sekundes punktai sąmoningai lieka NEAKTYVŪS (vizualinė pauzė
-  // prieš perėjimą), tada visi iškart tampa aktyvūs ir pradeda vienodai
-  // švytėti/mirksėti (ta pati stilistika, kokia anksčiau buvo taikoma tik
-  // paskutiniam, 7-am punktui).
+  // Pirmas 0,5 sekundės punktai sąmoningai lieka NEAKTYVŪS (trumpa
+  // vizualinė pauzė prieš perėjimą), tada visi iškart tampa aktyvūs ir
+  // pradeda vienodai švytėti/mirksėti (ta pati stilistika, kokia anksčiau
+  // buvo taikoma tik paskutiniam, 7-am punktui).
   function activatePhase2Visuals(){
     switchMicroPool(phase2Texts);
     setTimeout(()=>{
       if(finished) return;
       [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
-    },2000);
+    },500);
   }
 
   function finishNow(forced){
@@ -2815,6 +2815,18 @@ function initScrollReveal(){
     // besąlygiškai suveikiantis `setTimeout` — mažiausiai galimų klaidos
     // taškų, didžiausias patikimumas.
     setTimeout(startRevealChecks,350);
+    // Papildomas, vėlesnis scroll konteinerio perskaičiavimas — kai kada
+    // šriftai (Playfair Display, DM Sans) pilnai užsikrauna tik po kelių
+    // šimtų ms, ir dėl to gali (šiek tiek) pasikeisti bendras turinio
+    // aukštis. Šis antrasis reflow yra papildoma apsauga PRIE jau esančio
+    // displayResult() reflow, kad scroll'inimas liktų teisingas.
+    setTimeout(()=>{
+      if(app){
+        app.style.overflowY='hidden';
+        void app.offsetHeight;
+        app.style.overflowY='auto';
+      }
+    },1500);
 
     // TRIGUBA APSAUGA (patikrinta senesnėje šio failo versijoje):
     // 1) setInterval periodiškai tikrina kiekvieno elemento poziciją per
@@ -3096,6 +3108,21 @@ function displayResult(r){
   }catch(emailBlockErr){
     console.error('[displayResult] klaida laiškų siuntimo bloke:',emailBlockErr);
   }
+  // PATAISYMAS: kai kuriose Android naršyklėse (WebView) po dinamiško,
+  // gana didelio turinio įterpimo (visas rezultatų tekstas, kortelės ir kt.)
+  // scroll konteineris (#app-wrap) kartais "nepastebi" naujo, didesnio
+  // turinio aukščio, ir scroll'inimas lieka užstrigęs ties senu dydžiu.
+  // Priverstinis overflow perjungimas (hidden→auto) + reflow priverčia
+  // naršyklę iš naujo apskaičiuoti scroll'inamą sritį.
+  requestAnimationFrame(()=>{
+    const appWrap=document.getElementById('app-wrap');
+    if(appWrap){
+      appWrap.style.overflowY='hidden';
+      void appWrap.offsetHeight; // priverstinis reflow
+      appWrap.style.overflowY='auto';
+      appWrap.scrollTop=0;
+    }
+  });
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
