@@ -3685,46 +3685,162 @@ async function sharePdfToFriend(){
 // Sukuria paprastą, BENDRĄ (be asmeninių rezultatų) kvietimo kortelę —
 // tik prekės ženklas, trumpas kvietimas ir mygtukas su adresu.
 async function buildInviteCardBlob(){
-  const W = 1080, H = 700;
+  const W = 1080, H = 980;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = '#050303';
   ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(W/2, H/2, 40, W/2, H/2, 560);
-  glow.addColorStop(0, 'rgba(212,168,67,.16)');
-  glow.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glow;
+  const glowTop = ctx.createRadialGradient(W/2, 260, 30, W/2, 260, 680);
+  glowTop.addColorStop(0, 'rgba(212,168,67,.22)');
+  glowTop.addColorStop(1, 'rgba(212,168,67,0)');
+  ctx.fillStyle = glowTop;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = 'rgba(212,168,67,.5)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(24, 24, W-48, H-48);
+  const glowBottom = ctx.createRadialGradient(W/2, H-140, 20, W/2, H-140, 460);
+  glowBottom.addColorStop(0, 'rgba(212,168,67,.1)');
+  glowBottom.addColorStop(1, 'rgba(212,168,67,0)');
+  ctx.fillStyle = glowBottom;
+  ctx.fillRect(0, 0, W, H);
+
+  const starDots = [[80,120],[960,90],[130,780],[950,820],[60,460],[1000,500],[200,60],[880,900]];
+  starDots.forEach(([sx,sy])=>{
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.6, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(240,201,106,.35)';
+    ctx.fill();
+  });
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#d4a843';
-  ctx.font = '700 46px "Playfair Display", Georgia, serif';
-  // Optinis centravimas: kairėje esanti žvaigždutė vizualiai "traukia"
-  // tekstą į dešinę, todėl eilutė piešiama šiek tiek kairiau nuo
-  // matematinio vidurio, kad atrodytų optiškai centruota.
-  ctx.fillText('✦ DELNAS', W/2 - 14, 250);
+  let y = 108;
 
-  ctx.fillStyle = '#f5eed8';
-  ctx.font = '600 38px "DM Sans", sans-serif';
-  ctx.fillText('Pažvelk, ką pasakoja tavo delnas', W/2, 330);
+  ctx.fillStyle = 'rgba(212,168,67,.85)';
+  ctx.font = '700 24px "DM Sans", sans-serif';
+  ctx.fillText('✦  D E L N A S  ✦', W/2, y);
+  y += 64;
+
+  // --- "Portalo" žiedai, kaip ir asmeninėje kortelėje, bet be nuotraukos —
+  // centre didelė "✦", nes tai bendras kvietimas, ne konkretaus žmogaus
+  // rezultatas. Tai palaiko tą patį vizualinį prekės ženklą.
+  const rad = 110;
+  const cx = W/2, cy = y + rad + 20;
+  [ [rad+30, 'rgba(212,168,67,.18)', 1.5],
+    [rad+18, 'rgba(212,168,67,.3)', 1.5],
+    [rad+6,  'rgba(212,168,67,.5)', 2] ].forEach(([rr,col,lw])=>{
+    ctx.beginPath();
+    ctx.arc(cx, cy, rr, 0, Math.PI*2);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = lw;
+    ctx.stroke();
+  });
+  const dotR = rad + 30;
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{
+    const px = cx + dx*dotR*0.72, py = cy + dy*dotR*0.72;
+    ctx.beginPath();
+    ctx.arc(px, py, 4.5, 0, Math.PI*2);
+    ctx.fillStyle = '#f0c96a';
+    ctx.shadowColor = 'rgba(240,201,106,1)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+  const innerGlow = ctx.createRadialGradient(cx, cy, 10, cx, cy, rad);
+  innerGlow.addColorStop(0, 'rgba(212,168,67,.16)');
+  innerGlow.addColorStop(1, 'rgba(5,3,3,1)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad, 0, Math.PI*2);
+  ctx.fillStyle = innerGlow;
+  ctx.fill();
+  ctx.fillStyle = '#f0c96a';
+  ctx.font = '68px "DM Sans", sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(240,201,106,.6)';
+  ctx.shadowBlur = 20;
+  ctx.fillText('✦', cx, cy+2);
+  ctx.shadowBlur = 0;
+  ctx.textBaseline = 'alphabetic';
+  ctx.strokeStyle = '#d4a843';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad, 0, Math.PI*2);
+  ctx.stroke();
+  y = cy + rad + 30 + 60;
+
+  const margin = 110;
+  const maxWidth = W - margin*2;
+
+  // --- Klausimo forma pritraukia smalsumą stipriau nei teiginys.
+  ctx.font = '700 54px "Playfair Display", Georgia, serif';
+  ctx.fillStyle = '#f7d585';
+  ctx.shadowColor = 'rgba(240,201,106,.5)';
+  ctx.shadowBlur = 16;
+  y = drawWrappedCentered(ctx, 'Ką slepia tavo delnas?', W/2, y, maxWidth, 62) + 6;
+  ctx.shadowBlur = 0;
+  ctx.font = '600 32px "DM Sans", sans-serif';
+  ctx.fillStyle = 'rgba(245,238,216,.85)';
+  y = drawWrappedCentered(ctx, 'Asmeninis gyvenimo žemėlapis, sukurtas vien tau', W/2, y, maxWidth, 42) + 44;
+
+  // --- Smalsumą keliantys teiginiai (bendri, ne konkretaus žmogaus
+  // rezultatas) — tas pats "✦" ženklelio stilius, kaip asmeninėje kortelėje.
+  const teasers = ['Charakterio kodas, kurio dar neatradai', 'Kryptis, paslėpta tavo delno linijose', 'Sėkmės raktas, laukiantis atradimo'];
+  const badgeR = 24;
+  const textMaxW = maxWidth - 100;
+  ctx.textBaseline = 'alphabetic';
+  teasers.forEach((txt) => {
+    ctx.font = '600 34px "DM Sans", sans-serif';
+    ctx.fillStyle = '#f5eed8';
+    const words = txt.split(' ');
+    let line = ''; const lines = [];
+    words.forEach(w=>{
+      const test = line + w + ' ';
+      if(ctx.measureText(test).width > textMaxW && line){ lines.push(line.trim()); line = w + ' '; }
+      else line = test;
+    });
+    if(line) lines.push(line.trim());
+    const lineH = 42;
+    const badgeCy = y + ((lines.length-1)*lineH - 17)/2;
+    ctx.textAlign = 'left';
+    const textX = W/2 - textMaxW/2 + 14;
+    drawStarBadge(ctx, textX - 54, badgeCy, badgeR);
+    let ly = y;
+    lines.forEach(l=>{ ctx.fillText(l, textX, ly); ly += lineH; });
+    ctx.textAlign = 'center';
+    y += lines.length*lineH + 26;
+  });
+
+  y += 24;
 
   const btnLabel = 'www.delnaskaitymas.lt';
-  ctx.font = '700 40px "DM Sans", sans-serif';
-  const btnPadX = 32, btnH = 76;
-  const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-140);
-  const btnX = (W - btnW) / 2, btnY = 420;
-  ctx.fillStyle = '#d4a843';
+  ctx.font = '700 38px "DM Sans", sans-serif';
+  const btnPadX = 34, btnH = 78;
+  const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-160);
+  const btnX = (W - btnW) / 2, btnY = y;
+  const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW*0.7, btnY + btnH);
+  btnGrad.addColorStop(0, '#fff0c4');
+  btnGrad.addColorStop(0.22, '#f5d061');
+  btnGrad.addColorStop(0.45, '#e0a930');
+  btnGrad.addColorStop(0.68, '#c98a1f');
+  btnGrad.addColorStop(1, '#8a5a0f');
+  ctx.save();
+  ctx.shadowColor = 'rgba(212,168,67,.45)';
+  ctx.shadowBlur = 26;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = btnGrad;
   drawRoundedRectPath(ctx, btnX, btnY, btnW, btnH, btnH/2);
   ctx.fill();
-  ctx.fillStyle = '#07040f';
+  ctx.restore();
+  ctx.fillStyle = '#1a1206';
   ctx.fillText(btnLabel, W/2, btnY + btnH/2 + 13);
+  const contentBottom = btnY + btnH + 26;
 
-  return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+  const finalHeight = Math.max(760, Math.min(H, Math.round(contentBottom)));
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = W; finalCanvas.height = finalHeight;
+  const fctx = finalCanvas.getContext('2d');
+  fctx.drawImage(canvas, 0, 0, W, finalHeight, 0, 0, W, finalHeight);
+  drawCardFrame(fctx, W, finalHeight);
+
+  return new Promise(resolve => finalCanvas.toBlob(b => resolve(b), 'image/png'));
 }
 
 // "Pakviesti draugą išbandyti" — SVARBU: dalinamės TEKSTU + PAVEIKSLĖLIU
@@ -3977,9 +4093,9 @@ async function buildStoryCardBlob(){
     ctx.shadowBlur = 18;
     y = drawWrappedCentered(ctx, name, W/2, y, maxWidth, 70) + 14;
     ctx.shadowBlur = 0;
-    ctx.font = '600 34px "DM Sans", sans-serif';
-    ctx.fillStyle = 'rgba(245,238,216,.82)';
-    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 44) + 22;
+    ctx.font = '700 44px "DM Sans", sans-serif';
+    ctx.fillStyle = '#f5eed8';
+    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 52) + 22;
   } else {
     ctx.font = '700 46px "Playfair Display", Georgia, serif';
     ctx.fillStyle = '#f5eed8';
