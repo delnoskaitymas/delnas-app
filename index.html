@@ -2413,9 +2413,16 @@ function animateLoading(){
 
   // REALUS perėjimas į 2 etapą — visi 7 punktai pažymimi kaip "vykdomi"
   // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui).
+  // Pirmas 2 sekundes punktai sąmoningai lieka NEAKTYVŪS (vizualinė pauzė
+  // prieš perėjimą), tada visi iškart tampa aktyvūs ir pradeda vienodai
+  // švytėti/mirksėti (ta pati stilistika, kokia anksčiau buvo taikoma tik
+  // paskutiniam, 7-am punktui).
   function activatePhase2Visuals(){
-    [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
     switchMicroPool(phase2Texts);
+    setTimeout(()=>{
+      if(finished) return;
+      [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
+    },2000);
   }
 
   function finishNow(forced){
@@ -2577,13 +2584,7 @@ function activateStep(n,done){
     st.style.display='inline-flex';st.style.alignItems='center';st.style.justifyContent='center';
     // Glow removed
     const dTxt=el.querySelector('.ls-text');
-    if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';}
-    // Paskutinis punktas — išjungti švytėjimą ir mirksėjimą
-    if(n===7){
-      el.style.animation='none';
-      const dTxt7=el.querySelector('.ls-text');
-      if(dTxt7) dTxt7.style.animation='none';
-    }
+    if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';dTxt.style.animation='none';}
   } else {
     // Aktyvus žingsnis - ratukас + ryškus tekstas
     el.classList.add('active');el.classList.remove('done');
@@ -2602,12 +2603,13 @@ function activateStep(n,done){
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
     if(typeof updateMicroText==='function') updateMicroText(n-1,true);
-    // 7 punktas — švytėjimas ir mirksėjimas
-    if(n===7){
-      el.style.animation='ls7glow 1.2s ease-in-out infinite';
-      if(aTxt){aTxt.style.animation='ls7textblink 1.2s ease-in-out infinite';aTxt.style.fontWeight='700';}
-      if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
-    }
+    // Švytėjimas ir mirksėjimas — taikoma VISIEMS aktyviems punktams
+    // (anksčiau ši stilistika buvo tik 7-am/paskutiniam punktui; dabar,
+    // kai visi 7 punktai iškart tampa aktyvūs kartu, jie visi vienodai
+    // švyti ir mirksi baltai/auksiškai).
+    el.style.animation='ls7glow 1.2s ease-in-out infinite';
+    if(aTxt){aTxt.style.animation='ls7textblink 1.2s ease-in-out infinite';aTxt.style.fontWeight='700';}
+    if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
   }
 }
 
