@@ -3979,15 +3979,7 @@ async function buildStoryCardBlob(){
     y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 22;
   }
 
-  // --- Mažas skirtukas (linija + žvaigždutė centre)
-  ctx.strokeStyle = 'rgba(212,168,67,.4)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(W/2-70, y); ctx.lineTo(W/2-14, y); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W/2+14, y); ctx.lineTo(W/2+70, y); ctx.stroke();
-  ctx.fillStyle = '#d4a843';
-  ctx.font = '18px "DM Sans", sans-serif';
-  ctx.fillText('✦', W/2, y+7);
-  y += 34;
+  y += 20;
 
   // --- Bruožai: kompaktiškas, "ženkleliais" pažymėtas sąrašas (3 svarbiausi
   // I skyriaus asmens bruožai — mažiau, bet ryškiau, geresniam skaitomumui
@@ -4025,11 +4017,7 @@ async function buildStoryCardBlob(){
     y += blockH + 28;
   });
 
-  y += 18;
-  ctx.font = 'italic 400 26px "DM Sans", sans-serif';
-  ctx.fillStyle = 'rgba(212,168,67,.8)';
-  ctx.fillText('✦ Pažvelk į savo gyvenimo žemėlapį ✦', W/2, y);
-  y += 44;
+  y += 30;
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
@@ -4081,7 +4069,7 @@ async function shareStory(){
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Pažvelk, ką pasakoja tavo delnai ✦ Jei nori sužinoti, ką pasakoja tavieji — pabandyk ir tu:';
+    const shareText = 'Pažvelk, ką pasakoja tavo delnai, ir sužinok, ką pasakoja tavieji ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
