@@ -1484,7 +1484,6 @@ async function onPaymentSuccess(name,email){
     }).catch(()=>{
       const errEl=document.getElementById('order-err');
       if(errEl){errEl.textContent='Klaida gaunant analizę. Susisiekite su mumis.';errEl.style.display='block';}
-      if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}
       go('s-info');applyDefaultPayMethod();startPayProgressBar();
     });
   }
@@ -2495,7 +2494,7 @@ function animateLoading(){
           window._postPaymentRetry=false;
           finalizeRetryAfterPayment();
         } else if(window._userName&&window._userEmail){
-          if(!window._orderId){window._orderId='DEL-'+Math.random().toString(36).substr(2,6).toUpperCase();}go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
+          go('s-info');applyDefaultPayMethod();initPayment();requestWakeLock();startPayProgressBar();
         } else {
           go('s-order');initOrderScreen();requestWakeLock();
         }
