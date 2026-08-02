@@ -243,12 +243,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
 }
 @keyframes ls7glow{
-  0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset,0 0 8px rgba(212,168,67,.15);opacity:1}
-  50%{box-shadow:0 4px 18px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.02) inset,0 0 22px rgba(212,168,67,.6),0 0 40px rgba(212,168,67,.2);opacity:.85}
+  0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset,0 0 6px rgba(212,168,67,.12);opacity:1}
+  50%{box-shadow:0 4px 17px rgba(0,0,0,.42),0 1px 0 rgba(255,255,255,.02) inset,0 0 12px rgba(212,168,67,.3),0 0 20px rgba(212,168,67,.1);opacity:.94}
 }
 @keyframes ls7textblink{
   0%,100%{color:rgba(255,255,255,.95)}
-  50%{color:#fce97a}
+  50%{color:#f0d99a}
 }
 @keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(255,255,255,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}
 /* Slėpti Stripe generuojamus nukreipimo pranešimus iframe viduje */
@@ -2443,9 +2443,18 @@ function animateLoading(){
   // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui),
   // TIKSLIAI tuo momentu, kai serveris realiai patvirtina 2 etapo pradžią —
   // be jokio dirbtinio delsimo.
+  // Visi 7 punktai realiai pradedami VIENU metu serveryje, tačiau
+  // vizualiai juos aktyvuojame su nedidele, laipsniška delsa ("bangos"
+  // efektu) — vienu metu mirksintys/besisukantys 7 punktai atrodo
+  // chaotiškai, o švelnus, paeiliui atsiskleidžiantis efektas ramesnis
+  // akiai, NEMELUOJANT apie tai, kada realiai kiekvienas punktas
+  // užbaigiamas (tai lieka nepakitę — visi pažymimi baigti vienu metu,
+  // kai analizė realiai baigsis, žr. finishNow()).
   function activatePhase2Visuals(){
     switchMicroPool(phase2Texts);
-    [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
+    [1,2,3,4,5,6,7].forEach((n,i)=>{
+      setTimeout(()=>{ if(!finished) activateStep(n,false); }, i*180);
+    });
   }
 
   function finishNow(forced){
@@ -2630,8 +2639,8 @@ function activateStep(n,done){
     // (anksčiau ši stilistika buvo tik 7-am/paskutiniam punktui; dabar,
     // kai visi 7 punktai iškart tampa aktyvūs kartu, jie visi vienodai
     // švyti ir mirksi baltai/auksiškai).
-    el.style.animation='ls7glow 1.2s ease-in-out infinite';
-    if(aTxt){aTxt.style.animation='ls7textblink 1.2s ease-in-out infinite';aTxt.style.fontWeight='700';}
+    el.style.animation='ls7glow 1.8s ease-in-out infinite';
+    if(aTxt){aTxt.style.animation='ls7textblink 1.8s ease-in-out infinite';aTxt.style.fontWeight='700';}
     if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
   }
 }
