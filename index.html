@@ -4015,8 +4015,8 @@ async function buildStoryCardBlob(){
         im.onerror = reject;
         im.src = heroPhotoUrl;
       });
-      const rad = 118;
-      const cx = W/2, cy = y + rad + 26;
+      const rad = 92;
+      const cx = W/2, cy = y + rad + 20;
 
       // Išoriniai portalo žiedai
       [ [rad+30, 'rgba(212,168,67,.18)', 1.5],
@@ -4066,7 +4066,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 30 + 68;
+      y = cy + rad + 26 + 50;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
