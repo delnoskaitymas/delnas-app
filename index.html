@@ -3685,6 +3685,15 @@ async function sharePdfToFriend(){
 // Sukuria paprastą, BENDRĄ (be asmeninių rezultatų) kvietimo kortelę —
 // tik prekės ženklas, trumpas kvietimas ir mygtukas su adresu.
 async function buildInviteCardBlob(name){
+  try{
+    await Promise.all([
+      document.fonts.load('700 62px "Playfair Display"'),
+      document.fonts.load('700 58px "Playfair Display"'),
+      document.fonts.load('600 32px "DM Sans"'),
+      document.fonts.load('700 24px "DM Sans"'),
+      document.fonts.ready
+    ]);
+  }catch(e){ /* jei nepavyksta — tęsiame su numatytaisiais šriftais */ }
   const W = 1080, H = 980;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -3972,6 +3981,21 @@ function drawCardFrame(ctx, W, H){
 async function buildStoryCardBlob(){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
+  // SVARBU: laukiame, kol PILNAI užsikrauna reikiami šriftai, PRIEŠ
+  // pradedant piešti bet kokį tekstą. Priešingu atveju canvas gali
+  // nupiešti skirtingas eilutes SKIRTINGAIS šriftais (jei jie baigia
+  // krautis tarp atskirų fillText() iškvietimų) — dėl to teksto plotis
+  // pasikeičia, o centravimas (textAlign='center') atrodo "netiksliai",
+  // nors pati centravimo logika teisinga.
+  try{
+    await Promise.all([
+      document.fonts.load('700 62px "Playfair Display"'),
+      document.fonts.load('700 44px "DM Sans"'),
+      document.fonts.load('600 36px "DM Sans"'),
+      document.fonts.load('700 24px "DM Sans"'),
+      document.fonts.ready
+    ]);
+  }catch(e){ /* jei nepavyksta — tęsiame su numatytaisiais šriftais */ }
   const W = 1080, H = 1080;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -4103,18 +4127,20 @@ async function buildStoryCardBlob(){
 
   y += 14;
 
-  // --- Bruožai: kompaktiškas, "ženkleliais" pažymėtas sąrašas (3 svarbiausi
-  // I skyriaus asmens bruožai — mažiau, bet ryškiau, geresniam skaitomumui
-  // dalinantis vienu žvilgsniu).
+  // --- Bruožai: MINI KORTELIŲ blokai — tiksliai atkartoja rezultato
+  // ekrano "insight-card" bloko stilių (skaidrus auksinis fonas, plonos
+  // šviesios linijos iš trijų pusių, storesnis auksinis akcentas kairėje,
+  // suapvalinti kampai), tik proporcingai padidintas 1080px kortelei.
   const allTraits = [...(r.prigimtines_insights || []), ...(r.stiprybes_sarasas || [])];
   const highlights = allTraits.slice(0, 3);
-  const badgeR = 24;
-  const textMaxW = maxWidth - 100;
+  const cardW = maxWidth;
+  const cardX = W/2 - cardW/2;
+  const cardPadX = 28, cardPadY = 20;
+  const iconSize = 52, iconGap = 22;
+  const textMaxW = cardW - cardPadX*2 - iconSize - iconGap;
+  ctx.textBaseline = 'alphabetic';
   highlights.forEach((txt) => {
-    ctx.font = '600 36px "DM Sans", sans-serif';
-    ctx.fillStyle = '#f5eed8';
-    // Pirmiausia suskaičiuojame, kiek eilučių užims tekstas, kad ženkliuką
-    // galėtume centruoti pagal viso bloko aukštį.
+    ctx.font = '600 34px "DM Sans", sans-serif';
     const words = txt.split(' ');
     let line = ''; const lines = [];
     words.forEach(w=>{
@@ -4123,20 +4149,41 @@ async function buildStoryCardBlob(){
       else line = test;
     });
     if(line) lines.push(line.trim());
-    const lineH = 44;
-    const blockH = lines.length * lineH;
-    // Ženklelio vertikalus centras skaičiuojamas atsižvelgiant į teksto
-    // BAZINĘ liniją (fillText piešia nuo baseline, o ne nuo simbolio
-    // vidurio) — be šios pataisos ženkliukas atrodydavo per žemai,
-    // nesutampantis su teksto vidurio linija.
-    const badgeCy = y + ((lines.length-1)*lineH - 18)/2;
+    const lineH = 42;
+    const textBlockH = lines.length * lineH;
+    const cardH = Math.max(iconSize, textBlockH) + cardPadY*2;
+    const cardY = y;
+
+    // Kortelės fonas + plonos šviesios linijos (kaip insight-card)
+    drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
+    ctx.fillStyle = 'rgba(212,168,67,.07)';
+    ctx.fill();
+    drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
+    ctx.strokeStyle = 'rgba(255,255,255,.09)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Storesnis auksinis akcentas kairėje (apkirptas pagal suapvalintus kampus)
+    ctx.save();
+    drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
+    ctx.clip();
+    ctx.fillStyle = '#d4a843';
+    ctx.fillRect(cardX, cardY, 6, cardH);
+    ctx.restore();
+
+    // Žvaigždutės ženkliukas kairėje
+    const iconCx = cardX + cardPadX + iconSize/2;
+    const iconCy = cardY + cardH/2;
+    drawStarBadge(ctx, iconCx, iconCy, iconSize/2);
+
+    // Tekstas, vertikaliai centruotas kortelėje
     ctx.textAlign = 'left';
-    const textX = W/2 - textMaxW/2 + 14;
-    drawStarBadge(ctx, textX - 56, badgeCy, badgeR);
-    let ly = y;
+    ctx.fillStyle = '#f5eed8';
+    const textX = cardX + cardPadX + iconSize + iconGap;
+    let ly = cardY + cardH/2 + ((lines.length-1)*lineH - 16)/2;
     lines.forEach(l=>{ ctx.fillText(l, textX, ly); ly += lineH; });
     ctx.textAlign = 'center';
-    y += blockH + 28;
+
+    y += cardH + 18;
   });
 
   y += 30;
