@@ -1350,9 +1350,15 @@ app.get('/price-info', async (req, res) => {
 
 app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name } = req.body;
-    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    const { name } = req.body;
+    if (!isValidEmail(req.body.email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    // El. paštas normalizuojamas į mažąsias raides IŠ KARTO ir naudojamas
+    // NUOSEKLIAI visur toliau (dublikato patikra, saugojimas, blacklist) —
+    // anksčiau dublikato patikra buvo jautri didžiosioms/mažosioms raidėms,
+    // todėl "Vardas@Gmail.com" ir "vardas@gmail.com" būtų buvę traktuojami
+    // kaip du skirtingi adresai (rizika gauti du priminimo laiškus).
+    const email = (req.body.email || '').toString().trim().toLowerCase();
 
     // SVARBU: jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių
     // priminimų" nuorodą, bet DABAR SĄMONINGAI, SAVO NORU vėl paspaudžia
@@ -1363,7 +1369,7 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // jo prašymą — priešingu atveju UI pažadas ("jei persigalvosi, tiesiog
     // vėl paspausk") būtų neteisingas/neveikiantis.
     const blacklist = loadReminderBlacklist();
-    const blIdx = blacklist.indexOf((email || '').toLowerCase());
+    const blIdx = blacklist.indexOf(email);
     if (blIdx !== -1) {
       blacklist.splice(blIdx, 1);
       saveReminderBlacklist(blacklist);
@@ -1373,7 +1379,7 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
     // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
     const reminders = loadReminders();
-    if (reminders.find(r => r.email === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
+    if (reminders.find(r => (r.email || '').toLowerCase() === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
     reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
     saveReminders(reminders);
     res.json({ ok: true });
