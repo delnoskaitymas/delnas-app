@@ -4066,7 +4066,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 26 + 110;
+      y = cy + rad + 26 + 60;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
@@ -4095,7 +4095,13 @@ async function buildStoryCardBlob(){
   // ekrano "insight-card" bloko stilių (skaidrus auksinis fonas, plonos
   // šviesios linijos iš trijų pusių, storesnis auksinis akcentas kairėje,
   // suapvalinti kampai), tik proporcingai padidintas 1080px kortelei.
-  const allTraits = [...(r.prigimtines_insights || []), ...(r.stiprybes_sarasas || [])];
+  // Pirmenybė teikiama "stiprybes_sarasas" — tai atskiras, TIK teigiamai
+  // (kaip stiprybės) suformuluotas sąrašas, generuojamas serverio kaip
+  // I skyriaus dalis. "prigimtines_insights" yra bendresni, aprašomieji
+  // teiginiai (gali apimti ir neutralesnius/iššūkius pabrėžiančius
+  // stebėjimus), todėl naudojami tik kaip atsarginis variantas, jei
+  // stiprybių sąraše mažiau nei 3 punktai.
+  const allTraits = [...(r.stiprybes_sarasas || []), ...(r.prigimtines_insights || [])];
   const highlights = allTraits.slice(0, 3);
   const cardW = maxWidth;
   const cardX = W/2 - cardW/2;
