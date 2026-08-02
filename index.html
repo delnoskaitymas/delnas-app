@@ -768,6 +768,18 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
+// Nuolatinis (periodinis) WakeLock atnaujinimas — kai kuriuose įrenginiuose/
+// naršyklėse Screen Wake Lock API tyliai "atsileidžia" po tam tikro laiko,
+// net jei puslapis lieka aktyvus ir matomas (be jokio ekranų perjungimo).
+// Tai ypač pastebima ilguose, "stovinčiuose" ekranuose (pvz. analizės
+// laukimo ekrane, kuris gali trukti iki ~170 sek. be jokios navigacijos).
+// Šis intervalas kas 20 sek. iš naujo užklausia WakeLock VISŲ ekranų metu
+// (ne tik analizės), kol puslapis atviras, kad ekranas apskritai neužgestų
+// naudojantis programa.
+setInterval(()=>{
+  if(document.visibilityState==='visible') requestWakeLock();
+},20000);
+
 function go(id){
   if(id==='s-home'){
     setTimeout(()=>{
