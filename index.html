@@ -584,24 +584,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       
     </div>
 
-    <!-- Bendras rėmelis, apjungiantis progreso juostą IR punktų sąrašą į
-         VIENĄ vizualų vienetą (statiškas kontūras, be jokios papildomos
-         animacijos/judesio) — aiškiai parodo, kad punktai yra tiesioginė
-         vykstančio proceso dalis, o ne atskirai pateiktas tekstas. -->
-    <div style="width:100%;max-width:340px;flex:1;min-height:0;display:flex;flex-direction:column;border:1px solid rgba(212,168,67,.25);border-radius:14px;padding:14px 12px 0;background:rgba(212,168,67,.025)">
-
     <!-- Progress bar -->
-    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-top:0;margin-bottom:8px">
+    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-top:20px;margin-bottom:8px">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
         <span id="ppct" style="display:inline-flex;align-items:center;gap:6px"><span id="shared-spinner" style="display:none;width:11px;height:11px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);border-radius:50%;animation:spinStep .7s linear infinite;flex-shrink:0"></span><span id="ppct-num">0%</span></span>
-        <span id="ptime" style="font-style:italic"></span>
+        <span id="ptime" style="font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px"></span>
       </div>
       
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
-    <div id="ls-group-label" style="display:none;text-align:center;font-size:11px;color:rgba(212,168,67,.7);font-style:italic;letter-spacing:.02em;margin-bottom:8px;transition:opacity .4s ease">✦ Iš šių detalių sudėliojamos pagrindinės tavo žemėlapio sritys ✦</div>
     <div style="position:relative;width:100%;max-width:340px;flex:1;min-height:0;overflow:hidden">
       <!-- Fade-out apačioje -->
       <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none"></div>
@@ -615,9 +608,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="ls" id="ls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="ls-text">Identifikuojamos pažangą stabdančios kliūtys.</div><div class="ls-status" id="ls7-status">·</div></div>
       </div>
     </div>
-    </div>
   </div>
 </div>
+
+
 
 
 
@@ -2405,15 +2399,13 @@ function animateLoading(){
   if(pbar) pbar.style.width='0%';
   const sharedSpinnerReset=document.getElementById('shared-spinner');
   if(sharedSpinnerReset) sharedSpinnerReset.style.display='none';
-  const groupLabelReset=document.getElementById('ls-group-label');
-  if(groupLabelReset) groupLabelReset.style.display='none';
   requestWakeLock();
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
   let phaseShown=1;let phase2StartElapsed=null;
 
-  const phase1Texts=['Atpažįstame delno linijas ir formą...','Nustatome pirštų ir delno proporcijas...','Vertiname vizualinius delno požymius...','Fiksuojame charakteringus delno bruožus...','Skenuojame delno raštų tankį...','Analizuojame delno linijų kryptis...','Nustatome delno kalvelių išsidėstymą...','Tikriname pirštų sąnarių formą...','Kartografuojame delno paviršiaus struktūrą...','Ruošiame duomenis gilesnei analizei...'];
-  const phase2Texts=['Nagrinėjame smulkiausias detales, formuojančias tavo charakterio kodą...','Renkame duomenis apie tavo prigimtines stiprybes...','Analizuojame ženklus, rodančius tavo asmeninę gyvenimo kryptį...','Tikslinamės, kokie siekiai tave labiausiai traukia...','Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname, kaip tavo charakteris veikia santykius...','Skaičiuojame smulkius finansinės sėkmės ženklus...','Analizuojame tavo požiūrio į pinigus detales...','Ieškome mažiausių detalių, sudarančių tavo unikalų sėkmės raktą...','Sujungiame pastebėtus bruožus į vieną sėkmės formulę...','Nagrinėjame artėjančių pokyčių ženklus...','Vertiname, kokios galimybės tau artimiausios...','Identifikuojame smulkias detales, rodančias galimas kliūtis...','Analizuojame, kas gali stabdyti tavo pažangą...','Kiekvieną pastebėtą detalę sujungiame į bendrą tavo žemėlapį...','Tikriname, kaip visos smulkios įžvalgos dera tarpusavyje...','Gilinamės į tai, kas tave daro išskirtine asmenybe...','Lyginame surinktus duomenis su senaisiais archetipais...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Interpretuojame tavo santykių dinamikos ženklus...','Nustatome tavo prigimtinius talentus...','Atskleidžiame tavo emocinio atsparumo šaltinius...','Analizuojame tavo sprendimų priėmimo modelius...','Sudėliojame paskutinius tavo žemėlapio štrichus...','Tikriname visų surinktų įžvalgų nuoseklumą...','Formuluojame baigiamąsias tavo analizės išvadas...'];
+  const phase1Texts=['Atpažįstame delno linijas...','Nustatome pirštų proporcijas...','Vertiname delno požymius...','Fiksuojame delno bruožus...','Skenuojame delno raštus...','Analizuojame linijų kryptis...','Nustatome delno kalveles...','Tikriname pirštų formą...','Kartografuojame delną...','Ruošiame duomenis analizei...'];
+  const phase2Texts=['Nagrinėjame charakterio detales...','Renkame duomenis apie stiprybes...','Analizuojame gyvenimo kryptį...','Tikslinamės tavo siekius...','Nagrinėjame bendravimo stilių...','Vertiname santykių dinamiką...','Skaičiuojame finansų ženklus...','Analizuojame požiūrį į pinigus...','Ieškome tavo sėkmės rakto...','Formuojame sėkmės formulę...','Nagrinėjame ateities ženklus...','Vertiname artimas galimybes...','Identifikuojame kliūtis...','Analizuojame pažangos stabdžius...','Sujungiame detales į žemėlapį...','Tikriname įžvalgų nuoseklumą...','Gilinamės į tavo išskirtinumą...','Lyginame duomenis su archetipais...','Tyrinėjame vidinę stiprybę...','Interpretuojame santykių ženklus...','Nustatome prigimtinius talentus...','Atskleidžiame emocinį atsparumą...','Analizuojame sprendimų modelius...','Sudėliojame žemėlapio štrichus...','Tikriname surinktas įžvalgas...','Formuluojame galutines išvadas...'];
 
   let microTimer=null;let microGen=0;let microPool=phase1Texts;
 
@@ -2460,8 +2452,6 @@ function animateLoading(){
     switchMicroPool(phase2Texts);
     const sharedSpinner=document.getElementById('shared-spinner');
     if(sharedSpinner) sharedSpinner.style.display='inline-block';
-    const groupLabel=document.getElementById('ls-group-label');
-    if(groupLabel) groupLabel.style.display='block';
     [1,2,3,4,5,6,7].forEach((n,i)=>{
       const delayMs=i*180;
       setTimeout(()=>{ if(!finished) activateStep(n,false,delayMs); }, delayMs);
@@ -2476,8 +2466,6 @@ function animateLoading(){
     stopMicro();
     const sharedSpinner=document.getElementById('shared-spinner');
     if(sharedSpinner) sharedSpinner.style.display='none';
-    const groupLabel=document.getElementById('ls-group-label');
-    if(groupLabel) groupLabel.style.display='none';
     // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
     // anksčiau, nei vartotojas spėjo pamatyti visą 2 etapo animaciją)
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
