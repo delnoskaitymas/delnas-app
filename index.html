@@ -3807,6 +3807,50 @@ function drawRoundedRectPath(ctx, x, y, w, h, r){
 // tinka Facebook/Instagram/WhatsApp) kortelę su delno ikona, vardu ir
 // VISAIS auksiniais I skyriaus asmens bruožais + aiškiu mygtuku su
 // svetainės adresu apačioje.
+// Piešia mažą apskritą ženkliuką su "✦" viduje — naudojamas prie kiekvieno
+// bruožo, atkartojant programos "✦" prekės ženklo motyvą.
+function drawStarBadge(ctx, cx, cy, r){
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(212,168,67,.12)';
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(212,168,67,.5)';
+  ctx.stroke();
+  ctx.fillStyle = '#f0c96a';
+  ctx.font = `${Math.round(r*1.15)}px "DM Sans", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦', cx, cy+1);
+  ctx.textBaseline = 'alphabetic';
+  ctx.restore();
+}
+
+// Piešia dvigubą, "sertifikato" stiliaus rėmelį su auksiniais taškeliais
+// kampuose — atkartoja analizės ekrano portalo žiedų / plūduriuojančių
+// taškelių motyvą, kad kortelė vizualiai priklausytų tai pačiai programos
+// šeimai, bet atrodytų "premium", ne tiesiog stačiakampis.
+function drawCardFrame(ctx, W, H){
+  drawRoundedRectPath(ctx, 22, 22, W-44, H-44, 26);
+  ctx.strokeStyle = 'rgba(212,168,67,.55)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  drawRoundedRectPath(ctx, 34, 34, W-68, H-68, 18);
+  ctx.strokeStyle = 'rgba(212,168,67,.22)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  [[22,22],[W-22,22],[22,H-22],[W-22,H-22]].forEach(([x,y])=>{
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = '#f0c96a';
+    ctx.shadowColor = 'rgba(240,201,106,.9)';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+}
+
 async function buildStoryCardBlob(){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
@@ -3815,27 +3859,47 @@ async function buildStoryCardBlob(){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#000000';
+  // --- Fonas: gilus juodas + du švelnūs auksiniai švytėjimai (gylio jausmui)
+  ctx.fillStyle = '#050303';
   ctx.fillRect(0, 0, W, H);
 
-  const glow = ctx.createRadialGradient(W/2, H/2, 40, W/2, H/2, 640);
-  glow.addColorStop(0, 'rgba(212,168,67,.16)');
-  glow.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glow;
+  const glowTop = ctx.createRadialGradient(W/2, 250, 30, W/2, 250, 700);
+  glowTop.addColorStop(0, 'rgba(212,168,67,.22)');
+  glowTop.addColorStop(1, 'rgba(212,168,67,0)');
+  ctx.fillStyle = glowTop;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.strokeStyle = 'rgba(212,168,67,.5)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(24, 24, W-48, H-48);
+  const glowBottom = ctx.createRadialGradient(W/2, H-160, 20, W/2, H-160, 480);
+  glowBottom.addColorStop(0, 'rgba(212,168,67,.1)');
+  glowBottom.addColorStop(1, 'rgba(212,168,67,0)');
+  ctx.fillStyle = glowBottom;
+  ctx.fillRect(0, 0, W, H);
 
-  const margin = 100;
+  // --- Švelnus žvaigždžių/taškelių fonas (tas pats motyvas, kaip programos
+  // dekoratyvus "#stars" sluoksnis) — deterministinės, fiksuotos pozicijos.
+  const starDots = [[80,120],[960,90],[130,860],[950,900],[60,500],[1000,540],[200,60],[880,1000],[500,50],[540,1010]];
+  starDots.forEach(([sx,sy])=>{
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.6, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(240,201,106,.35)';
+    ctx.fill();
+  });
+
+  const margin = 110;
   const maxWidth = W - margin*2;
   ctx.textAlign = 'center';
-  let y = 95;
+  let y = 108;
 
-  // Delno nuotrauka — kompaktiška, viršuje. Pridėtas ryškumo/kontrasto/
-  // sodrumo padidinimas IR šiltas auksinis atspalvis (overlay), kad
-  // nuotrauka atrodytų gyvesnė, o ne plokščia/pilka.
+  // --- Eyebrow prekės ženklo antraštė
+  ctx.fillStyle = 'rgba(212,168,67,.85)';
+  ctx.font = '700 24px "DM Sans", sans-serif';
+  ctx.fillText('✦  D E L N A S  ✦', W/2, y);
+  y += 56;
+
+  // --- Delno nuotrauka su "portalo" žiedais — atkartoja analizės ekrano
+  // hand-container motyvą (keli koncentriniai žiedai + plūduriuojantys
+  // taškeliai), kad kortelė vizualiai priklausytų tai pačiai "šeimai" ir
+  // atrodytų kaip atpažįstamas programos prekės ženklas.
   const heroPhotoUrl = getHeroPhotoDataUrl();
   if(heroPhotoUrl){
     try{
@@ -3845,8 +3909,32 @@ async function buildStoryCardBlob(){
         im.onerror = reject;
         im.src = heroPhotoUrl;
       });
-      const rad = 95;
-      const cx = W/2, cy = y + rad;
+      const rad = 118;
+      const cx = W/2, cy = y + rad + 26;
+
+      // Išoriniai portalo žiedai
+      [ [rad+30, 'rgba(212,168,67,.18)', 1.5],
+        [rad+18, 'rgba(212,168,67,.3)', 1.5],
+        [rad+6,  'rgba(212,168,67,.5)', 2] ].forEach(([rr,col,lw])=>{
+        ctx.beginPath();
+        ctx.arc(cx, cy, rr, 0, Math.PI*2);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = lw;
+        ctx.stroke();
+      });
+      // Plūduriuojantys taškeliai ant žiedo (4 kampuose, kaip analizės ekrane)
+      const dotR = rad + 30;
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{
+        const px = cx + dx*dotR*0.72, py = cy + dy*dotR*0.72;
+        ctx.beginPath();
+        ctx.arc(px, py, 4.5, 0, Math.PI*2);
+        ctx.fillStyle = '#f0c96a';
+        ctx.shadowColor = 'rgba(240,201,106,1)';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
       ctx.save();
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
@@ -3865,58 +3953,102 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 85;
+      y = cy + rad + 30 + 44;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
-  ctx.fillStyle = '#f0c96a';
-  ctx.font = '700 42px "Playfair Display", Georgia, serif';
-  const headingText = name ? `${name}, tavo gyvenimo žemėlapis` : 'Tavo gyvenimo žemėlapis';
-  y = drawWrappedCentered(ctx, headingText, W/2, y, maxWidth, 52) + 65;
+  // --- Antraštė: vardas paryškintas auksu, likusi dalis švelnesniu kremu
+  ctx.font = '700 46px "Playfair Display", Georgia, serif';
+  if(name){
+    ctx.fillStyle = '#f0c96a';
+    y = drawWrappedCentered(ctx, name + ',', W/2, y, maxWidth, 56) + 4;
+    ctx.fillStyle = '#f5eed8';
+    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 30;
+  } else {
+    ctx.fillStyle = '#f5eed8';
+    y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 30;
+  }
 
-  // VISI auksiniai I skyriaus asmens bruožai (įžvalgos + stiprybių
-  // sąrašas) — ne atsitiktinai parinkti 1-2, o visi, kaip prašyta.
-  // 3-4 auksiniai I skyriaus asmens bruožai — VISI (dažnai 6-7) buvo
-  // per daug tankūs vienai "istorijos" kortelei, sumažinta iki tiek,
-  // kiek galima aprėpti vienu žvilgsniu.
+  // --- Mažas skirtukas (linija + žvaigždutė centre)
+  ctx.strokeStyle = 'rgba(212,168,67,.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W/2-70, y); ctx.lineTo(W/2-14, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2+14, y); ctx.lineTo(W/2+70, y); ctx.stroke();
+  ctx.fillStyle = '#d4a843';
+  ctx.font = '18px "DM Sans", sans-serif';
+  ctx.fillText('✦', W/2, y+7);
+  y += 54;
+
+  // --- Bruožai: kompaktiškas, "ženkleliais" pažymėtas sąrašas (3 svarbiausi
+  // I skyriaus asmens bruožai — mažiau, bet ryškiau, geresniam skaitomumui
+  // dalinantis vienu žvilgsniu).
   const allTraits = [...(r.prigimtines_insights || []), ...(r.stiprybes_sarasas || [])];
-  const highlights = allTraits.slice(0, 4);
-  ctx.fillStyle = '#f5eed8';
-  highlights.forEach((txt, i) => {
-    ctx.font = '700 44px "DM Sans", sans-serif';
-    ctx.fillStyle = i === 0 ? '#f5eed8' : 'rgba(245,238,216,.85)';
-    y = drawWrappedCentered(ctx, `„${txt}"`, W/2, y, maxWidth, 56) + 35;
+  const highlights = allTraits.slice(0, 3);
+  const badgeR = 15;
+  const textMaxW = maxWidth - 90;
+  highlights.forEach((txt) => {
+    ctx.font = '600 36px "DM Sans", sans-serif';
+    ctx.fillStyle = '#f5eed8';
+    // Pirmiausia suskaičiuojame, kiek eilučių užims tekstas, kad ženkliuką
+    // galėtume centruoti pagal viso bloko aukštį.
+    const words = txt.split(' ');
+    let line = ''; const lines = [];
+    words.forEach(w=>{
+      const test = line + w + ' ';
+      if(ctx.measureText(test).width > textMaxW && line){ lines.push(line.trim()); line = w + ' '; }
+      else line = test;
+    });
+    if(line) lines.push(line.trim());
+    const lineH = 44;
+    const blockH = lines.length * lineH;
+    const badgeCy = y + blockH/2 - lineH/2 + 12;
+    ctx.textAlign = 'left';
+    const textX = W/2 - textMaxW/2 + 6;
+    drawStarBadge(ctx, textX - 42, badgeCy, badgeR);
+    let ly = y;
+    lines.forEach(l=>{ ctx.fillText(l, textX, ly); ly += lineH; });
+    ctx.textAlign = 'center';
+    y += blockH + 28;
   });
 
-  // Kvietimas + mygtukas su svetainės adresu — vieta skaičiuojama
-  // DINAMIŠKAI, TIESIOG PO paskutiniu teiginiu (o ne fiksuotu atstumu nuo
-  // apačios) — anksčiau fiksuota vieta palikdavo didelį tuščią juodą
-  // tarpą, kai teiginių tekstas būdavo trumpas.
-  y += 30;
+  y += 22;
+  ctx.font = 'italic 400 26px "DM Sans", sans-serif';
+  ctx.fillStyle = 'rgba(212,168,67,.8)';
+  ctx.fillText('✦ Atrask savo asmeninį žemėlapį ✦', W/2, y);
+  y += 46;
 
+  // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
+  // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
   const btnLabel = 'www.delnaskaitymas.lt';
-  ctx.font = '700 40px "DM Sans", sans-serif';
-  const btnPadX = 32, btnH = 76;
-  const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-140);
+  ctx.font = '700 38px "DM Sans", sans-serif';
+  const btnPadX = 34, btnH = 78;
+  const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-160);
   const btnX = (W - btnW) / 2, btnY = y;
-  ctx.fillStyle = '#d4a843';
+  const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW*0.7, btnY + btnH);
+  btnGrad.addColorStop(0, '#fff0c4');
+  btnGrad.addColorStop(0.22, '#f5d061');
+  btnGrad.addColorStop(0.45, '#e0a930');
+  btnGrad.addColorStop(0.68, '#c98a1f');
+  btnGrad.addColorStop(1, '#8a5a0f');
+  ctx.save();
+  ctx.shadowColor = 'rgba(212,168,67,.45)';
+  ctx.shadowBlur = 26;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = btnGrad;
   drawRoundedRectPath(ctx, btnX, btnY, btnW, btnH, btnH/2);
   ctx.fill();
-  ctx.fillStyle = '#07040f';
+  ctx.restore();
+  ctx.fillStyle = '#1a1206';
   ctx.fillText(btnLabel, W/2, btnY + btnH/2 + 13);
-  const contentBottom = btnY + btnH + 60;
+  const contentBottom = btnY + btnH + 70;
 
-  // Apkarpome iki realiai panaudoto aukščio (bet ne daugiau nei
-  // pradinis H, ir ne mažiau nei protingas minimumas), kad neliktų
-  // tuščio juodo ploto po mygtuku.
-  const finalHeight = Math.max(700, Math.min(H, Math.round(contentBottom)));
+  // Apkarpome iki realiai panaudoto aukščio.
+  const finalHeight = Math.max(760, Math.min(H, Math.round(contentBottom)));
   const finalCanvas = document.createElement('canvas');
   finalCanvas.width = W; finalCanvas.height = finalHeight;
   const fctx = finalCanvas.getContext('2d');
   fctx.drawImage(canvas, 0, 0, W, finalHeight, 0, 0, W, finalHeight);
-  fctx.strokeStyle = 'rgba(212,168,67,.5)';
-  fctx.lineWidth = 4;
-  fctx.strokeRect(24, 24, W-48, finalHeight-48);
+  drawCardFrame(fctx, W, finalHeight);
 
   return new Promise(resolve => finalCanvas.toBlob(b => resolve(b), 'image/png'));
 }
