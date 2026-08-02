@@ -114,6 +114,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   0%,100%{box-shadow:0 0 0 rgba(212,168,67,0);border-left-color:var(--gold)}
   50%{box-shadow:0 0 14px rgba(212,168,67,.28),0 0 22px rgba(212,168,67,.08);border-left-color:#f0d99a}
 }
+@keyframes lsShimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-100% 0}
+}
 .ls-dot{display:none}
 .ls-dot.done{display:none}
 .rs{border-radius:14px;padding:22px 16px 14px;margin-bottom:24px;position:relative;max-width:600px;margin-left:auto;margin-right:auto}
@@ -2610,6 +2614,7 @@ function activateStep(n,done,waveDelayMs){
     // Baigtas žingsnis - varnelė + glow
     el.classList.remove('active');el.classList.add('done');
     el.style.animation='none';
+    el.style.backgroundImage='none';
     st.style.animation='none';st.style.border='none';
     st.style.width='18px';st.style.height='18px';
     st.textContent='✓';st.style.color='var(--gold2)';
@@ -2634,8 +2639,11 @@ function activateStep(n,done,waveDelayMs){
     // naudota ratukams sinchronizuoti) užtikrina, kad pulsavimas visuose
     // punktuose vyktų tiksliai ta pačia faze.
     const breatheDelay=-((waveDelayMs||0)/1000);
-    el.style.animation='lsBreathe 2.4s ease-in-out infinite';
-    el.style.animationDelay=breatheDelay+'s';
+    el.style.backgroundImage='linear-gradient(100deg,transparent 42%,rgba(255,255,255,.12) 50%,transparent 58%)';
+    el.style.backgroundSize='300% 100%';
+    el.style.backgroundRepeat='no-repeat';
+    el.style.animation='lsBreathe 2.4s ease-in-out infinite, lsShimmer 2.6s linear infinite';
+    el.style.animationDelay=breatheDelay+'s, '+breatheDelay+'s';
     // Ryškus tekstas
     const aTxt=el.querySelector('.ls-text');
     if(aTxt){aTxt.style.color='#e8e2d4';aTxt.style.fontWeight='600';}
