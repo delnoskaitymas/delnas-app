@@ -3790,7 +3790,7 @@ async function buildInviteCardBlob(name){
   ctx.beginPath();
   ctx.arc(cx, cy, rad, 0, Math.PI*2);
   ctx.stroke();
-  y = cy + rad + 30 + 60;
+  y = cy + rad + 30 + 92;
 
   const margin = 110;
   const maxWidth = W - margin*2;
@@ -3804,7 +3804,7 @@ async function buildInviteCardBlob(name){
   ctx.fillStyle = '#f7eccb';
   ctx.shadowColor = 'rgba(240,201,106,.4)';
   ctx.shadowBlur = 10;
-  y = drawWrappedCentered(ctx, inviteLine, W/2, y, maxWidth, 58) + 50;
+  y = drawWrappedCentered(ctx, inviteLine, W/2, y, maxWidth, 62) + 74;
   ctx.shadowBlur = 0;
 
   const btnLabel = 'www.delnaskaitymas.lt';
