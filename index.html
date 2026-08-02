@@ -595,7 +595,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="font-size:10px;color:rgba(212,168,67,.8);text-align:center;height:14px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.5s ease;margin-top:3px;padding:0 8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      <div id="micro-text" style="display:none;font-size:10px;color:rgba(212,168,67,.8);text-align:center;height:14px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.5s ease;margin-top:3px;padding:0 8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -2453,7 +2453,8 @@ function animateLoading(){
   function activatePhase2Visuals(){
     switchMicroPool(phase2Texts);
     [1,2,3,4,5,6,7].forEach((n,i)=>{
-      setTimeout(()=>{ if(!finished) activateStep(n,false); }, i*180);
+      const delayMs=i*180;
+      setTimeout(()=>{ if(!finished) activateStep(n,false,delayMs); }, delayMs);
     });
   }
 
@@ -2596,7 +2597,7 @@ async function finalizeRetryAfterPayment(){
   }
 }
 
-function activateStep(n,done){
+function activateStep(n,done,waveDelayMs){
   window._currentStep=n;
 
   // Ranka fiksuoto dydžio — nesitraukia
@@ -2626,7 +2627,16 @@ function activateStep(n,done){
     st.style.border='2px solid rgba(212,168,67,.25)';
     st.style.borderTopColor='var(--gold2)';
     st.style.borderRadius='50%';
-    st.style.animation='spinStep .7s linear infinite';
+    // SVARBU: visi 7 punktai aktyvuojami su nedidele "bangos" delsa (žr.
+    // activatePhase2Visuals) — jei kiekvieno ratuko sukimosi animacija
+    // tiesiog prasidėtų TĄ AKIMIRKĄ, kai punktas aktyvuojamas, ratukai
+    // suktųsi VISI SKIRTINGA FAZE (vieni pirma, kiti vėliau) ir atrodytų
+    // chaotiškai. NEIGIAMA animation-delay "atsuka" kiekvieno ratuko laikrodį
+    // taip, lyg jis būtų pradėjęs suktis TUO PAČIU momentu kaip pirmasis —
+    // rezultatas: visi ratukai sukasi tiksliai sinchronizuotai.
+    const spinDelay=-((waveDelayMs||0)/1000);
+    st.style.animation=`spinStep .7s linear infinite`;
+    st.style.animationDelay=spinDelay+'s';
     st.style.fontSize='0';st.style.flexShrink='0';
     // Ryškus tekstas
     const aTxt=el.querySelector('.ls-text');
@@ -2635,12 +2645,16 @@ function activateStep(n,done){
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
     if(typeof updateMicroText==='function') updateMicroText(n-1,true);
-    // Švytėjimas ir mirksėjimas — taikoma VISIEMS aktyviems punktams
-    // (anksčiau ši stilistika buvo tik 7-am/paskutiniam punktui; dabar,
-    // kai visi 7 punktai iškart tampa aktyvūs kartu, jie visi vienodai
-    // švyti ir mirksi baltai/auksiškai).
-    el.style.animation='ls7glow 1.8s ease-in-out infinite';
-    if(aTxt){aTxt.style.animation='ls7textblink 1.8s ease-in-out infinite';aTxt.style.fontWeight='700';}
+    // Švytėjimas ir mirksėjimas — taikoma VISIEMS aktyviems punktams, TAIP
+    // PAT sinchronizuota (neigiama delsa), kad visi punktai švytėtų/mirksėtų
+    // tiksliai kartu, nepriklausomai nuo bangos aktyvavimo momento.
+    el.style.animation=`ls7glow 1.8s ease-in-out infinite`;
+    el.style.animationDelay=spinDelay+'s';
+    if(aTxt){
+      aTxt.style.animation=`ls7textblink 1.8s ease-in-out infinite`;
+      aTxt.style.animationDelay=spinDelay+'s';
+      aTxt.style.fontWeight='700';
+    }
     if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
   }
 }
