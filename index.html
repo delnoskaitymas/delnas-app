@@ -3963,7 +3963,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 30 + 44;
+      y = cy + rad + 30 + 68;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
@@ -3973,10 +3973,10 @@ async function buildStoryCardBlob(){
     ctx.fillStyle = '#f0c96a';
     y = drawWrappedCentered(ctx, name + ',', W/2, y, maxWidth, 56) + 4;
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 30;
+    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 22;
   } else {
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 30;
+    y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 22;
   }
 
   // --- Mažas skirtukas (linija + žvaigždutė centre)
@@ -3987,7 +3987,7 @@ async function buildStoryCardBlob(){
   ctx.fillStyle = '#d4a843';
   ctx.font = '18px "DM Sans", sans-serif';
   ctx.fillText('✦', W/2, y+7);
-  y += 54;
+  y += 34;
 
   // --- Bruožai: kompaktiškas, "ženkleliais" pažymėtas sąrašas (3 svarbiausi
   // I skyriaus asmens bruožai — mažiau, bet ryškiau, geresniam skaitomumui
@@ -4011,7 +4011,11 @@ async function buildStoryCardBlob(){
     if(line) lines.push(line.trim());
     const lineH = 44;
     const blockH = lines.length * lineH;
-    const badgeCy = y + blockH/2 - lineH/2 + 12;
+    // Ženklelio vertikalus centras skaičiuojamas atsižvelgiant į teksto
+    // BAZINĘ liniją (fillText piešia nuo baseline, o ne nuo simbolio
+    // vidurio) — be šios pataisos ženkliukas atrodydavo per žemai,
+    // nesutampantis su teksto vidurio linija.
+    const badgeCy = y + ((lines.length-1)*lineH - 18)/2;
     ctx.textAlign = 'left';
     const textX = W/2 - textMaxW/2 + 14;
     drawStarBadge(ctx, textX - 56, badgeCy, badgeR);
