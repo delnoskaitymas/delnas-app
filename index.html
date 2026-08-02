@@ -806,6 +806,42 @@ function go(id){
     else{const el=document.getElementById(id);if(el){el.style.opacity='';el.style.animation='';el.style.width='100%';el.style.boxSizing='border-box';el.classList.add('active');}
     }
     if(id==='s-order'){const banner=document.getElementById('photos-done-banner');if(banner) banner.style.display=(photoLeft&&photoRight)?'flex':'none';}
+    // SCROLL REŽIMAS: dauguma ekranų (kamera, loading ir kt.) naudoja
+    // "fiksuoto body + vidinio #app-wrap scroll konteinerio" architektūrą —
+    // tai patogu pilnaekraniams ekranams, kuriems scroll'inti nereikia.
+    // TAČIAU rezultato ekranui (s-result) reikia PATIKIMO, ILGO turinio
+    // scroll'inimo — o įdėtas ("nested") fixed+overflow:auto konteineris
+    // kai kuriose Android naršyklėse/WebView gali nepatikimai reaguoti į
+    // touch scroll gestus su dinamiškai įterptu, ilgu turiniu. Todėl būtent
+    // šiam ekranui perjungiame į PAPRASTĄ, NATŪRALŲ puslapio (document)
+    // scroll'inimą — universaliausiai palaikomą, be jokių "nested scroll
+    // container" keblumų.
+    const awScroll=document.getElementById('app-wrap');
+    if(id==='s-result'){
+      document.documentElement.style.position='static';
+      document.documentElement.style.overflow='visible';
+      document.documentElement.style.height='auto';
+      document.body.style.position='static';
+      document.body.style.overflow='visible';
+      document.body.style.height='auto';
+      if(awScroll){
+        awScroll.style.position='static';
+        awScroll.style.overflowY='visible';
+        awScroll.style.height='auto';
+      }
+    } else {
+      document.documentElement.style.position='';
+      document.documentElement.style.overflow='';
+      document.documentElement.style.height='';
+      document.body.style.position='';
+      document.body.style.overflow='';
+      document.body.style.height='';
+      if(awScroll){
+        awScroll.style.position='';
+        awScroll.style.overflowY='';
+        awScroll.style.height='';
+      }
+    }
     window.scrollTo(0,0);
     const cta=document.getElementById('sticky-cta');
     if(cta) cta.style.display='none';
@@ -2365,13 +2401,6 @@ function animateLoading(){
   });
   if(pbar) pbar.style.width='0%';
   requestWakeLock();
-  // ŠIS EKRANAS RODO TIK 2 REALIUS SERVERIO ETAPUS (žr. runPalmAnalysis()
-  // index.js faile): (1) delno bruožų atpažinimas, (2) pilnos analizės
-  // generavimas. Žemiau išvardinti 7 punktai NĖRA atskirai, individualiai
-  // sekami serverio įvykiai — jie visi generuojami VIENU bendru užklausimu
-  // per (2) etapą, todėl visi kartu pažymimi kaip "vykdomi" TIKSLIAI tuo
-  // momentu, kai serveris realiai patvirtina, kad prasidėjo 2 etapas — o
-  // ne dirbtinai, vienas po kito, pagal laikrodį (kaip buvo anksčiau).
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
   let phaseShown=1;let phase2StartElapsed=null;
@@ -2412,17 +2441,12 @@ function animateLoading(){
   switchMicroPool(phase1Texts);
 
   // REALUS perėjimas į 2 etapą — visi 7 punktai pažymimi kaip "vykdomi"
-  // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui).
-  // Pirmas 0,5 sekundės punktai sąmoningai lieka NEAKTYVŪS (trumpa
-  // vizualinė pauzė prieš perėjimą), tada visi iškart tampa aktyvūs ir
-  // pradeda vienodai švytėti/mirksėti (ta pati stilistika, kokia anksčiau
-  // buvo taikoma tik paskutiniam, 7-am punktui).
+  // VIENU metu (nes serveryje jie ir generuojami vienu metu, ne paeiliui),
+  // TIKSLIAI tuo momentu, kai serveris realiai patvirtina 2 etapo pradžią —
+  // be jokio dirbtinio delsimo.
   function activatePhase2Visuals(){
     switchMicroPool(phase2Texts);
-    setTimeout(()=>{
-      if(finished) return;
-      [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
-    },500);
+    [1,2,3,4,5,6,7].forEach(n=>activateStep(n,false));
   }
 
   function finishNow(forced){
@@ -2815,17 +2839,14 @@ function initScrollReveal(){
     // besąlygiškai suveikiantis `setTimeout` — mažiausiai galimų klaidos
     // taškų, didžiausias patikimumas.
     setTimeout(startRevealChecks,350);
-    // Papildomas, vėlesnis scroll konteinerio perskaičiavimas — kai kada
-    // šriftai (Playfair Display, DM Sans) pilnai užsikrauna tik po kelių
-    // šimtų ms, ir dėl to gali (šiek tiek) pasikeisti bendras turinio
-    // aukštis. Šis antrasis reflow yra papildoma apsauga PRIE jau esančio
-    // displayResult() reflow, kad scroll'inimas liktų teisingas.
+    // Papildomas, vėlesnis reflow — kai kada šriftai (Playfair Display,
+    // DM Sans) pilnai užsikrauna tik po kelių šimtų ms, ir dėl to gali
+    // (šiek tiek) pasikeisti bendras turinio aukštis. Šis antrasis reflow
+    // yra papildoma apsauga PRIE jau esančio displayResult() reflow.
     setTimeout(()=>{
-      if(app){
-        app.style.overflowY='hidden';
-        void app.offsetHeight;
-        app.style.overflowY='auto';
-      }
+      document.body.style.overflow='hidden';
+      void document.body.offsetHeight;
+      document.body.style.overflow='visible';
     },1500);
 
     // TRIGUBA APSAUGA (patikrinta senesnėje šio failo versijoje):
@@ -3110,18 +3131,16 @@ function displayResult(r){
   }
   // PATAISYMAS: kai kuriose Android naršyklėse (WebView) po dinamiško,
   // gana didelio turinio įterpimo (visas rezultatų tekstas, kortelės ir kt.)
-  // scroll konteineris (#app-wrap) kartais "nepastebi" naujo, didesnio
-  // turinio aukščio, ir scroll'inimas lieka užstrigęs ties senu dydžiu.
-  // Priverstinis overflow perjungimas (hidden→auto) + reflow priverčia
-  // naršyklę iš naujo apskaičiuoti scroll'inamą sritį.
+  // scroll'inamas elementas kartais "nepastebi" naujo, didesnio turinio
+  // aukščio. Kadangi s-result dabar naudoja natūralų document/window
+  // scroll'inimą (žr. go() funkciją), priverstinis reflow taikomas
+  // document.documentElement/body — universaliai patikimas metodas bet
+  // kuriame naršyklės scroll'inimo kontekste.
   requestAnimationFrame(()=>{
-    const appWrap=document.getElementById('app-wrap');
-    if(appWrap){
-      appWrap.style.overflowY='hidden';
-      void appWrap.offsetHeight; // priverstinis reflow
-      appWrap.style.overflowY='auto';
-      appWrap.scrollTop=0;
-    }
+    document.body.style.overflow='hidden';
+    void document.body.offsetHeight; // priverstinis reflow
+    document.body.style.overflow='visible';
+    window.scrollTo(0,0);
   });
   // Pastaba: go('s-result') NEBEKVIEČIAMAS čia — visi šios funkcijos callers
   // (fetchResultsAndNavigate, showFinalResult, shared-link handleriai) patys
