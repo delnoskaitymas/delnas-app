@@ -242,14 +242,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   0%,100%{box-shadow:2px 0 10px rgba(212,168,67,.08);border-left-color:var(--gold)}
   50%{box-shadow:2px 0 18px rgba(212,168,67,.5),0 0 24px rgba(212,168,67,.2);border-left-color:#fff0a0}
 }
-@keyframes ls7glow{
-  0%,100%{box-shadow:0 0 5px rgba(212,168,67,.1);opacity:1}
-  50%{box-shadow:0 0 12px rgba(212,168,67,.32),0 0 18px rgba(212,168,67,.1);opacity:.95}
-}
-@keyframes ls7textblink{
-  0%,100%{color:rgba(255,255,255,.95)}
-  50%{color:#f0d99a}
-}
 @keyframes palmPulse{0%{opacity:0}50%{opacity:.7}100%{opacity:0}}#o-name::placeholder,#o-email::placeholder{color:rgba(255,255,255,.5);}#o-name:focus,#o-email:focus{border-color:rgba(212,168,67,.8);background:rgba(255,255,255,.12);}
 /* Slėpti Stripe generuojamus nukreipimo pranešimus iframe viduje */
 #stripe-payment-element .p-BankRedirectSection,
@@ -2641,16 +2633,6 @@ function activateStep(n,done,waveDelayMs){
     if(aIcon){aIcon.style.borderColor='rgba(212,168,67,.6)';aIcon.style.background='rgba(212,168,67,.08)';}
     // Mikrotekstas sinchronizuotas
     if(typeof updateMicroText==='function') updateMicroText(n-1,true);
-    // Švytėjimas ir mirksėjimas — taikoma VISIEMS aktyviems punktams, TAIP
-    // PAT sinchronizuota (neigiama delsa), kad visi punktai švytėtų/mirksėtų
-    // tiksliai kartu, nepriklausomai nuo bangos aktyvavimo momento.
-    el.style.animation=`ls7glow 1.8s ease-in-out infinite`;
-    el.style.animationDelay=spinDelay+'s';
-    if(aTxt){
-      aTxt.style.animation=`ls7textblink 1.8s ease-in-out infinite`;
-      aTxt.style.animationDelay=spinDelay+'s';
-      aTxt.style.fontWeight='700';
-    }
     if(aIcon){aIcon.style.background='rgba(212,168,67,.18)';aIcon.style.borderColor='var(--gold2)';}
   }
 }
