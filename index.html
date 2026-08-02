@@ -4082,14 +4082,14 @@ async function buildStoryCardBlob(){
     ctx.shadowBlur = 0;
     ctx.font = '700 44px "DM Sans", sans-serif';
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 52) + 40;
+    y = drawWrappedCentered(ctx, 'tavo gyvenimo žemėlapis', W/2, y, maxWidth, 52) + 16;
   } else {
     ctx.font = '700 46px "Playfair Display", Georgia, serif';
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 22;
+    y = drawWrappedCentered(ctx, 'Tavo gyvenimo žemėlapis', W/2, y, maxWidth, 56) + 16;
   }
 
-  y += 14;
+  y += 6;
 
   // --- Bruožai: MINI KORTELIŲ blokai — tiksliai atkartoja rezultato
   // ekrano "insight-card" bloko stilių (skaidrus auksinis fonas, plonos
@@ -4099,12 +4099,12 @@ async function buildStoryCardBlob(){
   const highlights = allTraits.slice(0, 3);
   const cardW = maxWidth;
   const cardX = W/2 - cardW/2;
-  const cardPadX = 28, cardPadY = 20;
-  const iconSize = 52, iconGap = 22;
+  const cardPadX = 26, cardPadY = 14;
+  const iconSize = 48, iconGap = 20;
   const textMaxW = cardW - cardPadX*2 - iconSize - iconGap;
   ctx.textBaseline = 'alphabetic';
   highlights.forEach((txt) => {
-    ctx.font = '600 34px "DM Sans", sans-serif';
+    ctx.font = '600 33px "DM Sans", sans-serif';
     const words = txt.split(' ');
     let line = ''; const lines = [];
     words.forEach(w=>{
@@ -4113,7 +4113,7 @@ async function buildStoryCardBlob(){
       else line = test;
     });
     if(line) lines.push(line.trim());
-    const lineH = 42;
+    const lineH = 40;
     const textBlockH = lines.length * lineH;
     const cardH = Math.max(iconSize, textBlockH) + cardPadY*2;
     const cardY = y;
@@ -4147,10 +4147,10 @@ async function buildStoryCardBlob(){
     lines.forEach(l=>{ ctx.fillText(l, textX, ly); ly += lineH; });
     ctx.textAlign = 'center';
 
-    y += cardH + 18;
+    y += cardH + 10;
   });
 
-  y += 30;
+  y += 14;
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
