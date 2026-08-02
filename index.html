@@ -595,7 +595,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <span id="ppct">0%</span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
-      <div id="micro-text" style="display:none;font-size:10px;color:rgba(212,168,67,.8);text-align:center;height:14px;font-style:italic;letter-spacing:.02em;opacity:0;transition:opacity 0.5s ease;margin-top:3px;padding:0 8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      
     </div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
@@ -2417,15 +2417,15 @@ function animateLoading(){
   }
   function microShowCurrent(gen,idx){
     if(gen!==microGen) return;
-    const mt=document.getElementById('micro-text');
+    const mt=document.getElementById('ptime');
     if(!mt) return;
     const txt=microPool[idx%microPool.length];
-    mt.style.transition='opacity 0.15s ease';mt.style.opacity='0';
+    mt.style.transition='opacity 0.25s ease';mt.style.opacity='0';
     setTimeout(()=>{
       if(gen!==microGen) return;
       mt.textContent=txt;mt.style.opacity='1';
       microTimer=setTimeout(()=>{microShowCurrent(gen,idx+1);},getMicroInterval());
-    },150);
+    },250);
   }
   function switchMicroPool(pool){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
@@ -2433,8 +2433,6 @@ function animateLoading(){
   }
   function stopMicro(){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
-    const mt=document.getElementById('micro-text');
-    if(mt){mt.style.transition='opacity 0.3s ease';mt.style.opacity='0';}
   }
   window._stopMicroText=stopMicro;
   switchMicroPool(phase1Texts);
@@ -2525,7 +2523,6 @@ function animateLoading(){
     if(phaseShown<2){
       // 1 etapas: delno bruožų atpažinimas — paprastai greitas
       pct=Math.min((elapsed/15)*20,20);
-      if(ptime) ptime.textContent='Atpažįstame tavo delno bruožus ir charakterio kodą...';
     } else {
       // 2 etapas: pilnos analizės generavimas — ilgesnis, todėl lėtesnė,
       // laipsniškai lėtėjanti kreivė iki ~96% (vizualinis įvertis, laukiant
@@ -2537,7 +2534,6 @@ function animateLoading(){
       else if(e2<=100) pct=75+(e2-70)/30*13;
       else if(e2<=130) pct=88+(e2-100)/30*6;
       else pct=94+Math.min((e2-130)/40,1)*2;
-      if(ptime) ptime.textContent='Generuojame tavo asmeninę analizę...';
     }
     pct=Math.min(pct,96);
     const pctRound=Math.round(pct);
