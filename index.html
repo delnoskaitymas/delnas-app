@@ -110,7 +110,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ls-status{font-size:14px;flex-shrink:0;width:18px;text-align:center}
 @keyframes payGlow{0%,100%{box-shadow:0 0 4px rgba(240,201,106,.5),0 0 0 rgba(240,201,106,0);filter:brightness(1)}50%{box-shadow:0 0 12px rgba(240,201,106,.9),0 0 20px rgba(240,201,106,.4);filter:brightness(1.15)}}
 @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes connectorFlow{0%{background-position:0 100%}100%{background-position:0 -100%}}
 @keyframes lsBreathe{
   0%,100%{box-shadow:0 0 0 rgba(212,168,67,0);border-left-color:var(--gold)}
   50%{box-shadow:0 0 14px rgba(212,168,67,.28),0 0 22px rgba(212,168,67,.08);border-left-color:#f0d99a}
@@ -594,13 +593,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       
     </div>
-
-    <!-- Jungianti linija — vizualiai sujungia progreso juostą su punktų
-         sąrašu, rodydama, kad tai VIENAS tęstinis procesas, o ne du
-         atskiri, nesusiję elementai. "Tekančios energijos" efektas
-         (gradiento judėjimas žemyn) rodomas tik tada, kai realiai
-         vyksta 2 etapas (žr. activatePhase2Visuals). -->
-    <div id="ls-connector" style="display:none;width:2px;height:16px;margin:0 auto 6px;background:linear-gradient(180deg,rgba(212,168,67,.05) 0%,var(--gold2) 50%,rgba(212,168,67,.05) 100%);background-size:100% 200%;animation:connectorFlow 1.4s linear infinite;border-radius:2px"></div>
 
     <!-- Sąrašas su glassmorphism ir fade-out -->
     <div id="ls-group-label" style="display:none;text-align:center;font-size:11px;color:rgba(212,168,67,.7);font-style:italic;letter-spacing:.02em;margin-bottom:8px;transition:opacity .4s ease">✦ Visos šios sritys generuojamos kartu, vienu metu ✦</div>
@@ -2408,8 +2400,6 @@ function animateLoading(){
   if(sharedSpinnerReset) sharedSpinnerReset.style.display='none';
   const groupLabelReset=document.getElementById('ls-group-label');
   if(groupLabelReset) groupLabelReset.style.display='none';
-  const connectorReset=document.getElementById('ls-connector');
-  if(connectorReset) connectorReset.style.display='none';
   requestWakeLock();
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
@@ -2465,8 +2455,6 @@ function animateLoading(){
     if(sharedSpinner) sharedSpinner.style.display='inline-block';
     const groupLabel=document.getElementById('ls-group-label');
     if(groupLabel) groupLabel.style.display='block';
-    const connector=document.getElementById('ls-connector');
-    if(connector) connector.style.display='block';
     [1,2,3,4,5,6,7].forEach((n,i)=>{
       const delayMs=i*180;
       setTimeout(()=>{ if(!finished) activateStep(n,false,delayMs); }, delayMs);
@@ -2483,8 +2471,6 @@ function animateLoading(){
     if(sharedSpinner) sharedSpinner.style.display='none';
     const groupLabel=document.getElementById('ls-group-label');
     if(groupLabel) groupLabel.style.display='none';
-    const connector=document.getElementById('ls-connector');
-    if(connector) connector.style.display='none';
     // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
     // anksčiau, nei vartotojas spėjo pamatyti visą 2 etapo animaciją)
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
