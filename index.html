@@ -584,7 +584,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-top:20px;margin-bottom:8px">
       <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
       <div class="pbar-labels">
-        <span id="ppct">0%</span>
+        <span id="ppct" style="display:inline-flex;align-items:center;gap:6px"><span id="shared-spinner" style="display:none;width:11px;height:11px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);border-radius:50%;animation:spinStep .7s linear infinite;flex-shrink:0"></span><span id="ppct-num">0%</span></span>
         <span id="ptime" style="font-style:italic"></span>
       </div>
       
@@ -2382,15 +2382,17 @@ function startOracleCanvas(){
 function animateLoading(){
   requestWakeLock();startOracleCanvas();
   const prog=document.getElementById('cam-progress');if(prog) prog.style.visibility='hidden';
-  const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');const ppct=document.getElementById('ppct');
+  const pbar=document.getElementById('pbar');const ptime=document.getElementById('ptime');const ppct=document.getElementById('ppct-num');
   const loadScreen=document.getElementById('s-loading');
   const stepTexts=['Atrandamos tavo prigimtinės stiprybės ir charakterio kodas.','Nubrėžiama tavo asmeninė gyvenimo kryptis ir tikslai.','Analizuojamas tavo bendravimo stilius ir jo galia santykiams.','Atskleidžiamas tavo finansinio klestėjimo potencialas.','Atrandamas tavo unikalus sėkmės raktas.','Numatomi svarbiausi ateities pokyčiai ir galimybės.','Identifikuojamos pažangą stabdančios kliūtys.'];
   [1,2,3,4,5,6,7].forEach(i=>{
     const el=document.getElementById('ls'+i);const st=document.getElementById('ls'+i+'-status');const txt=el&&el.querySelector('.ls-text');
     if(el) el.classList.remove('active');if(txt) txt.textContent=stepTexts[i-1];
-    if(st){st.textContent='·';st.style.color='rgba(255,255,255,.25)';st.style.animation='';st.style.fontSize='18px';}
+    if(st){st.textContent='·';st.style.color='rgba(255,255,255,.25)';st.style.animation='';st.style.fontSize='18px';st.style.display='';}
   });
   if(pbar) pbar.style.width='0%';
+  const sharedSpinnerReset=document.getElementById('shared-spinner');
+  if(sharedSpinnerReset) sharedSpinnerReset.style.display='none';
   requestWakeLock();
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
@@ -2442,6 +2444,8 @@ function animateLoading(){
   // kai analizė realiai baigsis, žr. finishNow()).
   function activatePhase2Visuals(){
     switchMicroPool(phase2Texts);
+    const sharedSpinner=document.getElementById('shared-spinner');
+    if(sharedSpinner) sharedSpinner.style.display='inline-block';
     [1,2,3,4,5,6,7].forEach((n,i)=>{
       const delayMs=i*180;
       setTimeout(()=>{ if(!finished) activateStep(n,false,delayMs); }, delayMs);
@@ -2454,6 +2458,8 @@ function animateLoading(){
     if(window._loadTickInterval){clearInterval(window._loadTickInterval);window._loadTickInterval=null;}
     if(window._loadStatusInterval){clearInterval(window._loadStatusInterval);window._loadStatusInterval=null;}
     stopMicro();
+    const sharedSpinner=document.getElementById('shared-spinner');
+    if(sharedSpinner) sharedSpinner.style.display='none';
     // Pažymime visus žingsnius kaip baigtus (jei realus rezultatas atėjo
     // anksčiau, nei vartotojas spėjo pamatyti visą 2 etapo animaciją)
     [1,2,3,4,5,6].forEach(n=>activateStep(n,true));
@@ -2607,25 +2613,13 @@ function activateStep(n,done,waveDelayMs){
     const dTxt=el.querySelector('.ls-text');
     if(dTxt){dTxt.style.color='rgba(212,168,67,.75)';dTxt.style.fontWeight='500';dTxt.style.animation='none';}
   } else {
-    // Aktyvus žingsnis - ratukас + ryškus tekstas
+    // Aktyvus žingsnis - ryškus tekstas ir rėmelis (BE individualaus
+    // sukimosi ratuko — visus 7 punktus dabar atstovauja VIENAS bendras
+    // ratukas prie progreso juostos, nes jie realiai generuojami VIENU
+    // bendru serverio užklausimu, o ne kaip 7 nepriklausomi procesai).
     el.classList.add('active');el.classList.remove('done');
     el.style.boxShadow='none';el.style.animation='none';
-    st.textContent='';st.style.display='inline-block';
-    st.style.width='16px';st.style.height='16px';
-    st.style.border='2px solid rgba(212,168,67,.25)';
-    st.style.borderTopColor='var(--gold2)';
-    st.style.borderRadius='50%';
-    // SVARBU: visi 7 punktai aktyvuojami su nedidele "bangos" delsa (žr.
-    // activatePhase2Visuals) — jei kiekvieno ratuko sukimosi animacija
-    // tiesiog prasidėtų TĄ AKIMIRKĄ, kai punktas aktyvuojamas, ratukai
-    // suktųsi VISI SKIRTINGA FAZE (vieni pirma, kiti vėliau) ir atrodytų
-    // chaotiškai. NEIGIAMA animation-delay "atsuka" kiekvieno ratuko laikrodį
-    // taip, lyg jis būtų pradėjęs suktis TUO PAČIU momentu kaip pirmasis —
-    // rezultatas: visi ratukai sukasi tiksliai sinchronizuotai.
-    const spinDelay=-((waveDelayMs||0)/1000);
-    st.style.animation=`spinStep .7s linear infinite`;
-    st.style.animationDelay=spinDelay+'s';
-    st.style.fontSize='0';st.style.flexShrink='0';
+    st.style.display='none';
     // Ryškus tekstas
     const aTxt=el.querySelector('.ls-text');
     if(aTxt){aTxt.style.color='#e8e2d4';aTxt.style.fontWeight='600';}
