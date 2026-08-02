@@ -3689,6 +3689,7 @@ async function buildInviteCardBlob(name){
     await Promise.all([
       document.fonts.load('700 62px "Playfair Display"'),
       document.fonts.load('700 58px "Playfair Display"'),
+      document.fonts.load('700 48px "DM Sans"'),
       document.fonts.load('600 32px "DM Sans"'),
       document.fonts.load('700 24px "DM Sans"'),
       document.fonts.ready
@@ -3717,8 +3718,8 @@ async function buildInviteCardBlob(name){
   // nepavyksta (pvz. atidaryta ne iš rezultato ekrano), atsarginis
   // variantas — bendra "✦" portalo žiede, kaip anksčiau.
   const heroPhotoUrl = getHeroPhotoDataUrl();
-  const rad = 118;
-  const cx = W/2, cy = y + rad + 26;
+  const rad = 92;
+  const cx = W/2, cy = y + rad + 22;
   [ [rad+30, 'rgba(212,168,67,.18)', 1.5],
     [rad+18, 'rgba(212,168,67,.3)', 1.5],
     [rad+6,  'rgba(212,168,67,.5)', 2] ].forEach(([rr,col,lw])=>{
@@ -3799,11 +3800,11 @@ async function buildInviteCardBlob(name){
   // vardas jau įeina į patį sakinį) ir BE žvaigždutės ženklelio šalia
   // (paprasčiau, švariau).
   const inviteLine = name ? `${name} pakvietė tave sužinoti, kas užkoduota tavo delnuose` : 'Kažkas pakvietė tave sužinoti, kas užkoduota tavo delnuose';
-  ctx.font = '700 40px "DM Sans", sans-serif';
+  ctx.font = '700 48px "DM Sans", sans-serif';
   ctx.fillStyle = '#f7eccb';
   ctx.shadowColor = 'rgba(240,201,106,.4)';
   ctx.shadowBlur = 10;
-  y = drawWrappedCentered(ctx, inviteLine, W/2, y, maxWidth, 50) + 50;
+  y = drawWrappedCentered(ctx, inviteLine, W/2, y, maxWidth, 58) + 50;
   ctx.shadowBlur = 0;
 
   const btnLabel = 'www.delnaskaitymas.lt';
