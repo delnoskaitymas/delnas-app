@@ -2638,14 +2638,14 @@ function activateStep(n,done,waveDelayMs){
     // bendru serverio užklausimu, o ne kaip 7 nepriklausomi procesai).
     el.classList.add('active');el.classList.remove('done');
     st.style.display='none';
-    // "Kvėpavimo" efektas — VISI 7 aktyvūs punktai švelniai, TIKSLIAI
-    // SINCHRONIZUOTAI pulsuoja (rėmelio švytėjimas stiprėja/silpsta) VIENU
-    // ritmu, nepriklausomai nuo to, kada kiekvienas iš jų buvo aktyvuotas
-    // (bangos delsa). Tai vizualiai perteikia, kad visi 7 dalykai dabar
-    // apdorojami KARTU, kaip viena grupė — o ne kaip 7 nepriklausomi
-    // procesai. NEIGIAMA animation-delay (ta pati technika, kuri anksčiau
-    // naudota ratukams sinchronizuoti) užtikrina, kad pulsavimas visuose
-    // punktuose vyktų tiksliai ta pačia faze.
+    // "Šviesos perbėgimo" (shimmer) efektas — VISI 7 aktyvūs punktai
+    // švelniai, TIKSLIAI SINCHRONIZUOTAI rodo auksinį šviesos atspindį,
+    // slenkantį per foną, VIENU ritmu, nepriklausomai nuo to, kada
+    // kiekvienas iš jų buvo aktyvuotas (bangos delsa). Tai vizualiai
+    // perteikia, kad visi 7 dalykai dabar apdorojami KARTU, kaip viena
+    // grupė — o ne kaip 7 nepriklausomi procesai. NEIGIAMA animation-delay
+    // (ta pati technika, kuri anksčiau naudota ratukams sinchronizuoti)
+    // užtikrina, kad efektas visuose punktuose vyktų tiksliai ta pačia faze.
     const breatheDelay=-((waveDelayMs||0)/1000);
     el.style.backgroundImage='linear-gradient(100deg,transparent 42%,rgba(240,201,106,.35) 50%,transparent 58%)';
     el.style.backgroundSize='300% 100%';
