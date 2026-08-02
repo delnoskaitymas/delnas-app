@@ -1292,7 +1292,7 @@ app.get('/stripe-key', (req, res) => {
 // paspaudimas šio adreso vėl automatiškai neužregistruotų.
 app.get('/unsubscribe-reminder', (req, res) => {
   const email = (req.query.email || '').toString().trim().toLowerCase();
-  const page = (title, text) => `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title} — DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center;box-sizing:border-box}.box{max-width:400px}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p><p style="margin-top:24px"><a href="/">← Grįžti į DELNAS</a></p></div></body></html>`;
+  const page = (title, text, extra) => `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title} — DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center;box-sizing:border-box}.box{max-width:400px;width:100%}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p>${extra || ''}<p style="margin-top:24px"><a href="/">← Grįžti į DELNAS</a></p></div></body></html>`;
 
   if (!isValidEmail(email)) {
     return res.status(400).send(page('Klaida', 'Netinkamas el. pašto adresas nuorodoje.'));
@@ -1307,7 +1307,9 @@ app.get('/unsubscribe-reminder', (req, res) => {
     const reminders = loadReminders();
     const filtered = reminders.filter(r => r.email.toLowerCase() !== email);
     if (filtered.length !== reminders.length) saveReminders(filtered);
-    res.send(page('Atsisakyta', 'Daugiau šių priminimo laiškų negausi. Jei persigalvosi, tiesiog vėl paspausk „Primink man" rezultatų puslapyje.'));
+    const resubEmail = escapeHtml(email).replace(/'/g, "\\'");
+    const resubButton = `<button id="resub-btn" onclick="reSubscribe()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:#f0c96a;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;margin-top:22px">✦ Primink man</button><div id="resub-msg" style="margin-top:12px;font-size:13px;color:rgba(232,226,212,.6);min-height:18px"></div><script>function reSubscribe(){var btn=document.getElementById('resub-btn'),msg=document.getElementById('resub-msg');btn.disabled=true;btn.style.opacity='.6';fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'${resubEmail}'})}).then(function(r){return r.json();}).then(function(){btn.textContent='✓ Vėl užregistruota';msg.textContent='Priminimą gausi po 3 mėnesių.';}).catch(function(){msg.textContent='Nepavyko. Pabandyk dar kartą.';btn.disabled=false;btn.style.opacity='1';});}</script>`;
+    res.send(page('Atsisakyta', 'Daugiau šių priminimo laiškų negausi. Jei persigalvosi, tiesiog vėl paspausk „Primink man":', resubButton));
   } catch (e) {
     console.error('/unsubscribe-reminder klaida:', e.message);
     res.status(500).send(page('Klaida', 'Nepavyko apdoroti prašymo. Parašyk mums: info@delnaskaitymas.lt'));
@@ -1352,11 +1354,19 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
 
-    // Jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių priminimų"
-    // nuorodą laiške — negrąžiname klaidos, tiesiog neregistruojame naujo
-    // priminimo (jo pasirinkimas lieka galioti).
-    if (isReminderBlacklisted(email)) {
-      return res.json({ ok: true, message: 'Sutikimas priminimams anksčiau atšauktas' });
+    // SVARBU: jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių
+    // priminimų" nuorodą, bet DABAR SĄMONINGAI, SAVO NORU vėl paspaudžia
+    // "Primink man" mygtuką (naujas, aiškus veiksmas) — tai yra naujas,
+    // galiojantis sutikimas, kuris pakeičia ankstesnį atsisakymą (standartinė
+    // sutikimo praktika: vėlesnis aiškus veiksmas turi viršenybę). Todėl
+    // PAŠALINAME jį iš "nebenoriu gauti" sąrašo, o ne tyliai ignoruojame
+    // jo prašymą — priešingu atveju UI pažadas ("jei persigalvosi, tiesiog
+    // vėl paspausk") būtų neteisingas/neveikiantis.
+    const blacklist = loadReminderBlacklist();
+    const blIdx = blacklist.indexOf((email || '').toLowerCase());
+    if (blIdx !== -1) {
+      blacklist.splice(blIdx, 1);
+      saveReminderBlacklist(blacklist);
     }
 
     // Priminimas užregistruojamas TIK į tikrą 90 dienų eilę — laiškas
