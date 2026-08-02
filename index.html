@@ -3699,26 +3699,10 @@ async function buildInviteCardBlob(name){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#050303';
+  // Fonas — vientisas juodas, tiksliai kaip rezultato ekrano punktų blokai
+  // (.rs-std/.rs-feat), be jokių papildomų švytėjimų ar dekoratyvių taškelių.
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
-  const glowTop = ctx.createRadialGradient(W/2, 260, 30, W/2, 260, 680);
-  glowTop.addColorStop(0, 'rgba(212,168,67,.22)');
-  glowTop.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glowTop;
-  ctx.fillRect(0, 0, W, H);
-  const glowBottom = ctx.createRadialGradient(W/2, H-140, 20, W/2, H-140, 460);
-  glowBottom.addColorStop(0, 'rgba(212,168,67,.1)');
-  glowBottom.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glowBottom;
-  ctx.fillRect(0, 0, W, H);
-
-  const starDots = [[80,120],[960,90],[130,780],[950,820],[60,460],[1000,500],[200,60],[880,900]];
-  starDots.forEach(([sx,sy])=>{
-    ctx.beginPath();
-    ctx.arc(sx, sy, 1.6, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(240,201,106,.35)';
-    ctx.fill();
-  });
 
   ctx.textAlign = 'center';
   let y = 108;
@@ -4001,31 +3985,11 @@ async function buildStoryCardBlob(){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // --- Fonas: gilus juodas + du švelnūs auksiniai švytėjimai (gylio jausmui)
-  ctx.fillStyle = '#050303';
+  // --- Fonas: vientisas juodas, tiksliai kaip rezultato ekrano punktų
+  // blokai (.rs-std/.rs-feat), be jokių papildomų švytėjimų ar dekoratyvių
+  // taškelių fone.
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
-
-  const glowTop = ctx.createRadialGradient(W/2, 250, 30, W/2, 250, 700);
-  glowTop.addColorStop(0, 'rgba(212,168,67,.22)');
-  glowTop.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glowTop;
-  ctx.fillRect(0, 0, W, H);
-
-  const glowBottom = ctx.createRadialGradient(W/2, H-160, 20, W/2, H-160, 480);
-  glowBottom.addColorStop(0, 'rgba(212,168,67,.1)');
-  glowBottom.addColorStop(1, 'rgba(212,168,67,0)');
-  ctx.fillStyle = glowBottom;
-  ctx.fillRect(0, 0, W, H);
-
-  // --- Švelnus žvaigždžių/taškelių fonas (tas pats motyvas, kaip programos
-  // dekoratyvus "#stars" sluoksnis) — deterministinės, fiksuotos pozicijos.
-  const starDots = [[80,120],[960,90],[130,860],[950,900],[60,500],[1000,540],[200,60],[880,1000],[500,50],[540,1010]];
-  starDots.forEach(([sx,sy])=>{
-    ctx.beginPath();
-    ctx.arc(sx, sy, 1.6, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(240,201,106,.35)';
-    ctx.fill();
-  });
 
   const margin = 110;
   const maxWidth = W - margin*2;
