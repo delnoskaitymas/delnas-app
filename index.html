@@ -4077,7 +4077,7 @@ async function shareStory(){
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Pažvelk, ką pasakoja tavo delnai ✦';
+    const shareText = 'Pažvelk, ką pasakoja tavo delnai ✦ Jei nori sužinoti, ką pasakoja tavieji — pabandyk ir tu:';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
