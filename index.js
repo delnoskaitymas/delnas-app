@@ -25,25 +25,8 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const app = express();
 
 // --- Stripe Price ID'ai (Product catalog: "Delno skaitymo asmeninė analizė") ---
-// LIVE ir TEST rėžimai Stripe'e turi VISIŠKAI ATSKIRUS Price ID'us — test
-// raktu (sk_test_...) negalima pasiekti live Price objekto, ir atvirkščiai.
-// Todėl Price ID'ai dabar imami iš aplinkos kintamųjų (su live reikšmėmis
-// kaip numatytuoju atveju), kad testinį/gyvą režimą būtų galima perjungti
-// vien per Railway "Variables", nekeičiant kodo.
-//
-// TEST REŽIMUI ĮJUNGTI (Railway → Variables):
-//   STRIPE_SECRET_KEY       = sk_test_...
-//   STRIPE_PUBLISHABLE_KEY  = pk_test_...
-//   STRIPE_PRICE_ID_PROMO   = price_... (test režimo Price ID, 9,99 €)
-//   STRIPE_PRICE_ID_REGULAR = price_... (test režimo Price ID, 15,99 €)
-// (Test Price ID'us gausite Stripe Dashboard, perjungę viršuje "Test mode",
-// tada Product catalog → sukurkite/pasižiūrėkite tuos pačius produktus.)
-//
-// GRĮŽTI Į LIVE: tiesiog ištrinkite šiuos 4 kintamuosius iš Railway
-// Variables (arba įrašykite atgal sk_live_/pk_live_ ir live Price ID'us) —
-// kodas automatiškai naudos numatytąsias (live) reikšmes žemiau.
-const STRIPE_PRICE_ID_PROMO = process.env.STRIPE_PRICE_ID_PROMO || 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
-const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
+const STRIPE_PRICE_ID_PROMO = 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
+const STRIPE_PRICE_ID_REGULAR = 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
 // ACTIVE_PRICE_ID nurodo, kuri kaina ŠIUO METU realiai taikoma checkout metu.
 // Kol 9,99 € akcija dar nebuvo realiai taikyta bent tam tikrą laikotarpį,
 // parduodame už TIKRĄ, įprastą kainą (15,99 €) — kad vėliau, jei norėsite
@@ -52,18 +35,6 @@ const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1T
 // atskaitos taško). Kai būsite pasiruošę pradėti akciją, pakeiskite šią
 // konstantą į STRIPE_PRICE_ID_PROMO.
 const ACTIVE_PRICE_ID = STRIPE_PRICE_ID_REGULAR;
-
-// Paleidimo diagnostika: įspėja, jei Stripe rakto rėžimas (test/live)
-// neatitinka to, kas įprastai tikimasi — padeda greitai pastebėti būtent
-// tokią klaidą, kokią matėte anksčiau ("test mode key" vs "live" Price).
-if (process.env.STRIPE_SECRET_KEY) {
-  const stripeMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_test_') ? 'TEST' :
-                      process.env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'LIVE' : 'NEŽINOMAS';
-  console.log(`[STARTUP] Stripe raktas nustatytas rėžimu: ${stripeMode}. Naudojami Price ID'ai: PROMO=${STRIPE_PRICE_ID_PROMO}, REGULAR=${STRIPE_PRICE_ID_REGULAR}`);
-  if (stripeMode === 'TEST' && (STRIPE_PRICE_ID_PROMO.startsWith('price_1Tzgxj') || STRIPE_PRICE_ID_REGULAR.startsWith('price_1Tzgxj'))) {
-    console.error('[STARTUP ĮSPĖJIMAS] STRIPE_SECRET_KEY yra TEST rėžimo, bet naudojami numatytieji (LIVE) Price ID\'ai — mokėjimai žlugs. Nustatykite STRIPE_PRICE_ID_PROMO ir STRIPE_PRICE_ID_REGULAR aplinkos kintamuosius su TEST rėžimo Price ID\'ais.');
-  }
-}
 
 // Railway (kaip ir dauguma hostingų) veikia už reverse proxy, kuris prideda
 // X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
@@ -128,8 +99,18 @@ app.use(express.static(path.join(__dirname, '.'), {
 app.use('/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 
+// --- Patvari saugykla (Railway Volume, jei sumontuotas) ---
+// Jei SHARED_STORAGE_DIR aplinkos kintamasis nenustatytas, failai saugomi
+// TIESIOG konteinerio faile ("ephemeral" Railway failų sistemoje) —
+// kiekvieną kartą, kai programa iš naujo deploy'inama, šie failai
+// IŠTRINAMI (reminders.json, reminder-blacklist.json, shared_results.json).
+// Kad duomenys išliktų TARP deploy'ų, Railway projekte reikia pridėti
+// nuolatinį Volume (Settings → Volumes), sumontuoti jį, pvz., į "/data",
+// ir nustatyti aplinkos kintamąjį SHARED_STORAGE_DIR=/data.
+const SHARED_STORAGE_DIR = process.env.SHARED_STORAGE_DIR || __dirname;
+
 // --- Priminimų saugykla ---
-const REMINDERS_FILE = path.join(__dirname, 'reminders.json');
+const REMINDERS_FILE = path.join(SHARED_STORAGE_DIR, 'reminders.json');
 
 function loadReminders() {
   try {
@@ -146,7 +127,7 @@ function saveReminders(reminders) {
 // Reikalinga pagal ES ePrivacy direktyvą (perkelta į LT Elektroninių ryšių
 // įstatymą) — kiekvienas tiesioginės rinkodaros el. laiškas privalo turėti
 // paprastą, nemokamą būdą atsisakyti tolimesnių tokių laiškų.
-const REMINDER_BLACKLIST_FILE = path.join(__dirname, 'reminder-blacklist.json');
+const REMINDER_BLACKLIST_FILE = path.join(SHARED_STORAGE_DIR, 'reminder-blacklist.json');
 
 function loadReminderBlacklist() {
   try {
@@ -158,6 +139,7 @@ function loadReminderBlacklist() {
 function saveReminderBlacklist(list) {
   try { fs.writeFileSync(REMINDER_BLACKLIST_FILE, JSON.stringify(list, null, 2)); } catch(e) {}
 }
+
 
 function isReminderBlacklisted(email) {
   const list = loadReminderBlacklist();
@@ -1335,28 +1317,9 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
       return res.json({ ok: true, message: 'Sutikimas priminimams anksčiau atšauktas' });
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // LAIKINAS TESTAVIMO REŽIMAS (ŠIUO METU AKTYVUS)
-    // Paspaudus "Primink man" mygtuką, priminimo laiškas išsiunčiamas
-    // IŠ KARTO — kad būtų galima pamatyti, kaip jis atrodo realiai.
-    // KAI PATVIRTINSITE, KAD VISKAS ATRODO GERAI IR BŪSITE PASIRUOŠĘ
-    // GAMYBAI (production) — TIESIOG IŠTRINKITE ŠĮ BLOKĄ (tarp šių dviejų
-    // eilučių su "═"), o žemiau esantis TIKRAS 90 dienų atidėto
-    // priminimo mechanizmas (jau paruoštas, neliestas) toliau veiks
-    // savarankiškai, siųsdamas laiškus tik praėjus 3 mėnesiams.
-    try {
-      await mailer.sendMail({
-        from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
-        to: email,
-        subject: `${name ? escapeHtml(name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-        html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Atnaujinti žemėlapį →</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div></div>`
-      });
-      console.log(`[TESTAVIMO REŽIMAS] Priminimo laiškas IŠ KARTO išsiųstas: ${email}`);
-    } catch(testSendErr) {
-      console.error('[TESTAVIMO REŽIMAS] nepavyko iškart išsiųsti priminimo laiško:', testSendErr.message);
-    }
-    // ═══════════════════════════════════════════════════════════════
-
+    // Priminimas užregistruojamas TIK į tikrą 90 dienų eilę — laiškas
+    // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
+    // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
     const reminders = loadReminders();
     if (reminders.find(r => r.email === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
     reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
@@ -1378,17 +1341,17 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
 // PDF failą.
 
 // --- Dalinimosi rezultatai (saugomi faile) ---
-// SVARBU: jei SHARED_STORAGE_DIR nenustatytas, failas saugomas TIESIOG
-// konteinerio faile ("ephemeral" Railway failų sistemoje) — kiekvieną
-// kartą, kai programa iš naujo deploy'inama (nauja versija įkeliama),
-// šis failas IŠTRINAMAS ir visos anksčiau sugeneruotos dalinimosi
-// nuorodos nustoja veikti ("Ši analizė nebegalioja arba nerasta").
-// Kad nuorodos išliktų veikiančios TARP deploy'ų, Railway projekte
-// reikia pridėti nuolatinį Volume (Settings → Volumes), sumontuoti jį,
-// pvz., į "/data", ir nustatyti aplinkos kintamąjį
+// SVARBU: SHARED_STORAGE_DIR jau apibrėžtas failo pradžioje (naudojamas
+// taip pat reminders.json/reminder-blacklist.json failams). Jei jis
+// nenustatytas, šis failas saugomas TIESIOG konteinerio faile ("ephemeral"
+// Railway failų sistemoje) — kiekvieną kartą, kai programa iš naujo
+// deploy'inama, šis failas IŠTRINAMAS ir visos anksčiau sugeneruotos
+// dalinimosi nuorodos nustoja veikti ("Ši analizė nebegalioja arba
+// nerasta"). Kad nuorodos išliktų veikiančios TARP deploy'ų, Railway
+// projekte reikia pridėti nuolatinį Volume (Settings → Volumes),
+// sumontuoti jį, pvz., į "/data", ir nustatyti aplinkos kintamąjį
 // SHARED_STORAGE_DIR=/data — tada šis failas bus saugomas ten ir
 // išliks nepaliestas net po deploy'inimo.
-const SHARED_STORAGE_DIR = process.env.SHARED_STORAGE_DIR || __dirname;
 const SHARED_FILE = path.join(SHARED_STORAGE_DIR, 'shared_results.json');
 
 function loadShared() {
