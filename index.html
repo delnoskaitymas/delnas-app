@@ -4143,14 +4143,14 @@ async function buildStoryCardBlob(){
     ctx.textAlign = 'left';
     ctx.fillStyle = '#f5eed8';
     const textX = cardX + cardPadX + iconSize + iconGap;
-    let ly = cardY + cardH/2 + ((lines.length-1)*lineH - 16)/2;
+    let ly = cardY + cardH/2 - ((lines.length-1)*lineH - 16)/2;
     lines.forEach(l=>{ ctx.fillText(l, textX, ly); ly += lineH; });
     ctx.textAlign = 'center';
 
     y += cardH + 10;
   });
 
-  y += 14;
+  y += 28;
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
