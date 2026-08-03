@@ -1120,8 +1120,10 @@ async function initiatePayment(){
     }
     if(window._payMethod==='revolut'){
       // Revolut — per Stripe Checkout (vienintelis veikiantis būdas be Stripe UI)
+      // Suma NESIUNČIAMA — serveris (/create-checkout) visada naudoja
+      // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',amount:999,currency:'eur',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
+        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
       const data=await res.json();
       if(data.url){_savePhotos();window.location.href=data.url;}
       else throw new Error(data.error||'Klaida');
@@ -1129,8 +1131,11 @@ async function initiatePayment(){
     }
     // Kortelė
     if(!stripeInstance||!window._cardElement)throw new Error('Kortelės sistema neparuošta.');
+    // Suma NESIUNČIAMA — serveris (/create-payment) visada naudoja
+    // savo ACTIVE_PRICE_ID (activePrice.unit_amount), kliento siunčiamas
+    // amount būtų ignoruojamas.
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,amount:999})});
+      body:JSON.stringify({name,email})});
     const data=await res.json();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
@@ -4727,8 +4732,15 @@ function initPayment(){
   // Slėpti Google/Apple mygtukus jei nepalaikoma
   (async()=>{
     try{
+      // Šis PaymentRequest objektas naudojamas TIK patikrinti, ar
+      // Google/Apple Pay apskritai palaikomas šiame įrenginyje
+      // (pr.canMakePayment()) — jis NIEKADA nerodomas vartotojui ir
+      // nenaudojamas realiam mokėjimui, todėl konkreti suma čia
+      // nesvarbi (realią, tikrą sumą žr. žemiau, ten, kur kuriamas
+      // TIKRAS PaymentRequest realiam mokėjimui, imant kainą iš
+      // /price-info).
       const pr=stripeInstance.paymentRequest({country:'LT',currency:'eur',
-        total:{label:'test',amount:999},requestPayerName:false,requestPayerEmail:false});
+        total:{label:'Galimybės patikra',amount:100},requestPayerName:false,requestPayerEmail:false});
       const can=await pr.canMakePayment();
       if(!can||!can.googlePay){if(gBtn)gBtn.style.display='none';}
       if(!can||!can.applePay){if(aBtn)aBtn.style.display='none';}
@@ -4751,9 +4763,11 @@ function toggleCard(){}
 
 async function quickPay(method){
   try{
+    // Suma NESIUNČIAMA — serveris (/create-checkout) visada naudoja
+    // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
     const res=await fetch('/create-checkout',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,amount:999,currency:'eur',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
