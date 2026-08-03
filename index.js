@@ -165,6 +165,29 @@ function saveReminders(reminders) {
   try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
 }
 
+// --- Panaudotų užsakymo numerių saugykla (patvari, ne tik atmintyje) ---
+// ANKSČIAU susidūrimo patikra generateOrderNumber() viduje tikrindavo TIK
+// šiuo metu aktyvius (pendingOrders) užsakymus atmintyje — po serverio
+// perkrovimo ar užsakymo užbaigimo tas pats 6 skaitmenų numeris teoriškai
+// galėjo vėl pasitaikyti kitam klientui. Dabar VISI kada nors sugeneruoti
+// numeriai saugomi ČIA, patvariai (Railway Volume, jei sukonfigūruota),
+// tad numeris NIEKADA nebus pakartotinai priskirtas, net po daug metų ar
+// daugybės serverio perkrovimų.
+const USED_ORDER_NUMBERS_FILE = path.join(SHARED_STORAGE_DIR, 'used-order-numbers.json');
+
+function loadUsedOrderNumbers() {
+  try {
+    if (fs.existsSync(USED_ORDER_NUMBERS_FILE)) return new Set(JSON.parse(fs.readFileSync(USED_ORDER_NUMBERS_FILE, 'utf8')));
+  } catch(e) {}
+  return new Set();
+}
+
+function saveUsedOrderNumbers(set) {
+  try { fs.writeFileSync(USED_ORDER_NUMBERS_FILE, JSON.stringify([...set])); } catch(e) {}
+}
+
+const usedOrderNumbers = loadUsedOrderNumbers();
+
 // --- Priminimų "nebenoriu gauti" (unsubscribe) saugykla ---
 // Reikalinga pagal ES ePrivacy direktyvą (perkelta į LT Elektroninių ryšių
 // įstatymą) — kiekvienas tiesioginės rinkodaros el. laiškas privalo turėti
@@ -259,7 +282,9 @@ function generateOrderNumber() {
   let num;
   do {
     num = 'DLN-' + Math.floor(100000 + Math.random() * 900000);
-  } while (pendingOrders.has(num));
+  } while (pendingOrders.has(num) || usedOrderNumbers.has(num));
+  usedOrderNumbers.add(num);
+  saveUsedOrderNumbers(usedOrderNumbers);
   return num;
 }
 
