@@ -3975,7 +3975,7 @@ async function buildStoryCardBlob(){
   try{
     await Promise.all([
       document.fonts.load('700 62px "Playfair Display"'),
-      document.fonts.load('700 34px "DM Sans"'),
+      document.fonts.load('700 38px "DM Sans"'),
       document.fonts.load('600 36px "DM Sans"'),
       document.fonts.load('700 24px "DM Sans"'),
       document.fonts.ready
@@ -4067,7 +4067,7 @@ async function buildStoryCardBlob(){
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
-      y = cy + rad + 26 + 60;
+      y = cy + rad + 26 + 85;
     }catch(e){ console.error('[buildStoryCardBlob] nepavyko įkelti nuotraukos:', e); }
   }
 
@@ -4081,16 +4081,16 @@ async function buildStoryCardBlob(){
     ctx.shadowBlur = 18;
     y = drawWrappedCentered(ctx, name, W/2, y, maxWidth, 58) + 0;
     ctx.shadowBlur = 0;
-    ctx.font = '700 34px "DM Sans", sans-serif';
+    ctx.font = '700 38px "DM Sans", sans-serif';
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'tavo prigimtinės stiprybės ir charakteris', W/2, y, maxWidth, 42) + 16;
+    y = drawWrappedCentered(ctx, 'tavo prigimtinės stiprybės ir charakteris', W/2, y, maxWidth, 46) + 16;
   } else {
     ctx.font = '700 40px "Playfair Display", Georgia, serif';
     ctx.fillStyle = '#f5eed8';
     y = drawWrappedCentered(ctx, 'Tavo prigimtinės stiprybės ir charakteris', W/2, y, maxWidth, 48) + 16;
   }
 
-  y += 55;
+  y += 35;
 
   // --- Bruožai: MINI KORTELIŲ blokai — tiksliai atkartoja rezultato
   // ekrano "insight-card" bloko stilių (skaidrus auksinis fonas, plonos
@@ -4106,7 +4106,7 @@ async function buildStoryCardBlob(){
   const highlights = allTraits.slice(0, 3);
   const cardW = maxWidth;
   const cardX = W/2 - cardW/2;
-  const cardPadX = 26, cardPadY = 14;
+  const cardPadX = 26, cardPadY = 11;
   const iconSize = 48, iconGap = 20;
   const textMaxW = cardW - cardPadX*2 - iconSize - iconGap;
   ctx.textBaseline = 'alphabetic';
@@ -4157,7 +4157,7 @@ async function buildStoryCardBlob(){
     y += cardH + 10;
   });
 
-  y += 55;
+  y += 35;
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
