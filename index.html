@@ -510,7 +510,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti →</button>
+    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
     <div style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Vienintelė eilutė: saugumas + garantija (garantijos frazė yra paspaudžiama nuoroda) -->
       <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 dienų pinigų grąžinimo garantija</button></span>
@@ -1089,7 +1089,7 @@ async function initiatePayment(){
   }
   const restore=msg=>{
     if(errEl&&msg){errEl.textContent=msg;errEl.style.display='block';}
-    if(btn){btn.disabled=false;btn.style.opacity='1';btn.style.animation='payBtnBreathing 3s ease-in-out infinite';btn.innerHTML='Užsakyti ir apmokėti →';}
+    if(btn){btn.disabled=false;btn.style.opacity='1';btn.style.animation='payBtnBreathing 3s ease-in-out infinite';btn.innerHTML='Užsakyti ir apmokėti';}
   };
   const name=window._userName||'';
   const email=window._userEmail||'';
@@ -1099,7 +1099,7 @@ async function initiatePayment(){
       const pr=window._payMethod==='google'?window._googlePayPR:window._applePayPR;
       if(!pr){restore('Mokėjimas neprieinamas šiame įrenginyje.');return;}
       pr.show();
-      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Užsakyti ir apmokėti →';}
+      if(btn){btn.disabled=false;btn.style.opacity='1';btn.textContent='Užsakyti ir apmokėti';}
       return;
     }
     if(window._payMethod==='revolut'){
@@ -4090,7 +4090,7 @@ async function buildStoryCardBlob(){
     y = drawWrappedCentered(ctx, 'Tavo prigimtinės stiprybės ir charakteris', W/2, y, maxWidth, 48) + 16;
   }
 
-  y += 18;
+  y += 8;
 
   // --- Bruožai: MINI KORTELIŲ blokai — tiksliai atkartoja rezultato
   // ekrano "insight-card" bloko stilių (skaidrus auksinis fonas, plonos
