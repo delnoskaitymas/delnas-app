@@ -3938,6 +3938,44 @@ function drawStarBadge(ctx, cx, cy, r){
   ctx.textBaseline = 'alphabetic';
   ctx.restore();
 }
+// Ženkliukas su TIKRA temos ikona (ta pati SVG, kuri naudojama rezultato
+// ekrano "insight-card" bruožų sąraše, žr. pillIconSvgs()/pillIconFor())
+// — vietoj bendros žvaigždutės, kiekvienam bruožui parenkama jį atitinkanti
+// ikona (pvz. smegenys logikai, širdis jausmams ir pan.), su ta pačia
+// pasikartojimo apsauga (kiekvienoje kortelėje skirtingos ikonos).
+async function drawTraitIconBadge(ctx, cx, cy, r, svgString){
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(212,168,67,.22)';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(212,168,67,.75)';
+  ctx.stroke();
+  ctx.restore();
+  try{
+    if(!svgString) throw new Error('no svg');
+    const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+    const img = await new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = svgDataUrl;
+    });
+    const iconSize = r * 1.3;
+    ctx.drawImage(img, cx - iconSize/2, cy - iconSize/2, iconSize, iconSize);
+  }catch(e){
+    // Atsarginis variantas — žvaigždutė (jei ikonos nepavyko įkelti)
+    ctx.save();
+    ctx.fillStyle = '#fce9a8';
+    ctx.font = `700 ${Math.round(r*1.1)}px "DM Sans", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✦', cx, cy+1);
+    ctx.textBaseline = 'alphabetic';
+    ctx.restore();
+  }
+}
 
 // Piešia dvigubą, "sertifikato" stiliaus rėmelį su auksiniais taškeliais
 // kampuose — atkartoja analizės ekrano portalo žiedų / plūduriuojančių
@@ -4110,7 +4148,8 @@ async function buildStoryCardBlob(){
   const iconSize = 48, iconGap = 20;
   const textMaxW = cardW - cardPadX*2 - iconSize - iconGap;
   ctx.textBaseline = 'alphabetic';
-  highlights.forEach((txt) => {
+  const usedPillIcons = new Set();
+  for (const txt of highlights) {
     ctx.font = '600 33px "DM Sans", sans-serif';
     const words = txt.split(' ');
     let line = ''; const lines = [];
@@ -4141,10 +4180,12 @@ async function buildStoryCardBlob(){
     ctx.fillRect(cardX, cardY, 6, cardH);
     ctx.restore();
 
-    // Žvaigždutės ženkliukas kairėje
+    // Temos ikonos ženkliukas kairėje — ta pati SVG, kuri naudojama
+    // rezultato ekrane šiam konkrečiam bruožui (pillIconFor()).
     const iconCx = cardX + cardPadX + iconSize/2;
     const iconCy = cardY + cardH/2;
-    drawStarBadge(ctx, iconCx, iconCy, iconSize/2);
+    const traitSvg = (typeof pillIconFor === 'function') ? pillIconFor(txt, usedPillIcons) : null;
+    await drawTraitIconBadge(ctx, iconCx, iconCy, iconSize/2, traitSvg);
 
     // Tekstas, vertikaliai centruotas kortelėje
     ctx.textAlign = 'left';
@@ -4155,7 +4196,7 @@ async function buildStoryCardBlob(){
     ctx.textAlign = 'center';
 
     y += cardH + 8;
-  });
+  }
 
   y += 40;
 
