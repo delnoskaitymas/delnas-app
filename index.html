@@ -4103,7 +4103,7 @@ async function buildStoryCardBlob(){
   // stebėjimus), todėl naudojami tik kaip atsarginis variantas, jei
   // stiprybių sąraše mažiau nei 3 punktai.
   const allTraits = [...(r.stiprybes_sarasas || []), ...(r.prigimtines_insights || [])];
-  const highlights = allTraits.slice(0, 4);
+  const highlights = allTraits.slice(0, 3);
   const cardW = maxWidth;
   const cardX = W/2 - cardW/2;
   const cardPadX = 26, cardPadY = 10;
