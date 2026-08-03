@@ -220,6 +220,12 @@ setInterval(async () => {
 
 // --- Token sistema ---
 const validTokens = new Map();
+// Apsauga nuo pakartotinio PDF laiško siuntimo TAM PAČIAM užsakymui —
+// papildomas saugiklis PRIE kliento pusės apsaugos (žr. index.html
+// sendResultPdfEmail()), kuris atmintyje veikia tik kol serverio procesas
+// gyvas (t.y. iki kito deploy'inimo — tai priimtina, nes šis langas
+// aktualus tik trumpam, TOS PAČIOS UŽSAKYMO sesijos metu).
+const sentPdfEmailsForOrder = new Set();
 
 function createToken(name, email) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -1056,6 +1062,15 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
       return res.status(400).json({ error: 'Neteisingas arba per didelis PDF turinys' });
     }
+    // Papildoma apsauga: jei šis TIKSLUS užsakymo numeris jau kartą gavo
+    // PDF laišką (pvz. dėl naršyklės atnaujinimo su tuo pačiu session_id
+    // URL adrese), NEBEsiunčiame antro egzemplioriaus. Grąžiname "ok",
+    // kad klientas nematytų klaidos — laiškas juk jau realiai nuėjo.
+    if (orderNumber && sentPdfEmailsForOrder.has(orderNumber)) {
+      console.log(`[email-result-pdf] praleista — laiškas šiam užsakymui (${orderNumber}) jau išsiųstas anksčiau.`);
+      return res.json({ ok: true, alreadySent: true });
+    }
+    if (orderNumber) sentPdfEmailsForOrder.add(orderNumber);
     await mailer.sendMail({
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: email,
