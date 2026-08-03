@@ -977,7 +977,23 @@ window.addEventListener('DOMContentLoaded',async()=>{
   }).catch(()=>{/* liks statinis numatytasis skaičius */});
   const params2=new URLSearchParams(window.location.search);
   const sessionId=params2.get('session_id');
-  if(sessionId) verifyAndProceed(sessionId);
+  if(sessionId){
+    // SVARBU: iškart pašaliname "?session_id=..." iš adreso juostos.
+    // Anksčiau šis parametras likdavo URL amžinai — jei klientas PO
+    // sėkmingo mokėjimo tiesiog atnaujindavo (F5) naršyklės puslapį
+    // (labai įprastas, atsitiktinis veiksmas), programa KIEKVIENĄ KARTĄ
+    // iš naujo vykdydavo VISĄ procesą (mokėjimo patvirtinimą, rezultatų
+    // perkrovimą IR PAKARTOTINĮ PDF LAIŠKO IŠSIUNTIMĄ), nes
+    // window._pdfEmailSent apsauga yra tik atmintyje ir išsivalo su
+    // kiekvienu puslapio įkėlimu. history.replaceState() pašalina
+    // parametrą iš adreso juostos NEPERKRAUNANT puslapio, todėl vėlesnis
+    // atnaujinimas jo daugiau nebematys.
+    try{
+      const cleanUrl=window.location.pathname+window.location.hash;
+      window.history.replaceState({},document.title,cleanUrl);
+    }catch(e){ console.error('[session_id cleanup] klaida:',e); }
+    verifyAndProceed(sessionId);
+  }
   // Jei grįžtama iš Privatumo politikos puslapio (paspaudus "Grįžti atgal"),
   // vėl parodome tą patį sutikimo langą, kad vartotojas galėtų tęsti nuo
   // ten, kur sustojo, nepriklausomai nuo to, ar sutikimas šioje sesijoje
