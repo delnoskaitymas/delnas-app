@@ -1182,10 +1182,16 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    return fetch(url,Object.assign({},options,{signal:controller.signal}))
      .finally(()=>clearTimeout(timer));
  }
- // Diagnostikos indikatorius — rodo GYVĄ tikslią būseną tiesiai ekrane.
+ // Diagnostikos indikatorius — rodo GYVĄ tikslią būseną tiesiai ekrane,
+ // BET TIK jei URL adrese yra ?debug=1 — įprasti vartotojai (po realaus
+ // mokėjimo) niekada nemato šio techninio teksto (anksčiau bet kas galėjo
+ // pamatyti tokias eilutes, kaip "KLAIDA: ..." ar "WATCHDOG SUVEIKĖ...",
+ // kas galėjo sukelti nereikalingą nerimą tiesiai po apmokėjimo).
  const _diagStartTime=Date.now();
+ const _diagEnabled=(new URLSearchParams(window.location.search)).get('debug')==='1';
  function updatePayDiag(text){
    try{
+     if(!_diagEnabled) return;
      const el=document.getElementById('pay-diag');
      if(el) el.textContent='+'+(((Date.now()-_diagStartTime)/1000).toFixed(1))+'s | '+text;
    }catch(e){}
