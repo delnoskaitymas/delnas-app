@@ -3564,8 +3564,13 @@ function buildResultPdfDoc(r, name){
   const footerLine2 = 'Daugiau įžvalgų ir naujų atradimų rasi:';
   const footerBtnLabel = 'delnaskaitymas.lt';
   const footerUrl = 'https://www.delnaskaitymas.lt';
+  // Šilta, bet aiški pastaba apie paslaugos pobūdį — pagal taisykles
+  // reikalinga (nes PDF yra SAVARANKIŠKAS dokumentas, kuris keliauja
+  // atskirai nuo svetainės/ToS konteksto), bet suformuluota programos
+  // stiliumi, ne kaip šaltas teisinis įspėjimas.
+  const footerNote = 'Šis žemėlapis – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.';
   const footerGap = 14;    // kvėpuojantis tarpas virš footerio
-  const footerBlockH = 34; // apytikslis viso bloko aukštis (2 eilutės + mygtukas)
+  const footerBlockH = 48; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba)
   let footerY = y + footerGap;
   if(footerY + footerBlockH > 282){
     y = newPage();
@@ -3594,6 +3599,19 @@ function buildResultPdfDoc(r, name){
   doc.text(footerBtnLabel, W/2, btnY + btnH/2 + 3.2, {align:'center'});
   // Visas mygtuko stačiakampis yra paspaudžiamas (ne tik pats tekstas).
   doc.link(btnX, btnY, btnW, btnH, { url: footerUrl });
+
+  // Šilta pastaba apie paslaugos pobūdį — smulkiu, švelniai auksiniu
+  // kursyviniu šriftu, kaip kitos "✦" citatos ekrane/PDF, ne kaip šaltas
+  // teisinis įspėjimas.
+  doc.setFont('NotoSans','normal');
+  doc.setFontSize(10.5);
+  doc.setTextColor(DIVIDER[0], DIVIDER[1], DIVIDER[2]);
+  const noteLines = doc.splitTextToSize(footerNote, maxW - 20);
+  let noteY = btnY + btnH + 10;
+  noteLines.forEach(nl => {
+    doc.text(nl, W/2, noteY, {align:'center'});
+    noteY += 5.5;
+  });
 
   return doc;
 }
