@@ -243,23 +243,6 @@ setInterval(async () => {
 
 // --- Token sistema ---
 const validTokens = new Map();
-
-// --- Priminimo "double opt-in" patvirtinimo laukiantys įrašai ---
-// SVARBU: 90 dienų priminimo laiškas yra savanoriškas, vėliau (ne iš karto)
-// siunčiamas paskatinimas — t. y. artimas rinkodaros pobūdžio komunikacijai
-// (UWG §7 Abs. 2 Nr. 3 prasme), o ne grynai sandorio (transactional) laiškas
-// kaip užsakymo patvirtinimas ar PDF. Todėl, prieš realiai užregistruojant
-// priminimą 90 dienų eilėje, reikalaujame patvirtinimo paspaudžiant nuorodą
-// atskirame laiške ("double opt-in") — tai apsaugo nuo situacijos, kai
-// kažkas užsakymo metu įveda SVETIMĄ el. paštą, ir tas asmuo be savo žinios
-// gautų nepageidaujamą laišką po 3 mėnesių.
-const pendingReminderConfirmations = new Map();
-setInterval(() => {
-  const now = Date.now();
-  for (const [token, entry] of pendingReminderConfirmations.entries()) {
-    if (now - entry.createdAt > 24 * 60 * 60 * 1000) pendingReminderConfirmations.delete(token);
-  }
-}, 60 * 60 * 1000);
 // Apsauga nuo pakartotinio PDF laiško siuntimo TAM PAČIAM užsakymui —
 // papildomas saugiklis PRIE kliento pusės apsaugos (žr. index.html
 // sendResultPdfEmail()), kuris atmintyje veikia tik kol serverio procesas
@@ -1357,7 +1340,7 @@ app.get('/unsubscribe-reminder', (req, res) => {
     const filtered = reminders.filter(r => r.email.toLowerCase() !== email);
     if (filtered.length !== reminders.length) saveReminders(filtered);
     const resubEmail = escapeHtml(email).replace(/'/g, "\\'");
-    const resubButton = `<button id="resub-btn" onclick="reSubscribe()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:#f0c96a;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;margin-top:22px">✦ Primink man</button><div id="resub-msg" style="margin-top:12px;font-size:13px;color:rgba(232,226,212,.6);min-height:18px"></div><script>function reSubscribe(){var btn=document.getElementById('resub-btn'),msg=document.getElementById('resub-msg');btn.disabled=true;btn.style.opacity='.6';fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'${resubEmail}'})}).then(function(r){return r.json();}).then(function(){btn.textContent='✓ Išsiųsta';msg.textContent='Patikrink savo pašto dėžutę ir patvirtink priminimą per laišką, kurį ką tik išsiuntėme.';}).catch(function(){msg.textContent='Nepavyko. Pabandyk dar kartą.';btn.disabled=false;btn.style.opacity='1';});}</script>`;
+    const resubButton = `<button id="resub-btn" onclick="reSubscribe()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:#f0c96a;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;margin-top:22px">✦ Primink man</button><div id="resub-msg" style="margin-top:12px;font-size:13px;color:rgba(232,226,212,.6);min-height:18px"></div><script>function reSubscribe(){var btn=document.getElementById('resub-btn'),msg=document.getElementById('resub-msg');btn.disabled=true;btn.style.opacity='.6';fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'${resubEmail}'})}).then(function(r){return r.json();}).then(function(){btn.textContent='✓ Vėl užregistruota';msg.textContent='Priminimą gausi po 3 mėnesių.';}).catch(function(){msg.textContent='Nepavyko. Pabandyk dar kartą.';btn.disabled=false;btn.style.opacity='1';});}</script>`;
     res.send(page('Atsisakyta', 'Daugiau šių priminimo laiškų negausi. Jei persigalvosi, tiesiog vėl paspausk „Primink man":', resubButton));
   } catch (e) {
     console.error('/unsubscribe-reminder klaida:', e.message);
@@ -1409,68 +1392,31 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // kaip du skirtingi adresai (rizika gauti du priminimo laiškus).
     const email = (req.body.email || '').toString().trim().toLowerCase();
 
-    // Jei šis el. paštas jau turi realiai užregistruotą (patvirtintą)
-    // priminimą, nesiunčiame antro patvirtinimo laiško be reikalo.
-    const reminders = loadReminders();
-    if (reminders.find(r => (r.email || '').toLowerCase() === email)) return res.json({ ok: true, alreadyScheduled: true });
-
-    // DOUBLE OPT-IN: registruojame tik LAUKIANTĮ patvirtinimo įrašą ir
-    // išsiunčiame atskirą laišką su patvirtinimo nuoroda. Priminimas į
-    // TIKRĄ 90 dienų eilę patenka TIK paspaudus tą nuorodą (žr.
-    // /confirm-reminder žemiau) — taip apsaugome, kad priminimas
-    // nebūtų užregistruotas svetimam, be jo žinios įvestam el. paštui.
-    const token = crypto.randomBytes(24).toString('hex');
-    pendingReminderConfirmations.set(token, { email, name: name || '', createdAt: Date.now() });
-
-    const host = process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app';
-    const confirmUrl = `https://${host}/confirm-reminder?token=${token}`;
-    await mailer.sendMail({
-      from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
-      to: email,
-      subject: `Patvirtink priminimą — DELNAS ✦`,
-      html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(name) + ', paliko' : 'Paliko'} vieną žingsnį</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Patvirtink, kad nori priminimo po 3 mėnesių</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Kažkas (tikimės, kad tu!) paprašė priminimo apie naują delnų skaitymą po 3 mėnesių šiuo el. paštu. Jei tai buvai tu — patvirtink paspausdamas mygtuką žemiau. Jei ne — tiesiog ignoruok šį laišką, niekas nebus užregistruota.</div><div style="text-align:center;margin-bottom:20px"><a href="${confirmUrl}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Patvirtinti priminimą →</a></div></div>`
-    });
-    res.json({ ok: true, pendingConfirmation: true });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Priminimo "double opt-in" patvirtinimas — pasiekiamas iš /schedule-reminder
-// atsiųsto laiško nuorodos. Tik ČIA priminimas realiai patenka į 90 dienų
-// eilę (žr. pastabą prie pendingReminderConfirmations aukščiau faile).
-app.get('/confirm-reminder', (req, res) => {
-  const token = (req.query.token || '').toString();
-  const page = (title, text, extra) => `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title} — DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center;box-sizing:border-box}.box{max-width:400px;width:100%}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p>${extra || ''}<p style="margin-top:24px"><a href="/">← Grįžti į DELNAS</a></p></div></body></html>`;
-
-  const entry = pendingReminderConfirmations.get(token);
-  if (!entry) {
-    return res.status(400).send(page('Nuoroda nebegalioja', 'Ši patvirtinimo nuoroda jau panaudota arba nebegalioja (galioja 24 val.). Jei vis dar nori priminimo, grįžk į rezultato ekraną ir paspausk „Primink man" iš naujo.'));
-  }
-  pendingReminderConfirmations.delete(token);
-
-  try {
-    // Jei tarpe vartotojas buvo paspaudęs "Nebenoriu gauti" kitam
-    // priminimui, dabartinis, ką tik patvirtintas prašymas yra naujesnis,
-    // aiškus veiksmas — pašaliname iš "nebenoriu gauti" sąrašo (žr. tą
-    // pačią logiką, kuri anksčiau buvo /schedule-reminder viduje).
+    // SVARBU: jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių
+    // priminimų" nuorodą, bet DABAR SĄMONINGAI, SAVO NORU vėl paspaudžia
+    // "Primink man" mygtuką (naujas, aiškus veiksmas) — tai yra naujas,
+    // galiojantis sutikimas, kuris pakeičia ankstesnį atsisakymą (standartinė
+    // sutikimo praktika: vėlesnis aiškus veiksmas turi viršenybę). Todėl
+    // PAŠALINAME jį iš "nebenoriu gauti" sąrašo, o ne tyliai ignoruojame
+    // jo prašymą — priešingu atveju UI pažadas ("jei persigalvosi, tiesiog
+    // vėl paspausk") būtų neteisingas/neveikiantis.
     const blacklist = loadReminderBlacklist();
-    const blIdx = blacklist.indexOf(entry.email);
+    const blIdx = blacklist.indexOf(email);
     if (blIdx !== -1) {
       blacklist.splice(blIdx, 1);
       saveReminderBlacklist(blacklist);
     }
 
+    // Priminimas užregistruojamas TIK į tikrą 90 dienų eilę — laiškas
+    // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
+    // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
     const reminders = loadReminders();
-    if (reminders.find(r => (r.email || '').toLowerCase() === entry.email)) {
-      return res.send(page('Jau patvirtinta', 'Šis priminimas jau buvo patvirtintas anksčiau. Laiško sulauksi po 3 mėnesių.'));
-    }
-    reminders.push({ email: entry.email, name: entry.name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
+    if (reminders.find(r => (r.email || '').toLowerCase() === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
+    reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
     saveReminders(reminders);
-    res.send(page('Patvirtinta ✦', 'Priminimą apie naują delnų skaitymą gausi po 3 mėnesių.'));
-  } catch (e) {
-    console.error('/confirm-reminder klaida:', e.message);
-    res.status(500).send(page('Klaida', 'Nepavyko apdoroti patvirtinimo. Parašyk mums: info@delnaskaitymas.lt'));
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
