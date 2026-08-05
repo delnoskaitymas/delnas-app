@@ -1000,22 +1000,14 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
   }
 });
 
-// El. pašto siuntimas su rezultatais
-async function sendResultEmail(email, name, result) {
-  // Naudoti nodemailer jei sukonfigūruotas, arba išsaugoti queue
-  const emailData = { email, name, result, sentAt: new Date().toISOString() };
-  // Išsaugoti į failą kaip eilę (jei nėra SMTP)
-  try {
-    const queueFile = path.join(__dirname, 'email_queue.json');
-    let queue = [];
-    if (fs.existsSync(queueFile)) {
-      queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));
-    }
-    queue.push(emailData);
-    fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2));
-    console.log(`Email eilė: ${email} (${name})`);
-  } catch(e) { console.error('Email queue klaida:', e); }
-}
+// PASTABA: anksčiau čia buvo funkcija sendResultEmail(), likusi iš laikų
+// prieš Resend integraciją — ji NESIUSDAVO laiško, o tiesiog įrašydavo
+// kliento el. paštą, vardą IR analizės rezultatą į vietinį failą
+// (email_queue.json). Ji NIEKUR nebuvo kviečiama (negyvas kodas), bet
+// galėjo kelti riziką (asmens duomenys serverio faile be jokio realaus
+// tikslo) — pašalinta (2026-08) dėl tos pačios priežasties, dėl kurios
+// anksčiau pašalinti /share-result ir /store-pdf endpoint'ai: duomenų
+// kiekio mažinimo principas (BDAR 5(1)(c) str.).
 
 // Atnaujinti sesijos vardą ir el. paštą
 app.post('/update-session-name', sensitiveLimiter, (req, res) => {
