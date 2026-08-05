@@ -49,9 +49,9 @@
   <table>
     <tr><th>Paslaugų teikėjas</th><th>Paskirtis</th></tr>
     <tr><td>Anthropic (Claude AI)</td><td>Delnų nuotraukų analizė, teksto generavimas</td></tr>
-    <tr><td>Stripe</td><td>Mokėjimų apdorojimas</td></tr>
+    <tr><td>Stripe</td><td>Mokėjimų apdorojimas. Stripe scenarijus (js.stripe.com), naudojamas mokėjimo langui, gali savarankiškai nustatyti savo sukčiavimo prevencijos slapukus — jie nėra reklamos ar sekimo slapukai, o jų tvarkymą kontroliuoja Stripe pagal savo privatumo politiką.</td></tr>
     <tr><td>Resend</td><td>El. laiškų (užsakymo patvirtinimo, PDF, priminimų) siuntimas</td></tr>
-    <tr><td>Railway</td><td>Serverio infrastruktūra (talpinimas)</td></tr>
+    <tr><td>Railway</td><td>Serverio infrastruktūra (talpinimas). Techniniais ir saugumo tikslais (pvz., klaidų diagnostikai, apsaugai nuo piktnaudžiavimo) serveris trumpai įrašo veiklos žurnalus (logs), kuriuose gali būti IP adresas ar užsakymo el. paštas/vardas — jie saugomi ribotą laiką ir naudojami tik techniniam paslaugos veikimui užtikrinti.</td></tr>
     <tr><td>Google Fonts</td><td>Šriftų (Playfair Display, DM Sans) pateikimas — naršyklė juos parsisiunčia tiesiogiai iš Google serverių</td></tr>
     <tr><td>jsDelivr (CDN)</td><td>MediaPipe bibliotekos, naudojamos rankos atpažinimui kameroje, pateikimas</td></tr>
     <tr><td>Google Cloud Storage</td><td>MediaPipe rankos taškų atpažinimo modelio (naudojamo kameros ekrane) pateikimas</td></tr>
@@ -65,7 +65,7 @@
       <li><strong>Delnų nuotraukos ir analizės rezultatai</strong> serverio atmintyje saugomi laikinai, iki <strong>3 valandų</strong> nuo užsakymo — tam, kad būtų galima pateikti rezultatą, jei ryšys laikinai nutrūktų. Vėliau automatiškai ištrinami.</li>
       <li><strong>Laikini užsakymo įrašai</strong> (prieš apmokėjimą) saugomi iki <strong>6 valandų</strong>.</li>
       <li><strong>Priminimo užklausa</strong> (jei patys pasirenkate „Primink man") saugoma iki <strong>90 dienų</strong>, po to automatiškai ištrinama išsiuntus arba pasibaigus terminui.</li>
-      <li><strong>Dalinimasis rezultatais</strong> (mygtukai „Dalintis kortele su savybėmis" ir „Pakviesti draugą išbandyti") vyksta <strong>Jūsų įrenginyje</strong> — dalinimosi paveikslėlis sukuriamas naršyklėje ir persiunčiamas per Jūsų telefono/naršyklės dalinimosi funkciją; joks papildomas failas ar nuoroda dėl to serveryje nesaugoma.</li>
+      <li><strong>Dalinimasis rezultatais</strong> (mygtukai „Dalintis kortele su savybėmis", „Pakviesti draugą išbandyti" ir „Siųsti draugui PDF") vyksta <strong>Jūsų įrenginyje</strong> — dalinimosi paveikslėlis ar PDF sukuriamas naršyklėje ir persiunčiamas per Jūsų telefono/naršyklės dalinimosi funkciją; joks papildomas failas ar nuoroda dėl to serveryje nesaugoma.</li>
       <li>Jūsų <strong>PDF analizė lieka Jūsų el. pašto dėžutėje</strong> — tai vienintelė nuolatinė kopija; mūsų serveryje ji ilgai nesaugoma.</li>
     </ul>
   </div>
@@ -84,7 +84,7 @@
   <p>Norėdami pasinaudoti šiomis teisėmis, rašykite <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a> — atsakysime ne vėliau kaip per <strong>30 dienų</strong> (ypatingais, sudėtingesniais atvejais šis terminas gali būti pratęstas dar iki 2 mėnesių, apie tai Jus informuojant), tačiau dažniausiai atsakome per kelias darbo dienas.</p>
 
   <h2>6. Slapukai ir naršyklės saugykla</h2>
-  <p>Programa nenaudoja trečiųjų šalių sekimo ar reklamos slapukų. Naršyklės laikinoji saugykla (sessionStorage) naudojama tik tam, kad Jūsų nuotraukos ir progresas išliktų tarp ekranų vienos sesijos metu — ši informacija automatiškai išnyksta uždarius naršyklę.</p>
+  <p>Programa pati nenaudoja jokių slapukų. Naršyklės laikinoji saugykla (sessionStorage) naudojama tik tam, kad Jūsų nuotraukos ir progresas išliktų tarp ekranų vienos sesijos metu — ši informacija automatiškai išnyksta uždarius naršyklę. Programa nenaudoja trečiųjų šalių sekimo ar reklamos slapukų; vienintelė išimtis — Stripe mokėjimo langas gali nustatyti savo, sukčiavimo prevencijai skirtus, slapukus (žr. 3 skyrių).</p>
 
   <h2>7. Vaikų privatumas</h2>
   <p>Paslauga skirta pilnamečiams (18+) asmenims. Sąmoningai nerenkame duomenų iš nepilnamečių.</p>
