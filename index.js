@@ -132,7 +132,7 @@ app.use(express.json({ limit: '50mb' }));
 // Jei SHARED_STORAGE_DIR aplinkos kintamasis nenustatytas, failai saugomi
 // TIESIOG konteinerio faile ("ephemeral" Railway failų sistemoje) —
 // kiekvieną kartą, kai programa iš naujo deploy'inama, šie failai
-// IŠTRINAMI (reminders.json, reminder-blacklist.json, shared_results.json).
+// IŠTRINAMI (reminders.json, reminder-blacklist.json).
 // Kad duomenys išliktų TARP deploy'ų, Railway projekte reikia pridėti
 // nuolatinį Volume (Settings → Volumes), sumontuoti jį, pvz., į "/data",
 // ir nustatyti aplinkos kintamąjį SHARED_STORAGE_DIR=/data.
@@ -143,12 +143,12 @@ const SHARED_STORAGE_DIR = process.env.SHARED_STORAGE_DIR || __dirname;
 if (process.env.SHARED_STORAGE_DIR) {
   try {
     fs.accessSync(SHARED_STORAGE_DIR, fs.constants.W_OK);
-    console.log(`[STARTUP] SHARED_STORAGE_DIR nustatytas ir PASIEKIAMAS RAŠYMUI: ${SHARED_STORAGE_DIR} (Volume veikia teisingai — reminders.json, reminder-blacklist.json, shared_results.json bus patvarūs)`);
+    console.log(`[STARTUP] SHARED_STORAGE_DIR nustatytas ir PASIEKIAMAS RAŠYMUI: ${SHARED_STORAGE_DIR} (Volume veikia teisingai — reminders.json, reminder-blacklist.json bus patvarūs)`);
   } catch (e) {
     console.error(`[STARTUP KLAIDA] SHARED_STORAGE_DIR nustatytas (${SHARED_STORAGE_DIR}), BET NEPASIEKIAMAS rašymui: ${e.message} — patikrinkite, ar Volume Mount Path Railway'uje tiksliai sutampa su šia reikšme.`);
   }
 } else {
-  console.warn(`[STARTUP ĮSPĖJIMAS] SHARED_STORAGE_DIR NENUSTATYTAS — naudojama efemerinė __dirname saugykla (${SHARED_STORAGE_DIR}). reminders.json/reminder-blacklist.json/shared_results.json BUS IŠTRINTI kito deploy'inimo metu. Nustatykite SHARED_STORAGE_DIR aplinkos kintamąjį Railway Variables skiltyje.`);
+  console.warn(`[STARTUP ĮSPĖJIMAS] SHARED_STORAGE_DIR NENUSTATYTAS — naudojama efemerinė __dirname saugykla (${SHARED_STORAGE_DIR}). reminders.json/reminder-blacklist.json BUS IŠTRINTI kito deploy'inimo metu. Nustatykite SHARED_STORAGE_DIR aplinkos kintamąjį Railway Variables skiltyje.`);
 }
 
 // --- Priminimų saugykla ---
@@ -1459,86 +1459,22 @@ app.get('/preview-reminder-email', sensitiveLimiter, async (req, res) => {
   }
 });
 
-// PASTABA: bendras "catch-all" maršrutas (app.get('*', ...)) PERKELTAS į
-// patį failo GALĄ (žr. žemiau, prieš app.listen) — anksčiau jis buvo ČIA,
-// PRIEŠ /shared/:id, /store-pdf ir /pdf/:id maršrutus. Kadangi Express
-// GET maršrutus tikrina TIKSLIAI tokia tvarka, kokia jie užregistruoti
-// kode, šis bendras maršrutas PERIMDAVO visas šias užklausas PIRMIAU,
-// grąžindamas paprasčiausią index.html (pradinį ekraną) vietoj TIKROS PDF
-// nuorodos ar dalinimosi rezultato — būtent todėl "Kopijuoti nuorodą"
-// nuoroda visada vesdavo į pagrindinį programėlės ekraną, o ne parodydavo
-// PDF failą.
-
-// --- Dalinimosi rezultatai (saugomi faile) ---
-// SVARBU: SHARED_STORAGE_DIR jau apibrėžtas failo pradžioje (naudojamas
-// taip pat reminders.json/reminder-blacklist.json failams). Jei jis
-// nenustatytas, šis failas saugomas TIESIOG konteinerio faile ("ephemeral"
-// Railway failų sistemoje) — kiekvieną kartą, kai programa iš naujo
-// deploy'inama, šis failas IŠTRINAMAS ir visos anksčiau sugeneruotos
-// dalinimosi nuorodos nustoja veikti ("Ši analizė nebegalioja arba
-// nerasta"). Kad nuorodos išliktų veikiančios TARP deploy'ų, Railway
-// projekte reikia pridėti nuolatinį Volume (Settings → Volumes),
-// sumontuoti jį, pvz., į "/data", ir nustatyti aplinkos kintamąjį
-// SHARED_STORAGE_DIR=/data — tada šis failas bus saugomas ten ir
-// išliks nepaliestas net po deploy'inimo.
-const SHARED_FILE = path.join(SHARED_STORAGE_DIR, 'shared_results.json');
-
-function loadShared() {
-  try {
-    if (fs.existsSync(SHARED_FILE)) return JSON.parse(fs.readFileSync(SHARED_FILE, 'utf8'));
-  } catch(e) {}
-  return {};
-}
-
-function saveShared(data) {
-  try { fs.writeFileSync(SHARED_FILE, JSON.stringify(data)); } catch(e) {}
-}
-
-// Valyti pasibaigusius (po 7 dienų)
-setInterval(() => {
-  const data = loadShared();
-  const now = Date.now();
-  let changed = false;
-  for (const id in data) {
-    if (now - data[id].createdAt > 7 * 24 * 60 * 60 * 1000) { delete data[id]; changed = true; }
-  }
-  if (changed) saveShared(data);
-}, 60 * 60 * 1000);
-
-// Išsaugoti analizę
-app.post('/share-result', sensitiveLimiter, (req, res) => {
-  try {
-    const { result } = req.body;
-    if (!result || !result.prigimtines_stiprybes) return res.status(400).json({ error: 'Nėra rezultato' });
-    if (JSON.stringify(result).length > 200_000) return res.status(400).json({ error: 'Rezultatas per didelis' });
-    const id = crypto.randomBytes(8).toString('hex');
-    const data = loadShared();
-    data[id] = { result, createdAt: Date.now() };
-    saveShared(data);
-    const host = req.headers.host || process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app';
-    res.json({ id, url: `https://${host}/shared/${id}` });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Gauti dalinimosi rezultatą
-app.get('/shared-result/:id', (req, res) => {
-  const data = loadShared();
-  const entry = data[req.params.id];
-  if (!entry) return res.status(404).json({ error: 'Rezultatas nerastas' });
-  res.json(entry.result);
-});
-
-// Shared puslapis
-app.get('/shared/:id', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+// PASTABA: anksčiau čia buvo serverio pusės "dalinimosi nuoroda" ir "PDF
+// nuorodos kopijavimo" mechanizmai (/share-result, /shared-result/:id,
+// /shared/:id, /store-pdf, /pdf/:id), saugoję vartotojo analizės rezultatą
+// ir/ar PDF failą serveryje (faile arba atmintyje). Jie buvo PALIKTI
+// nenaudojami po to, kai dalinimosi funkcija buvo perkelta į kliento pusę
+// (canvas + navigator.share() — žr. index.html shareStory()/inviteFriend()/
+// sharePdfToFriend()), kuri VISIŠKAI neišsaugo jokių duomenų serveryje.
+// Kadangi šie senieji maršrutai jokios programos dalies nebebuvo kviečiami,
+// bet vis tiek priiminėjo užklausas ir galėjo saugoti asmens duomenis be
+// jokio realaus naudojimo tikslo, jie buvo PAŠALINTI (2026-08) — atitinka
+// duomenų kiekio mažinimo principą (BDAR 5(1)(c) str.) ir Privatumo
+// politikos teiginį, kad dalinimasis serveryje nieko neišsaugo.
 
 // Teisiniai puslapiai — Privatumo politika, Naudojimosi sąlygos ir Impressum.
 // SVARBU: šie maršrutai TURI būti registruoti PRIEŠ bendrą "catch-all"
-// (app.get('*', ...)) maršrutą failo gale — priešingu atveju jis juos
-// perimtų pirmiau (žr. ankstesnę pastabą apie /pdf/:id bugą).
+// maršrutą failo gale — priešingu atveju jis juos perimtų pirmiau.
 app.get('/privatumo-politika', (req, res) => {
   res.sendFile(path.join(__dirname, 'privatumo-politika.html'));
 });
@@ -1549,60 +1485,12 @@ app.get('/impressum', (req, res) => {
   res.sendFile(path.join(__dirname, 'impressum.html'));
 });
 
-// --- Laikinas PDF saugojimas dalinimuisi (atmintyje, su TTL) ---
-// Naudojama "Kopijuoti nuorodą" mygtukui rezultatų ekrane: vietoj to, kad
-// bandytume visą PDF turinį sutalpinti pačiame URL (kas anksčiau pasirodė
-// nepatikima — per ilgą tekstą sugadindavo įvairios pasiuntimo programos),
-// PDF laikinai saugomas serverio atmintyje, o nukopijuojama TRUMPA nuoroda,
-// kuri, atidaryta, tiesiog parodo/atsiunčia tą patį PDF failą.
-const pdfCache = new Map();
-setInterval(() => {
-  const now = Date.now();
-  for (const [id, entry] of pdfCache.entries()) {
-    if (now - entry.createdAt > 60 * 60 * 1000) pdfCache.delete(id);
-  }
-}, 15 * 60 * 1000);
-
-app.post('/store-pdf', sensitiveLimiter, (req, res) => {
-  try {
-    const { pdfBase64, fileName } = req.body;
-    if (!pdfBase64 || typeof pdfBase64 !== 'string' || pdfBase64.length > 15_000_000) {
-      return res.status(400).json({ error: 'Netinkami PDF duomenys' });
-    }
-    const id = crypto.randomBytes(8).toString('hex');
-    const safeFileName = String(fileName || 'gyvenimo-zemelapis.pdf').replace(/[^\w.\-]/g, '_');
-    pdfCache.set(id, { data: pdfBase64, fileName: safeFileName, createdAt: Date.now() });
-    // SVARBU: visada naudojame prekės ženklo domeną (www.delnaskaitymas.lt),
-    // o NE tą, kurį atsiuntė naršyklė (req.headers.host) — anksčiau
-    // nukopijuota nuoroda rodydavo neapdorotą Railway subdomeną
-    // (delnas-app-production.up.railway.app), kuris atrodo neprofesionaliai
-    // ir nesutampa su prekės ženklu, kurį vartotojai atpažįsta.
-    const host = 'www.delnaskaitymas.lt';
-    res.json({ url: `https://${host}/pdf/${id}` });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/pdf/:id', (req, res) => {
-  const entry = pdfCache.get(req.params.id);
-  if (!entry) return res.status(404).send('Šis PDF nebegalioja arba nerastas.');
-  try {
-    const buf = Buffer.from(entry.data, 'base64');
-    res.set('Content-Type', 'application/pdf');
-    res.set('Content-Disposition', `inline; filename="${entry.fileName}"`);
-    res.send(buf);
-  } catch (e) {
-    res.status(500).send('Nepavyko atidaryti PDF.');
-  }
-});
-
 // SVARBU: šis bendras "catch-all" maršrutas TURI būti PASKUTINIS
 // registruotas GET maršrutas šiame faile — jis veikia kaip atsarginis
 // variantas TIK toms užklausoms, kurios neatitiko NĖ VIENO aukščiau
-// esančio konkretaus maršruto (pvz. /pdf/:id, /shared/:id). Jei jis būtų
-// registruotas ANKSČIAU, jis perimtų visas vėlesnes užklausas pirmiau,
-// nei jos pasiektų savo tikruosius apdorotojus.
+// esančio konkretaus maršruto. Jei jis būtų registruotas ANKSČIAU, jis
+// perimtų visas vėlesnes užklausas pirmiau, nei jos pasiektų savo
+// tikruosius apdorotojus.
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
