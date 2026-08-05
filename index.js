@@ -1472,7 +1472,7 @@ app.get('/preview-reminder-email', sensitiveLimiter, async (req, res) => {
 // duomenų kiekio mažinimo principą (BDAR 5(1)(c) str.) ir Privatumo
 // politikos teiginį, kad dalinimasis serveryje nieko neišsaugo.
 
-// Teisiniai puslapiai — Privatumo politika, Naudojimosi sąlygos ir Impressum.
+// Teisiniai puslapiai — Privatumo politika ir Naudojimosi sąlygos.
 // SVARBU: šie maršrutai TURI būti registruoti PRIEŠ bendrą "catch-all"
 // maršrutą failo gale — priešingu atveju jis juos perimtų pirmiau.
 app.get('/privatumo-politika', (req, res) => {
@@ -1480,9 +1480,6 @@ app.get('/privatumo-politika', (req, res) => {
 });
 app.get('/naudojimosi-salygos', (req, res) => {
   res.sendFile(path.join(__dirname, 'naudojimosi-salygos.html'));
-});
-app.get('/impressum', (req, res) => {
-  res.sendFile(path.join(__dirname, 'impressum.html'));
 });
 
 // SVARBU: šis bendras "catch-all" maršrutas TURI būti PASKUTINIS
