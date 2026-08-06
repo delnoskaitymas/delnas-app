@@ -671,6 +671,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
 - Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
+- SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia") — prieš atiduodamas atsakymą, patikrink KIEKVIENĄ sakinį su "tu"
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
