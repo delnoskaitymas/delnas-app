@@ -2440,12 +2440,38 @@ function animateLoading(){
   requestWakeLock();
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
-  let phaseShown=1;let phase2StartElapsed=null;
+  let phaseShown=1;let phase2StartElapsed=null;let phase3Shown=false;
 
   const phase1Texts=['Atpažįstame tavo delno linijas ir formą...','Nustatome tavo pirštų ir delno proporcijas...','Vertiname vizualinius tavo delno požymius...','Fiksuojame charakteringus tavo delno bruožus...','Skenuojame tavo delno raštų tankį ir kryptis...','Analizuojame tavo delno linijų kryptis ir gilumą...','Nustatome tavo delno kalvelių išsidėstymą...','Tikriname tavo pirštų sąnarių formą ir ilgį...','Kartografuojame visą tavo delno paviršių...','Ruošiame surinktus duomenis gilesnei analizei...'];
-  const phase2Texts=['Nagrinėjame smulkias tavo charakterio detales...','Renkame duomenis apie tavo prigimtines stiprybes...','Analizuojame tavo asmeninę gyvenimo kryptį...','Tikslinamės, kokie siekiai tave labiausiai traukia...','Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname tavo santykių dinamiką ir modelius...','Skaičiuojame smulkius finansinės sėkmės ženklus...','Analizuojame tavo požiūrį į pinigus ir sėkmę...','Ieškome tavo unikalaus, asmeninio sėkmės rakto...','Formuojame tavo asmeninę sėkmės formulę...','Nagrinėjame artėjančių pokyčių ženklus...','Vertiname, kokios galimybės tau artimiausios...','Identifikuojame galimas kliūtis tavo kelyje...','Analizuojame, kas gali stabdyti tavo pažangą...','Sujungiame surinktas detales į bendrą žemėlapį...','Tikriname, kaip visos įžvalgos dera tarpusavyje...','Gilinamės į tavo unikalumą...','Lyginame surinktus duomenis su senaisiais archetipais...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Interpretuojame tavo santykių dinamikos ženklus...','Nustatome tavo prigimtinius talentus ir gabumus...','Atskleidžiame tavo emocinio atsparumo šaltinius...','Analizuojame tavo sprendimų priėmimo modelius...','Sudėliojame paskutinius tavo žemėlapio štrichus...','Tikriname visų surinktų įžvalgų nuoseklumą...','Formuluojame baigiamąsias tavo analizės išvadas...'];
+  const phase2Texts=[
+    // I · Prigimtinės stiprybės ir charakteris
+    'Nagrinėjame smulkias tavo charakterio detales...','Renkame duomenis apie tavo prigimtines stiprybes...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Nustatome tavo prigimtinius talentus ir gabumus...','Gilinamės į tavo unikalumą ir asmenybės bruožus...','Vertiname tavo delno odos tekstūrą bei energijos tipą...','Nagrinėjame pirštų narelių struktūrą ir formą...','Vertiname pagrindinių delno kalvelių iškilumą ir gyvumą...','Identifikuojame pasąmoningus asmenybės polinkius...',
+    // II · Gyvenimo kryptis ir tikslai
+    'Analizuojame tavo asmeninę gyvenimo kryptį...','Tikslinamės, kokie siekiai tave labiausiai traukia...','Lyginame surinktus duomenis su senaisiais archetipais...','Analizuojame tavo sprendimų priėmimo modelius...','Skaitome gyvenimo ir galvos linijų susikirtimo niuansus...','Vertiname tavo vidinį kompasą ir krypties pasirinkimus...','Gilinamės į ilgalaikių tikslų ir prigimties suderinamumą...',
+    // III · Bendravimo būdas ir jo įtaka santykiams
+    'Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname tavo santykių dinamiką ir modelius...','Interpretuojame tavo tarpasmeninių ryšių ženklus...','Skaitome emocinio išraiškingumo ir empatijos linijas...','Nagrinėjame širdies linijos lankstumą bei emocinį jautrumą...','Vertiname tavo gebėjimą megzti ilgalaikius ryšius...','Analizuojame bendravimo energetiką ir atvirumo laipsnį...',
+    // IV · Finansinis potencialas
+    'Skaičiuojame smulkius finansinės sėkmės ženklus...','Analizuojame tavo požiūrį į pinigus, gerovę ir sėkmę...','Vertiname materialios apyvartos ir stabilumo potencialą...','Ieškome materialios sėkmės ir resursų valdymo ženklų...','Nagrinėjame pinigų linijos ir likimo sankirtas delne...',
+    // V · Unikalus sėkmės raktas
+    'Ieškome tavo unikalaus, asmeninio sėkmės rakto...','Formuojame tavo asmeninę sėkmės formulę...','Identifikuojame paslėptus savirealizacijos klodus ir galimybių taškus...','Skaitome talento ir pasiekimų sinergijos taškus...','Atskleidžiame tavo asmeninio augimo pagreitio formulę...',
+    // VI · Svarbiausi artėjantys pokyčiai
+    'Nagrinėjame artėjančių gyvenimo pokyčių ženklus...','Vertiname, kokios naujos galimybės tau atsiveria artimiausiu metu...','Skaitome likimo ir laiko ciklų posūkius...','Tikriname laiko tėkmės ir artėjančių permainų impulsus...','Fiksuojame naujo gyvenimo etapo pradžios ženklus...',
+    // VII · Pažangą stabdančios kliūtys
+    'Identifikuojame galimas vidines ir išorines kliūtis tavo kelyje...','Analizuojame, kas sąlygoja įtampą ir gali stabdyti tavo pažangą...','Vertiname emocinio atsparumo šaltinius ir rizikos veiksnius...','Atskleidžiame pasąmonines stabdančias baimes ar abejones...','Vertiname stresinių faktorių įtaką tavo sprendimams...'
+  ];
+  // Nuo 85% progreso rodomos UŽBAIGIAMOJO, o ne "dar renkame duomenis" tono
+  // frazės — kad tekstas atitiktų vizualiai jau beveik pilną progreso juostą.
+  const phase3Texts=['Sujungiame visas surinktas įžvalgas į bendrą tavo gyvenimo žemėlapį...','Tikriname, kaip visos įžvalgos dera tarpusavyje...','Sudėliojame paskutinius tavo žemėlapio štrichus...','Tikriname visų surinktų įžvalgų nuoseklumą...','Formuluojame baigiamąsias tavo analizės išvadas...','Baigiame formuoti tavo asmeninį gyvenimo žemėlapį...','Sutvarkome paskutinius tavo analizės duomenis...','Ruošiame galutinę tavo asmeninę analizę...','Peržiūrime visus septynis tavo žemėlapio skyrius...','Paskutinį kartą peržiūrime tavo asmeninius rezultatus...','Užbaigiame tavo unikalaus gyvenimo žemėlapio kūrimą...','Ruošiame tavo žemėlapį galutiniam pateikimui...'];
 
-  let microTimer=null;let microGen=0;let microPool=phase1Texts;
+  let microTimer=null;let microGen=0;let microPool=phase1Texts;let microOrder=[];
+  function shuffleArr(arr){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const tmp=a[i];a[i]=a[j];a[j]=tmp;
+    }
+    return a;
+  }
 
   function getMicroInterval(){
     const p=window._currentProgress||0;
@@ -2457,7 +2483,19 @@ function animateLoading(){
     if(gen!==microGen) return;
     const mt=document.getElementById('ptime');
     if(!mt) return;
-    const txt=microPool[idx%microPool.length];
+    if(idx>=microOrder.length){
+      // Visos frazės šiame etape jau parodytos — permaišome iš naujo, bet
+      // pasirūpiname, kad NAUJOS eilės pirmoji frazė NESUTAPTŲ su paskutine
+      // ką tik parodyta (kad nebūtų matomo pasikartojimo "iš eilės").
+      const last=microOrder.length?microOrder[microOrder.length-1]:null;
+      let reshuffled=shuffleArr(microPool);
+      if(reshuffled.length>1&&reshuffled[0]===last){
+        const swapIdx=1+Math.floor(Math.random()*(reshuffled.length-1));
+        const tmp=reshuffled[0];reshuffled[0]=reshuffled[swapIdx];reshuffled[swapIdx]=tmp;
+      }
+      microOrder=reshuffled;idx=0;
+    }
+    const txt=microOrder[idx];
     mt.style.transition='opacity 0.25s ease';mt.style.opacity='0';
     setTimeout(()=>{
       if(gen!==microGen) return;
@@ -2467,7 +2505,7 @@ function animateLoading(){
   }
   function switchMicroPool(pool){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
-    microPool=pool;microShowCurrent(microGen,0);
+    microPool=pool;microOrder=shuffleArr(pool);microShowCurrent(microGen,0);
   }
   function stopMicro(){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
@@ -2580,6 +2618,12 @@ function animateLoading(){
     pct=Math.min(pct,96);
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
+    // Nuo 85% rodome UŽBAIGIAMOJO tono frazes (phase3Texts) vietoj "dar
+    // renkame duomenis" frazių — kad tekstas atitiktų beveik pilną juostą.
+    if(pctRound>=85&&!phase3Shown){
+      phase3Shown=true;
+      switchMicroPool(phase3Texts);
+    }
     // Apsauginis maksimumas — jei dėl kokių nors priežasčių realus
     // patvirtinimas neatkeliauja, vis tiek leidžiame vartotojui tęsti
     // (likusi analizė bus užbaigta jau po apmokėjimo, kaip numatyta
