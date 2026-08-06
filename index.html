@@ -2460,21 +2460,37 @@ function animateLoading(){
   const phase3Texts=['Sujungiame visas surinktas įžvalgas į bendrą tavo gyvenimo žemėlapį...','Tikriname, kaip visos įžvalgos dera tarpusavyje...','Sudėliojame paskutinius tavo žemėlapio štrichus...','Tikriname visų surinktų įžvalgų nuoseklumą...','Formuluojame baigiamąsias tavo analizės išvadas...','Baigiame formuoti tavo asmeninį gyvenimo žemėlapį...','Sutvarkome paskutinius tavo analizės duomenis...','Ruošiame galutinę tavo asmeninę analizę...','Peržiūrime visus septynis tavo žemėlapio skyrius...','Paskutinį kartą peržiūrime tavo asmeninius rezultatus...','Užbaigiame tavo unikalaus gyvenimo žemėlapio kūrimą...','Ruošiame tavo žemėlapį galutiniam pateikimui...'];
 
   let microTimer=null;let microGen=0;let microMode='shuffle';let microPool=phase1Texts;let microOrder=[];
+  let pendingSwitch=null;
   let rrCategories=[];let rrQueues=[];let rrLast=[];let rrCatIndex=0;
-  // Matuoja tekstą canvas'u (be DOM reflow), kad nustatytų, ar jis tilptų
-  // vienoje eilutėje — jei ne, nukerpa PASKUTINĮ PILNĄ ŽODĮ (ne viduryje
-  // žodžio, kaip darydavo CSS text-overflow:ellipsis) ir prideda "...".
-  const ptimeMeasureCanvas=document.createElement('canvas');
-  const ptimeMeasureCtx=ptimeMeasureCanvas.getContext('2d');
-  function measureTextWidth(text,font){
-    ptimeMeasureCtx.font=font;
-    return ptimeMeasureCtx.measureText(text).width;
+  // Matuoja tekstą TIKRU (paslėptu) DOM elementu — ne canvas'u — kad
+  // matavimas GARANTUOTAI naudotų tą patį šriftą, koks realiai
+  // atvaizduojamas (canvas'as galėjo matuoti atsarginiu šriftu, jei
+  // 'DM Sans' dar nebuvo pilnai užkrautas, todėl klaidingai manydavo,
+  // kad tekstas telpa, ir CSS ellipsis nukirsdavo jį viduryje žodžio).
+  let ptimeMeasureEl=null;
+  function getPtimeMeasureEl(mt){
+    if(!ptimeMeasureEl){
+      ptimeMeasureEl=document.createElement('span');
+      ptimeMeasureEl.style.position='absolute';
+      ptimeMeasureEl.style.visibility='hidden';
+      ptimeMeasureEl.style.whiteSpace='nowrap';
+      ptimeMeasureEl.style.left='-9999px';
+      ptimeMeasureEl.style.top='-9999px';
+      document.body.appendChild(ptimeMeasureEl);
+    }
+    const cs=getComputedStyle(mt);
+    ptimeMeasureEl.style.fontFamily=cs.fontFamily;
+    ptimeMeasureEl.style.fontSize=cs.fontSize;
+    ptimeMeasureEl.style.fontStyle=cs.fontStyle;
+    ptimeMeasureEl.style.fontWeight=cs.fontWeight;
+    ptimeMeasureEl.style.letterSpacing=cs.letterSpacing;
+    return ptimeMeasureEl;
   }
   function fitPtimeText(fullText,mt){
-    const cs=getComputedStyle(mt);
-    const font=`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    const maxWidth=(parseFloat(cs.maxWidth)||260)-2;
-    if(measureTextWidth(fullText,font)<=maxWidth) return fullText;
+    const measureEl=getPtimeMeasureEl(mt);
+    const maxWidth=(parseFloat(getComputedStyle(mt).maxWidth)||260)-2;
+    measureEl.textContent=fullText;
+    if(measureEl.offsetWidth<=maxWidth) return fullText;
     // Frazės visada baigiasi "..." — nuimame juos, kad apkarpytume PILNAIS
     // žodžiais, o "..." pridėtume tik prie galutinio, jau tinkančio teksto.
     let base=fullText.replace(/\.{3}$/,'').trim();
@@ -2482,7 +2498,8 @@ function animateLoading(){
     while(words.length>1){
       words.pop();
       const candidate=words.join(' ')+'...';
-      if(measureTextWidth(candidate,font)<=maxWidth) return candidate;
+      measureEl.textContent=candidate;
+      if(measureEl.offsetWidth<=maxWidth) return candidate;
     }
     return words.join(' ')+'...';
   }
@@ -2526,6 +2543,14 @@ function animateLoading(){
     if(gen!==microGen) return;
     const mt=document.getElementById('ptime');
     if(!mt) return;
+    // Jei tarp šio ir ankstesnio kvietimo buvo užregistruotas etapo
+    // perjungimas (pvz. pasiektas 85% slenkstis), pritaikome jį TIK ČIA —
+    // t. y. tiksliai tame momente, kai ir taip natūraliai keičiasi frazė —
+    // niekada nenutraukdami jau rodomos frazės per vidurį jos laiko.
+    if(pendingSwitch){
+      microMode='shuffle';microPool=pendingSwitch;microOrder=shuffleArr(pendingSwitch);idx=0;
+      pendingSwitch=null;
+    }
     let txt;
     if(microMode==='roundrobin'){
       txt=nextRoundRobinPhrase();
@@ -2614,20 +2639,24 @@ function animateLoading(){
       if(ptime) ptime.textContent='Tavo analizė netrukus bus baigta...';
     } else {
       // Sklandus skaičiaus "bėgimas" nuo dabartinio % iki 100% (sinchronizuota
-      // su .pbar-fill CSS width perėjimu, .6s) — vietoj staigaus šuolio, kuris
+      // su .pbar-fill CSS width perėjimu) — vietoj staigaus šuolio, kuris
       // atrodydavo netvarkingai (pvz. 93% → 100% be jokios tarpinės animacijos).
+      // Trukmė pailginta ir sulėtėjimo (ease-out) kreivė pridėta, kad skaičius
+      // nebeatrodytų kaip greitai "prašuoliuojantis" ties pačia pabaiga.
       const startPct=window._currentProgress||96;
       const animStart=performance.now();
-      const animDuration=600;
+      const animDuration=1100;
+      function easeOutQuad(t){return 1-(1-t)*(1-t);}
       function stepPct(now){
-        const t=Math.min((now-animStart)/animDuration,1);
+        const raw=Math.min((now-animStart)/animDuration,1);
+        const t=easeOutQuad(raw);
         const val=Math.round(startPct+(100-startPct)*t);
         if(ppct) ppct.textContent=val+'%';
-        if(t<1) requestAnimationFrame(stepPct);
+        if(raw<1) requestAnimationFrame(stepPct);
       }
       requestAnimationFrame(stepPct);
       window._currentProgress=100;
-      if(pbar) pbar.style.width='100%';
+      if(pbar){pbar.style.transition='width 1.1s ease-out';pbar.style.width='100%';}
       if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
       activateStep(7,true);
       // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
@@ -2663,9 +2692,14 @@ function animateLoading(){
     if(finished) return;
     elapsed+=0.25;
     // Tikriname REALŲ etapą — jei serveris jau patvirtino 2 etapo pradžią,
-    // bet mūsų ekranas to dar nerodė, perjungiame VIZUALIAI TIK DABAR.
+    // bet mūsų ekranas to dar nerodė, perjungiame VIZUALIAI DABAR.
+    // SVARBU: papildomai laukiame MIN_PHASE1_DISPLAY sekundžių, kad 1 etapas
+    // visada būtų matomas bent trumpą laiką, net jei serveris (kartais)
+    // atsako labai greitai — pats duomenų apdorojimas fone NIEKAIP
+    // nesustabdomas ar neatidedamas, sulėtinamas tik VIZUALUS perjungimas.
+    const MIN_PHASE1_DISPLAY=4;
     const realStep=window.bgAnalysisStep||1;
-    if(realStep>=2&&phaseShown<2){
+    if(realStep>=2&&phaseShown<2&&elapsed>=MIN_PHASE1_DISPLAY){
       phaseShown=2;phase2StartElapsed=elapsed;
       activatePhase2Visuals();
     }
@@ -2689,9 +2723,12 @@ function animateLoading(){
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
     // Nuo 85% rodome UŽBAIGIAMOJO tono frazes (phase3Texts) vietoj "dar
     // renkame duomenis" frazių — kad tekstas atitiktų beveik pilną juostą.
+    // SVARBU: perjungimą tik UŽREGISTRUOJAME (pendingSwitch) — jis realiai
+    // pritaikomas microShowCurrent() viduje, TIK kai natūraliai keičiasi
+    // frazė, kad niekada nenutrauktume jau rodomos frazės per vidurį.
     if(pctRound>=85&&!phase3Shown){
       phase3Shown=true;
-      switchMicroPool(phase3Texts);
+      pendingSwitch=phase3Texts;
     }
     // Apsauginis maksimumas — jei dėl kokių nors priežasčių realus
     // patvirtinimas neatkeliauja, vis tiek leidžiame vartotojui tęsti
