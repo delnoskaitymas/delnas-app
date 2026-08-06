@@ -2443,27 +2443,24 @@ function animateLoading(){
   let phaseShown=1;let phase2StartElapsed=null;let phase3Shown=false;
 
   const phase1Texts=['Atpažįstame tavo delno linijas ir formą...','Nustatome tavo pirštų ir delno proporcijas...','Vertiname vizualinius tavo delno požymius...','Fiksuojame charakteringus tavo delno bruožus...','Skenuojame tavo delno raštų tankį ir kryptis...','Analizuojame tavo delno linijų kryptis ir gilumą...','Nustatome tavo delno kalvelių išsidėstymą...','Tikriname tavo pirštų sąnarių formą ir ilgį...','Kartografuojame visą tavo delno paviršių...','Ruošiame surinktus duomenis gilesnei analizei...'];
-  const phase2Texts=[
-    // I · Prigimtinės stiprybės ir charakteris
-    'Nagrinėjame smulkias tavo charakterio detales...','Renkame duomenis apie tavo prigimtines stiprybes...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Nustatome tavo prigimtinius talentus ir gabumus...','Gilinamės į tavo unikalumą ir asmenybės bruožus...','Vertiname tavo delno odos tekstūrą bei energijos tipą...','Nagrinėjame pirštų narelių struktūrą ir formą...','Vertiname pagrindinių delno kalvelių iškilumą ir gyvumą...','Identifikuojame pasąmoningus asmenybės polinkius...',
-    // II · Gyvenimo kryptis ir tikslai
-    'Analizuojame tavo asmeninę gyvenimo kryptį...','Tikslinamės, kokie siekiai tave labiausiai traukia...','Lyginame surinktus duomenis su senaisiais archetipais...','Analizuojame tavo sprendimų priėmimo modelius...','Skaitome gyvenimo ir galvos linijų susikirtimo niuansus...','Vertiname tavo vidinį kompasą ir krypties pasirinkimus...','Gilinamės į ilgalaikių tikslų ir prigimties suderinamumą...',
-    // III · Bendravimo būdas ir jo įtaka santykiams
-    'Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname tavo santykių dinamiką ir modelius...','Interpretuojame tavo tarpasmeninių ryšių ženklus...','Skaitome emocinio išraiškingumo ir empatijos linijas...','Nagrinėjame širdies linijos lankstumą bei emocinį jautrumą...','Vertiname tavo gebėjimą megzti ilgalaikius ryšius...','Analizuojame bendravimo energetiką ir atvirumo laipsnį...',
-    // IV · Finansinis potencialas
-    'Skaičiuojame smulkius finansinės sėkmės ženklus...','Analizuojame tavo požiūrį į pinigus, gerovę ir sėkmę...','Vertiname materialios apyvartos ir stabilumo potencialą...','Ieškome materialios sėkmės ir resursų valdymo ženklų...','Nagrinėjame pinigų linijos ir likimo sankirtas delne...',
-    // V · Unikalus sėkmės raktas
-    'Ieškome tavo unikalaus, asmeninio sėkmės rakto...','Formuojame tavo asmeninę sėkmės formulę...','Identifikuojame paslėptus savirealizacijos klodus ir galimybių taškus...','Skaitome talento ir pasiekimų sinergijos taškus...','Atskleidžiame tavo asmeninio augimo pagreitio formulę...',
-    // VI · Svarbiausi artėjantys pokyčiai
-    'Nagrinėjame artėjančių gyvenimo pokyčių ženklus...','Vertiname, kokios naujos galimybės tau atsiveria artimiausiu metu...','Skaitome likimo ir laiko ciklų posūkius...','Tikriname laiko tėkmės ir artėjančių permainų impulsus...','Fiksuojame naujo gyvenimo etapo pradžios ženklus...',
-    // VII · Pažangą stabdančios kliūtys
-    'Identifikuojame galimas vidines ir išorines kliūtis tavo kelyje...','Analizuojame, kas sąlygoja įtampą ir gali stabdyti tavo pažangą...','Vertiname emocinio atsparumo šaltinius ir rizikos veiksnius...','Atskleidžiame pasąmonines stabdančias baimes ar abejones...','Vertiname stresinių faktorių įtaką tavo sprendimams...'
-  ];
+  // 2 etapo frazės, suskirstytos į 7 ATSKIRUS kategorijų masyvus (I–VII).
+  // Rodymo tvarka valdoma "rato" (round-robin) principu žemiau — kiekviename
+  // rate po vieną frazę iš KIEKVIENOS kategorijos, VISADA ta pačia I→VII
+  // tvarka; konkreti frazė kategorijoje parenkama atsitiktinai.
+  const phase2CategoryI=['Nagrinėjame smulkias tavo charakterio detales...','Renkame duomenis apie tavo prigimtines stiprybes...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Nustatome tavo prigimtinius talentus ir gabumus...','Gilinamės į tavo unikalumą ir asmenybės bruožus...','Vertiname tavo delno odos tekstūrą bei energijos tipą...','Nagrinėjame pirštų narelių struktūrą ir formą...','Vertiname pagrindinių delno kalvelių iškilumą ir gyvumą...','Identifikuojame pasąmoningus asmenybės polinkius...'];
+  const phase2CategoryII=['Analizuojame tavo asmeninę gyvenimo kryptį...','Tikslinamės, kokie siekiai tave labiausiai traukia...','Lyginame surinktus duomenis su senaisiais archetipais...','Analizuojame tavo sprendimų priėmimo modelius...','Skaitome gyvenimo ir galvos linijų susikirtimo niuansus...','Vertiname tavo vidinį kompasą ir krypties pasirinkimus...','Gilinamės į ilgalaikių tikslų ir prigimties suderinamumą...'];
+  const phase2CategoryIII=['Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname tavo santykių dinamiką ir modelius...','Interpretuojame tavo tarpasmeninių ryšių ženklus...','Skaitome emocinio išraiškingumo ir empatijos linijas...','Nagrinėjame širdies linijos lankstumą bei emocinį jautrumą...','Vertiname tavo gebėjimą megzti ilgalaikius ryšius...','Analizuojame bendravimo energetiką ir atvirumo laipsnį...'];
+  const phase2CategoryIV=['Skaičiuojame smulkius finansinės sėkmės ženklus...','Analizuojame tavo požiūrį į pinigus, gerovę ir sėkmę...','Vertiname materialios apyvartos ir stabilumo potencialą...','Ieškome materialios sėkmės ir resursų valdymo ženklų...','Nagrinėjame pinigų linijos ir likimo sankirtas delne...'];
+  const phase2CategoryV=['Ieškome tavo unikalaus, asmeninio sėkmės rakto...','Formuojame tavo asmeninę sėkmės formulę...','Identifikuojame paslėptus savirealizacijos klodus ir galimybių taškus...','Skaitome talento ir pasiekimų sinergijos taškus...','Atskleidžiame tavo asmeninio augimo pagreitio formulę...'];
+  const phase2CategoryVI=['Nagrinėjame artėjančių gyvenimo pokyčių ženklus...','Vertiname, kokios naujos galimybės tau atsiveria artimiausiu metu...','Skaitome likimo ir laiko ciklų posūkius...','Tikriname laiko tėkmės ir artėjančių permainų impulsus...','Fiksuojame naujo gyvenimo etapo pradžios ženklus...'];
+  const phase2CategoryVII=['Identifikuojame galimas vidines ir išorines kliūtis tavo kelyje...','Analizuojame, kas sąlygoja įtampą ir gali stabdyti tavo pažangą...','Vertiname emocinio atsparumo šaltinius ir rizikos veiksnius...','Atskleidžiame pasąmonines stabdančias baimes ar abejones...','Vertiname stresinių faktorių įtaką tavo sprendimams...'];
+  const phase2Categories=[phase2CategoryI,phase2CategoryII,phase2CategoryIII,phase2CategoryIV,phase2CategoryV,phase2CategoryVI,phase2CategoryVII];
   // Nuo 85% progreso rodomos UŽBAIGIAMOJO, o ne "dar renkame duomenis" tono
   // frazės — kad tekstas atitiktų vizualiai jau beveik pilną progreso juostą.
   const phase3Texts=['Sujungiame visas surinktas įžvalgas į bendrą tavo gyvenimo žemėlapį...','Tikriname, kaip visos įžvalgos dera tarpusavyje...','Sudėliojame paskutinius tavo žemėlapio štrichus...','Tikriname visų surinktų įžvalgų nuoseklumą...','Formuluojame baigiamąsias tavo analizės išvadas...','Baigiame formuoti tavo asmeninį gyvenimo žemėlapį...','Sutvarkome paskutinius tavo analizės duomenis...','Ruošiame galutinę tavo asmeninę analizę...','Peržiūrime visus septynis tavo žemėlapio skyrius...','Paskutinį kartą peržiūrime tavo asmeninius rezultatus...','Užbaigiame tavo unikalaus gyvenimo žemėlapio kūrimą...','Ruošiame tavo žemėlapį galutiniam pateikimui...'];
 
-  let microTimer=null;let microGen=0;let microPool=phase1Texts;let microOrder=[];
+  let microTimer=null;let microGen=0;let microMode='shuffle';let microPool=phase1Texts;let microOrder=[];
+  let rrCategories=[];let rrQueues=[];let rrLast=[];let rrCatIndex=0;
   function shuffleArr(arr){
     const a=arr.slice();
     for(let i=a.length-1;i>0;i--){
@@ -2471,6 +2468,27 @@ function animateLoading(){
       const tmp=a[i];a[i]=a[j];a[j]=tmp;
     }
     return a;
+  }
+  // Užpildo (arba iš naujo užpildo, kai baigiasi) konkrečios kategorijos
+  // eilę atsitiktine tvarka, saugant, kad naujos eilės pirmoji frazė
+  // nesutaptų su paskutine tos PAČIOS kategorijos jau parodyta fraze.
+  function refillCategoryQueue(catIdx){
+    const shuffled=shuffleArr(rrCategories[catIdx]);
+    if(shuffled.length>1&&shuffled[0]===rrLast[catIdx]){
+      const swapIdx=1+Math.floor(Math.random()*(shuffled.length-1));
+      const tmp=shuffled[0];shuffled[0]=shuffled[swapIdx];shuffled[swapIdx]=tmp;
+    }
+    rrQueues[catIdx]=shuffled;
+  }
+  // Grąžina kitą frazę "rato" tvarka: fiksuota I→VII kategorijų tvarka,
+  // bet konkreti frazė kategorijos viduje — atsitiktinė ir nesikartojanti,
+  // kol nepanaudotos visos tos kategorijos frazės.
+  function nextRoundRobinPhrase(){
+    if(!rrQueues[rrCatIndex]||rrQueues[rrCatIndex].length===0) refillCategoryQueue(rrCatIndex);
+    const txt=rrQueues[rrCatIndex].shift();
+    rrLast[rrCatIndex]=txt;
+    rrCatIndex=(rrCatIndex+1)%rrCategories.length;
+    return txt;
   }
 
   function getMicroInterval(){
@@ -2483,19 +2501,24 @@ function animateLoading(){
     if(gen!==microGen) return;
     const mt=document.getElementById('ptime');
     if(!mt) return;
-    if(idx>=microOrder.length){
-      // Visos frazės šiame etape jau parodytos — permaišome iš naujo, bet
-      // pasirūpiname, kad NAUJOS eilės pirmoji frazė NESUTAPTŲ su paskutine
-      // ką tik parodyta (kad nebūtų matomo pasikartojimo "iš eilės").
-      const last=microOrder.length?microOrder[microOrder.length-1]:null;
-      let reshuffled=shuffleArr(microPool);
-      if(reshuffled.length>1&&reshuffled[0]===last){
-        const swapIdx=1+Math.floor(Math.random()*(reshuffled.length-1));
-        const tmp=reshuffled[0];reshuffled[0]=reshuffled[swapIdx];reshuffled[swapIdx]=tmp;
+    let txt;
+    if(microMode==='roundrobin'){
+      txt=nextRoundRobinPhrase();
+    } else {
+      if(idx>=microOrder.length){
+        // Visos frazės šiame etape jau parodytos — permaišome iš naujo, bet
+        // pasirūpiname, kad NAUJOS eilės pirmoji frazė NESUTAPTŲ su paskutine
+        // ką tik parodyta (kad nebūtų matomo pasikartojimo "iš eilės").
+        const last=microOrder.length?microOrder[microOrder.length-1]:null;
+        let reshuffled=shuffleArr(microPool);
+        if(reshuffled.length>1&&reshuffled[0]===last){
+          const swapIdx=1+Math.floor(Math.random()*(reshuffled.length-1));
+          const tmp=reshuffled[0];reshuffled[0]=reshuffled[swapIdx];reshuffled[swapIdx]=tmp;
+        }
+        microOrder=reshuffled;idx=0;
       }
-      microOrder=reshuffled;idx=0;
+      txt=microOrder[idx];
     }
-    const txt=microOrder[idx];
     mt.style.transition='opacity 0.25s ease';mt.style.opacity='0';
     setTimeout(()=>{
       if(gen!==microGen) return;
@@ -2505,7 +2528,15 @@ function animateLoading(){
   }
   function switchMicroPool(pool){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
-    microPool=pool;microOrder=shuffleArr(pool);microShowCurrent(microGen,0);
+    microMode='shuffle';microPool=pool;microOrder=shuffleArr(pool);microShowCurrent(microGen,0);
+  }
+  // Naudojama TIK 2 etapui — rodo frazes "rato" (round-robin) tvarka,
+  // po vieną iš kiekvienos kategorijos, visada I→VII tvarka (žr.
+  // nextRoundRobinPhrase() aukščiau).
+  function switchMicroPoolRoundRobin(categories){
+    microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
+    microMode='roundrobin';rrCategories=categories;rrQueues=categories.map(()=>[]);rrLast=categories.map(()=>null);rrCatIndex=0;
+    microShowCurrent(microGen,0);
   }
   function stopMicro(){
     microGen++;if(microTimer){clearTimeout(microTimer);microTimer=null;}
@@ -2525,7 +2556,7 @@ function animateLoading(){
   // užbaigiamas (tai lieka nepakitę — visi pažymimi baigti vienu metu,
   // kai analizė realiai baigsis, žr. finishNow()).
   function activatePhase2Visuals(){
-    switchMicroPool(phase2Texts);
+    switchMicroPoolRoundRobin(phase2Categories);
     const sharedSpinner=document.getElementById('shared-spinner');
     if(sharedSpinner) sharedSpinner.style.display='inline-block';
     [1,2,3,4,5,6,7].forEach((n,i)=>{
