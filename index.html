@@ -2442,22 +2442,22 @@ function animateLoading(){
   let elapsed=0;let pct=0;let finished=false;
   let phaseShown=1;let phase2StartElapsed=null;let phase3Shown=false;
 
-  const phase1Texts=['Atpažįstame tavo delnų linijas...','Nustatome tavo pirštų proporcijas...','Nustatome tavo delnų tipus...','Fiksuojame tavo delnų bruožus...','Analizuojame delnų linijų kryptį...','Nustatome delnų kalvelių išsidėstymą...','Kartografuojame visus delnų paviršius...','Ruošiame duomenis tolesnei analizei...','Vertiname tavo odos tekstūrą...','Nagrinėjame tavo pirštų narelius...','Vertiname delnų kalvelių iškilumą...'];
+  const phase1Texts=['Atpažįstame tavo delnų linijų formą...','Nustatome tavo pirštų dydžio proporcijas...','Nustatome tavo abiejų delnų tipus...','Fiksuojame charakteringus tavo delnų bruožus...','Analizuojame tavo delnų linijų kryptį...','Nustatome tavo delnų kalvelių išsidėstymą...','Kartografuojame visus tavo delnų paviršius...','Ruošiame surinktus duomenis tolesnei analizei...','Vertiname tavo delnų odos tekstūrą...','Nagrinėjame tavo pirštų narelių formą...','Vertiname tavo delnų kalvelių iškilumą...'];
   // 2 etapo frazės, suskirstytos į 7 ATSKIRUS kategorijų masyvus (I–VII).
   // Rodymo tvarka valdoma "rato" (round-robin) principu žemiau — kiekviename
   // rate po vieną frazę iš KIEKVIENOS kategorijos, VISADA ta pačia I→VII
   // tvarka; konkreti frazė kategorijoje parenkama atsitiktinai.
-  const phase2CategoryI=['Nagrinėjame tavo charakterio bruožus...','Renkame duomenis apie stiprybes...','Tyrinėjame vidinės stiprybės šaltinius...','Gilinamės į tavo unikalumą...','Identifikuojame pasąmoningus asmenybės polinkius...'];
-  const phase2CategoryII=['Analizuojame tavo gyvenimo kryptį...','Lyginame duomenis su archetipais...','Analizuojame tavo sprendimų modelius...','Vertiname ilgalaikių tikslų suderinamumą...'];
-  const phase2CategoryIII=['Nagrinėjame tavo bendravimo stilių...','Vertiname tavo santykių dinamiką...','Skaitome tavo empatijos ženklus...','Nagrinėjame tavo emocinį jautrumą...','Vertiname gebėjimą megzti ryšius...','Analizuojame tavo atvirumo laipsnį...'];
-  const phase2CategoryIV=['Skaičiuojame finansinės sėkmės ženklus...','Analizuojame požiūrį į pinigus...','Vertiname materialaus stabilumo potencialą...','Nagrinėjame gerovės ženklus delnuose...'];
-  const phase2CategoryV=['Ieškome tavo sėkmės rakto...','Formuojame tavo sėkmės formulę...','Identifikuojame paslėptus galimybių taškus...','Nagrinėjame tavo talentų derinį...','Atskleidžiame tavo augimo formulę...'];
-  const phase2CategoryVI=['Nagrinėjame artėjančius gyvenimo pokyčius...','Vertiname naujas artėjančias galimybes...','Tikriname artėjančių permainų impulsus...','Fiksuojame naujo etapo ženklus...'];
-  const phase2CategoryVII=['Identifikuojame kliūtis tavo kelyje...','Analizuojame, kas stabdo pažangą...','Vertiname emocinio atsparumo šaltinius...','Atskleidžiame pasąmonines stabdančias baimes...','Vertiname streso įtaką sprendimams...'];
+  const phase2CategoryI=['Nagrinėjame tavo charakterio pagrindinius bruožus...','Renkame duomenis apie tavo stiprybes...','Tyrinėjame tavo vidinės stiprybės šaltinius...','Gilinamės į tavo unikalius bruožus...','Identifikuojame tavo pasąmoningus asmenybės polinkius...'];
+  const phase2CategoryII=['Analizuojame tavo asmeninę gyvenimo kryptį...','Lyginame surinktus duomenis su archetipais...','Analizuojame tavo sprendimų priėmimo modelius...','Vertiname tavo ilgalaikių tikslų suderinamumą...'];
+  const phase2CategoryIII=['Nagrinėjame tavo bendravimo stiliaus niuansus...','Vertiname tavo santykių raidos dinamiką...','Skaitome tavo išreikštus empatijos ženklus...','Nagrinėjame tavo emocinio jautrumo lygį...','Vertiname tavo gebėjimą megzti ryšius...','Analizuojame tavo bendravimo atvirumo laipsnį...'];
+  const phase2CategoryIV=['Skaičiuojame tavo finansinės sėkmės ženklus...','Analizuojame tavo požiūrį į pinigus...','Vertiname tavo materialaus stabilumo potencialą...','Nagrinėjame gerovės ženklus tavo delnuose...'];
+  const phase2CategoryV=['Ieškome tavo unikalaus sėkmės rakto...','Formuojame tavo asmeninę sėkmės formulę...','Identifikuojame tavo paslėptus galimybių taškus...','Nagrinėjame tavo unikalų talentų derinį...','Atskleidžiame tavo asmeninio augimo formulę...'];
+  const phase2CategoryVI=['Nagrinėjame tavo artėjančius gyvenimo pokyčius...','Vertiname tau artėjančias naujas galimybes...','Tikriname artėjančių permainų pirmuosius impulsus...','Fiksuojame naujo gyvenimo etapo ženklus...'];
+  const phase2CategoryVII=['Identifikuojame galimas kliūtis tavo kelyje...','Analizuojame, kas gali stabdyti pažangą...','Vertiname tavo emocinio atsparumo šaltinius...','Atskleidžiame tavo pasąmonines stabdančias baimes...','Vertiname streso įtaką tavo sprendimams...'];
   const phase2Categories=[phase2CategoryI,phase2CategoryII,phase2CategoryIII,phase2CategoryIV,phase2CategoryV,phase2CategoryVI,phase2CategoryVII];
   // Nuo 85% progreso rodomos UŽBAIGIAMOJO, o ne "dar renkame duomenis" tono
   // frazės — kad tekstas atitiktų vizualiai jau beveik pilną progreso juostą.
-  const phase3Texts=['Sudėliojame paskutinius žemėlapio štrichus...','Formuluojame baigiamąsias analizės išvadas...','Baigiame formuoti tavo žemėlapį...','Sutvarkome paskutinius analizės duomenis...','Ruošiame tavo galutinę analizę...','Peržiūrime visus septynis skyrius...','Paskutinį kartą peržiūrime rezultatus...','Ruošiame žemėlapį galutiniam pateikimui...'];
+  const phase3Texts=['Sudėliojame paskutinius tavo žemėlapio štrichus...','Formuluojame baigiamąsias tavo analizės išvadas...','Baigiame formuoti tavo asmeninį žemėlapį...','Sutvarkome paskutinius tavo analizės duomenis...','Ruošiame tavo galutinę asmeninę analizę...','Peržiūrime visus septynis tavo skyrius...','Paskutinį kartą peržiūrime tavo rezultatus...','Ruošiame tavo žemėlapį galutiniam pateikimui...'];
 
   let microTimer=null;let microGen=0;let microMode='shuffle';let microPool=phase1Texts;let microOrder=[];
   let pendingSwitch=null;
