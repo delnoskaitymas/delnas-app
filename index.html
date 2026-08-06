@@ -2461,6 +2461,31 @@ function animateLoading(){
 
   let microTimer=null;let microGen=0;let microMode='shuffle';let microPool=phase1Texts;let microOrder=[];
   let rrCategories=[];let rrQueues=[];let rrLast=[];let rrCatIndex=0;
+  // Matuoja tekstą canvas'u (be DOM reflow), kad nustatytų, ar jis tilptų
+  // vienoje eilutėje — jei ne, nukerpa PASKUTINĮ PILNĄ ŽODĮ (ne viduryje
+  // žodžio, kaip darydavo CSS text-overflow:ellipsis) ir prideda "...".
+  const ptimeMeasureCanvas=document.createElement('canvas');
+  const ptimeMeasureCtx=ptimeMeasureCanvas.getContext('2d');
+  function measureTextWidth(text,font){
+    ptimeMeasureCtx.font=font;
+    return ptimeMeasureCtx.measureText(text).width;
+  }
+  function fitPtimeText(fullText,mt){
+    const cs=getComputedStyle(mt);
+    const font=`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const maxWidth=(parseFloat(cs.maxWidth)||260)-2;
+    if(measureTextWidth(fullText,font)<=maxWidth) return fullText;
+    // Frazės visada baigiasi "..." — nuimame juos, kad apkarpytume PILNAIS
+    // žodžiais, o "..." pridėtume tik prie galutinio, jau tinkančio teksto.
+    let base=fullText.replace(/\.{3}$/,'').trim();
+    let words=base.split(' ');
+    while(words.length>1){
+      words.pop();
+      const candidate=words.join(' ')+'...';
+      if(measureTextWidth(candidate,font)<=maxWidth) return candidate;
+    }
+    return words.join(' ')+'...';
+  }
   function shuffleArr(arr){
     const a=arr.slice();
     for(let i=a.length-1;i>0;i--){
@@ -2522,7 +2547,7 @@ function animateLoading(){
     mt.style.transition='opacity 0.25s ease';mt.style.opacity='0';
     setTimeout(()=>{
       if(gen!==microGen) return;
-      mt.textContent=txt;mt.style.opacity='1';
+      mt.textContent=fitPtimeText(txt,mt);mt.style.opacity='1';
       microTimer=setTimeout(()=>{microShowCurrent(gen,idx+1);},getMicroInterval());
     },250);
   }
@@ -2588,7 +2613,20 @@ function animateLoading(){
       if(pbar) pbar.style.width='96%';
       if(ptime) ptime.textContent='Tavo analizė netrukus bus baigta...';
     } else {
-      if(ppct) ppct.textContent='100%';window._currentProgress=100;
+      // Sklandus skaičiaus "bėgimas" nuo dabartinio % iki 100% (sinchronizuota
+      // su .pbar-fill CSS width perėjimu, .6s) — vietoj staigaus šuolio, kuris
+      // atrodydavo netvarkingai (pvz. 93% → 100% be jokios tarpinės animacijos).
+      const startPct=window._currentProgress||96;
+      const animStart=performance.now();
+      const animDuration=600;
+      function stepPct(now){
+        const t=Math.min((now-animStart)/animDuration,1);
+        const val=Math.round(startPct+(100-startPct)*t);
+        if(ppct) ppct.textContent=val+'%';
+        if(t<1) requestAnimationFrame(stepPct);
+      }
+      requestAnimationFrame(stepPct);
+      window._currentProgress=100;
       if(pbar) pbar.style.width='100%';
       if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
       activateStep(7,true);
