@@ -300,7 +300,7 @@ function generateOrderNumber() {
 // (atidarius rezultatų ekraną).
 // Administratoriui (info@) pranešimas apie naują mokėjimą IŠLIEKA čia,
 // nes tai vidinis, ne kliento gaunamas laiškas.
-function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
+async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
   try {
     let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
     const name = (entry && entry.name) || fallbackName || '';
@@ -312,6 +312,17 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
 
+    // Suma gaunama TIESIOGIAI iš Stripe (ne hardcoded skaičius), kad
+    // pasikeitus ACTIVE_PRICE_ID (pvz. pakeitus kainą), šis administracinis
+    // laiškas VISADA rodytų teisingą, faktiškai taikomą sumą.
+    let amountDisplay = 'žr. Stripe';
+    try {
+      const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+      amountDisplay = (activePrice.unit_amount / 100).toFixed(2).replace('.', ',') + ' €';
+    } catch (priceErr) {
+      console.error('[sendPaymentSuccessEmails] nepavyko gauti kainos iš Stripe:', priceErr.message);
+    }
+
     // Administratoriui (info@) — pranešimas apie naują mokėjimą. TAI
     // VIENINTELIS administracinis laiškas apie šį užsakymą —
     // /notify-order-complete (žr. žemiau) daugiau ANTRO tokio laiško
@@ -320,7 +331,7 @@ function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `Naujas užsakymas #${displayOrderNumber}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> 15,99 €</p></div>`
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> ${escapeHtml(amountDisplay)}</p></div>`
     }).then(() => console.log(`[sendPaymentSuccessEmails] administratoriui išsiųsta į ${ADMIN_EMAIL}`))
       .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
   } catch (e) {
