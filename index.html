@@ -2634,28 +2634,23 @@ function animateLoading(){
       if(pbar) pbar.style.width='96%';
       if(ptime) ptime.textContent='Tavo analizė netrukus bus baigta...';
     } else {
-      // Sklandus skaičiaus "bėgimas" nuo dabartinio % iki 100% (sinchronizuota
-      // su .pbar-fill CSS width perėjimu) — vietoj staigaus šuolio.
-      // SVARBU: trukmė PRIKLAUSO NUO ŠUOLIO DYDŽIO — jei realus užbaigimas
-      // ateina anksti (vizualus % dar žemas, pvz. 50%), reikia "perbėgti"
-      // daug daugiau verčių; fiksuota trukmė tokiu atveju atrodytų kaip
-      // neįskaitomas mirgėjimas. Todėl kuo didesnis šuolis, tuo ilgesnė
-      // (bet ribota) animacija — kad kiekviena vertė spėtų būti pastebima.
+      // Skaičius "bėga" nuo dabartinio % iki 100% PO VIENĄ VIENETĄ — kiekvienas
+      // procentas realiai parodomas (ne interpoliuojamas/praleidžiamas), kad
+      // niekada neatrodytų kaip šuolis. Tempas — apie 40ms vienam procentui.
       const startPct=window._currentProgress||96;
-      const gap=100-startPct;
-      const animDuration=Math.min(2200,Math.max(600,gap*20));
-      const animStart=performance.now();
-      function easeOutQuad(t){return 1-(1-t)*(1-t);}
-      function stepPct(now){
-        const raw=Math.min((now-animStart)/animDuration,1);
-        const t=easeOutQuad(raw);
-        const val=Math.round(startPct+(100-startPct)*t);
-        if(ppct) ppct.textContent=val+'%';
-        if(raw<1) requestAnimationFrame(stepPct);
+      const STEP_MS=40;
+      let cur=startPct;
+      function stepCount(){
+        cur++;
+        if(ppct) ppct.textContent=cur+'%';
+        if(pbar) pbar.style.width=cur+'%';
+        if(cur<100){
+          setTimeout(stepCount,STEP_MS);
+        }
       }
-      requestAnimationFrame(stepPct);
+      if(pbar) pbar.style.transition='width '+STEP_MS+'ms linear';
+      if(startPct<100) setTimeout(stepCount,STEP_MS);
       window._currentProgress=100;
-      if(pbar){pbar.style.transition=`width ${animDuration}ms ease-out`;pbar.style.width='100%';}
       if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
       activateStep(7,true);
       // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
@@ -2666,10 +2661,11 @@ function animateLoading(){
         handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
         handFinal.style.transform='scale(1.05)';
       }
-      // Trumpa pauzė PRIEŠ fade PRIVALO būti bent tokia pat ilga, kaip
-      // aukščiau apskaičiuota animDuration — priešingu atveju ekranas
-      // pradėtų nykti DAR NESPĖJUS skaičiui pilnai suskaičiuoti iki 100%.
-      window._finishPauseMs=animDuration+150;
+      // Pauzė prieš fade = laikas, per kurį skaičius pilnai suskaičiuoja iki
+      // 100% (po vienetą), PLIUS bent 1000ms, kad "100%" pabūtų matomas
+      // ekrane bent 1 sekundę, prieš pereinant į mokėjimo ekraną.
+      const countUpTime=Math.max(0,100-startPct)*STEP_MS;
+      window._finishPauseMs=countUpTime+1000;
     }
     // Trumpa pauzė, tada fade — trukmė sinchronizuota su procento animacija
     // aukščiau (window._finishPauseMs), kad ekranas nepradėtų nykti dar
