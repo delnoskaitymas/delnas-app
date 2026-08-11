@@ -689,6 +689,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
 - KRITIŠKAI SVARBU (JSON formatui): NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje, nei akcentuojant žodį/frazę, nei kaip citatos ženklo — NET IR VIENĄ KARTĄ, nes tai sugadina JSON struktūrą. Jei nori pabrėžti ar "iškelti" žodį/frazę, naudok TIK paprastą kablelinę kabutę 'štai taip' (apostrofus), niekada ne „lietuviškas" ar tiesiogines dvigubas kabutes. Tai taikoma VISUR — visuose skyriuose ir insights laukuose.
 - Kiekvienas žodis ir sakinys turi turėti prasmę ir svorį — jokių tuščių, niekuo neprisidedančių žodžių ar sakinio dalių
+- DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
 - Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
