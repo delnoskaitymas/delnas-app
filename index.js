@@ -696,6 +696,8 @@ TAISYKLĖS:
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
 
+- KRITIŠKAI SVARBU: skyriai NIEKADA nesikartoja tarpusavyje — nei ta pačia mintimi, nei tuo pačiu pavyzdžiu, nei kitais žodžiais perfrazuota ta pati esmė. Prieš rašydamas KIEKVIENĄ naują skyrių, peržiūrėk, KAS JAU BUVO PASAKYTA ankstesniuose skyriuose (charakterio bruožai, sėkmės formulė, kliūtys ir t. t.), ir įsitikink, kad šis skyrius atskleidžia TIK NAUJĄ, dar niekur šiame atsakyme nepaminėtą turinį. Jei pastebi, kad rašai apie tą pačią savybę/temą, kuri jau buvo I skyriuje (pvz. "analitinis protas"), PERRAŠYK sakinį apie ką nors kitą, atitinkantį TIK šio konkretaus skyriaus temą
+
 - prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) jo unikalų asmenybės branduolį ir pamatinius, jį apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis jį veda; (c) jo natūralų, įgimtą potencialą ir tai, kas konkrečiai jį išskiria iš kitų
 
 - gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): (a) kryptį, kuria jis natūraliai juda gyvenime, ir kas jį iš vidaus varo pirmyn; (b) giliau slypinčius jo tikslus ir kryptį, kuria jis auga kaip asmenybė; (c) svarbiausius jo gyvenimo kelio posūkius ir gaires, kurias jis pats sau kelia ateičiai
@@ -704,9 +706,9 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - finansai (Finansinis potencialas): (a) kur/kaip jo finansinė sėkmė labiausiai įmanoma ir jo potencialą kurti materialią gerovę; (b) kas jam natūraliai atveria finansines galimybes; (c) jo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip jis leidžia/taupo pinigus
 
-- galimybes (Unikalus sėkmės raktas): (a) jo asmeninę sėkmės formulę ir didžiausią pranašumą prieš kitus; (b) kaip jis natūraliai įveikia iššūkius ir ką naudoja sunkiausiais momentais („slaptąjį ginklą"); (c) kas jam visada atveria duris ten, kur kitiems sunkiau, ir jo unikalų kelią į pripažinimą
+- galimybes (Unikalus sėkmės raktas): SVARBU — šis skyrius NĖRA apie tai, KOKS žmogus yra (tai jau atskleista I skyriuje) — jis apie tai, KAIP šis žmogus PRAKTIŠKAI PANAUDOJA save, kad pasiektų rezultatų: (a) konkrečią STRATEGIJĄ ar veiksmų būdą, kuris jam labiausiai pasiteisina siekiant tikslų (ne charakterio bruožą, o VEIKSMĄ/METODĄ); (b) ką jis konkrečiai DARO sunkiausiais momentais, kad įveiktų iššūkį (elgesys, ne savybė); (c) kokioje SITUACIJOJE ar aplinkybėse jam sekasi geriausiai, palyginti su kitais
 
-- pokyciai (Svarbiausi artėjantys pokyčiai): (a) koks reikšmingas posūkis artėja jo gyvenime ir kokios naujos galimybės netrukus atsivers; (b) koks vidinis transformacijos etapas jo laukia; (c) kas konkrečiai jo gyvenime netrukus pasikeis į gerą ir kokie ženklai tai jau rodo
+- pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija jo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
 
 - klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius jo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį jo kelyje į tikslą ir kas trukdo jam pilnai atsiskleisti; (c) ką jam metas paleisti, kad atsiblokuotų tikrasis jo potencialas
 
