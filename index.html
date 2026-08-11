@@ -3416,7 +3416,7 @@ function getHeroPhotoDataUrl(){
   }catch(e){ return null; }
 }
 
-function buildResultPdfDoc(r, name){
+function buildResultPdfDoc(r, name, orderNumber){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297; const margin = 20; const maxW = W - margin*2;
@@ -3749,7 +3749,7 @@ function buildResultPdfDoc(r, name){
   // stiliumi, ne kaip šaltas teisinis įspėjimas.
   const footerNote = 'Šis žemėlapis – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.';
   const footerGap = 14;    // kvėpuojantis tarpas virš footerio
-  const footerBlockH = 48; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba)
+  const footerBlockH = 56; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba + užsakymo nr.)
   let footerY = y + footerGap;
   if(footerY + footerBlockH > 282){
     y = newPage();
@@ -3792,6 +3792,16 @@ function buildResultPdfDoc(r, name){
     noteY += 5.5;
   });
 
+  // Užsakymo numeris — kad būtų po ranka net jei vartotojas išsaugo TIK
+  // šį PDF (ne laišką), pvz. norėdamas kreiptis dėl grąžinimo (žr.
+  // Naudojimosi sąlygų 5 skyrių, kuris prašo nurodyti šį numerį).
+  if(orderNumber){
+    doc.setFont('NotoSans','normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...MUTED);
+    doc.text(`Užsakymo numeris: ${orderNumber}`, W/2, noteY + 4, {align:'center'});
+  }
+
   return doc;
 }
 
@@ -3799,7 +3809,7 @@ function downloadPDF(){
   const r = window._palmResult;
   if(!r){ alert('Rezultatai nerasti.'); return; }
   const name = window.userName || '';
-  const doc = buildResultPdfDoc(r, name);
+  const doc = buildResultPdfDoc(r, name, window._orderNumber||'');
   const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
   doc.save(fileName);
 }
@@ -3815,7 +3825,7 @@ function sendResultPdfEmail(r){
     if(!window._userEmail){ console.log('[sendResultPdfEmail] nėra el. pašto, praleidžiama'); return; }
     window._pdfEmailSent=true;
     const name = window.userName || '';
-    const doc = buildResultPdfDoc(r, name);
+    const doc = buildResultPdfDoc(r, name, window._orderNumber||'');
     const dataUri = doc.output('datauristring');
     const base64 = dataUri.split(',').pop();
     fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -3855,7 +3865,7 @@ async function sharePdfToFriend(){
     const r = window._palmResult;
     if(!r){ alert('Rezultatai nerasti.'); return; }
     const name = window.userName || '';
-    const doc = buildResultPdfDoc(r, name);
+    const doc = buildResultPdfDoc(r, name, window._orderNumber||'');
     const fileName = name ? name.replace(/\s+/g,'-')+'-gyvenimo-zemelapis.pdf' : 'gyvenimo-zemelapis.pdf';
     const blob = doc.output('blob');
     const file = new File([blob], fileName, {type:'application/pdf'});
@@ -4508,7 +4518,7 @@ function showSampleReport(e){
     <!-- I skyrius -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.07),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.32);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">I · Prigimtinės stiprybės ir charakteris</div>
-      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75;margin-bottom:14px">Tavo rankoje ryškiai išsiskiria giliai išraižyta <strong style="color:rgba(212,168,67,.9)">gyvenimo linija</strong> — tai ženklas nepaprasto gyvybingumo ir stiprios vidinės energijos. Tokios žmonės dažnai randa jėgų net tuomet, kai kiti jau pasiduoda.<br><br>Ilgas, aiškus <strong style="color:rgba(212,168,67,.9)">proto linijos</strong> tęsinys atskleidžia analitinį mąstymą — tu natūraliai matai vaizdą plačiau nei dauguma. Ši savybė tampa stiprybe tiek priimant sprendimus, tiek bendraujant su kitais.</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75;margin-bottom:14px">Tavo delnuose matosi nepaprastas gyvybingumas ir stipri vidinė energija — tu dažnai randi jėgų net tada, kai kiti jau pasiduoda.<br><br>Ryškiai matomas analitinis mąstymas — natūraliai matai vaizdą plačiau nei dauguma. Ši savybė tampa stiprybe tiek priimant sprendimus, tiek bendraujant su kitais.</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         <span style="background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(212,168,67,.9)">✦ Lyderystė</span>
         <span style="background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(212,168,67,.9)">✦ Analitinis mąstymas</span>
@@ -4520,7 +4530,7 @@ function showSampleReport(e){
     <!-- II skyrius -->
     <div style="background:linear-gradient(135deg,rgba(212,168,67,.07),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.32);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">II · Gyvenimo kryptis ir tikslai</div>
-      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75;margin-bottom:14px">Stiprus <strong style="color:rgba(212,168,67,.9)">likimo linijos</strong> žymėjimas nuo riešo centro rodo, kad tavo gyvenimo kelias turi aiškią kryptį — net jei dabar tai ne visada jauti. Tavo sėkmė susijusi su tuo, kuo tu tikri giliai viduje, o ne su aplinkos lūkesčiais.<br><br>Tokie žmonės dažniausiai randa savo tikrąjį pašaukimą tik po 28–35 metų — ir tada progresas būna spartus bei ilgalaikis.</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75;margin-bottom:14px">Tavo delnuose matosi, kad gyvenimo kelias turi aiškią kryptį — net jei dabar tai ne visada jauti. Tavo sėkmė susijusi su tuo, kuo tu tikri giliai viduje, o ne su aplinkos lūkesčiais.<br><br>Tokie žmonės dažniausiai randa savo tikrąjį pašaukimą tik po 28–35 metų — ir tada progresas būna spartus bei ilgalaikis.</div>
       <div style="margin-top:10px;padding:10px 12px;background:rgba(212,168,67,.06);border-left:2px solid rgba(212,168,67,.7);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,.75);line-height:1.6">Patarimas: Ateinantys 6 mėnesiai — tinkamas laikas peržiūrėti, ar tai, ką darai, atitinka tai, ko iš tiesų nori.</div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kai žmogus eina savo keliu — viskas sekasi lengviau.</div>
     </div>
@@ -4528,7 +4538,7 @@ function showSampleReport(e){
     <!-- III skyrius -->
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.18);border-radius:16px;padding:18px;margin-bottom:12px">
       <div style="font-size:9px;letter-spacing:.18em;color:rgba(212,168,67,.7);text-transform:uppercase;margin-bottom:12px">III · Bendravimo būdas ir santykiai</div>
-      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75">Gili, ilga <strong style="color:rgba(212,168,67,.9)">širdies linija</strong> — emocinio gylio ženklas. Tu mylite giliai ir visa esybe. Tuo pačiu — labai jautrus nusivylimams. Svarbu išmokti atpažinti, kada atiduodi daugiau nei gauni...</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.75">Tavo delnuose matomas gilus emocinis jautrumas — myli giliai ir visa esybe. Tuo pačiu esi jautrus nusivylimams. Svarbu išmokti atpažinti, kada atiduodi daugiau nei gauni...</div>
       <div style="margin-top:12px;padding:8px 12px;background:rgba(212,168,67,.04);border-radius:8px;font-size:11.5px;color:rgba(255,255,255,.55);text-align:center">🔒 Pilnas skyrius — tavo asmeninėje ataskaitoje</div>
     </div>
 
