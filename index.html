@@ -2436,6 +2436,7 @@ function animateLoading(){
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
   let phaseShown=1;let phase2StartElapsed=null;let phase3Shown=false;
+  window._finishPauseMs=1200;
 
   const phase1Texts=['Atpažįstame tavo delnų linijų formą...','Nustatome tavo pirštų dydžio proporcijas...','Nustatome tavo abiejų delnų tipus...','Fiksuojame charakteringus tavo delnų bruožus...','Analizuojame tavo delnų linijų kryptį...','Nustatome tavo delnų kalvelių išsidėstymą...','Kartografuojame visus tavo delnų paviršius...','Ruošiame surinktus duomenis tolesnei analizei...','Vertiname tavo delnų odos tekstūrą...','Nagrinėjame tavo pirštų narelių formą...','Vertiname tavo delnų kalvelių iškilumą...'];
   // 2 etapo frazės, suskirstytos į 7 ATSKIRUS kategorijų masyvus (I–VII).
@@ -2634,13 +2635,16 @@ function animateLoading(){
       if(ptime) ptime.textContent='Tavo analizė netrukus bus baigta...';
     } else {
       // Sklandus skaičiaus "bėgimas" nuo dabartinio % iki 100% (sinchronizuota
-      // su .pbar-fill CSS width perėjimu) — vietoj staigaus šuolio, kuris
-      // atrodydavo netvarkingai (pvz. 93% → 100% be jokios tarpinės animacijos).
-      // Trukmė pailginta ir sulėtėjimo (ease-out) kreivė pridėta, kad skaičius
-      // nebeatrodytų kaip greitai "prašuoliuojantis" ties pačia pabaiga.
+      // su .pbar-fill CSS width perėjimu) — vietoj staigaus šuolio.
+      // SVARBU: trukmė PRIKLAUSO NUO ŠUOLIO DYDŽIO — jei realus užbaigimas
+      // ateina anksti (vizualus % dar žemas, pvz. 50%), reikia "perbėgti"
+      // daug daugiau verčių; fiksuota trukmė tokiu atveju atrodytų kaip
+      // neįskaitomas mirgėjimas. Todėl kuo didesnis šuolis, tuo ilgesnė
+      // (bet ribota) animacija — kad kiekviena vertė spėtų būti pastebima.
       const startPct=window._currentProgress||96;
+      const gap=100-startPct;
+      const animDuration=Math.min(2200,Math.max(600,gap*20));
       const animStart=performance.now();
-      const animDuration=1100;
       function easeOutQuad(t){return 1-(1-t)*(1-t);}
       function stepPct(now){
         const raw=Math.min((now-animStart)/animDuration,1);
@@ -2651,7 +2655,7 @@ function animateLoading(){
       }
       requestAnimationFrame(stepPct);
       window._currentProgress=100;
-      if(pbar){pbar.style.transition='width 1.1s ease-out';pbar.style.width='100%';}
+      if(pbar){pbar.style.transition=`width ${animDuration}ms ease-out`;pbar.style.width='100%';}
       if(ptime) ptime.textContent='Tavo gyvenimo žemėlapis paruoštas ✦';
       activateStep(7,true);
       // Final Glow — žiedai įgauna sodrią spindinčią auksinę spalvą
@@ -2662,8 +2666,16 @@ function animateLoading(){
         handFinal.style.filter='brightness(1.35) saturate(1.8) sepia(0.25) drop-shadow(0 0 28px rgba(255,200,80,.9)) drop-shadow(0 0 14px rgba(212,168,67,1))';
         handFinal.style.transform='scale(1.05)';
       }
+      // Trumpa pauzė PRIEŠ fade PRIVALO būti bent tokia pat ilga, kaip
+      // aukščiau apskaičiuota animDuration — priešingu atveju ekranas
+      // pradėtų nykti DAR NESPĖJUS skaičiui pilnai suskaičiuoti iki 100%.
+      window._finishPauseMs=animDuration+150;
     }
-    // Trumpa pauzė, tada fade
+    // Trumpa pauzė, tada fade — trukmė sinchronizuota su procento animacija
+    // aukščiau (window._finishPauseMs), kad ekranas nepradėtų nykti dar
+    // nespėjus baigti skaičiuoti iki 100%. Priverstinio (apsauginio
+    // maksimumo) atveju, kur jokios skaičiavimo animacijos nebuvo, naudojama
+    // ankstesnė, fiksuota 1200ms pauzė.
     setTimeout(()=>{
       loadScreen.style.transition='opacity 1.4s ease';
       loadScreen.style.opacity='0';
@@ -2680,7 +2692,7 @@ function animateLoading(){
           go('s-order');initOrderScreen();requestWakeLock();
         }
       },1400);
-    },1200);
+    },window._finishPauseMs||1200);
   }
 
   const t=setInterval(()=>{
