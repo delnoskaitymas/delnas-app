@@ -597,7 +597,7 @@ async function runPalmAnalysis(photos, name, sessionId) {
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
     model: 'claude-sonnet-4-5',
-    max_tokens: 1000,
+    max_tokens: 1500,
     temperature: 0.2,
     messages: [{
       role: 'user',
@@ -605,18 +605,20 @@ async function runPalmAnalysis(photos, name, sessionId) {
         ...imageBlocks,
         {
           type: 'text',
-          text: `Pažvelk į šias delno nuotraukas ir nustatyk 7 svarbiausius vizualinius požymius kurie atskleidžia šio žmogaus charakterį.
+          text: `Pažvelk į šias delno nuotraukas (kairio ir dešinio delno) ir kiekvienam iš 7 žemiau nurodytų aspektų parašyk KONKRETŲ VIZUALINĮ APRAŠYMĄ.
+
+SVARBU — kiekvienas įrašas PRIVALO prasidėti nuo to, ką TIKSLIAI MATAI nuotraukoje (delno formą ir proporcijas, pirštų ilgį/storį/tarpus tarp jų, delno plotį santykyje su pirštais, odos/raumenų reljefą, laikyseną, ir BŪTINAI — ar kairys ir dešinys delnas šiuo požiūriu SKIRIASI, ir jei taip, KAIP) — TIK TADA trumpai susiek tai su interpretacija. DRAUDŽIAMA rašyti vien abstrakčią išvadą (pvz. "aukštas energijos lygis") be to, KĄ TIKSLIAI matai, kas tave prie tos išvados atvedė. Kiekvienas įrašas turi būti toks konkretus ir individualus, kad kitas žmogus, neregintis šių nuotraukų, galėtų įsivaizduoti, KAIP TIKSLIAI atrodo BŪTENT ŠIS delnas — ne bet kurio žmogaus delnas apskritai.
 
 Grąžink TIKTAI JSON:
 {
   "bruozai": [
-    "Energijos lygis ir vitalumas: [ką matai]",
-    "Emocinis gylis ir jautrumas: [ką matai]",
-    "Mąstymo tipas - analitinis ar intuityvus: [ką matai]",
-    "Ryžtas ir valios stiprumas: [ką matai]",
-    "Santykių su kitais pobūdis: [ką matai]",
-    "Ambicijų ir tikslų ryškumas: [ką matai]",
-    "Vidinė įtampa ar ramybė: [ką matai]"
+    "Energijos lygis ir vitalumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Emocinis gylis ir jautrumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Mąstymo tipas - analitinis ar intuityvus: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Ryžtas ir valios stiprumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Santykių su kitais pobūdis: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Ambicijų ir tikslų ryškumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
+    "Vidinė įtampa ar ramybė: [konkretus vizualinis aprašymas + trumpa interpretacija]"
   ]
 }`
         }
@@ -671,18 +673,23 @@ Grąžink TIKTAI JSON:
       type: 'text',
       text: `Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave yra${name ? ' ' + name + ' —' : ''} kairio ir dešinio delno nuotraukos. Matai juos aiškiai.
 
-${bruozaiText}Remdamasis TIKTAI tuo, ką realiai MATAI šiuose konkrečiuose delnuose (aukščiau esančiais vizualiniais parametrais), parašyk tikslią, konkrečią chiromantijos analizę lietuvių kalba BŪTENT apie šį žmogų. Tai NĖRA bendro pobūdžio tekstas — kiekvienas sakinys turi remtis tuo, ką matai ŠIUOSE delnuose, ir turi būti toks specifiškas, kad netiktų jokiam kitam žmogui.
+${bruozaiText}Remdamasis TIKTAI tuo, ką realiai MATAI šiuose konkrečiuose delnuose (aukščiau esančiais vizualiniais parametrais), parašyk tikslią, konkrečią, MAKSIMALIAI TIKSLIĄ chiromantijos analizę lietuvių kalba BŪTENT apie šį žmogų — remiantis BŪTENT ŠIAIS delnais, ne bendrais chiromantijos principais. Tai NĖRA bendro pobūdžio tekstas — kiekvienas sakinys turi remtis tuo, ką matai ŠIUOSE delnuose, ir turi būti toks specifiškas, kad netiktų jokiam kitam žmogui.
+
+KIEKVIENAME iš 7 skyrių PRIVALO būti BENT 2 sakiniai, kurie AIŠKIAI ir TIESIOGIAI remiasi konkrečiu vizualiniu parametru iš aukščiau pateikto sąrašo (pvz. jei sąraše minima, kad delnas platus ir tvirtas, susiek tai su konkrečia išvada šiame skyriuje — neperrašyk sąrašo pažodžiui, o PANAUDOK jį kaip įrodymą/pagrindą savo teiginiui). PRIEŠ atiduodamas kiekvieną skyrių, patikrink: ar galiu nurodyti, KURIS konkretus vizualinis parametras iš sąrašo pagrindžia BENT DU šio skyriaus sakinius? Jei ne — perrašyk, kol atsakymas į šį klausimą bus "taip".
 
 TAISYKLĖS:
 - Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, tiesiogiai paremtas tuo, ką matai jo delne — ne bendra tiesa apie žmones apskritai
 - PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, susiedamas su tuo, ką matai šiame delne
 - DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys privalo nešti naują, konkretų faktą
+- PAVYZDYS, ko VENGTI (per bendra, tiktų bet kam): "Tu esi žmogus, kurio pamatinė jėga slypi gebėjime išlaikyti vidinę ramybę net chaotiškose situacijose." — tai tuščia, nes bet kas norėtų, kad apie jį taip pasakytų
+- PAVYZDYS, KAIP TURI BŪTI (konkretu, susieta su vizualiniais parametrais): "Kai aplinkiniai pradeda kalbėti garsiau ir greičiau, tu instinktyviai sulėtini savo tempą — todėl būtent tave žmonės pasirenka skambinti pirmiausia, kai reikia ramaus sprendimo, ne užuojautos." — konkretus elgesio scenarijus, ne bendra savybė
 - Rašyk tiesiai ir drąsiai: "Tu esi...", "Tu linkęs...", "Tau sekasi...", "Tu vengi...", "Tau sunku..."
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
 - Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
 - SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia") — prieš atiduodamas atsakymą, patikrink KIEKVIENĄ sakinį su "tu"
+- SVARBU (kita dažna klaida): NEPRIDĖK sangrąžos dalelytės "-si", jei veiksmažodis nėra sangrąžinis — KLAIDA: "tu siekiesi pusiausvyros" (teisingai: "tu sieki pusiausvyros"), KLAIDA: "tu jo nepaleidžiai" (teisingai: "tu jo nepaleidi"). Jei abejoji, ar veiksmažodis sangrąžinis, naudok paprastesnę, be "-si" formą
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
