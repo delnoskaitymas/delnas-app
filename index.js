@@ -682,7 +682,8 @@ TAISYKLĖS:
 - PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, susiedamas su tuo, ką matai šiame delne
 - DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys privalo nešti naują, konkretų faktą
 - PAVYZDYS, ko VENGTI (per bendra, tiktų bet kam): "Tu esi žmogus, kurio pamatinė jėga slypi gebėjime išlaikyti vidinę ramybę net chaotiškose situacijose." — tai tuščia, nes bet kas norėtų, kad apie jį taip pasakytų
-- PAVYZDYS, KAIP TURI BŪTI (konkretu, susieta su vizualiniais parametrais): "Kai aplinkiniai pradeda kalbėti garsiau ir greičiau, tu instinktyviai sulėtini savo tempą — todėl būtent tave žmonės pasirenka skambinti pirmiausia, kai reikia ramaus sprendimo, ne užuojautos." — konkretus elgesio scenarijus, ne bendra savybė
+- PAVYZDYS, KAIP TURI BŪTI (konkretus faktas, susietas su vizualiniais parametrais): "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." — tiesioginis faktinis teiginys apie šį žmogų, ne hipotetinis scenarijus
+- DRAUDŽIAMA: hipotetiniai scenarijai ar iliustracijos su "jei", "kai", "įsivaizduok" konstrukcijomis (pvz. "kai nutinka X, tu darai Y") — rašyk TIESIOGINIUS FAKTUS apie šį žmogų, ne pavyzdines situacijas ar iliustracijas
 - Rašyk tiesiai ir drąsiai: "Tu esi...", "Tu linkęs...", "Tau sekasi...", "Tu vengi...", "Tau sunku..."
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
@@ -696,6 +697,9 @@ TAISYKLĖS:
 - DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
 - KRITIŠKAI SVARBU (JSON formatui): NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje, nei akcentuojant žodį/frazę, nei kaip citatos ženklo — NET IR VIENĄ KARTĄ, nes tai sugadina JSON struktūrą. Jei nori pabrėžti ar "iškelti" žodį/frazę, naudok TIK paprastą kablelinę kabutę 'štai taip' (apostrofus), niekada ne „lietuviškas" ar tiesiogines dvigubas kabutes. Tai taikoma VISUR — visuose skyriuose ir insights laukuose.
 - Kiekvienas žodis ir sakinys turi turėti prasmę ir svorį — jokių tuščių, niekuo neprisidedančių žodžių ar sakinio dalių
+- PATIKRINIMAS KIEKVIENAM SAKINIUI: uždenk šį sakinį ranka ir paklausk savęs — "ar be šio sakinio skaitytojas prarastų KONKREČIĄ informaciją apie save, kurios negautų iš likusio teksto?" Jei atsakymas "ne" (t. y. sakinį galima išmesti be jokio informacijos praradimo) — IŠTRINK jį arba perrašyk taip, kad neštų naują faktą
+- PAVYZDYS tuščio sakinio (IŠTRINTI, jei pasitaikytų): "Tai svarbi tavo asmenybės dalis, kuri formuoja tai, kas tu esi." — nieko konkretaus nepasako, galėtų sekti po BET KOKIO teiginio
+- Kiekvienas sakinys privalo atskleisti KONKRETŲ, TIESIOGINĮ FAKTĄ apie šį žmogų — ne hipotetinį pavyzdį, scenarijų ar iliustraciją. Arba (a) atskleidžia NAUJĄ faktą, arba (b) tiesiogiai pagrindžia prieš tai buvusį faktą kitu konkrečiu faktu (ne pramanytu pavyzdžiu) — niekada tik "užpildyti vietą" ar pakartoti jau pasakytą mintį kitais žodžiais
 - DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
 - Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
