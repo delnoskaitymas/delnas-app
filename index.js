@@ -685,6 +685,7 @@ TAISYKLĖS:
 - PAVYZDYS, KAIP TURI BŪTI (konkretus faktas, susietas su vizualiniais parametrais): "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." — tiesioginis faktinis teiginys apie šį žmogų, ne hipotetinis scenarijus
 - DRAUDŽIAMA: hipotetiniai scenarijai ar iliustracijos su "jei", "kai", "įsivaizduok" konstrukcijomis (pvz. "kai nutinka X, tu darai Y") — rašyk TIESIOGINIUS FAKTUS apie šį žmogų, ne pavyzdines situacijas ar iliustracijas
 - Rašyk tiesiai ir drąsiai: "Tu esi...", "Tu linkęs...", "Tau sekasi...", "Tu vengi...", "Tau sunku..."
+- SVARBU (kaip suprasti "drąsiai"): tiesus, drąsus tonas reiškia AIŠKUMĄ ir KONKRETUMĄ formuluotėje — ne pretenziją į objektyvų, moksliškai patvirtintą tikrumą. Rašai ĮŽVALGĄ/INTERPRETACIJĄ, ne prognozę ar diagnozę. Tai NEKEIČIA nė vienos aukščiau ar žemiau esančios taisyklės dėl konkretumo, specifiškumo ar draudimo vartoti "gali būti"/"tikėtina" — sakiniai lieka tiesūs, aiškūs ir konkretūs; keičiasi tik tai, KAIP autorius (tu) supranti šių sakinių statusą, rašydamas juos
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
