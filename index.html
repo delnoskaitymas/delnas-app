@@ -64,7 +64,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pd:nth-child(4){top:36px;left:8px;animation-delay:.2s}
 @keyframes pda{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
 .btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
-.btn-gold{background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;transition:transform .1s ease,opacity .1s ease;active:transform:scale(.97);letter-spacing:.08em;text-transform:uppercase;box-shadow:0 4px 20px rgba(212,168,67,.4)}
+.btn-gold{background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;transition:transform .1s ease,opacity .1s ease;active:transform:scale(.97);letter-spacing:.02em;box-shadow:0 4px 20px rgba(212,168,67,.4)}
 .btn-gold:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 4px 20px rgba(212,168,67,.35)}
 .btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .field{margin-bottom:14px}
@@ -381,7 +381,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:0;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
     <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:1;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:#000000;border:1px solid rgba(212,168,67,.28);border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:rgba(232,224,204,.5);letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:none">
-      <span id="cam-shutter-txt">UŽFIKSUOTI KAIRĮJĮ DELNĄ</span>
+      <span id="cam-shutter-txt">Užfiksuoti kairįjį delną</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Duomenys tvarkomi konfidencialiai</div>
   </div>
@@ -1673,10 +1673,10 @@ function updateCameraUI(){
   const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
   if(camHand==='left'){
     title.textContent='Nufotografuok kairįjį delną';dot1.classList.remove('inactive');dot2.classList.add('inactive');
-    if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI KAIRĮJĮ DELNĄ';
+    if(shutterTxt) shutterTxt.textContent='Užfiksuoti kairįjį delną';
   }else{
     title.textContent='Nufotografuok dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
-    if(shutterTxt) shutterTxt.textContent='UŽFIKSUOTI DEŠINĮJĮ DELNĄ';
+    if(shutterTxt) shutterTxt.textContent='Užfiksuoti dešinįjį delną';
   }
   if(hint){hint.textContent='';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
   // Resetinti būseną perjungiant tarp delno
@@ -4550,7 +4550,7 @@ function showSampleReport(e){
     <!-- CTA -->
     <div style="text-align:center;padding:4px 0 12px">
       <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.6">Tavo ataskaita bus personalizuota pagal<br>tavo rankos linijų unikalią struktūrą</div>
-      <button onclick="this.closest('div[style*=fixed]').remove();startApp()" style="width:100%;padding:15px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#000000;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 20px rgba(212,168,67,.4)">Gauti savo ataskaitą →</button>
+      <button onclick="this.closest('div[style*=fixed]').remove();startApp()" style="width:100%;padding:15px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#000000;letter-spacing:.02em;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 20px rgba(212,168,67,.4)">Gauti savo ataskaitą →</button>
       <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px">Uždaryti</button>
     </div>
 
