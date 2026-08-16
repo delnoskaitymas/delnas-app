@@ -34,20 +34,20 @@ const app = express();
 // TEST REŽIMUI ĮJUNGTI (Railway → Variables):
 //   STRIPE_SECRET_KEY       = sk_test_...
 //   STRIPE_PUBLISHABLE_KEY  = pk_test_...
-//   STRIPE_PRICE_ID_PROMO   = price_... (test režimo Price ID, 9,99 €)
-//   STRIPE_PRICE_ID_REGULAR = price_... (test režimo Price ID, 15,99 €)
+//   STRIPE_PRICE_ID_PROMO   = price_... (test režimo Price ID, akcinė kaina)
+//   STRIPE_PRICE_ID_REGULAR = price_... (test režimo Price ID, įprasta kaina)
 // (Test Price ID'us gausite Stripe Dashboard, perjungę viršuje "Test mode",
 // tada Product catalog → sukurkite/pasižiūrėkite tuos pačius produktus.)
 //
 // GRĮŽTI Į LIVE: tiesiog ištrinkite šiuos 4 kintamuosius iš Railway
 // Variables (arba įrašykite atgal sk_live_/pk_live_ ir live Price ID'us) —
 // kodas automatiškai naudos numatytąsias (live) reikšmes žemiau.
-const STRIPE_PRICE_ID_PROMO = process.env.STRIPE_PRICE_ID_PROMO || 'price_1TzgxjFqSjrMSpekQiJKn48d';    // 9,99 €  — speciali_kaina
-const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // 15,99 € — iprasta_kaina
+const STRIPE_PRICE_ID_PROMO = process.env.STRIPE_PRICE_ID_PROMO || 'price_1TzgxjFqSjrMSpekQiJKn48d';    // atsarginė (fallback) reikšmė — TIKRINKITE, ar atitinka dabartinę akcinę kainą
+const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1TzgxjFqSjrMSpekJ8BSCRda'; // atsarginė (fallback) reikšmė — TIKRINKITE, ar atitinka dabartinę įprastą kainą
 // ACTIVE_PRICE_ID nurodo, kuri kaina ŠIUO METU realiai taikoma checkout metu.
-// Kol 9,99 € akcija dar nebuvo realiai taikyta bent tam tikrą laikotarpį,
-// parduodame už TIKRĄ, įprastą kainą (15,99 €) — kad vėliau, jei norėsite
-// paleisti 9,99 € akciją su perbrauktu 15,99 €, tai turėtų teisėtą, realiai
+// Kol akcinė kaina dar nebuvo realiai taikyta bent tam tikrą laikotarpį,
+// parduodame už TIKRĄ, įprastą kainą — kad vėliau, jei norėsite
+// paleisti akciją su perbrauktu senesniu įprastu kainos žymėjimu, tai turėtų teisėtą, realiai
 // taikytos kainos pagrindą (ES Omnibus direktyvos reikalavimas dėl nuolaidų
 // atskaitos taško). Kai būsite pasiruošę pradėti akciją, pakeiskite šią
 // konstantą į STRIPE_PRICE_ID_PROMO.
@@ -1288,7 +1288,7 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     // Suma imama TIESIOGIAI iš Stripe Price objekto (ne kietai įrašyta), kad
-    // kaina visada sutaptų su Product catalog įrašu (speciali_kaina, 9,99 €).
+    // kaina visada sutaptų su Product catalog įrašu (ACTIVE_PRICE_ID).
     const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
     const paymentIntent = await stripe.paymentIntents.create({
       amount: activePrice.unit_amount,
@@ -1407,9 +1407,17 @@ app.get('/price-info', async (req, res) => {
     res.json(_priceInfoCache);
   } catch (err) {
     console.error('/price-info klaida:', err);
-    // Atsarginis variantas, jei Stripe API laikinai nepasiekiamas —
-    // rodomos dabartinės žinomos vertės, kad kainodaros blokas neliktų tuščias.
-    res.json({ promo: { amount: 999, currency: 'eur' }, regular: { amount: 1599, currency: 'eur' }, active: { amount: 1599, currency: 'eur' }, isPromoActive: false });
+    // SVARBU: čia ANKSČIAU buvo grąžinamos hardcoded, pasenusios kainos
+    // (15,99 €/9,99 €) — jei Stripe API laikinai nepasiekiamas, vartotojui
+    // galėjo būti parodyta NETEISINGA (sena) suma. Dabar, vietoj to,
+    // grąžiname aiškią klaidą — GERIAU NERODYTI sumos, nei rodyti pasenusią.
+    // Kliento pusėje (index.html) tai jau tinkamai apdorojama:
+    //  - kainos rodymo bloke: .catch() tiesiog palieka statinį HTML
+    //    atsarginį skaičių (jis atnaujintas ir atitinka dabartinę kainą);
+    //  - Apple/Google Pay sumos nustatyme: jau yra apsauga
+    //    "if(!activeCents){ alert(...); return; }", kuri saugiai nutraukia
+    //    mokėjimą, jei "active.amount" lauko šiame atsakyme nėra.
+    res.status(503).json({ error: 'Nepavyko gauti aktualios kainos iš Stripe' });
   }
 });
 
