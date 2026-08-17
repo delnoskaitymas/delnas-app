@@ -63,7 +63,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pd:nth-child(3){bottom:14px;right:18px;animation-delay:1.3s}
 .pd:nth-child(4){top:36px;left:8px;animation-delay:.2s}
 @keyframes pda{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
-.btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
+.btn{display:block;width:100%;padding:15px;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:transform .15s,filter .15s;letter-spacing:.02em;border:none;margin-bottom:10px;text-align:center}
 .btn-gold{background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;transition:transform .1s ease,opacity .1s ease;active:transform:scale(.97);letter-spacing:.02em;box-shadow:0 4px 20px rgba(212,168,67,.4)}
 .btn-gold:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 4px 20px rgba(212,168,67,.35)}
 .btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
@@ -236,7 +236,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pm-ls.dim{opacity:1;background:#000000;border:1px solid rgba(212,168,67,.32);box-shadow:none}
 .pm-ls-icon{width:26px;height:26px;border-radius:7px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:all .25s ease}
 .pm-ls.dim .pm-ls-icon{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);box-shadow:none}
-.pm-ls-name{font-size:13px;font-weight:700;color:#e8e2d4;letter-spacing:.02em;text-shadow:none;transition:all .25s ease}
+.pm-ls-name{font-size:13px;font-weight:800;color:#e8e2d4;letter-spacing:.02em;text-shadow:none;transition:all .25s ease}
 .pm-ls.sel .pm-ls-name{color:var(--gold2)}
 .pm-ls.dim .pm-ls-name{color:#e8e2d4;text-shadow:none}
 @keyframes mainBtnBreathing{0%,100%{box-shadow:0 4px 20px rgba(212,168,67,.4),0 0 0 0 rgba(212,168,67,0);filter:brightness(1)}50%{box-shadow:0 8px 36px rgba(212,168,67,.65),0 0 0 5px rgba(212,168,67,.18);filter:brightness(1.06)}}
@@ -277,7 +277,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
       <div style="font-size:10px;color:rgba(255,255,255,.4);line-height:1.5">Tai savanoriška garantija — analizė yra skaitmeninis turinys, kurio generavimas prasideda iš karto po delnų nuotraukų pateikimo (dar prieš apmokėjimą), todėl teisinė 14 dienų atsisakymo teisė jam netaikoma. Ši garantija yra papildoma, geranoriška paslauga, todėl pasiliekame teisę įvertinti kiekvieną prašymą individualiai bei atsisakyti grąžinimo piktnaudžiavimo atveju (žr. <a href="/naudojimosi-salygos#5" target="_blank" style="color:rgba(212,168,67,.6)">Naudojimosi sąlygas</a>).</div>
     </div>
-    <button onclick="closeRefundPopup()" id="refund-close-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.3);animation:payBtnBreathing 3s ease-in-out infinite;flex-shrink:0">Tęsti savo žemėlapio užsakymą</button>
+    <button onclick="closeRefundPopup()" id="refund-close-btn" style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.3);animation:payBtnBreathing 3s ease-in-out infinite;flex-shrink:0">Tęsti savo žemėlapio užsakymą</button>
   </div>
 </div>
 <div id="app-wrap"><div id="stars" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"></div>
@@ -380,7 +380,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   </div><!-- /wrapper -->
   <div class="cam-shutter-wrap">
     <div id="cam-hint-txt" style="font-size:12px;font-weight:600;letter-spacing:.03em;text-align:center;color:rgba(212,168,67,.85);font-family:'DM Sans',sans-serif;min-height:0;transition:opacity 0.3s ease,color 0.3s ease;padding:0 16px;line-height:1.4"></div>
-    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:1;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:#000000;border:1px solid rgba(212,168,67,.28);border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:rgba(232,224,204,.5);letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:none">
+    <button id="cam-shutter" data-locked="1" onclick="capturePhoto()" onpointerdown="this.style.animation='none';this.style.transform='scale(0.96)';this.style.boxShadow='0 1px 8px rgba(212,168,67,.2)'" onpointerup="this.style.transform='';this.style.boxShadow='';if(this.dataset.locked!=='1') this.style.animation='camBreathing 2s ease-in-out infinite'" onpointerleave="this.style.transform='';this.style.boxShadow=''" style="opacity:1;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease,transform .12s ease,box-shadow .3s ease;background:#000000;border:1px solid rgba(212,168,67,.28);border-radius:14px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;color:rgba(232,224,204,.5);letter-spacing:.1em;cursor:pointer;width:calc(100vw - 40px);max-width:320px;box-shadow:none">
       <span id="cam-shutter-txt">Užfiksuoti kairįjį delną</span>
     </button>
     <div style="font-size:10px;color:rgba(212,168,67,.35);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:6px">🔒 Duomenys tvarkomi konfidencialiai</div>
@@ -504,7 +504,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
-    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
+    <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
     <div style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Vienintelė eilutė: saugumas + garantija (garantijos frazė yra paspaudžiama nuoroda) -->
       <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 dienų pinigų grąžinimo garantija</button></span>
@@ -677,15 +677,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">Pasidalink ir pakviesk</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink draugą – dalinkis kortele su savo stiprybėmis arba pakviesk jį pažvelgti, ką pasakoja jo delnai.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su stiprybėmis</button>
-        <button onclick="inviteFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugą išbandyti</button>
+        <button onclick="shareStory()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su stiprybėmis</button>
+        <button onclick="inviteFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugą išbandyti</button>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
       <div style="font-size:14px;font-weight:600;color:var(--gold2);font-family:'Playfair Display',serif;margin-bottom:10px">Po 3 mėnesių – naujas žvilgsnis į tavo žemėlapį</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px">Gyvenimas nuolat kinta. Kiekviena analizė atskleidžia vis naujus tavo kelio atsakymus.</div>
       <div id="reminder-wrap">
-        <button onclick="registerReminder()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:var(--gold2);font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">✦ Primink man</button>
+        <button onclick="registerReminder()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:15px;color:var(--gold2);font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">✦ Primink man</button>
       </div>
       <div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:10px 0">✦ Laukiame tavęs po 3 mėnesių.</div>
     </div>
@@ -1662,7 +1662,7 @@ function _startAppReal(){
       msg='Panašu, kad kamerą šiuo metu naudoja kita programėlė. Uždarykite ją ir bandykite dar kartą.';
     }
     errEl.style.cssText='display:flex!important;position:absolute;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:rgba(5,5,5,.92);backdrop-filter:blur(8px)';
-    errEl.innerHTML='<div style="font-size:26px;color:#d4a843">⚠</div><div style="font-size:15px;font-weight:700;color:#f0c96a;font-family:\'Playfair Display\',serif">'+title+'</div><div style="font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.6;max-width:280px">'+msg+'</div><button onclick="document.getElementById(\'cam-error\').style.display=\'none\';_startAppReal()" style="margin-top:6px;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:11px 22px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;color:#000;cursor:pointer">Bandyti dar kartą</button>';
+    errEl.innerHTML='<div style="font-size:26px;color:#d4a843">⚠</div><div style="font-size:15px;font-weight:700;color:#f0c96a;font-family:\'Playfair Display\',serif">'+title+'</div><div style="font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.6;max-width:280px">'+msg+'</div><button onclick="document.getElementById(\'cam-error\').style.display=\'none\';_startAppReal()" style="margin-top:6px;background:linear-gradient(135deg,#f0c96a,#d4a843,#a07828);border:none;border-radius:12px;padding:11px 22px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer">Bandyti dar kartą</button>';
   });
 }
 
@@ -4550,7 +4550,7 @@ function showSampleReport(e){
     <!-- CTA -->
     <div style="text-align:center;padding:4px 0 12px">
       <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.6">Tavo ataskaita bus personalizuota pagal<br>tavo rankos linijų unikalią struktūrą</div>
-      <button onclick="this.closest('div[style*=fixed]').remove();startApp()" style="width:100%;padding:15px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#000000;letter-spacing:.02em;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 20px rgba(212,168,67,.4)">Gauti savo ataskaitą →</button>
+      <button onclick="this.closest('div[style*=fixed]').remove();startApp()" style="width:100%;padding:15px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;color:#000000;letter-spacing:.02em;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 20px rgba(212,168,67,.4)">Gauti savo ataskaitą →</button>
       <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px">Uždaryti</button>
     </div>
 
