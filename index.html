@@ -30,7 +30,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
 .screen{display:none;position:relative;z-index:1;min-height:100vh;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
-#s-home.active{display:flex;flex-direction:column;position:relative;overflow:hidden}
+#s-home.active{display:flex;flex-direction:column;position:relative;overflow:hidden;min-height:0;padding-bottom:24px}
 .s-home-top{display:flex;flex-direction:column;flex:1;min-height:0}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
 @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
