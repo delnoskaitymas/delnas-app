@@ -3754,7 +3754,12 @@ function buildResultPdfDoc(r, name, orderNumber){
   let footerY = y + footerGap;
   if(footerY + footerBlockH > 282){
     y = newPage();
-    footerY = y + 14; // tas pats kvėpuojantis tarpas, kaip ir įprastai — ne per vidurį tuščio puslapio
+    // Šis blokas dabar yra VIENINTELIS turinys naujame puslapyje — jį
+    // centruojame vertikaliai, o ne pritvirtiname prie viršaus, kad
+    // nesusidarytų didelis tuščias juodas plotas apačioje (ta pati
+    // problema, kaip ir programėlės pradiniame ekrane).
+    const usableTop = 20, usableBottom = 277;
+    footerY = usableTop + (usableBottom - usableTop - footerBlockH) / 2;
   }
   doc.setFont('NotoSans','normal');
   doc.setFontSize(13);
