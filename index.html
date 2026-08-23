@@ -3749,10 +3749,10 @@ function buildResultPdfDoc(r, name, orderNumber){
   // atskirai nuo svetainės/ToS konteksto), bet suformuluota programos
   // stiliumi, ne kaip šaltas teisinis įspėjimas.
   const footerNote = 'Šis žemėlapis – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.';
-  const footerGap = 14;    // kvėpuojantis tarpas virš footerio
-  const footerBlockH = 56; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba + užsakymo nr.)
+  const footerGap = 10;    // kvėpuojantis tarpas virš footerio (sumažintas, kad likti tame pačiame puslapyje)
+  const footerBlockH = 50; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba + užsakymo nr.)
   let footerY = y + footerGap;
-  if(footerY + footerBlockH > 282){
+  if(footerY + footerBlockH > 292){
     y = newPage();
     // Šis blokas dabar yra VIENINTELIS turinys naujame puslapyje — jį
     // centruojame vertikaliai, o ne pritvirtiname prie viršaus, kad
