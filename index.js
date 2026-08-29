@@ -125,7 +125,12 @@ app.use(express.static(path.join(__dirname, '.'), {
     }
   }
 }));
-app.use('/webhook', express.raw({ type: 'application/json' }));
+// PASTABA: anksčiau čia buvo "app.use('/webhook', express.raw(...))" —
+// bet joks realus Stripe webhook handler'is (app.post('/webhook', ...))
+// šiame faile NIEKADA nebuvo registruotas, tad ši eilutė buvo neveikiantis,
+// klaidinantis "mirusio kodo" likutis. Pašalinta (2026-08). Apmokėjimo
+// patvirtinimas šiuo metu vyksta per /verify-payment-intent ir
+// /verify-payment, kuriuos klientas iškviečia grįžęs po apmokėjimo.
 app.use(express.json({ limit: '50mb' }));
 
 // --- Patvari saugykla (Railway Volume, jei sumontuotas) ---
@@ -250,11 +255,87 @@ const validTokens = new Map();
 // aktualus tik trumpam, TOS PAČIOS UŽSAKYMO sesijos metu).
 const sentPdfEmailsForOrder = new Set();
 
+// --- Apmokėjimo → tokeno atitikmenų PATVARI saugykla ---
+// SVARBU (saugumo/kaštų taisymas): ANKSČIAU /verify-payment-intent ir
+// /verify-payment KIEKVIENĄ KARTĄ, kai buvo iškviečiami TAM PAČIAM
+// paymentIntentId/session_id, sukurdavo VISIŠKAI NAUJĄ, papildomą galiojantį
+// tokeną — nebuvo jokios apsaugos, kad tas pats, VIENAS apmokėjimas
+// negalėtų "pagimdyti" kelių tokenų. Kadangi kiekvienas tokenas leidžia
+// vieną pilną, brangią AI analizę (~11500 Claude tokenų), pakartotinis šio
+// endpoint'o iškvietimas (netyčia dėl naršyklės "atgal"/perkrovimo, ar
+// tyčia) reiškė nemokamą papildomą analizę už tą patį apmokėjimą.
+// DABAR: kiekvienam paymentIntentId/session_id sukuriamas TIK VIENAS
+// tokenas — jis įrašomas ČIA, patvarioje saugykloje (Railway Volume, jei
+// sukonfigūruota), ir jei tas pats ID vėl užklausiamas, grąžinamas TAS
+// PATS jau sukurtas tokenas, o ne naujas. Tai taip pat padeda, jei
+// serveris persikrauna tarp apmokėjimo ir analizės — tokenas atkuriamas iš
+// šios saugyklos, o ne prarandamas kartu su tik-atminties Map'u.
+const PAYMENT_TOKENS_FILE = path.join(SHARED_STORAGE_DIR, 'payment-tokens.json');
+
+function loadPaymentTokens() {
+  try {
+    if (fs.existsSync(PAYMENT_TOKENS_FILE)) return JSON.parse(fs.readFileSync(PAYMENT_TOKENS_FILE, 'utf8'));
+  } catch(e) {}
+  return {};
+}
+
+function savePaymentTokens(map) {
+  try { fs.writeFileSync(PAYMENT_TOKENS_FILE, JSON.stringify(map, null, 2)); } catch(e) {}
+}
+
+// Paleidimo metu išvalome pasenusius (>2h) įrašus — jų galiojimas jau
+// būtų pasibaigęs, tad NEBEATKURIAME jų validTokens Map'e.
+(function cleanupPaymentTokensOnStartup() {
+  const map = loadPaymentTokens();
+  const now = Date.now();
+  let changed = false;
+  for (const [id, entry] of Object.entries(map)) {
+    if (now - entry.createdAt > 2 * 60 * 60 * 1000) { delete map[id]; changed = true; }
+  }
+  if (changed) savePaymentTokens(map);
+})();
+
 function createToken(name, email) {
   const token = crypto.randomBytes(32).toString('hex');
   validTokens.set(token, { name, email, used: false, createdAt: Date.now() });
   setTimeout(() => validTokens.delete(token), 2 * 60 * 60 * 1000);
   return token;
+}
+
+// Grąžina TĄ PATĮ tokeną, jei šis paymentId (paymentIntentId arba Checkout
+// session_id) jau kartą buvo apdorotas — kitaip sukuria naują ir įrašo jį
+// patvariai. `paymentId` PRIVALO būti unikalus konkrečiam apmokėjimui
+// (Stripe pats garantuoja PaymentIntent/Session ID unikalumą).
+function getOrCreateTokenForPayment(paymentId, name, email) {
+  const map = loadPaymentTokens();
+  const existing = map[paymentId];
+  if (existing) {
+    // Jei tokenas jau kadaise sukurtas šiam apmokėjimui, bet serveris
+    // tarpe persikrovė (validTokens Map atsistatė tuščias) — atkuriame jį
+    // atmintyje, kad /analyze-palm jį vėl pripažintų galiojančiu.
+    if (!validTokens.has(existing.token)) {
+      validTokens.set(existing.token, { name: existing.name, email: existing.email, used: existing.used || false, createdAt: existing.createdAt });
+      const remaining = (existing.createdAt + 2 * 60 * 60 * 1000) - Date.now();
+      if (remaining > 0) setTimeout(() => validTokens.delete(existing.token), remaining);
+      else validTokens.delete(existing.token);
+    }
+    console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} JAU TURI tokeną — grąžinamas TAS PATS (be naujo AI kvietimo galimybės padvigubinti)`);
+    return existing.token;
+  }
+  const token = createToken(name, email);
+  map[paymentId] = { token, name, email, used: false, createdAt: Date.now() };
+  savePaymentTokens(map);
+  console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} -> NAUJAS tokenas sukurtas ir įrašytas patvariai`);
+  return token;
+}
+
+// Pažymi tokeną kaip panaudotą IR patvarioje saugykloje (ne tik atmintyje),
+// kad serverio persikrovimas po analizės nepadarytų tokeno vėl "nepanaudotu".
+function markPaymentTokenUsedPersistently(token) {
+  const map = loadPaymentTokens();
+  for (const entry of Object.values(map)) {
+    if (entry.token === token) { entry.used = true; savePaymentTokens(map); return; }
+  }
 }
 
 // --- Foninės analizės cache ---
@@ -1249,6 +1330,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     }
 
     tokenEntry.used = true;
+    markPaymentTokenUsedPersistently(token);
     if (userName) result.userName = userName;
 
     // Priminimas užregistruojamas tik kai vartotojas pats paspaudžia mygtuką (/schedule-reminder)
@@ -1320,7 +1402,11 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
     if (pi.status === 'succeeded') {
       const finalName = name || pi.metadata.name || '';
       const finalEmail = email || pi.metadata.email || '';
-      const token = createToken(finalName, finalEmail);
+      // getOrCreateTokenForPayment (ne createToken tiesiogiai): jei šis
+      // paymentIntentId jau kartą buvo apdorotas, grąžinamas TAS PATS
+      // tokenas, o ne naujas — apsauga nuo pakartotinio šio endpoint'o
+      // iškvietimo (žr. komentarą prie funkcijos aukščiau).
+      const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
       sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
       res.json({ paid: true, token, name: finalName, email: finalEmail });
     } else {
@@ -1331,7 +1417,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
   }
 });
 
-app.get('/verify-payment', async (req, res) => {
+app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
     if (session.payment_status === 'paid') {
@@ -1341,7 +1427,11 @@ app.get('/verify-payment', async (req, res) => {
       // variantas req.query, jei metadata dėl kokios nors priežasties tuščia.
       const finalBgSessionId = session.metadata?.bgSessionId || req.query.bgSessionId || '';
       const finalOrderNumber = session.metadata?.orderNumber || req.query.orderNumber || '';
-      const token = createToken(finalName, finalEmail);
+      // getOrCreateTokenForPayment (ne createToken tiesiogiai) — žr.
+      // komentarą prie funkcijos aukščiau. Čia raktas yra session.id (ne
+      // req.query.session_id tiesiogiai), nes tai Stripe patvirtinta,
+      // patikima reikšmė tam pačiam checkout session'ui.
+      const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
       sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
       res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber });
     } else {
