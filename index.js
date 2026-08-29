@@ -349,12 +349,104 @@ function markPaymentTokenUsedPersistently(token) {
 }
 
 // --- Foninės analizės cache ---
+// PATVARUMAS (2026-08 taisymas): anksčiau šis Map'as buvo TIK atmintyje —
+// jei serveris persikraudavo TIKSLIAI tarp apmokėjimo ir analizės pabaigos,
+// ta konkreti (jau APMOKĖTA) analizė būdavo negrįžtamai prarasta: klientas
+// gaudavo klaidą, o serveris "užmiršdavo", kad analizė apskritai buvo
+// pradėta. Dabar kiekviena sesija saugoma SAVO faile (nes gali turėti
+// didelius base64 nuotraukų duomenis — atskiri failai efektyvesni už vieną
+// bendrą JSON, kurį reikėtų perrašyti kaskart). Paleidimo metu VISOS dar
+// negalutinės (status='pending'/'step2') sesijos automatiškai PALEIDŽIAMOS
+// IŠ NAUJO — jos serverio persikrovimo metu buvo "užšalusios" pusiaukelėje
+// (originalus fetch()'as į Claude API nutrūko kartu su procesu), tad vienintelis
+// būdas jas užbaigti yra pradėti dar kartą.
+const ANALYSIS_SESSIONS_DIR = path.join(SHARED_STORAGE_DIR, 'analysis-sessions');
+
+function ensureAnalysisSessionsDir() {
+  try { if (!fs.existsSync(ANALYSIS_SESSIONS_DIR)) fs.mkdirSync(ANALYSIS_SESSIONS_DIR, { recursive: true }); } catch(e) {}
+}
+
+function analysisSessionFilePath(sessionId) {
+  // sessionId ateina iš crypto.randomUUID() arba Math.random() bazės
+  // kliento pusėje — bet vis tiek saugiai išvalome bet kokius simbolius,
+  // kurie netiktų failo varde (apsauga nuo path traversal).
+  const safeId = String(sessionId).replace(/[^a-zA-Z0-9-]/g, '');
+  return path.join(ANALYSIS_SESSIONS_DIR, `${safeId}.json`);
+}
+
+function saveAnalysisSessionToDisk(sessionId, entry) {
+  try {
+    ensureAnalysisSessionsDir();
+    fs.writeFileSync(analysisSessionFilePath(sessionId), JSON.stringify(entry));
+  } catch(e) {
+    console.error(`[saveAnalysisSessionToDisk] sessionId=${sessionId} klaida:`, e.message);
+  }
+}
+
+function deleteAnalysisSessionFromDisk(sessionId) {
+  try {
+    const fp = analysisSessionFilePath(sessionId);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  } catch(e) {}
+}
+
 const analysisCache = new Map();
+
+// Paleidimo metu: įkeliame visas dar negaliojusias (<3h) sesijas atgal į
+// atmintį. Jei kuri nors buvo pusiaukelėje ('pending' arba 'step2'), tai
+// reiškia, kad ANKSTESNIS procesas mirė jos NEUŽBAIGĘS — paleidžiame ją IŠ
+// NAUJO fone, TIKSLIAI TAIP PAT, kaip /start-analysis endpoint'as tai daro.
+(function restoreAnalysisSessionsOnStartup() {
+  try {
+    ensureAnalysisSessionsDir();
+    const files = fs.readdirSync(ANALYSIS_SESSIONS_DIR).filter(f => f.endsWith('.json'));
+    const now = Date.now();
+    let restoredCount = 0, resumedCount = 0;
+    for (const file of files) {
+      const sessionId = file.replace(/\.json$/, '');
+      try {
+        const entry = JSON.parse(fs.readFileSync(path.join(ANALYSIS_SESSIONS_DIR, file), 'utf8'));
+        if (now - entry.createdAt > 3 * 60 * 60 * 1000) {
+          fs.unlinkSync(path.join(ANALYSIS_SESSIONS_DIR, file));
+          continue;
+        }
+        analysisCache.set(sessionId, entry);
+        restoredCount++;
+        if (entry.status === 'pending' || entry.status === 'step2') {
+          resumedCount++;
+          console.log(`[restoreAnalysisSessionsOnStartup] sessionId=${sessionId} buvo statuso '${entry.status}' — PALEIDŽIAMA IŠ NAUJO fone (ankstesnis procesas mirė jos neužbaigęs)`);
+          // Grąžiname statusą į 'pending' (net jei buvo 'step2') — nauja
+          // runPalmAnalysis eiga pati vėl pažymės 'step2', kai iki jo
+          // prieis. Fiksuojame naują sessionId lauką pačiam entry, kad
+          // sekantis saveAnalysisSessionToDisk() jį rastų.
+          entry.status = 'pending';
+          entry.error = null;
+          saveAnalysisSessionToDisk(sessionId, entry);
+          runPalmAnalysis(entry.photos, entry.name || '', sessionId)
+            .then(result => {
+              const e = analysisCache.get(sessionId);
+              if (e) { e.status = 'done'; e.result = result; saveAnalysisSessionToDisk(sessionId, e); }
+            })
+            .catch(err => {
+              const e = analysisCache.get(sessionId);
+              if (e) { e.status = 'error'; e.error = err.message; saveAnalysisSessionToDisk(sessionId, e); }
+              console.log(`[restoreAnalysisSessionsOnStartup] sessionId=${sessionId} pakartotinė analizė NEPAVYKO: ${err.message}`);
+            });
+        }
+      } catch(e) {
+        console.error(`[restoreAnalysisSessionsOnStartup] sessionId=${sessionId} klaida įkeliant:`, e.message);
+      }
+    }
+    if (restoredCount > 0) console.log(`[restoreAnalysisSessionsOnStartup] atkurta ${restoredCount} sesijų, iš jų pakartotinai paleista ${resumedCount}`);
+  } catch(e) {
+    console.error('[restoreAnalysisSessionsOnStartup] bendra klaida:', e.message);
+  }
+})();
 
 setInterval(() => {
   const now = Date.now();
   for (const [id, entry] of analysisCache.entries()) {
-    if (now - entry.createdAt > 3 * 60 * 60 * 1000) analysisCache.delete(id);
+    if (now - entry.createdAt > 3 * 60 * 60 * 1000) { analysisCache.delete(id); deleteAnalysisSessionFromDisk(id); }
   }
 }, 60 * 60 * 1000);
 
@@ -367,7 +459,36 @@ setInterval(() => {
 //      išsiųstas pranešimas su šio kliento vardu, el. paštu ir numeriu.
 // Po to, kai šis pranešimas sėkmingai išsiunčiamas, įrašas IŠ KARTO
 // ištrinamas — jo ilgiau saugoti nereikia (žr. /notify-order-complete).
-const pendingOrders = new Map();
+// PATVARUMAS (2026-08 taisymas): anksčiau šis Map'as buvo TIK atmintyje —
+// jei serveris persikraudavo TIKSLIAI tarp apmokėjimo ir rezultato ekrano
+// atidarymo, įrašas dingdavo. Tai neblokuodavo paties administracinio
+// laiško (sendPaymentSuccessEmails turi savo, iš Stripe metadata gautą
+// atsarginį vardą/el.paštą), bet vis tiek — duomenys saugomi patvariai,
+// kaip ir kitos šio failo saugyklos (priminimai, tokenai).
+const PENDING_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pending-orders.json');
+
+function loadPendingOrdersFromDisk() {
+  try {
+    if (fs.existsSync(PENDING_ORDERS_FILE)) return new Map(Object.entries(JSON.parse(fs.readFileSync(PENDING_ORDERS_FILE, 'utf8'))));
+  } catch(e) {}
+  return new Map();
+}
+
+function savePendingOrdersToDisk(map) {
+  try { fs.writeFileSync(PENDING_ORDERS_FILE, JSON.stringify(Object.fromEntries(map), null, 2)); } catch(e) {}
+}
+
+const pendingOrders = loadPendingOrdersFromDisk();
+// Paleidimo metu iškart išvalome pasenusius (>6h) įrašus, kad atkurtame
+// Map'e neliktų nieko, kas jau būtų turėję būti išvalyta.
+(function cleanupPendingOrdersOnStartup() {
+  const now = Date.now();
+  let changed = false;
+  for (const [num, entry] of pendingOrders.entries()) {
+    if (now - entry.createdAt > 6 * 60 * 60 * 1000) { pendingOrders.delete(num); changed = true; }
+  }
+  if (changed) savePendingOrdersToDisk(pendingOrders);
+})();
 
 function generateOrderNumber() {
   let num;
@@ -399,7 +520,7 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
     console.log(`[sendPaymentSuccessEmails] iškviesta orderNumber=${orderNumber||'(nėra)'} entryRastas=${!!entry} email=${email||'(nėra)'}`);
     if (!email) { console.log('[sendPaymentSuccessEmails] nėra el. pašto, praleidžiama'); return; }
     if (entry && entry.orderConfirmed) { console.log('[sendPaymentSuccessEmails] jau išsiųsta anksčiau, praleidžiama'); return; }
-    if (entry) entry.orderConfirmed = true;
+    if (entry) { entry.orderConfirmed = true; savePendingOrdersToDisk(pendingOrders); }
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
 
@@ -435,9 +556,11 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
 // nebuvo iškviestas, įrašas vis tiek nelieka amžinai atmintyje.
 setInterval(() => {
   const now = Date.now();
+  let changed = false;
   for (const [num, entry] of pendingOrders.entries()) {
-    if (now - entry.createdAt > 6 * 60 * 60 * 1000) pendingOrders.delete(num);
+    if (now - entry.createdAt > 6 * 60 * 60 * 1000) { pendingOrders.delete(num); changed = true; }
   }
+  if (changed) savePendingOrdersToDisk(pendingOrders);
 }, 60 * 60 * 1000);
 
 // --- El. pašto adresų paskirtis ---
@@ -752,7 +875,7 @@ Grąžink TIKTAI JSON:
   // antrą etapą, o ne dirbtinai suskaidytus 7 "žingsnius".
   if (sessionId) {
     const entry = analysisCache.get(sessionId);
-    if (entry && entry.status === 'pending') entry.status = 'step2';
+    if (entry && entry.status === 'pending') { entry.status = 'step2'; saveAnalysisSessionToDisk(sessionId, entry); }
   }
   const bruozaiText = bruozai.length > 0
     ? `Vizualiniai delno parametrai:\n${bruozai.map((b, i) => `${i+1}. ${b}`).join('\n')}\n\n`
@@ -1054,14 +1177,16 @@ app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
       return res.json({ started: true, sessionId });
     }
 
-    analysisCache.set(sessionId, {
+    const newEntry = {
       status: 'pending',
       result: null,
       error: null,
       photos,
       name: req.body.name || '',
       createdAt: Date.now()
-    });
+    };
+    analysisCache.set(sessionId, newEntry);
+    saveAnalysisSessionToDisk(sessionId, newEntry);
     console.log(`[start-analysis] sessionId=${sessionId} UŽREGISTRUOTAS cache'e (status=pending), cacheSize=${analysisCache.size}`);
 
     res.json({ started: true, sessionId });
@@ -1069,12 +1194,12 @@ app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
     runPalmAnalysis(photos, req.body.name || '', sessionId)
       .then(result => {
         const entry = analysisCache.get(sessionId);
-        if (entry) { entry.status = 'done'; entry.result = result; console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ BAIGTA sėkmingai`); }
+        if (entry) { entry.status = 'done'; entry.result = result; saveAnalysisSessionToDisk(sessionId, entry); console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ BAIGTA sėkmingai`); }
         else console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ baigta, BET cache įrašo BENĖRA (?!)`);
       })
       .catch(err => {
         const entry = analysisCache.get(sessionId);
-        if (entry) { entry.status = 'error'; entry.error = err.message; }
+        if (entry) { entry.status = 'error'; entry.error = err.message; saveAnalysisSessionToDisk(sessionId, entry); }
         console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ KLAIDA: ${err.message}`);
       });
 
@@ -1159,6 +1284,7 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
     if (!isValidName(name) || !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas vardas arba el. paštas' });
     const orderNumber = generateOrderNumber();
     pendingOrders.set(orderNumber, { name, email, createdAt: Date.now(), notified: false });
+    savePendingOrdersToDisk(pendingOrders);
     console.log(`[register-order] sukurtas ${orderNumber} (${name}, ${email})`);
     res.json({ orderNumber });
   } catch (err) {
@@ -1180,6 +1306,7 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
     const { orderNumber } = req.body;
     if (!isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
     const existed = pendingOrders.delete(orderNumber);
+    if (existed) savePendingOrdersToDisk(pendingOrders);
     console.log(`[notify-order-complete] ${orderNumber} — įrašas ${existed ? 'ištrintas iš atminties' : 'nerastas (jau ištrintas arba pasenęs)'} (administracinis laiškas jau išsiųstas anksčiau, žr. sendPaymentSuccessEmails)`);
     res.json({ ok: true });
   } catch (err) {
@@ -1309,11 +1436,13 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           // triname cache ir paleidžiame naują brangų AI kvietimą.
           console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė nepavyko laukimo lango metu (${entry.error}), grąžinam klaidą IŠKART`);
           analysisCache.delete(sessionId);
+          deleteAnalysisSessionFromDisk(sessionId);
           return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
         } else {
           console.log(`[analyze-palm] sessionId=${sessionId} -> statusas tapo '${entry&&entry.status}', triname cache`);
           // įrašas dingo (nenumatyta situacija) — cache nebenaudingas
           analysisCache.delete(sessionId);
+          deleteAnalysisSessionFromDisk(sessionId);
         }
       } else {
         // status === 'error' — fono analizė JAU KARTĄ NEPAVYKO (pvz. AI
@@ -1326,6 +1455,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         // klaidą klientui — jokio naujo AI kvietimo, jokio kartojimo.
         console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė ANKSČIAU NEPAVYKO (${cached.error}), grąžinam klaidą IŠKART (be pakartotinio AI kvietimo)`);
         analysisCache.delete(sessionId);
+        deleteAnalysisSessionFromDisk(sessionId);
         return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
       }
     }
