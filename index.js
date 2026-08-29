@@ -310,14 +310,24 @@ function getOrCreateTokenForPayment(paymentId, name, email) {
   const map = loadPaymentTokens();
   const existing = map[paymentId];
   if (existing) {
+    const remaining = (existing.createdAt + 2 * 60 * 60 * 1000) - Date.now();
+    if (remaining <= 0) {
+      // Retas atvejis: šis įrašas sukurtas prieš >2h (pvz. serveris veikia
+      // ilgai be persikrovimo, tad paleidimo valymas jo nepagavo) — senas
+      // tokenas jau būtų nebegaliojantis. Išduodame NAUJĄ, kad klientas
+      // negautų "paid: true", bet realiai nenaudojamo tokeno.
+      const freshToken = createToken(name, email);
+      map[paymentId] = { token: freshToken, name, email, used: false, createdAt: Date.now() };
+      savePaymentTokens(map);
+      console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} senas tokenas pasibaigęs — išduotas NAUJAS`);
+      return freshToken;
+    }
     // Jei tokenas jau kadaise sukurtas šiam apmokėjimui, bet serveris
     // tarpe persikrovė (validTokens Map atsistatė tuščias) — atkuriame jį
     // atmintyje, kad /analyze-palm jį vėl pripažintų galiojančiu.
     if (!validTokens.has(existing.token)) {
       validTokens.set(existing.token, { name: existing.name, email: existing.email, used: existing.used || false, createdAt: existing.createdAt });
-      const remaining = (existing.createdAt + 2 * 60 * 60 * 1000) - Date.now();
-      if (remaining > 0) setTimeout(() => validTokens.delete(existing.token), remaining);
-      else validTokens.delete(existing.token);
+      setTimeout(() => validTokens.delete(existing.token), remaining);
     }
     console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} JAU TURI tokeną — grąžinamas TAS PATS (be naujo AI kvietimo galimybės padvigubinti)`);
     return existing.token;
@@ -759,7 +769,7 @@ ${bruozaiText}Remdamasis TIKTAI tuo, ką realiai MATAI šiuose konkrečiuose del
 KIEKVIENAME iš 7 skyrių PRIVALO būti BENT 2 sakiniai, kurie AIŠKIAI ir TIESIOGIAI remiasi konkrečiu vizualiniu parametru iš aukščiau pateikto sąrašo (pvz. jei sąraše minima, kad delnas platus ir tvirtas, susiek tai su konkrečia išvada šiame skyriuje — neperrašyk sąrašo pažodžiui, o PANAUDOK jį kaip įrodymą/pagrindą savo teiginiui). PRIEŠ atiduodamas kiekvieną skyrių, patikrink: ar galiu nurodyti, KURIS konkretus vizualinis parametras iš sąrašo pagrindžia BENT DU šio skyriaus sakinius? Jei ne — perrašyk, kol atsakymas į šį klausimą bus "taip".
 
 TAISYKLĖS:
-- Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, tiesiogiai paremtas tuo, ką matai jo delne — ne bendra tiesa apie žmones apskritai
+- Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, tiesiogiai paremtas tuo, ką matai šiame delne — ne bendra tiesa apie žmones apskritai
 - PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, susiedamas su tuo, ką matai šiame delne
 - DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys privalo nešti naują, konkretų faktą
 - PAVYZDYS, ko VENGTI (per bendra, tiktų bet kam): "Tu esi žmogus, kurio pamatinė jėga slypi gebėjime išlaikyti vidinę ramybę net chaotiškose situacijose." — tai tuščia, nes bet kas norėtų, kad apie jį taip pasakytų
@@ -795,19 +805,19 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - KRITIŠKAI SVARBU: skyriai NIEKADA nesikartoja tarpusavyje — nei ta pačia mintimi, nei tuo pačiu pavyzdžiu, nei kitais žodžiais perfrazuota ta pati esmė. Prieš rašydamas KIEKVIENĄ naują skyrių, peržiūrėk, KAS JAU BUVO PASAKYTA ankstesniuose skyriuose (charakterio bruožai, sėkmės formulė, kliūtys ir t. t.), ir įsitikink, kad šis skyrius atskleidžia TIK NAUJĄ, dar niekur šiame atsakyme nepaminėtą turinį. Jei pastebi, kad rašai apie tą pačią savybę/temą, kuri jau buvo I skyriuje (pvz. "analitinis protas"), PERRAŠYK sakinį apie ką nors kitą, atitinkantį TIK šio konkretaus skyriaus temą
 
-- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) jo unikalų asmenybės branduolį ir pamatinius, jį apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis jį veda; (c) jo natūralų, įgimtą potencialą ir tai, kas konkrečiai jį išskiria iš kitų
+- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) tavo unikalų asmenybės branduolį ir pamatinius, tave apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis tave veda; (c) tavo natūralų, įgimtą potencialą ir tai, kas konkrečiai tave išskiria iš kitų
 
-- gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): (a) kryptį, kuria jis natūraliai juda gyvenime, ir kas jį iš vidaus varo pirmyn; (b) giliau slypinčius jo tikslus ir kryptį, kuria jis auga kaip asmenybė; (c) svarbiausius jo gyvenimo kelio posūkius ir gaires, kurias jis pats sau kelia ateičiai
+- gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): (a) kryptį, kuria natūraliai judi gyvenime, ir kas tave iš vidaus veda pirmyn; (b) giliau slypinčius tavo tikslus ir kryptį, kuria augi kaip asmenybė; (c) svarbiausius tavo gyvenimo kelio posūkius ir gaires, kurias sau keli ateičiai
 
-- santykiai (Bendravimo būdas ir įtaka santykiams): (a) kaip jis kuria emocinį ryšį su kitais ir koks jo bendravimo stilius; (b) kokį poveikį daro aplinkiniams ir pasikartojančius elgesio su žmonėmis modelius; (c) kaip jis siekia pusiausvyros santykiuose ir gebėjimą kurti gilų, ilgalaikį ryšį
+- santykiai (Bendravimo būdas ir įtaka santykiams): (a) kaip kuri emocinį ryšį su kitais ir koks tavo bendravimo stilius; (b) kokį poveikį darai aplinkiniams ir pasikartojančius elgesio su žmonėmis modelius; (c) kaip sieki pusiausvyros santykiuose ir gebėjimą kurti gilų, ilgalaikį ryšį
 
-- finansai (Finansinis potencialas): (a) kur/kaip jo finansinė sėkmė labiausiai įmanoma ir jo potencialą kurti materialią gerovę; (b) kas jam natūraliai atveria finansines galimybes; (c) jo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip jis leidžia/taupo pinigus
+- finansai (Finansinis potencialas): (a) kur/kaip tavo finansinė sėkmė labiausiai įmanoma ir tavo potencialą kurti materialią gerovę; (b) kas tau natūraliai atveria finansines galimybes; (c) tavo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip leidi/taupai pinigus
 
-- galimybes (Unikalus sėkmės raktas): SVARBU — šis skyrius NĖRA apie tai, KOKS žmogus yra (tai jau atskleista I skyriuje) — jis apie tai, KAIP šis žmogus PRAKTIŠKAI PANAUDOJA save, kad pasiektų rezultatų: (a) konkrečią STRATEGIJĄ ar veiksmų būdą, kuris jam labiausiai pasiteisina siekiant tikslų (ne charakterio bruožą, o VEIKSMĄ/METODĄ); (b) ką jis konkrečiai DARO sunkiausiais momentais, kad įveiktų iššūkį (elgesys, ne savybė); (c) kokioje SITUACIJOJE ar aplinkybėse jam sekasi geriausiai, palyginti su kitais
+- galimybes (Unikalus sėkmės raktas): SVARBU — šis skyrius NĖRA apie tai, KOKS žmogus esi (tai jau atskleista I skyriuje) — jis apie tai, KAIP PRAKTIŠKAI PANAUDOJI save, kad pasiektum rezultatų: (a) konkrečią STRATEGIJĄ ar veiksmų būdą, kuris tau labiausiai pasiteisina siekiant tikslų (ne charakterio bruožą, o VEIKSMĄ/METODĄ); (b) ką konkrečiai DARAI sunkiausiais momentais, kad įveiktum iššūkį (elgesys, ne savybė); (c) kokioje SITUACIJOJE ar aplinkybėse tau sekasi geriausiai, palyginti su kitais
 
-- pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija jo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
+- pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija tavo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
 
-- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius jo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį jo kelyje į tikslą ir kas trukdo jam pilnai atsiskleisti; (c) ką jam metas paleisti, kad atsiblokuotų tikrasis jo potencialas
+- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius tavo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį tavo kelyje į tikslą ir kas trukdo tau pilnai atsiskleisti; (c) ką tau metas paleisti, kad atsiblokuotų tikrasis tavo potencialas
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
