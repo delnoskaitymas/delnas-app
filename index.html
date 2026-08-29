@@ -1893,54 +1893,12 @@ async function startHandDetection(){
 
 function startSkinDetection(shutter,hintTxt){
   setHandDetected(true,shutter,hintTxt);
-
-
-  function analyse(){
-    if(!video||!video.videoWidth) return;
-    // Greita canvas patikra — tik akivaizdžios klaidos
-    const W=48,H=48;
-    const sm=document.createElement('canvas');sm.width=W;sm.height=H;
-    const sc=sm.getContext('2d');sc.drawImage(video,0,0,W,H);
-    const d=sc.getImageData(0,0,W,H).data;
-    function isSkin(r,g,b){return r>75&&g>35&&b>10&&r>g&&r>b&&(r-g)>10&&(r-b)>15&&r<254;}
-    let skin=0;
-    for(let i=0;i<d.length;i+=4) if(isSkin(d[i],d[i+1],d[i+2])) skin++;
-    const total=skin/(W*H);
-    if(total<0.06){
-      setHint('Nukreipkite kamerą į delną','rgba(212,168,67,.6)',false);
-      return;
-    }
-    if(total>0.78){
-      setHint('Delnas per arti — atitraukite','rgba(255,160,60,.9)',false);
-      return;
-    }
-    // AI tikrinimas per serverį — tas pats matmenų apribojimas kaip
-    // pagrindiniame fotografavime, kad ir šis kelias nesiųstų per didelių
-    // nuotraukų.
-    const checkCanvas=document.createElement('canvas');
-    const vw=video.videoWidth||1280;
-    const vh=video.videoHeight||720;
-    const _cscale=Math.min(1, 1600/Math.max(vw,vh));
-    checkCanvas.width=Math.round(vw*_cscale);checkCanvas.height=Math.round(vh*_cscale);
-    checkCanvas.getContext('2d').drawImage(video,0,0,checkCanvas.width,checkCanvas.height);
-    const imgData=checkCanvas.toDataURL('image/jpeg',0.85).split(',')[1];
-    setHint('Analizuojame poziciją...','rgba(212,168,67,.6)',false);
-    fetch('/validate-palm',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:[{type:'image/jpeg',data:imgData}]})
-    }).then(r=>r.json()).then(v=>{
-      if(v.valid){
-        setHint('Delnas aptiktas — spauskite fotografuoti','rgba(212,168,67,.95)',true);
-      } else {
-        setHint('Išskėskite pirštus ir įtraukite visą delną','rgba(255,180,60,.9)',false);
-      }
-    }).catch(()=>{
-      setHint('Nepavyko patikrinti — bandykite dar kartą','rgba(255,180,60,.9)',false);
-    });
-  }
-
-
+  // PASTABA: anksčiau čia buvo funkcija analyse(), kuri niekada nebuvo
+  // iškviečiama (nei per setInterval/handDetectLoop, nei tiesiogiai) —
+  // "mirusio kodo" likutis. Pašalinta (2026-08). Tikrasis delno
+  // aptikimas fotografavimo metu vyksta per getPalmValidation() (žr.
+  // aukščiau), kuri iškviečiama VIENĄ kartą fotografavimo momentu, ne
+  // nuolatiniame kameros peržiūros cikle.
 }
 
 function setHandDetected(detected,shutter,hintTxt){
