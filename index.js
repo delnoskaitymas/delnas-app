@@ -783,6 +783,12 @@ function repairJsonBySchema(text) {
 // nepriklausomai nuo AI atsakymo. Sąrašą galima papildyti ateityje,
 // radus naujų pasikartojančių klaidų.
 // ═══════════════════════════════════════════════════════════════════
+// Korektūros (3 žingsnio) modelis. Numatytasis nesikeičia; norint išbandyti
+// kitą modelį pakanka Railway Variables pridėti PROOFREAD_MODEL=<modelio pavadinimas>
+// (be kodo keitimo ir be naujo failo). Žingsnis 2 naudoja assistant prefill, todėl
+// jo modelio nekeičiame be atskiro patikrinimo.
+const PROOFREAD_MODEL = process.env.PROOFREAD_MODEL || 'claude-sonnet-4-5';
+
 const KNOWN_GRAMMAR_FIXES = [
   ['neieškoi', 'neieškai'],
   ['neieškoji', 'neieškai'],
@@ -822,7 +828,48 @@ const KNOWN_GRAMMAR_FIXES = [
   ['kur gali pats nuspręsti', 'kur gali savarankiškai nuspręsti'],
   ['esi pranašesnis už tuos, kurie ilgai svarsto', 'veiki pranašiau už tuos, kurie ilgai svarsto'],
   ['iš karto būti efektyvus', 'iš karto pasiekti rezultatų'],
-  ['Tau nereikia būti garsiam, kad būtum sėkmingas', 'Tau nereikia garsėti, kad pasiektum sėkmę']
+  ['Tau nereikia būti garsiam, kad būtum sėkmingas', 'Tau nereikia garsėti, kad pasiektum sėkmę'],
+
+  // ── Rezultato ekrano nuotraukų partija (2026-09-20) ──
+  // Santykiai / gyvenimo kryptis: būtasis laikas vietoj esamojo, bendratis vietoj "tu" formos
+  ['siekei per aiškius lūkesčius ir atvirą komunikaciją — nepalikti vietos neaiškumams', 'sieki aiškių lūkesčių ir atviros komunikacijos — nepaliki vietos neaiškumams'],
+  ['arba bendrauja giliai', 'arba bendrauji giliai'],
+  ['esi ištikimas ir patikimas', 'tavo ištikimybe ir patikimumu galima pasikliauti'],
+  // Kliūtys: neegzistuojantys/klaidingi žodžiai ir giminę turintys padalyviai
+  ['— linkimas laukti', '— polinkis laukti'],
+  ['pradėtum su tuo, ką turi dabar', 'pradėtum nuo to, ką turi dabar'],
+  ['kurį paleisti atblokuotų tavo potencialą', 'kurį paleidus atsiskleistų tavo potencialas'],
+  ['atblokuotų tavo potencialą', 'atrakintų tavo potencialą'],
+  ["'žalio šviesos'", "'žalios šviesos'"],
+  ['prieš veikiant', 'prieš pradedant veikti'],
+  ['prieš žengdamas', 'prieš žengiant'],
+  ['prieš žengdama', 'prieš žengiant'],
+  ['tik eidamas', 'tik einant'],
+  ['tik eidama', 'tik einant'],
+  // Galimybės / finansai: "pasidarę" vietoj "pasidavę", "apmokomi" vietoj "apmokami"
+  ['būtų pasidarę', 'būtų pasidavę'],
+  ['apmokomi', 'apmokami'],
+  // Santykiai: "laiku" (on time) vietoj "su laiku" (over time) — ši klaida buvo paties prompto pavyzdyje
+  ['užsitarnauji laiku, ne iš karto', 'užsitarnauji ne iš karto, o su laiku'],
+  ['užsitarnauji laiku', 'užsitarnauji su laiku'],
+  // Pokyčiai: "jausti" vietoj "atrodyti", "nebepriima" vietoj "nebetinka"
+  ['atrodė pakankamai gera, dabar pradeda jausti per maža ar per siaura', 'atrodė pakankamai gerai, dabar pradeda atrodyti per mažai ir per ankšta'],
+  ['dalykai tau nebepriima', 'dalykai tau nebetinka'],
+  // Rašyba: "anksčiau" (ne "ankščiau") — pasikartoja keliuose skyriuose
+  ['ankščiau', 'anksčiau'],
+  ['Ankščiau', 'Anksčiau']
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// REGEX pataisymai — žodžiams, kurie pasitaiko KITOKIAME sakinio kontekste
+// kiekvieną kartą (žodyno `includes` čia netinka, nes pvz. "tikies" yra
+// "tikiesi" pradžia — reikia žodžio ribų). Taikomi PO žodyno.
+// ═══════════════════════════════════════════════════════════════════
+const KNOWN_REGEX_FIXES = [
+  [/\btikies\b/g, 'tikiesi'],            // "ką tikies sužinoti" → "ką tikiesi sužinoti"
+  [/\b([Ll])aukei\b/g, '$1auki'],        // "Laukei 'idealaus momento'" → "Lauki ..." (jau 4-a skirtinga vieta)
+  [/\b([Ss])iekei\b/g, '$1ieki'],        // "Siekei ne tik rezultato" → "Sieki ..."
+  [/\blinkimas\b/g, 'polinkis']          // neegzistuojantis "linkimas"; \b apsaugo "sulinkimas"
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -862,31 +909,41 @@ function fixTuVerbEndings(text) {
   });
 }
 
+// Vienas bendras kelias VISIEMS tekstams (skyriams ir geltoniems insights):
+// 1) žodynas  2) regex (žodžių ribos)  3) "tu + -a" galūnių šablonas
+function applyTextFixes(text) {
+  let fixed = text;
+  let count = 0;
+  for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
+    if (fixed.includes(wrong)) { fixed = fixed.split(wrong).join(correct); count++; }
+  }
+  for (const [re, correct] of KNOWN_REGEX_FIXES) {
+    const next = fixed.replace(re, correct);
+    if (next !== fixed) { fixed = next; count++; }
+  }
+  const patternFixed = fixTuVerbEndings(fixed);
+  if (patternFixed !== fixed) { fixed = patternFixed; count++; }
+  return { text: fixed, count };
+}
+
 function applyKnownGrammarFixes(result) {
   const fields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
   const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
   let fixCount = 0;
   for (const f of fields) {
     if (typeof result[f] === 'string') {
-      let before = result[f];
-      for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
-        if (result[f].includes(wrong)) { result[f] = result[f].split(wrong).join(correct); fixCount++; }
-      }
-      const afterPattern = fixTuVerbEndings(result[f]);
-      if (afterPattern !== result[f]) { fixCount++; result[f] = afterPattern; }
+      const r = applyTextFixes(result[f]);
+      result[f] = r.text;
+      fixCount += r.count;
     }
   }
   for (const f of insightFields) {
     if (Array.isArray(result[f])) {
       result[f] = result[f].map(s => {
         if (typeof s !== 'string') return s;
-        let fixed = s;
-        for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
-          if (fixed.includes(wrong)) { fixed = fixed.split(wrong).join(correct); fixCount++; }
-        }
-        const patternFixed = fixTuVerbEndings(fixed);
-        if (patternFixed !== fixed) { fixCount++; fixed = patternFixed; }
-        return fixed;
+        const r = applyTextFixes(s);
+        fixCount += r.count;
+        return r.text;
       });
     }
   }
@@ -1100,11 +1157,11 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija tavo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
 
-- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius tavo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį tavo kelyje į tikslą ir kas trukdo tau pilnai atsiskleisti; (c) ką tau metas paleisti, kad atsiblokuotų tikrasis tavo potencialas
+- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius tavo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį tavo kelyje į tikslą ir kas trukdo tau pilnai atsiskleisti; (c) ką tau verta paleisti, kad atsivertų daugiau galimybių
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
-- SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Siekei materialios sėkmės" → "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
+- SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
 GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas, be išimčių):
 Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS penkis klausimus kartu:
@@ -1227,7 +1284,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
     const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
 
     const step3Body = JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: PROOFREAD_MODEL,
       max_tokens: 6000,
       temperature: 0,
       messages: [{
@@ -1248,7 +1305,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 - ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
-- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
+- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
 
 ═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
 Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
