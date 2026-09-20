@@ -814,7 +814,15 @@ const KNOWN_GRAMMAR_FIXES = [
   ['analizuoji situaciją prieš veikdamas', 'analizuoji situaciją prieš pradedant veikti'],
   ['tiesioginė, akimirksniu priimta akcija, kuri dažnai pasiteisina', 'tiesioginis, akimirksniu priimtas veiksmas, kuris dažnai pasiteisina'],
   ['patikimumą ir nuoseklumą laike', 'patikimumą ir pastovumą laikui bėgant'],
-  ['artimiausiems žmonėms neatskleidei visko', 'artimiausiems žmonėms neatskleidi visko']
+  ['artimiausiems žmonėms neatskleidei visko', 'artimiausiems žmonėms neatskleidi visko'],
+  ['vietoj to, laukei, kol aplinkybės pasikeis, ir tada veiksmi', 'vietoj to, lauki, kol aplinkybės pasikeis, ir tada veiki'],
+  ['Laukei tinkamo momento, ne forsuoji', 'Lauki tinkamo momento, ne forsuoji'],
+  ['Geriausiai uždirbsi ne per riziką', 'Geriausiai uždirbi ne per riziką'],
+  ['Uždirbsi per kompetenciją, ne ryšius', 'Uždirbi per kompetenciją, ne ryšius'],
+  ['kur gali pats nuspręsti', 'kur gali savarankiškai nuspręsti'],
+  ['esi pranašesnis už tuos, kurie ilgai svarsto', 'veiki pranašiau už tuos, kurie ilgai svarsto'],
+  ['iš karto būti efektyvus', 'iš karto pasiekti rezultatų'],
+  ['Tau nereikia būti garsiam, kad būtum sėkmingas', 'Tau nereikia garsėti, kad pasiektum sėkmę']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1230,7 +1238,8 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
 ═══ A DALIS — GRAMATIKA ═══
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
-- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO laiko forma (KLAIDA: "tu ieškosi", "tu jausi" — teisingai "tu ieškai", "tu jauti"), NEBENT sakinys aiškiai kalba apie ateitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (dažniausiai dabartinį)
+- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
+- Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
