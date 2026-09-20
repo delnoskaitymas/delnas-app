@@ -788,15 +788,55 @@ const KNOWN_GRAMMAR_FIXES = [
   ['praleidžiai', 'praleidi']
 ];
 
+// ═══════════════════════════════════════════════════════════════════
+// BENDRAS (ne žodyno, o ŠABLONO) DETERMINISTINIS SAUGIKLIS
+// Priežastis: "tu" + veiksmažodis su neteisinga "-a"/"-ia" galūne
+// (vietoj "-i") yra DAŽNIAUSIA šio teksto klaida — bet kadangi ji
+// pasitaiko su VIS KITAIS žodžiais (ne tik 1-2 konkrečiais), žodyno
+// metodas (KNOWN_GRAMMAR_FIXES aukščiau) čia nepakankamas. Šis regex'as
+// ieško BENDRO ŠABLONO: "tu [galbūt įvardis] [žodis]" ir jei paskutinis
+// žodis baigiasi "-a"/"-ia" (o ne jau teisingai "-i"), pakeičia galūnę.
+// Apima ir atvejį, kai tarp "tu" ir veiksmažodžio įsiterpia įvardis
+// (pvz. "tu ją pralaužia" → "tu ją pralauži").
+// RIBOTUMAS: tai heuristika, ne tikras gramatikos analizatorius — veikia
+// TIK tiesiogiai po "tu" (galbūt su vienu įvardžiu tarp) einantiems
+// žodžiams, ne visame sakinyje. Neapima atvejų, kai veiksmažodis nutolęs
+// toliau nuo "tu" (pvz. per kelis žodžius ar kablelį).
+// ═══════════════════════════════════════════════════════════════════
+const TU_ENDING_EXCEPTIONS = new Set([
+  'pats','pati','esi','esą','savo','save','sau','tau','tavo','čia','ten','yra','jog','kad'
+]);
+
+function fixTuVerbEndings(text) {
+  const pronouns = 'ją|jį|jam|jai|juos|jas|jiems|joms|save|savo|sau|tave|tau|jo|jos';
+  const re = new RegExp(`\\btu(\\s+(?:(?:${pronouns})\\s+)?)([A-Za-ząčęėįšųūžĄČĘĖĮŠŲŪŽ]+)\\b`, 'g');
+  return text.replace(re, (match, between, word) => {
+    const lower = word.toLowerCase();
+    if (TU_ENDING_EXCEPTIONS.has(lower)) return match;
+    if (lower.endsWith('i') || lower.endsWith('ti')) return match; // jau teisinga arba bendratis (paliekama promptui/žingsniui 3)
+    let fixedWord = null;
+    if (lower.endsWith('ia') && word.length > 3) {
+      fixedWord = word.slice(0, -2) + 'i';
+    } else if (lower.endsWith('a') && word.length > 2) {
+      fixedWord = word.slice(0, -1) + 'i';
+    }
+    if (!fixedWord) return match;
+    return 'tu' + between + fixedWord;
+  });
+}
+
 function applyKnownGrammarFixes(result) {
   const fields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
   const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
   let fixCount = 0;
   for (const f of fields) {
     if (typeof result[f] === 'string') {
+      let before = result[f];
       for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
         if (result[f].includes(wrong)) { result[f] = result[f].split(wrong).join(correct); fixCount++; }
       }
+      const afterPattern = fixTuVerbEndings(result[f]);
+      if (afterPattern !== result[f]) { fixCount++; result[f] = afterPattern; }
     }
   }
   for (const f of insightFields) {
@@ -807,6 +847,8 @@ function applyKnownGrammarFixes(result) {
         for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
           if (fixed.includes(wrong)) { fixed = fixed.split(wrong).join(correct); fixCount++; }
         }
+        const patternFixed = fixTuVerbEndings(fixed);
+        if (patternFixed !== fixed) { fixCount++; fixed = patternFixed; }
         return fixed;
       });
     }
@@ -949,7 +991,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
 - Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
-- SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia") — prieš atiduodamas atsakymą, patikrink KIEKVIENĄ sakinį su "tu"
+- SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — ŠI KLAIDA YPAČ DAŽNA, kai tarp "tu" ir veiksmažodžio įsiterpia kitas žodis (įvardis, papildinys) — patikrink VISUS veiksmažodžius, kurių veiksnys yra "tu", NEPRIKLAUSOMAI nuo to, kiek žodžių juos skiria sakinyje
 - SVARBU (dažna klaida sudėtiniuose sakiniuose su "ir"): kai vienas "tu" veiksnys valdo KELIS veiksmažodžius, sujungtus "ir" (pvz. "tu pradedi X ir ___ Y"), ANTRASIS veiksmažodis PRIVALO turėti TĄ PATĮ "tu" asmenį/galūnę kaip pirmasis — KLAIDA: "tu pradedi veikti ir baigia anksčiau" (teisingai: "tu pradedi veikti ir baigi anksčiau"). Kiekviename tokiame sakinyje patikrink VISUS veiksmažodžius, ne tik pirmą
 - SVARBU (giminės/linksnio sutapimas): būdvardis PRIVALO sutapti su daiktavardžiu gimine, skaičiumi ir linksniu — KLAIDA: "korporatyvinė kopėčių lipimas" (daiktavardis "lipimas" yra vyriškos giminės, teisingai: "korporatyvinis kopėčių lipimas"). Prieš atiduodamas atsakymą, kiekvienai būdvardis+daiktavardis porai patikrink, ar giminės sutampa
 - SVARBU (sakinio konstrukcija): NIEKADA nekelk bendraties (veiksmažodžio su "-ti") priešais veiksnį ir pagalbinį veiksmažodį tokia tvarka "Tu [bendratis] geriausiai gali tada" — tai NETAISYKLINGA lietuvių kalbos žodžių tvarka. KLAIDA: "Tu pasiekti rezultatų geriausiai gali tada, kai..." (teisingai arba: "Rezultatų geriausiai pasieki tada, kai..." arba: "Geriausius rezultatus pasieki tada, kai..."). Naudok įprastą, natūralią lietuvių sakinio tvarką — jei abejoji, perskaityk sakinį garsiai sau: ar taip iš tikrųjų kalbėtų gyvas žmogus?
@@ -989,6 +1031,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
+- SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Siekei materialios sėkmės" → "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
 GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas, be išimčių):
 Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS tris klausimus kartu:
@@ -1119,7 +1162,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
           text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Jei sakinys jau taisyklingas ir atitinka taisykles — palik jį LYGIAI tokį patį, žodis į žodį.
 
 ═══ A DALIS — GRAMATIKA ═══
-- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia")
+- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
 - Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO laiko forma (KLAIDA: "tu ieškosi", "tu jausi" — teisingai "tu ieškai", "tu jauti"), NEBENT sakinys aiškiai kalba apie ateitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (dažniausiai dabartinį)
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
@@ -1127,6 +1170,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
+- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
 
 ═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
 Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
@@ -1136,6 +1180,7 @@ Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fr
 - Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
 - Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika" — pakeisk paprastesniais
 - Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
+- "_insights" laukuose parašyti trečiuoju asmeniu/bendratimi punktai (žr. A dalies paskutinį punktą aukščiau) — perrašyk į "tu/tavo" formą
 
 Jei DALIES B pažeidimų NĖRA — nieko nekeisk toje dalyje, tiesiog palik tekstą originalų.
 
