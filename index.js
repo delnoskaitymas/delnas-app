@@ -803,7 +803,18 @@ const KNOWN_GRAMMAR_FIXES = [
   ['neieškojo', 'neieškojai'],
   [', laukdamas tobulų sąlygų, kurios niekada neateis.', ', nes lauki tobulų sąlygų, kurios niekada neateis.'],
   ['Kasdien įpratęs viską kontroliuoti ir planuoti, todėl praleidi galimybes', 'Kasdien stengiesi viską kontroliuoti ir planuoti, todėl praleidi galimybes'],
-  ['o laukei, kol protas atvėsta', 'o lauki, kol protas atvėsta']
+  ['o laukei, kol protas atvėsta', 'o lauki, kol protas atvėsta'],
+  ['o užsidari ir sprendei problemą pats', 'o užsidari ir sprendi problemą savarankiškai'],
+  ['tu išlieki ramus ir susikaupęs', 'tu išlaikai ramybę ir susikaupimą'],
+  ['Labiausiai efektyvus esi tada', 'Labiausiai efektyviai veiki tada'],
+  ['Veiki greičiau, kai esi vienas', 'Veiki greičiau, kai dirbi savarankiškai'],
+  ['pripažinti, kad vienas negali visko', 'pripažinti, kad negali visko'],
+  ['tik tu vienas žinai', 'tik tu žinai'],
+  ['užtruki ilgiau', 'užtrunki ilgiau'],
+  ['analizuoji situaciją prieš veikdamas', 'analizuoji situaciją prieš pradedant veikti'],
+  ['tiesioginė, akimirksniu priimta akcija, kuri dažnai pasiteisina', 'tiesioginis, akimirksniu priimtas veiksmas, kuris dažnai pasiteisina'],
+  ['patikimumą ir nuoseklumą laike', 'patikimumą ir pastovumą laikui bėgant'],
+  ['artimiausiems žmonėms neatskleidei visko', 'artimiausiems žmonėms neatskleidi visko']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1026,7 +1037,7 @@ KIEKVIENAM skyriui PRISKIRTI TIKSLIAI DU (2) vizualiniai parametrai iš aukšči
 - pokyciai → remkis TIK parametrais #11 ir #12
 - klutys → remkis TIK parametrais #13 ir #14
 
-KRITIŠKAI SVARBU (kaip naudoti šiuos parametrus tekste): jie skirti TIK TAU, kad žinotum, KODĖL rašai būtent šią išvadą apie žmogų — jie NĖRA skirti būti paminėti ar aprašyti pačiame galutiniame tekste. GALUTINIAME TEKSTE NIEKADA nerašyk apie pačius fizinius požymius (pirštų ilgį, delno plotį, nykščio storį, odos reljefą, sąnarių įtempimą, delno formą ir pan.) — NĖ VIENO sakinio formos "Tavo nykščio storis rodo...", "Tavo delno plotis atskleidžia...", "Tavo pirštų ilgis..." ir pan. Skaitytojas NETURI matyti jokio "įrodymo" ar paaiškinimo, iš ko išvada kilo — TIK PAČIĄ IŠVADĄ apie jo charakterį/gyvenimą. PVZ.: vietoj "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai, bet juos retai keiti" rašyk tiesiog "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." Parametras tau padėjo NUSTATYTI šią išvadą, bet pats parametras tekste NEPASIRODO.
+SVARBU (parametrų naudojimas): jie skirti TIK vidiniam pagrindimui — GALUTINIAME TEKSTE niekada nerašyk apie pačius fizinius požymius (pirštų ilgį, delno plotį, nykščio storį, odos reljefą ir pan.), tik IŠVADĄ apie žmogaus charakterį/gyvenimą (pvz. vietoj "tavo nykščio storis rodo, kad priimi sprendimus greitai" rašyk tiesiog "sprendimus priimi greitai ir juos retai keiti").
 
 PRIEŠ atiduodamas kiekvieną skyrių, patikrink: (1) ar VIDINIAI (savo paties apmąstyme, ne tekste) rėmiausi TIK tam skyriui priskirtais parametrų numeriais? (2) ar NĖ VIENAME sakinyje NĖRA tiesioginio fizinio delno/pirštų/nykščio/odos požymio paminėjimo? Jei bent vienas atsakymas "ne" — perrašyk.
 
@@ -1049,7 +1060,8 @@ TAISYKLĖS:
 - SVARBU (sakinio konstrukcija): NIEKADA nekelk bendraties (veiksmažodžio su "-ti") priešais veiksnį ir pagalbinį veiksmažodį tokia tvarka "Tu [bendratis] geriausiai gali tada" — tai NETAISYKLINGA lietuvių kalbos žodžių tvarka. KLAIDA: "Tu pasiekti rezultatų geriausiai gali tada, kai..." (teisingai arba: "Rezultatų geriausiai pasieki tada, kai..." arba: "Geriausius rezultatus pasieki tada, kai..."). Naudok įprastą, natūralią lietuvių sakinio tvarką — jei abejoji, perskaityk sakinį garsiai sau: ar taip iš tikrųjų kalbėtų gyvas žmogus?
 - GALUTINĖ KALBOS PATIKRA (privaloma prieš atiduodant atsakymą): perskaityk VISĄ sugeneruotą tekstą dar kartą TIK kalbos taisyklingumo požiūriu (ignoruodamas turinį) — patikrink KIEKVIENĄ sakinį dėl: (1) veiksmažodžio asmens/galūnės sutapimo su "tu", ypač sudėtiniuose sakiniuose su "ir"/"o"/kableliais; (2) būdvardžio ir daiktavardžio giminės/linksnio sutapimo; (3) natūralios, taisyklingos žodžių tvarkos. Jei randi bent vieną klaidą — pataisyk ją prieš atiduodamas galutinį atsakymą
 - SVARBU (kita dažna klaida): NEPRIDĖK sangrąžos dalelytės "-si", jei veiksmažodis nėra sangrąžinis — KLAIDA: "tu siekiesi pusiausvyros" (teisingai: "tu sieki pusiausvyros"), KLAIDA: "tu jo nepaleidžiai" (teisingai: "tu jo nepaleidi"). Jei abejoji, ar veiksmažodis sangrąžinis, naudok paprastesnę, be "-si" formą
-- KRITIŠKAI SVARBU (lyčiai neutrali kalba): appas skirtas IR vyrams, IR moterims — TU NEŽINAI skaitytojo lyties, tad NIEKADA nevartok JOKIO giminę turinčio žodžio, apibūdinančio PATĮ ŽMOGŲ — nei būtojo laiko dalyvio (KLAIDA: "ar esi pasirengęs", "kaip jau atradęs", "likęs", "pradėjęs" — vyriškos giminės; moteriškai "pasirengusi"/"atradusi"/"likusi"/"pradėjusi"), nei padalyvio (KLAIDA: "laukdamas", "žinodamas", "būdamas" — vyriškos giminės; moteriškai "laukdama"/"žinodama"/"būdama"), nei paprasto būdvardžio (KLAIDA: "esi priklausomas", "jaustis laisvam", "esi įpratęs" — vyriškos giminės; moteriškai "priklausoma"/"laisvai"(prieveiksmis)/"įpratusi"). VISADA perfrazuok VISIŠKAI IŠVENGDAMAS šio žodžio — naudok paprastą asmenuojamą veiksmažodžio formą arba prieveiksmį (KLAIDA: "ar esi pasirengęs žengti tą žingsnį" → TEISINGAI: "ar jau žengsi tą žingsnį"; KLAIDA: "nesijauti priklausomas nuo kitų nuomonės" → TEISINGAI: "nepriklausai nuo kitų nuomonės"; KLAIDA: "svarbu jaustis laisvam" → TEISINGAI: "svarbu jaustis laisvai"; KLAIDA: "kasdien įpratęs viską kontroliuoti" → TEISINGAI: "kasdien stengiesi viską kontroliuoti"). PRIEŠ atiduodamas kiekvieną sakinį, patikrink: ar jame yra NORS VIENAS žodis, kuris skambėtų kitaip, jei skaitytojas būtų kitos lyties? Jei taip — privalai perrašyti
+- SVARBU (lyčiai neutrali kalba): appas skirtas ir vyrams, ir moterims — TU NEŽINAI skaitytojo lyties, tad nevartok jokio giminę turinčio žodžio apie žmogų (dalyvių kaip "pasirengęs", padalyvių kaip "laukdamas", būdvardžių kaip "ramus"/"vienas") — visada rink asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį vietoj jų (pvz. "esi pasirengęs" → "jau žengsi"; "esi vienas" → "dirbi savarankiškai")
+- SVARBU (žodžių reikšmė): žodis "akcija" lietuviškai reiškia akcijų paketą/nuolaidą, NE "action" — jei nori pasakyti "veiksmas/poelgis", naudok žodį "veiksmas"
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
@@ -1223,7 +1235,8 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
-- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam") — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą arba prieveiksmį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi")
+- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena" (vienišumo prasme) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai")
+- ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
 - VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
