@@ -785,7 +785,16 @@ function repairJsonBySchema(text) {
 // ═══════════════════════════════════════════════════════════════════
 const KNOWN_GRAMMAR_FIXES = [
   ['neieškoi', 'neieškai'],
-  ['praleidžiai', 'praleidi']
+  ['neieškoji', 'neieškai'],
+  ['praleidžiai', 'praleidi'],
+  ['nepakenčiuosi', 'nepakenti'],
+  ['atsitraukiesi', 'atsitrauki'],
+  ['priešinsiesi', 'priešiniesi'],
+  ['neatleidžiuosi', 'neatleidi'],
+  ['nesuklestėsi', 'nesuklesti'],
+  ['nesišauki pagalbos', 'nesišaukiesi pagalbos'],
+  ['aiškią galvą', 'aiškų protą'],
+  ['nuolatinių kišimosi', 'nuolatinio kišimosi']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1031,6 +1040,7 @@ TAISYKLĖS:
 - SVARBU (sakinio konstrukcija): NIEKADA nekelk bendraties (veiksmažodžio su "-ti") priešais veiksnį ir pagalbinį veiksmažodį tokia tvarka "Tu [bendratis] geriausiai gali tada" — tai NETAISYKLINGA lietuvių kalbos žodžių tvarka. KLAIDA: "Tu pasiekti rezultatų geriausiai gali tada, kai..." (teisingai arba: "Rezultatų geriausiai pasieki tada, kai..." arba: "Geriausius rezultatus pasieki tada, kai..."). Naudok įprastą, natūralią lietuvių sakinio tvarką — jei abejoji, perskaityk sakinį garsiai sau: ar taip iš tikrųjų kalbėtų gyvas žmogus?
 - GALUTINĖ KALBOS PATIKRA (privaloma prieš atiduodant atsakymą): perskaityk VISĄ sugeneruotą tekstą dar kartą TIK kalbos taisyklingumo požiūriu (ignoruodamas turinį) — patikrink KIEKVIENĄ sakinį dėl: (1) veiksmažodžio asmens/galūnės sutapimo su "tu", ypač sudėtiniuose sakiniuose su "ir"/"o"/kableliais; (2) būdvardžio ir daiktavardžio giminės/linksnio sutapimo; (3) natūralios, taisyklingos žodžių tvarkos. Jei randi bent vieną klaidą — pataisyk ją prieš atiduodamas galutinį atsakymą
 - SVARBU (kita dažna klaida): NEPRIDĖK sangrąžos dalelytės "-si", jei veiksmažodis nėra sangrąžinis — KLAIDA: "tu siekiesi pusiausvyros" (teisingai: "tu sieki pusiausvyros"), KLAIDA: "tu jo nepaleidžiai" (teisingai: "tu jo nepaleidi"). Jei abejoji, ar veiksmažodis sangrąžinis, naudok paprastesnę, be "-si" formą
+- KRITIŠKAI SVARBU (lyčiai neutrali kalba): appas skirtas IR vyrams, IR moterims — NIEKADA nenaudok būtojo laiko VEIKIAMOSIOS RŪŠIES DALYVIŲ, kurie keičiasi pagal lytį (KLAIDA: "ar esi pasirengęs", "ar esi pasiruošęs", "kaip jau atradęs", "būdamas pasiryžęs" — šie žodžiai vyriškos giminės; moteriškai būtų "pasirengusi"/"pasiruošusi"/"atradusi"/"pasiryžusi", bet TU NEŽINAI skaitytojo lyties). VISADA perfrazuok išvengdamas paties dalyvio — naudok paprastą asmenuojamą veiksmažodžio formą (KLAIDA: "ar esi pasirengęs žengti tą žingsnį" → TEISINGAI: "ar jau žengsi tą žingsnį" arba "bet dar nesi tikras, ar žengsi tą žingsnį"). Tas pats taikoma VISIEMS panašiems dalyviams (grįžęs/grįžusi, pradėjęs/pradėjusi, likęs/likusi ir t.t.) — visada rink giminės neturinčią asmenuojamą formą
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
@@ -1068,12 +1078,13 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Siekei materialios sėkmės" → "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
 GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas, be išimčių):
-Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS keturis klausimus kartu:
+Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS penkis klausimus kartu:
 1. Ar šis sakinys yra TIKSLUS, TIESIOGINIS FAKTAS apie ŠĮ konkretų žmogų (ne bendra tiesa, ne nuomonė, ne hipotezė, ne "gali būti")?
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą.
-Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi keturi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo faktas", VISADA rink antrąjį.
+5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
+Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi penki atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
@@ -1203,6 +1214,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
+- LYTIES NEUTRALUMAS: jei randi giminę turintį būtojo laiko dalyvį (pvz. "pasirengęs", "pasiruošęs", "atradęs", "pasiryžęs", "likęs", "pradėjęs" — ar bet kurį kitą su -ęs/-usi galūne), PERRAŠYK sakinį taip, kad dalyvio nebeliktų — naudok asmenuojamą veiksmažodžio formą (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
 - VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
