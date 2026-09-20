@@ -1507,7 +1507,19 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         // NETRINAME įrašo — jis saugiai lieka, kol jį išvalys bendras 3
         // valandų TTL valymas (žr. aukščiau), garantuojant, kad bet koks
         // pakartotinis bandymas VISADA ras jau paruoštą rezultatą.
-      } else if (cached.status === 'pending') {
+      } else if (cached.status === 'pending' || cached.status === 'step2') {
+        // SVARBU (2026-09 taisymas): ANKSČIAU šis langas tikrino TIK
+        // 'pending' — bet kol AI dirba ties 2-uoju/3-iuoju žingsniu, tikras
+        // statusas jau būna 'step2', o NE 'pending'. Kadangi žemiau esantis
+        // paskutinis "else" blokas KLAIDINGAI elgėsi taip, lyg BET KOKS
+        // statusas, kuris nėra 'done' ar 'pending', reikštų 'error' —
+        // realiai VYKSTANTI (bet dar nebaigta) analizė buvo klaidingai
+        // laikoma NEPAVYKUSIA, ir vartotojui iškart grąžinama 500 klaida,
+        // NORS analizė po kelių sekundžių/minučių sėkmingai baigdavosi.
+        // Ši klaida buvo pastebima retai, kol žingsnis 2 buvo vienintelis
+        // ilgas etapas — pridėjus 3-ią (korektūros) žingsnį, 'step2'
+        // trukmė pailgėjo, ir klaida ėmė kartotis daug dažniau.
+        //
         // Trumpas laukimo langas VIENAM HTTP užklausimui (saugu nuo proxy/
         // gateway laiko limitų). Jei per šį langą analizė nebaigiama,
         // GRĄŽINAME "pending" signalą — klientas mandagiai paprašys dar
@@ -1521,7 +1533,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           const iv = setInterval(() => {
             waited++;
             const entry = analysisCache.get(sessionId);
-            if (!entry || entry.status !== 'pending' || waited >= 8) { clearInterval(iv); resolve(); }
+            if (!entry || (entry.status !== 'pending' && entry.status !== 'step2') || waited >= 8) { clearInterval(iv); resolve(); }
           }, 1000);
         });
         const entry = analysisCache.get(sessionId);
@@ -1530,8 +1542,8 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           console.log(`[analyze-palm] sessionId=${sessionId} -> baigėsi per laukimo langą, naudojamas rezultatas`);
           // Netriname (žr. komentarą aukščiau — apsauga nuo lenktynių
           // sąlygos su kliento pusės laiko limitu/abort).
-        } else if (entry && entry.status === 'pending') {
-          console.log(`[analyze-palm] sessionId=${sessionId} -> VIS DAR pending po 8s laukimo, grąžinam 202`);
+        } else if (entry && (entry.status === 'pending' || entry.status === 'step2')) {
+          console.log(`[analyze-palm] sessionId=${sessionId} -> VIS DAR '${entry.status}' po 8s laukimo, grąžinam 202`);
           return res.status(202).json({ pending: true, sessionId });
         } else if (entry && entry.status === 'error') {
           // Ta pati apsauga kaip aukščiau — grąžiname klaidą IŠKART, o NE
@@ -1546,8 +1558,8 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           analysisCache.delete(sessionId);
           deleteAnalysisSessionFromDisk(sessionId);
         }
-      } else {
-        // status === 'error' — fono analizė JAU KARTĄ NEPAVYKO (pvz. AI
+      } else if (cached.status === 'error') {
+        // fono analizė JAU KARTĄ NEPAVYKO (pvz. AI
         // atsakymo JSON nebuvo įmanoma apdoroti). SVARBU: ČIA ANKSČIAU
         // ištrindavome cache ir PALEISDAVOME VISIŠKAI NAUJĄ, MOKAMĄ AI
         // analizę nuo nulio — o kadangi klientas bando kas ~3s iki 20
@@ -1559,6 +1571,12 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         analysisCache.delete(sessionId);
         deleteAnalysisSessionFromDisk(sessionId);
         return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
+      } else {
+        // Bet koks kitas, nenumatytas statusas — saugiausia elgtis kaip su
+        // dar vykstančia analize (prašyti klientą pabandyti dar kartą), o
+        // NE iškart laikyti tai klaida.
+        console.log(`[analyze-palm] sessionId=${sessionId} -> NEATPAŽINTAS statusas '${cached.status}', grąžinam 202 (saugumo sumetimais, ne klaidą)`);
+        return res.status(202).json({ pending: true, sessionId });
       }
     }
 
