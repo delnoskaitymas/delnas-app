@@ -951,6 +951,193 @@ function applyKnownGrammarFixes(result) {
   return result;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ŽINGSNIS 3 (korektūra) — PATAISYMŲ (diff) REŽIMAS
+// Korektūros AI negrąžina viso teksto, o tik sąrašą:
+//   {laukas, indeksas, originalas, pataisyta}
+// Pataisymas taikomas TIK jei "originalas" TIKSLIAI randamas nurodytame lauke.
+// Nerastas / įtartinas pataisymas ATMETAMAS (tekstas lieka nepakeistas), todėl
+// korektūra fiziškai negali sugadinti sakinių, kurių ji nelietė.
+// ═══════════════════════════════════════════════════════════════════
+const PROOFREAD_TEXT_FIELDS = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
+const PROOFREAD_INSIGHT_FIELDS = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
+
+// Grąžina pataisymų masyvą (gali būti tuščias = klaidų nerasta) arba null (atsakymo neįmanoma perskaityti).
+function extractCorrectionsFromText(text) {
+  if (typeof text !== 'string') return null;
+  const tryParse = (s) => { try { return JSON.parse(s); } catch (e) { return null; } };
+  const o1 = text.indexOf('{'), o2 = text.lastIndexOf('}');
+  if (o1 !== -1 && o2 > o1) {
+    const parsed = tryParse(text.slice(o1, o2 + 1));
+    if (parsed && Array.isArray(parsed.pataisymai)) return parsed.pataisymai;
+  }
+  const a1 = text.indexOf('['), a2 = text.lastIndexOf(']');
+  if (a1 !== -1 && a2 > a1) {
+    const parsed = tryParse(text.slice(a1, a2 + 1));
+    if (Array.isArray(parsed)) return parsed;
+  }
+  return null;
+}
+
+function applyProofreadCorrections(result, corrections) {
+  const stats = { applied: 0, rejected: 0, reasons: {} };
+  const reject = (why) => { stats.rejected++; stats.reasons[why] = (stats.reasons[why] || 0) + 1; };
+  if (!Array.isArray(corrections)) return stats;
+
+  for (const c of corrections.slice(0, 80)) {
+    if (!c || typeof c !== 'object') { reject('ne objektas'); continue; }
+    const originalas = c.originalas;
+    let pataisyta = c.pataisyta;
+    if (typeof originalas !== 'string' || typeof pataisyta !== 'string' || originalas.trim().length < 4 || !pataisyta.trim()) {
+      reject('tuščias arba per trumpas'); continue;
+    }
+    pataisyta = pataisyta.replace(/"/g, "'");
+    if (pataisyta === originalas) { reject('be pakeitimo'); continue; }
+    // Apsauga nuo pernelyg didelių pokyčių (turinio ištrynimo ar išpūtimo)
+    if (pataisyta.length > originalas.length * 3 + 40 || pataisyta.length < originalas.length * 0.25) {
+      reject('nepagrįstas ilgis'); continue;
+    }
+
+    let container, key;
+    if (PROOFREAD_TEXT_FIELDS.includes(c.laukas)) {
+      container = result; key = c.laukas;
+    } else if (PROOFREAD_INSIGHT_FIELDS.includes(c.laukas) && Array.isArray(result[c.laukas])) {
+      const idx = (typeof c.indeksas === 'string' && /^\d+$/.test(c.indeksas)) ? parseInt(c.indeksas, 10) : c.indeksas;
+      if (!Number.isInteger(idx) || idx < 0 || idx >= result[c.laukas].length) { reject('neteisingas indeksas'); continue; }
+      container = result[c.laukas]; key = idx;
+    } else {
+      reject('nežinomas laukas'); continue;
+    }
+
+    const current = container[key];
+    if (typeof current !== 'string') { reject('laukas ne tekstas'); continue; }
+    // Sutapimas tik prie ŽODŽIŲ RIBŲ: fragmentas negali prasidėti/baigtis kito žodžio viduryje
+    // (pvz. "artot" neturi pakeisti dalies žodžio "kartotinis").
+    const isLetter = (ch) => !!ch && /\p{L}/u.test(ch);
+    const startsLetter = isLetter(originalas[0]);
+    const endsLetter = isLetter(originalas[originalas.length - 1]);
+    let pos = -1, from = 0;
+    while (true) {
+      const p = current.indexOf(originalas, from);
+      if (p === -1) break;
+      const before = p > 0 ? current[p - 1] : '';
+      const after = p + originalas.length < current.length ? current[p + originalas.length] : '';
+      if (!(startsLetter && isLetter(before)) && !(endsLetter && isLetter(after))) { pos = p; break; }
+      from = p + 1;
+    }
+    if (pos === -1) { reject('originalas nerastas tekste'); continue; }
+    container[key] = current.slice(0, pos) + pataisyta + current.slice(pos + originalas.length);
+    stats.applied++;
+  }
+  return stats;
+}
+
+async function proofreadAnalysis(result) {
+  const textToProof = {};
+  for (const f of [...PROOFREAD_TEXT_FIELDS, ...PROOFREAD_INSIGHT_FIELDS]) textToProof[f] = result[f];
+
+  const body = JSON.stringify({
+    model: PROOFREAD_MODEL,
+    max_tokens: 4000,
+    temperature: 0,
+    messages: [{
+      role: 'user',
+      content: [{
+        type: 'text',
+        text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.
+
+═══ A DALIS — GRAMATIKA ═══
+- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
+- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
+- Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
+- Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
+- Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
+- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
+- Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
+- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena" (vienišumo prasme) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai")
+- ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
+- Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
+- NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
+- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
+
+═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
+Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
+- BET KOKS fizinio delno/rankos požymio paminėjimas (pvz. "tavo nykščio storis", "tavo delno plotis", "tavo pirštų ilgis", "tavo odos reljefas", "tavo sąnarių įtempimas", "tavo delno forma", konkrečių linijų pavadinimai kaip "širdies linija"/"gyvenimo linija"/"likimo linija", ar formalūs anatomijos terminai kaip "Jupiterio kalva") — PERRAŠYK IŠMESDAMAS fizinio požymio aprašymą VISIŠKAI, palikdamas TIK psichologinę/asmeninę išvadą (pvz. "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai" → "Sprendimus priimi greitai ir juos retai keiti"; "tavo širdies linija yra gili" → tiesiog išmesk šią dalį, palik likusią sakinio mintį apie jausmų valdymą ar pan.). Skaitytojas NETURI matyti jokio fizinio požymio ar "įrodymo" — tik pačią išvadą
+- Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
+- Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
+- Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
+- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika" — pakeisk paprastesniais
+- Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
+- "_insights" laukuose parašyti trečiuoju asmeniu/bendratimi punktai (žr. A dalies paskutinį punktą aukščiau) — perrašyk į "tu/tavo" formą
+
+Jei DALIES B pažeidimų NĖRA — nieko nekeisk toje dalyje, tiesiog palik tekstą originalų.
+
+═══ KAIP GRĄŽINTI ATSAKYMĄ ═══
+NEPERRAŠYK viso teksto. Grąžink TIKTAI pataisymų sąrašą. Kiekvienas pataisymas — vienas objektas:
+{"laukas": "klutys", "indeksas": null, "originalas": "tiksli ištrauka iš to lauko teksto", "pataisyta": "ta pati ištrauka su ištaisyta klaida"}
+
+- "laukas" — vienas iš žemiau esančio JSON raktų (pvz. "santykiai" arba "klutys_insights").
+- "indeksas" — tekstiniams laukams (santykiai, klutys ir pan.) rašyk null; "_insights" laukams — punkto numerį masyve (0, 1 arba 2).
+- "originalas" — TIKSLI kopija iš to lauko teksto: simbolis į simbolį, įskaitant tarpus, brūkšnius (—) ir kablelius. Jei nors vienas simbolis nesutaps, pataisymas bus ATMESTAS. Kopijuok visą sakinį (kai reikia keisti kelis žodžius, giminę ar sakinio konstrukciją) arba trumpesnę ištrauką (kai klaida viename žodyje), bet pakankamai ilgą, kad ji būtų vienareikšmė.
+- "pataisyta" — ta pati ištrauka su ištaisyta klaida: keisk TIK tai, ką būtina pataisyti, kitus žodžius palik tokius pat. Pataisyta ištrauka turi derėti su aplinkiniu tekstu (asmuo, laikas, giminė, linksnis). Nenaudok tiesioginės kabutės simbolio " — tik 'štai taip'.
+- Jei sakinys taisyklingas — apie jį NIEKO negrąžink. Jokių pataisymų "dėl stiliaus" ar "kad skambėtų geriau".
+- Tas pats fragmentas — ne daugiau kaip vienas pataisymas; pataisymai neturi persidengti. Jei tas pats klaidingas žodis kartojasi keliuose sakiniuose — kiekvienam sakiniui atskiras pataisymas.
+- Jei klaidų nėra: {"pataisymai": []}
+
+Atsakymo formatas (TIKTAI JSON, be paaiškinimų ir be markdown): {"pataisymai": [ ... ]}
+
+TEKSTAS TIKRINIMUI (JSON):
+${JSON.stringify(textToProof)}
+
+ATSAKYK TIKTAI JSON. Pradėk nuo {.`
+      }]
+    }]
+  });
+
+  let data = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body
+      });
+      data = await r.json();
+    } catch (networkErr) {
+      console.log(`[proofreadAnalysis] tinklo klaida, bandymas ${attempt}/2: ${networkErr.message}`);
+      data = null;
+      if (attempt < 2) { await new Promise(res => setTimeout(res, 2000)); continue; }
+      break;
+    }
+    if (data?.error?.type === 'overloaded_error' && attempt < 2) {
+      await new Promise(res => setTimeout(res, 2000));
+      continue;
+    }
+    break;
+  }
+
+  if (!data || !data.content || data.content.length === 0) {
+    if (data?.error) console.warn('[proofreadAnalysis] API klaida:', JSON.stringify(data.error));
+    console.warn('[proofreadAnalysis] korektūra nepavyko — paliekamas originalus (žingsnio 2) tekstas');
+    return null;
+  }
+  if (data.stop_reason === 'max_tokens') console.warn('[proofreadAnalysis] atsakymas nukirptas (max_tokens) — pataisymų sąrašas gali būti nepilnas');
+
+  const corrections = extractCorrectionsFromText(data.content.map(b => b.text || '').join(''));
+  if (corrections === null) {
+    console.warn('[proofreadAnalysis] nepavyko perskaityti pataisymų sąrašo — paliekamas originalus tekstas');
+    return null;
+  }
+  const stats = applyProofreadCorrections(result, corrections);
+  const why = stats.rejected ? ' (atmetimo priežastys: ' + JSON.stringify(stats.reasons) + ')' : '';
+  console.log(`[proofreadAnalysis] pasiūlyta ${corrections.length}, pritaikyta ${stats.applied}, atmesta ${stats.rejected}${why}`);
+  return stats;
+}
+
 function parseJsonLenient(text) {
   try {
     return JSON.parse(text);
@@ -1279,109 +1466,15 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   // rezultatą, o NE metame klaidą: tai kokybės PAGERINIMAS, ne būtina
   // sąlyga, tad jos nesėkmė neturi sugadinti visos analizės.
   // ═══════════════════════════════════════════════════════════════════
+  // (2026-09-20) Korektūra dabar grąžina TIK pataisymų sąrašą, o ne visą
+  // perrašytą tekstą (žr. proofreadAnalysis). Pataisymas pritaikomas tik jei
+  // jo "originalas" TIKSLIAI sutampa su esamu tekstu — todėl jau taisyklingi
+  // sakiniai lieka lygiai tokie patys ir korektūra nebegali jų sugadinti.
   try {
-    const proofreadFields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
-    const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
-
-    const step3Body = JSON.stringify({
-      model: PROOFREAD_MODEL,
-      max_tokens: 6000,
-      temperature: 0,
-      messages: [{
-        role: 'user',
-        content: [{
-          type: 'text',
-          text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Jei sakinys jau taisyklingas ir atitinka taisykles — palik jį LYGIAI tokį patį, žodis į žodį.
-
-═══ A DALIS — GRAMATIKA ═══
-- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
-- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
-- Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
-- Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
-- Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
-- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
-- Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
-- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena" (vienišumo prasme) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai")
-- ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
-- Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
-- NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
-- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
-
-═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
-Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
-- BET KOKS fizinio delno/rankos požymio paminėjimas (pvz. "tavo nykščio storis", "tavo delno plotis", "tavo pirštų ilgis", "tavo odos reljefas", "tavo sąnarių įtempimas", "tavo delno forma", konkrečių linijų pavadinimai kaip "širdies linija"/"gyvenimo linija"/"likimo linija", ar formalūs anatomijos terminai kaip "Jupiterio kalva") — PERRAŠYK IŠMESDAMAS fizinio požymio aprašymą VISIŠKAI, palikdamas TIK psichologinę/asmeninę išvadą (pvz. "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai" → "Sprendimus priimi greitai ir juos retai keiti"; "tavo širdies linija yra gili" → tiesiog išmesk šią dalį, palik likusią sakinio mintį apie jausmų valdymą ar pan.). Skaitytojas NETURI matyti jokio fizinio požymio ar "įrodymo" — tik pačią išvadą
-- Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
-- Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
-- Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
-- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika" — pakeisk paprastesniais
-- Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
-- "_insights" laukuose parašyti trečiuoju asmeniu/bendratimi punktai (žr. A dalies paskutinį punktą aukščiau) — perrašyk į "tu/tavo" formą
-
-Jei DALIES B pažeidimų NĖRA — nieko nekeisk toje dalyje, tiesiog palik tekstą originalų.
-
-Grąžink TIKSLIAI TĄ PATĮ JSON objektą, su tais pačiais raktais, pataisytu (arba, jei klaidų/pažeidimų nėra, identišku) tekstu:
-
-${JSON.stringify(result)}
-
-ATSAKYK TIKTAI JSON. Pradėk nuo {.`
-        }]
-      }]
-    });
-
-    let step3Data;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      let r;
-      try {
-        r = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          },
-          body: step3Body
-        });
-        step3Data = await r.json();
-      } catch (networkErr) {
-        console.log(`[runPalmAnalysis] Žingsnis 3 (korektūra) tinklo klaida, bandymas ${attempt}/2: ${networkErr.message}`);
-        step3Data = null;
-        if (attempt < 2) { await new Promise(res => setTimeout(res, 2000)); continue; }
-        break;
-      }
-      if (step3Data?.error?.type === 'overloaded_error' && attempt < 2) {
-        await new Promise(res => setTimeout(res, 2000));
-        continue;
-      }
-      break;
-    }
-
-    if (step3Data && step3Data.content && step3Data.content.length > 0 && step3Data.stop_reason !== 'max_tokens') {
-      const step3Text = '{' + step3Data.content.map(b => b.text || '').join('');
-      const step3Match = step3Text.match(/\{[\s\S]*\}/);
-      if (step3Match) {
-        const corrected = parseJsonLenient(step3Match[0]);
-        // Saugumo patikra: naudojame pataisytą versiją TIK jei joje yra
-        // VISI reikiami tekstiniai laukai (apsauga nuo dalinio/sugadinto
-        // atsakymo, kuris ištrintų turinį vietoj jo ištaisymo).
-        const hasAllFields = proofreadFields.every(f => typeof corrected[f] === 'string' && corrected[f].length > 20)
-          && insightFields.every(f => Array.isArray(corrected[f]) && corrected[f].length > 0);
-        if (hasAllFields) {
-          // Perrašome TIK kalbos laukus iš pataisytos versijos — kitus
-          // laukus (stiprybes_sarasas ir t.t.) paliekame iš originalo,
-          // apsaugai nuo bet kokio netikėto jų pasikeitimo korektūros metu.
-          for (const f of [...proofreadFields, ...insightFields]) result[f] = corrected[f];
-          console.log('[runPalmAnalysis] Žingsnis 3 (korektūra) sėkmingai pritaikytas');
-        } else {
-          console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) grąžino nepilną rezultatą — paliekamas originalas');
-        }
-      }
-    } else {
-      console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) nepavyko — paliekamas originalus (žingsnio 2) tekstas');
-    }
+    await proofreadAnalysis(result);
   } catch (proofErr) {
     // Bet kokia netikėta klaida korektūros žingsnyje NETURI sugadinti
-    // visos analizės — tiesiog naudojame originalų, jau ir taip
-    // gana kokybišką žingsnio 2 rezultatą.
+    // visos analizės — tiesiog naudojame originalų žingsnio 2 rezultatą.
     console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) klaida, paliekamas originalas:', proofErr.message);
   }
 
