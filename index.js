@@ -770,6 +770,51 @@ function repairJsonBySchema(text) {
 // pataisytą versiją (patikimiausia); jei ir tai nepavyksta — bando senesnį
 // bendrą taisymą kaip paskutinę atsarginę priemonę.
 // Jei NIEKAS nepavyksta, meta ORIGINALIĄ klaidą (informatyvesnė log'ams).
+// ═══════════════════════════════════════════════════════════════════
+// ŽINOMŲ, PASIKARTOJANČIŲ KLAIDINGŲ ŽODŽIŲ SĄRAŠAS (2026-09 papildymas)
+// Priežastis: pastebėta, kad AI korektūros žingsnis (žingsnis 3) KARTAIS
+// pats sukuria NAUJĄ, netaisyklingą žodžio formą, bandydamas ištaisyti
+// kitą klaidą (pvz. "neieškosi" (ateities laikas) ištaiso į "neieškoi"
+// (apskritai neegzistuojantis žodis) vietoj teisingo "neieškai"). Kadangi
+// AI pagrįstas taisymas negali garantuoti 100% patikimumo, ČIA — paprastas,
+// DETERMINISTINIS (ne AI, tiesioginis teksto pakeitimas) saugiklis
+// jau PASTEBĖTOMS, PASIKARTOJANČIOMS klaidoms. Kiekvienas įrašas —
+// tiksliai žinomas klaidingas žodis, kuris VISADA pakeičiamas teisingu,
+// nepriklausomai nuo AI atsakymo. Sąrašą galima papildyti ateityje,
+// radus naujų pasikartojančių klaidų.
+// ═══════════════════════════════════════════════════════════════════
+const KNOWN_GRAMMAR_FIXES = [
+  ['neieškoi', 'neieškai'],
+  ['praleidžiai', 'praleidi']
+];
+
+function applyKnownGrammarFixes(result) {
+  const fields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
+  const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
+  let fixCount = 0;
+  for (const f of fields) {
+    if (typeof result[f] === 'string') {
+      for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
+        if (result[f].includes(wrong)) { result[f] = result[f].split(wrong).join(correct); fixCount++; }
+      }
+    }
+  }
+  for (const f of insightFields) {
+    if (Array.isArray(result[f])) {
+      result[f] = result[f].map(s => {
+        if (typeof s !== 'string') return s;
+        let fixed = s;
+        for (const [wrong, correct] of KNOWN_GRAMMAR_FIXES) {
+          if (fixed.includes(wrong)) { fixed = fixed.split(wrong).join(correct); fixCount++; }
+        }
+        return fixed;
+      });
+    }
+  }
+  if (fixCount > 0) console.log(`[applyKnownGrammarFixes] pritaikyta ${fixCount} deterministinių pataisymų`);
+  return result;
+}
+
 function parseJsonLenient(text) {
   try {
     return JSON.parse(text);
@@ -1159,6 +1204,10 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.`
     // gana kokybišką žingsnio 2 rezultatą.
     console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) klaida, paliekamas originalas:', proofErr.message);
   }
+
+  // Galutinis, DETERMINISTINIS saugiklis — taikomas VISADA, nepriklausomai
+  // nuo to, ar žingsnis 3 pavyko, ar ne (žr. KNOWN_GRAMMAR_FIXES aukščiau).
+  applyKnownGrammarFixes(result);
 
   return result;
 }
