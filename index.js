@@ -1041,6 +1041,108 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   }
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
+  // ═══════════════════════════════════════════════════════════════════
+  // ŽINGSNIS 3: ATSKIRA KALBOS KOREKTŪRA (2026-09 papildymas)
+  // Priežastis: Žingsnio 2 pabaigoje AI jau instruktuojamas pats
+  // peržiūrėti savo tekstą ("Galutinė kalbos patikra") TOS PAČIOS
+  // generacijos ribose — bet tas pats procesas, kuris ką tik SUKŪRĖ
+  // tekstą, nėra patikimiausias jį kritiškai peržiūrėdamas iš karto.
+  // Šis žingsnis yra VISIŠKAI ATSKIRAS, švarus API kvietimas, kurio
+  // VIENINTELĖ užduotis — surasti ir ištaisyti gramatikos klaidas jau
+  // paruoštame tekste, NIEKO nekeičiant turinio/tono/prasmės prasme.
+  // Jei šis žingsnis dėl bet kokios priežasties nepavyksta (tinklo
+  // klaida, blogas JSON ir pan.) — GRĄŽINAME PRADINĮ (žingsnio 2)
+  // rezultatą, o NE metame klaidą: korektūra yra kokybės PAGERINIMAS,
+  // ne būtina sąlyga, tad jos nesėkmė neturi sugadinti visos analizės.
+  // ═══════════════════════════════════════════════════════════════════
+  try {
+    const proofreadFields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
+    const insightFields = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
+
+    const step3Body = JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 6000,
+      temperature: 0,
+      messages: [{
+        role: 'user',
+        content: [{
+          type: 'text',
+          text: `Tu esi lietuvių kalbos korektorius. Žemiau — JSON su jau paruoštu tekstu. Tavo VIENINTELĖ užduotis: surasti ir ištaisyti GRAMATIKOS klaidas. NIEKO KITO nekeisk — nei turinio, nei faktų, nei tono, nei sakinių skaičiaus, nei stiliaus. Jei sakinys gramatiškai taisyklingas — palik jį LYGIAI tokį patį, žodis į žodį.
+
+Į KĄ atkreipti dėmesį (dažniausios šio teksto klaidos):
+- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia")
+- Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
+- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
+- Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
+- Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
+- NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
+
+Grąžink TIKSLIAI TĄ PATĮ JSON objektą, su tais pačiais raktais, pataisytu (arba, jei klaidų nėra, identišku) tekstu:
+
+${JSON.stringify(result)}
+
+ATSAKYK TIKTAI JSON. Pradėk nuo {.`
+        }]
+      }]
+    });
+
+    let step3Data;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      let r;
+      try {
+        r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01'
+          },
+          body: step3Body
+        });
+        step3Data = await r.json();
+      } catch (networkErr) {
+        console.log(`[runPalmAnalysis] Žingsnis 3 (korektūra) tinklo klaida, bandymas ${attempt}/2: ${networkErr.message}`);
+        step3Data = null;
+        if (attempt < 2) { await new Promise(res => setTimeout(res, 2000)); continue; }
+        break;
+      }
+      if (step3Data?.error?.type === 'overloaded_error' && attempt < 2) {
+        await new Promise(res => setTimeout(res, 2000));
+        continue;
+      }
+      break;
+    }
+
+    if (step3Data && step3Data.content && step3Data.content.length > 0 && step3Data.stop_reason !== 'max_tokens') {
+      const step3Text = '{' + step3Data.content.map(b => b.text || '').join('');
+      const step3Match = step3Text.match(/\{[\s\S]*\}/);
+      if (step3Match) {
+        const corrected = parseJsonLenient(step3Match[0]);
+        // Saugumo patikra: naudojame pataisytą versiją TIK jei joje yra
+        // VISI reikiami tekstiniai laukai (apsauga nuo dalinio/sugadinto
+        // atsakymo, kuris ištrintų turinį vietoj jo ištaisymo).
+        const hasAllFields = proofreadFields.every(f => typeof corrected[f] === 'string' && corrected[f].length > 20)
+          && insightFields.every(f => Array.isArray(corrected[f]) && corrected[f].length > 0);
+        if (hasAllFields) {
+          // Perrašome TIK kalbos laukus iš pataisytos versijos — kitus
+          // laukus (stiprybes_sarasas ir t.t.) paliekame iš originalo,
+          // apsaugai nuo bet kokio netikėto jų pasikeitimo korektūros metu.
+          for (const f of [...proofreadFields, ...insightFields]) result[f] = corrected[f];
+          console.log('[runPalmAnalysis] Žingsnis 3 (korektūra) sėkmingai pritaikytas');
+        } else {
+          console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) grąžino nepilną rezultatą — paliekamas originalas');
+        }
+      }
+    } else {
+      console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) nepavyko — paliekamas originalus (žingsnio 2) tekstas');
+    }
+  } catch (proofErr) {
+    // Bet kokia netikėta klaida korektūros žingsnyje NETURI sugadinti
+    // visos analizės — tiesiog naudojame originalų, jau ir taip
+    // gana kokybišką žingsnio 2 rezultatą.
+    console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) klaida, paliekamas originalas:', proofErr.message);
+  }
+
   return result;
 }
 
