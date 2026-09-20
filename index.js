@@ -898,7 +898,7 @@ async function runPalmAnalysis(photos, name, sessionId) {
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
     model: 'claude-sonnet-4-5',
-    max_tokens: 2200,
+    max_tokens: 1200,
     temperature: 0.2,
     messages: [{
       role: 'user',
