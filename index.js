@@ -857,7 +857,24 @@ const KNOWN_GRAMMAR_FIXES = [
   ['dalykai tau nebepriima', 'dalykai tau nebetinka'],
   // Rašyba: "anksčiau" (ne "ankščiau") — pasikartoja keliuose skyriuose
   ['ankščiau', 'anksčiau'],
-  ['Ankščiau', 'Anksčiau']
+  ['Ankščiau', 'Anksčiau'],
+
+  // ── Rezultato ekrano nuotraukų 2-a partija (2026-09-20) ──
+  // Charakteris: giminę turintis dalyvis + sulipę žodžiai
+  ['kartą nusprendęs ką nors daryti, jaužengi į priekį, o ne grįžti atgal svarstyti', 'kartą nusprendi ką nors daryti, jau žengi į priekį ir daugiau nebesvarstai'],
+  ['jaužengi', 'jau žengi'],
+  ['prieš veikdamas', 'prieš pradedant veikti'],
+  ['prieš veikdama', 'prieš pradedant veikti'],
+  // Charakteris: neteisingas linksnis ("branduolys" → galininkas "branduolį") ir giminę turintys būdvardžiai
+  ['branduolą', 'branduolį'],
+  ['būti tvirtam savo įsitikinimuose, bet atviram naujoms galimybėms', 'tvirtai laikytis savo įsitikinimų ir kartu priimti naujas galimybes'],
+  // Sėkmės raktas: "o ne ieškoi" → "o neieškai"
+  ['o ne ieškoi', 'o neieškai'],
+  // Finansai: nenatūralus "labiausiai įmanoma" (kopijuota iš prompto)
+  ['sėkmė labiausiai įmanoma ten', 'sėkmė labiausiai pasiekiama ten'],
+  // Kliūtys: sugadintas prompto frazės nuosėdų sakinys
+  ['Kasdien įpročiai, kurie vėlina sėkmę, yra tie, kai atidėlioji pradžią', 'Kasdienis įprotis, vėlinantis sėkmę, yra pradžios atidėliojimas'],
+  ['Kasdien įpročiai', 'Kasdieniai įpročiai']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -869,7 +886,15 @@ const KNOWN_REGEX_FIXES = [
   [/\btikies\b/g, 'tikiesi'],            // "ką tikies sužinoti" → "ką tikiesi sužinoti"
   [/\b([Ll])aukei\b/g, '$1auki'],        // "Laukei 'idealaus momento'" → "Lauki ..." (jau 4-a skirtinga vieta)
   [/\b([Ss])iekei\b/g, '$1ieki'],        // "Siekei ne tik rezultato" → "Sieki ..."
-  [/\blinkimas\b/g, 'polinkis']          // neegzistuojantis "linkimas"; \b apsaugo "sulinkimas"
+  [/\blinkimas\b/g, 'polinkis'],         // neegzistuojantis "linkimas"; \b apsaugo "sulinkimas"
+
+  // ── Neteisingos "tu" formos (nereguliarūs veiksmažodžiai) — 2-a nuotraukų partija ──
+  [/\b([Nn]e)?ieški\b/g, '$1ieškai'],    // "Neieški" → "Neieškai", "ieški" → "ieškai" (ieškoti: tu ieškai)
+  [/\bieškoi\b/g, 'ieškai'],
+  [/(?<!\p{L})(\p{L}*)leidži(?:ai)?(?!\p{L})/gu, '$1leidi'], // leisti: "praleidži", "nepaleidži", "atleidžiai" → "praleidi", "nepaleidi", "atleidi"
+  [/\bpranokai\b/g, 'pranoksti'],         // pranokti: tu pranoksti
+  [/\b(renkies|vadovaujies|elgies|jaučies|stengies)\b/g, '$1i'], // sangrąžinė "-iesi" (trūkstamas galūnės -i)
+  [/\bpabalos\b/g, 'pabaigos']            // rašybos klaida
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1050,6 +1075,9 @@ async function proofreadAnalysis(result) {
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
 - Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
 - Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
+- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"). Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
+- RAŠYBA IR ATSKIRAI RAŠOMI ŽODŽIAI: "anksčiau" (NE "ankščiau"), "pabaigos"; sulipę žodžiai skiriami ("jau žengi", NE "jaužengi")
+- LINKSNIAI: daiktavardis veiksmažodžio papildinyje turi būti teisingu linksniu (pvz. "branduolį sudaro", NE "branduolą sudaro")
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
@@ -1330,6 +1358,8 @@ TAISYKLĖS:
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
 
+- SVARBU (potemių aprašymai NĖRA sakinių šablonai): žemiau esančios (a), (b), (c) frazės tik NURODO TEMĄ — NEKOPIJUOK jų žodžių ir NEPRADĖK sakinių jų formuluotėmis. Kiekvieną mintį suformuluok NAUJAIS, natūraliais žodžiais apie ŠĮ žmogų — dviejų skirtingų žmonių tekstai neturi prasidėti tais pačiais sakiniais
+
 - KRITIŠKAI SVARBU: skyriai NIEKADA nesikartoja tarpusavyje — nei ta pačia mintimi, nei tuo pačiu pavyzdžiu, nei kitais žodžiais perfrazuota ta pati esmė. Prieš rašydamas KIEKVIENĄ naują skyrių, peržiūrėk, KAS JAU BUVO PASAKYTA ankstesniuose skyriuose (charakterio bruožai, sėkmės formulė, kliūtys ir t. t.), ir įsitikink, kad šis skyrius atskleidžia TIK NAUJĄ, dar niekur šiame atsakyme nepaminėtą turinį. Jei pastebi, kad rašai apie tą pačią savybę/temą, kuri jau buvo I skyriuje (pvz. "analitinis protas"), PERRAŠYK sakinį apie ką nors kitą, atitinkantį TIK šio konkretaus skyriaus temą
 
 - prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) tavo unikalų asmenybės branduolį ir pamatinius, tave apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis tave veda; (c) tavo natūralų, įgimtą potencialą ir tai, kas konkrečiai tave išskiria iš kitų
@@ -1338,13 +1368,13 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - santykiai (Bendravimo būdas ir įtaka santykiams): (a) kaip kuri emocinį ryšį su kitais ir koks tavo bendravimo stilius; (b) kokį poveikį darai aplinkiniams ir pasikartojančius elgesio su žmonėmis modelius; (c) kaip sieki pusiausvyros santykiuose ir gebėjimą kurti gilų, ilgalaikį ryšį
 
-- finansai (Finansinis potencialas): (a) kur/kaip tavo finansinė sėkmė labiausiai įmanoma ir tavo potencialą kurti materialią gerovę; (b) kas tau natūraliai atveria finansines galimybes; (c) tavo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip leidi/taupai pinigus
+- finansai (Finansinis potencialas): (a) kur/kaip tavo finansinė sėkmė labiausiai pasiekiama ir tavo potencialą kurti materialią gerovę; (b) kas tau natūraliai atveria finansines galimybes; (c) tavo karjeros/gerovės perspektyvas ir nepastebėtus, dar neišnaudotus finansinius talentus. Rašyk apie GALIMYBES ir POTENCIALĄ — ne apie tai, kaip leidi/taupai pinigus
 
 - galimybes (Unikalus sėkmės raktas): SVARBU — šis skyrius NĖRA apie tai, KOKS žmogus esi (tai jau atskleista I skyriuje) — jis apie tai, KAIP PRAKTIŠKAI PANAUDOJI save, kad pasiektum rezultatų: (a) konkrečią STRATEGIJĄ ar veiksmų būdą, kuris tau labiausiai pasiteisina siekiant tikslų (ne charakterio bruožą, o VEIKSMĄ/METODĄ); (b) ką konkrečiai DARAI sunkiausiais momentais, kad įveiktum iššūkį (elgesys, ne savybė); (c) kokioje SITUACIJOJE ar aplinkybėse tau sekasi geriausiai, palyginti su kitais
 
 - pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija tavo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
 
-- klutys (Pažangą stabdančios kliūtys): (a) nesąmoningus, giliai įsišaknijusius tavo stabdžius ir kasdienius įpročius, kurie vėlina sėkmę; (b) konkrečią kliūtį tavo kelyje į tikslą ir kas trukdo tau pilnai atsiskleisti; (c) ką tau verta paleisti, kad atsivertų daugiau galimybių
+- klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
