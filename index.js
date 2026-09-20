@@ -898,7 +898,7 @@ async function runPalmAnalysis(photos, name, sessionId) {
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = JSON.stringify({
     model: 'claude-sonnet-4-5',
-    max_tokens: 1500,
+    max_tokens: 2200,
     temperature: 0.2,
     messages: [{
       role: 'user',
@@ -906,20 +906,43 @@ async function runPalmAnalysis(photos, name, sessionId) {
         ...imageBlocks,
         {
           type: 'text',
-          text: `Pažvelk į šias delno nuotraukas (kairio ir dešinio delno) ir kiekvienam iš 7 žemiau nurodytų aspektų parašyk KONKRETŲ VIZUALINĮ APRAŠYMĄ.
+          text: `Pažvelk į šias delno nuotraukas (kairio ir dešinio delno) ir aprašyk 14 ATSKIRŲ, KONKREČIŲ vizualinių pastebėjimų — kiekvienas apie KITĄ delno/rankos zoną ar aspektą (žr. sąrašą žemiau). SVARBU: šie 14 punktų VĖLIAU bus paskirstyti po 7 skirtingus analizės skyrius (2 punktai kiekvienam) — TODĖL kiekvienas punktas PRIVALO būti apie AIŠKIAI KITOKĮ, atskirą fizinį aspektą, kad NIEKAS nesikartotų.
 
-SVARBU — kiekvienas įrašas PRIVALO prasidėti nuo to, ką TIKSLIAI MATAI nuotraukoje (delno formą ir proporcijas, pirštų ilgį/storį/tarpus tarp jų, delno plotį santykyje su pirštais, odos/raumenų reljefą, laikyseną, ir BŪTINAI — ar kairys ir dešinys delnas šiuo požiūriu SKIRIASI, ir jei taip, KAIP) — TIK TADA trumpai susiek tai su interpretacija. DRAUDŽIAMA rašyti vien abstrakčią išvadą (pvz. "aukštas energijos lygis") be to, KĄ TIKSLIAI matai, kas tave prie tos išvados atvedė. Kiekvienas įrašas turi būti toks konkretus ir individualus, kad kitas žmogus, neregintis šių nuotraukų, galėtų įsivaizduoti, KAIP TIKSLIAI atrodo BŪTENT ŠIS delnas — ne bet kurio žmogaus delnas apskritai.
+SVARBU — kiekvienas įrašas PRIVALO prasidėti nuo to, ką TIKSLIAI MATAI nuotraukoje — TIK TADA trumpai susiek tai su galima interpretacija. DRAUDŽIAMA rašyti vien abstrakčią išvadą be to, KĄ TIKSLIAI matai. Kiekvienas įrašas turi būti toks konkretus ir individualus, kad kitas žmogus, neregintis šių nuotraukų, galėtų įsivaizduoti, KAIP TIKSLIAI atrodo BŪTENT ŠIS delnas.
 
-Grąžink TIKTAI JSON:
+14 aspektų, apie kuriuos reikia parašyti (po VIENĄ atskirą pastebėjimą kiekvienam, TA PAČIA tvarka):
+1. Nykščio ilgis ir storis
+2. Nykščio padėtis/atstumas nuo delno
+3. Smiliaus (rodomojo) piršto ypatybė (ilgis, tiesumas, forma)
+4. Didžiojo (vidurinio) piršto ypatybė
+5. Bevardžio piršto ypatybė
+6. Mažojo piršto ypatybė
+7. Pirštų tarpų šablonas (glaudūs/platūs, tolygūs/netolygūs)
+8. Delno plotis santykyje su jo ilgiu
+9. Odos/raumenų reljefas VIENOJE delno zonoje (pvz. ties nykščio pagrindu)
+10. Odos/raumenų reljefas KITOJE delno zonoje (pvz. delno viduryje ar apačioje)
+11. Sąnarių/linijų įtempimo ar atsipalaidavimo pastaba
+12. Bendra delno forma (kvadratinė, pailga, ir pan.)
+13. Kairio ir dešinio delno SKIRTUMAS #1 (kuo jie skiriasi vienas nuo kito)
+14. Kairio ir dešinio delno SKIRTUMAS #2 (kitas skirtumas, ne tas pats kaip #13)
+
+Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas, numeriai bus pridėti automatiškai):
 {
   "bruozai": [
-    "Energijos lygis ir vitalumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Emocinis gylis ir jautrumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Mąstymo tipas - analitinis ar intuityvus: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Ryžtas ir valios stiprumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Santykių su kitais pobūdis: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Ambicijų ir tikslų ryškumas: [konkretus vizualinis aprašymas + trumpa interpretacija]",
-    "Vidinė įtampa ar ramybė: [konkretus vizualinis aprašymas + trumpa interpretacija]"
+    "[konkretus vizualinis aprašymas apie nykščio ilgį/storį]",
+    "[konkretus vizualinis aprašymas apie nykščio padėtį]",
+    "[konkretus vizualinis aprašymas apie smiliaus pirštą]",
+    "[konkretus vizualinis aprašymas apie didįjį pirštą]",
+    "[konkretus vizualinis aprašymas apie bevardį pirštą]",
+    "[konkretus vizualinis aprašymas apie mažąjį pirštą]",
+    "[konkretus vizualinis aprašymas apie pirštų tarpus]",
+    "[konkretus vizualinis aprašymas apie delno plotį/ilgį]",
+    "[konkretus vizualinis aprašymas apie odos reljefą, zona A]",
+    "[konkretus vizualinis aprašymas apie odos reljefą, zona B]",
+    "[konkretus vizualinis aprašymas apie įtempimą/atsipalaidavimą]",
+    "[konkretus vizualinis aprašymas apie bendrą delno formą]",
+    "[konkretus vizualinis aprašymas apie kairio/dešinio skirtumą #1]",
+    "[konkretus vizualinis aprašymas apie kairio/dešinio skirtumą #2]"
   ]
 }`
         }
@@ -976,11 +999,22 @@ Grąžink TIKTAI JSON:
 
 ${bruozaiText}Remdamasis TIKTAI tuo, ką realiai MATAI šiuose konkrečiuose delnuose (aukščiau esančiais vizualiniais parametrais), parašyk tikslią, konkrečią, MAKSIMALIAI TIKSLIĄ chiromantijos analizę lietuvių kalba BŪTENT apie šį žmogų — remiantis BŪTENT ŠIAIS delnais, ne bendrais chiromantijos principais. Tai NĖRA bendro pobūdžio tekstas — kiekvienas sakinys turi remtis tuo, ką matai ŠIUOSE delnuose, ir turi būti toks specifiškas, kad netiktų jokiam kitam žmogui.
 
-KIEKVIENAME iš 7 skyrių PRIVALO būti BENT 2 sakiniai, kurie AIŠKIAI ir TIESIOGIAI remiasi konkrečiu vizualiniu parametru iš aukščiau pateikto sąrašo (pvz. jei sąraše minima, kad delnas platus ir tvirtas, susiek tai su konkrečia išvada šiame skyriuje — neperrašyk sąrašo pažodžiui, o PANAUDOK jį kaip įrodymą/pagrindą savo teiginiui). PRIEŠ atiduodamas kiekvieną skyrių, patikrink: ar galiu nurodyti, KURIS konkretus vizualinis parametras iš sąrašo pagrindžia BENT DU šio skyriaus sakinius? Jei ne — perrašyk, kol atsakymas į šį klausimą bus "taip".
+KIEKVIENAM skyriui PRISKIRTI TIKSLIAI DU (2) vizualiniai parametrai iš aukščiau esančio 14 punktų sąrašo — naudok JUOS kaip VIDINĮ, TAU PAČIAM skirtą pagrindą (kad šio skyriaus išvados būtų individualios ir konkrečios BŪTENT šiam žmogui, o ne bendros bet kam tinkančios frazės), o NE bet kuriuos kitus iš sąrašo (tai užtikrina, kad joks parametras nebūtų naudojamas dukart skirtinguose skyriuose):
+- prigimtines_stiprybes → remkis TIK parametrais #1 ir #2
+- gyvenimo_tikslas → remkis TIK parametrais #3 ir #4
+- santykiai → remkis TIK parametrais #5 ir #6
+- finansai → remkis TIK parametrais #7 ir #8
+- galimybes → remkis TIK parametrais #9 ir #10
+- pokyciai → remkis TIK parametrais #11 ir #12
+- klutys → remkis TIK parametrais #13 ir #14
+
+KRITIŠKAI SVARBU (kaip naudoti šiuos parametrus tekste): jie skirti TIK TAU, kad žinotum, KODĖL rašai būtent šią išvadą apie žmogų — jie NĖRA skirti būti paminėti ar aprašyti pačiame galutiniame tekste. GALUTINIAME TEKSTE NIEKADA nerašyk apie pačius fizinius požymius (pirštų ilgį, delno plotį, nykščio storį, odos reljefą, sąnarių įtempimą, delno formą ir pan.) — NĖ VIENO sakinio formos "Tavo nykščio storis rodo...", "Tavo delno plotis atskleidžia...", "Tavo pirštų ilgis..." ir pan. Skaitytojas NETURI matyti jokio "įrodymo" ar paaiškinimo, iš ko išvada kilo — TIK PAČIĄ IŠVADĄ apie jo charakterį/gyvenimą. PVZ.: vietoj "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai, bet juos retai keiti" rašyk tiesiog "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." Parametras tau padėjo NUSTATYTI šią išvadą, bet pats parametras tekste NEPASIRODO.
+
+PRIEŠ atiduodamas kiekvieną skyrių, patikrink: (1) ar VIDINIAI (savo paties apmąstyme, ne tekste) rėmiausi TIK tam skyriui priskirtais parametrų numeriais? (2) ar NĖ VIENAME sakinyje NĖRA tiesioginio fizinio delno/pirštų/nykščio/odos požymio paminėjimo? Jei bent vienas atsakymas "ne" — perrašyk.
 
 TAISYKLĖS:
-- Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, tiesiogiai paremtas tuo, ką matai šiame delne — ne bendra tiesa apie žmones apskritai
-- PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, susiedamas su tuo, ką matai šiame delne
+- Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, kurio pagrindas — tai, ką matai šiame delne (bet PATS požymis tekste neminimas, žr. instrukciją aukščiau) — ne bendra tiesa apie žmones apskritai
+- PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, kad išvada būtų individuali BŪTENT šiam delnui (nerašant paties fizinio požymio)
 - DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys privalo nešti naują, konkretų faktą
 - PAVYZDYS, ko VENGTI (per bendra, tiktų bet kam): "Tu esi žmogus, kurio pamatinė jėga slypi gebėjime išlaikyti vidinę ramybę net chaotiškose situacijose." — tai tuščia, nes bet kas norėtų, kad apie jį taip pasakytų
 - PAVYZDYS, KAIP TURI BŪTI (konkretus faktas, susietas su vizualiniais parametrais): "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." — tiesioginis faktinis teiginys apie šį žmogų, ne hipotetinis scenarijus
@@ -1034,11 +1068,12 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Siekei materialios sėkmės" → "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
 GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas, be išimčių):
-Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS tris klausimus kartu:
+Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS keturis klausimus kartu:
 1. Ar šis sakinys yra TIKSLUS, TIESIOGINIS FAKTAS apie ŠĮ konkretų žmogų (ne bendra tiesa, ne nuomonė, ne hipotezė, ne "gali būti")?
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
-3. Ar šis sakinys KONKRETUS — pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
-Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi trys atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus faktas", VISADA rink antrąjį.
+3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
+4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą.
+Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi keturi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
@@ -1174,7 +1209,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
 ═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
 Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
-- Konkrečių chiromantijos linijų PAVADINIMŲ paminėjimas (pvz. "širdies linija", "gyvenimo linija", "proto linija", "likimo linija", "Saulės linija") arba formalios delno anatomijos terminų (pvz. "Jupiterio kalva", "Saturno kalva") — PERRAŠYK be šio konkretaus pavadinimo, palikdamas bendrą vizualinį apibūdinimą (pvz. "tavo širdies linija yra gili" → "delno vidurinė sritis rodo gilų įspaudą" arba panašiai, pritaikant kontekstui)
+- BET KOKS fizinio delno/rankos požymio paminėjimas (pvz. "tavo nykščio storis", "tavo delno plotis", "tavo pirštų ilgis", "tavo odos reljefas", "tavo sąnarių įtempimas", "tavo delno forma", konkrečių linijų pavadinimai kaip "širdies linija"/"gyvenimo linija"/"likimo linija", ar formalūs anatomijos terminai kaip "Jupiterio kalva") — PERRAŠYK IŠMESDAMAS fizinio požymio aprašymą VISIŠKAI, palikdamas TIK psichologinę/asmeninę išvadą (pvz. "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai" → "Sprendimus priimi greitai ir juos retai keiti"; "tavo širdies linija yra gili" → tiesiog išmesk šią dalį, palik likusią sakinio mintį apie jausmų valdymą ar pan.). Skaitytojas NETURI matyti jokio fizinio požymio ar "įrodymo" — tik pačią išvadą
 - Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
 - Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
 - Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
