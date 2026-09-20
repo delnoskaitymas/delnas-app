@@ -794,7 +794,16 @@ const KNOWN_GRAMMAR_FIXES = [
   ['nesuklestėsi', 'nesuklesti'],
   ['nesišauki pagalbos', 'nesišaukiesi pagalbos'],
   ['aiškią galvą', 'aiškų protą'],
-  ['nuolatinių kišimosi', 'nuolatinio kišimosi']
+  ['nuolatinių kišimosi', 'nuolatinio kišimosi'],
+  ['nesijauti priklausomas nuo', 'nepriklausai nuo'],
+  ['pats nustato', 'nustatai'],
+  ['jaustis laisvam', 'jaustis laisvai'],
+  ['tai tai, kad', 'tai, kad'],
+  ['neieškojo pats', 'neieškojai'],
+  ['neieškojo', 'neieškojai'],
+  [', laukdamas tobulų sąlygų, kurios niekada neateis.', ', nes lauki tobulų sąlygų, kurios niekada neateis.'],
+  ['Kasdien įpratęs viską kontroliuoti ir planuoti, todėl praleidi galimybes', 'Kasdien stengiesi viską kontroliuoti ir planuoti, todėl praleidi galimybes'],
+  ['o laukei, kol protas atvėsta', 'o lauki, kol protas atvėsta']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1040,7 +1049,7 @@ TAISYKLĖS:
 - SVARBU (sakinio konstrukcija): NIEKADA nekelk bendraties (veiksmažodžio su "-ti") priešais veiksnį ir pagalbinį veiksmažodį tokia tvarka "Tu [bendratis] geriausiai gali tada" — tai NETAISYKLINGA lietuvių kalbos žodžių tvarka. KLAIDA: "Tu pasiekti rezultatų geriausiai gali tada, kai..." (teisingai arba: "Rezultatų geriausiai pasieki tada, kai..." arba: "Geriausius rezultatus pasieki tada, kai..."). Naudok įprastą, natūralią lietuvių sakinio tvarką — jei abejoji, perskaityk sakinį garsiai sau: ar taip iš tikrųjų kalbėtų gyvas žmogus?
 - GALUTINĖ KALBOS PATIKRA (privaloma prieš atiduodant atsakymą): perskaityk VISĄ sugeneruotą tekstą dar kartą TIK kalbos taisyklingumo požiūriu (ignoruodamas turinį) — patikrink KIEKVIENĄ sakinį dėl: (1) veiksmažodžio asmens/galūnės sutapimo su "tu", ypač sudėtiniuose sakiniuose su "ir"/"o"/kableliais; (2) būdvardžio ir daiktavardžio giminės/linksnio sutapimo; (3) natūralios, taisyklingos žodžių tvarkos. Jei randi bent vieną klaidą — pataisyk ją prieš atiduodamas galutinį atsakymą
 - SVARBU (kita dažna klaida): NEPRIDĖK sangrąžos dalelytės "-si", jei veiksmažodis nėra sangrąžinis — KLAIDA: "tu siekiesi pusiausvyros" (teisingai: "tu sieki pusiausvyros"), KLAIDA: "tu jo nepaleidžiai" (teisingai: "tu jo nepaleidi"). Jei abejoji, ar veiksmažodis sangrąžinis, naudok paprastesnę, be "-si" formą
-- KRITIŠKAI SVARBU (lyčiai neutrali kalba): appas skirtas IR vyrams, IR moterims — NIEKADA nenaudok būtojo laiko VEIKIAMOSIOS RŪŠIES DALYVIŲ, kurie keičiasi pagal lytį (KLAIDA: "ar esi pasirengęs", "ar esi pasiruošęs", "kaip jau atradęs", "būdamas pasiryžęs" — šie žodžiai vyriškos giminės; moteriškai būtų "pasirengusi"/"pasiruošusi"/"atradusi"/"pasiryžusi", bet TU NEŽINAI skaitytojo lyties). VISADA perfrazuok išvengdamas paties dalyvio — naudok paprastą asmenuojamą veiksmažodžio formą (KLAIDA: "ar esi pasirengęs žengti tą žingsnį" → TEISINGAI: "ar jau žengsi tą žingsnį" arba "bet dar nesi tikras, ar žengsi tą žingsnį"). Tas pats taikoma VISIEMS panašiems dalyviams (grįžęs/grįžusi, pradėjęs/pradėjusi, likęs/likusi ir t.t.) — visada rink giminės neturinčią asmenuojamą formą
+- KRITIŠKAI SVARBU (lyčiai neutrali kalba): appas skirtas IR vyrams, IR moterims — TU NEŽINAI skaitytojo lyties, tad NIEKADA nevartok JOKIO giminę turinčio žodžio, apibūdinančio PATĮ ŽMOGŲ — nei būtojo laiko dalyvio (KLAIDA: "ar esi pasirengęs", "kaip jau atradęs", "likęs", "pradėjęs" — vyriškos giminės; moteriškai "pasirengusi"/"atradusi"/"likusi"/"pradėjusi"), nei padalyvio (KLAIDA: "laukdamas", "žinodamas", "būdamas" — vyriškos giminės; moteriškai "laukdama"/"žinodama"/"būdama"), nei paprasto būdvardžio (KLAIDA: "esi priklausomas", "jaustis laisvam", "esi įpratęs" — vyriškos giminės; moteriškai "priklausoma"/"laisvai"(prieveiksmis)/"įpratusi"). VISADA perfrazuok VISIŠKAI IŠVENGDAMAS šio žodžio — naudok paprastą asmenuojamą veiksmažodžio formą arba prieveiksmį (KLAIDA: "ar esi pasirengęs žengti tą žingsnį" → TEISINGAI: "ar jau žengsi tą žingsnį"; KLAIDA: "nesijauti priklausomas nuo kitų nuomonės" → TEISINGAI: "nepriklausai nuo kitų nuomonės"; KLAIDA: "svarbu jaustis laisvam" → TEISINGAI: "svarbu jaustis laisvai"; KLAIDA: "kasdien įpratęs viską kontroliuoti" → TEISINGAI: "kasdien stengiesi viską kontroliuoti"). PRIEŠ atiduodamas kiekvieną sakinį, patikrink: ar jame yra NORS VIENAS žodis, kuris skambėtų kitaip, jei skaitytojas būtų kitos lyties? Jei taip — privalai perrašyti
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
@@ -1214,7 +1223,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
-- LYTIES NEUTRALUMAS: jei randi giminę turintį būtojo laiko dalyvį (pvz. "pasirengęs", "pasiruošęs", "atradęs", "pasiryžęs", "likęs", "pradėjęs" — ar bet kurį kitą su -ęs/-usi galūne), PERRAŠYK sakinį taip, kad dalyvio nebeliktų — naudok asmenuojamą veiksmažodžio formą (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi")
+- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam") — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą arba prieveiksmį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
 - VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji laiku"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
