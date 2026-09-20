@@ -1042,18 +1042,22 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
   // ═══════════════════════════════════════════════════════════════════
-  // ŽINGSNIS 3: ATSKIRA KALBOS KOREKTŪRA (2026-09 papildymas)
+  // ŽINGSNIS 3: ATSKIRA KALBOS KOREKTŪRA + TAISYKLIŲ LAIKYMOSI PATIKRA
+  // (2026-09 papildymas, išplėsta po realaus pastebėjimo, kad žingsnis 2
+  // kartais pažeidžia savo pačios taisykles, pvz. paminėdamas konkrečios
+  // linijos pavadinimą, nors tai aiškiai uždrausta jo paties prompte).
   // Priežastis: Žingsnio 2 pabaigoje AI jau instruktuojamas pats
-  // peržiūrėti savo tekstą ("Galutinė kalbos patikra") TOS PAČIOS
-  // generacijos ribose — bet tas pats procesas, kuris ką tik SUKŪRĖ
-  // tekstą, nėra patikimiausias jį kritiškai peržiūrėdamas iš karto.
-  // Šis žingsnis yra VISIŠKAI ATSKIRAS, švarus API kvietimas, kurio
-  // VIENINTELĖ užduotis — surasti ir ištaisyti gramatikos klaidas jau
-  // paruoštame tekste, NIEKO nekeičiant turinio/tono/prasmės prasme.
+  // peržiūrėti savo tekstą TOS PAČIOS generacijos ribose — bet tas pats
+  // procesas, kuris ką tik SUKŪRĖ tekstą, nėra patikimiausias jį
+  // kritiškai peržiūrėdamas iš karto, nei gramatikos, nei taisyklių
+  // laikymosi prasme. Šis žingsnis yra VISIŠKAI ATSKIRAS, švarus API
+  // kvietimas dviem tikslams: (A) gramatikos klaidų taisymui, (B)
+  // taisyklių pažeidimų (pvz. linijų pavadinimų, draudžiamų žodžių)
+  // aptikimui ir minimaliam perrašymui, IŠLAIKANT likusį turinį.
   // Jei šis žingsnis dėl bet kokios priežasties nepavyksta (tinklo
   // klaida, blogas JSON ir pan.) — GRĄŽINAME PRADINĮ (žingsnio 2)
-  // rezultatą, o NE metame klaidą: korektūra yra kokybės PAGERINIMAS,
-  // ne būtina sąlyga, tad jos nesėkmė neturi sugadinti visos analizės.
+  // rezultatą, o NE metame klaidą: tai kokybės PAGERINIMAS, ne būtina
+  // sąlyga, tad jos nesėkmė neturi sugadinti visos analizės.
   // ═══════════════════════════════════════════════════════════════════
   try {
     const proofreadFields = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
@@ -1067,17 +1071,30 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
         role: 'user',
         content: [{
           type: 'text',
-          text: `Tu esi lietuvių kalbos korektorius. Žemiau — JSON su jau paruoštu tekstu. Tavo VIENINTELĖ užduotis: surasti ir ištaisyti GRAMATIKOS klaidas. NIEKO KITO nekeisk — nei turinio, nei faktų, nei tono, nei sakinių skaičiaus, nei stiliaus. Jei sakinys gramatiškai taisyklingas — palik jį LYGIAI tokį patį, žodis į žodį.
+          text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Jei sakinys jau taisyklingas ir atitinka taisykles — palik jį LYGIAI tokį patį, žodis į žodį.
 
-Į KĄ atkreipti dėmesį (dažniausios šio teksto klaidos):
+═══ A DALIS — GRAMATIKA ═══
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia")
+- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO laiko forma (KLAIDA: "tu ieškosi", "tu jausi" — teisingai "tu ieškai", "tu jauti"), NEBENT sakinys aiškiai kalba apie ateitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (dažniausiai dabartinį)
+- Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
 
-Grąžink TIKSLIAI TĄ PATĮ JSON objektą, su tais pačiais raktais, pataisytu (arba, jei klaidų nėra, identišku) tekstu:
+═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
+Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
+- Konkrečių chiromantijos linijų PAVADINIMŲ paminėjimas (pvz. "širdies linija", "gyvenimo linija", "proto linija", "likimo linija", "Saulės linija") arba formalios delno anatomijos terminų (pvz. "Jupiterio kalva", "Saturno kalva") — PERRAŠYK be šio konkretaus pavadinimo, palikdamas bendrą vizualinį apibūdinimą (pvz. "tavo širdies linija yra gili" → "delno vidurinė sritis rodo gilų įspaudą" arba panašiai, pritaikant kontekstui)
+- Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
+- Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
+- Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
+- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika" — pakeisk paprastesniais
+- Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
+
+Jei DALIES B pažeidimų NĖRA — nieko nekeisk toje dalyje, tiesiog palik tekstą originalų.
+
+Grąžink TIKSLIAI TĄ PATĮ JSON objektą, su tais pačiais raktais, pataisytu (arba, jei klaidų/pažeidimų nėra, identišku) tekstu:
 
 ${JSON.stringify(result)}
 
