@@ -941,6 +941,14 @@ const KNOWN_GRAMMAR_FIXES = [
   // LYTIES NEUTRALUMAS: gimininis padalyvys "ignoruodamas" → neutralus "ignoruojant"
   ['tiesiu keliu, ignoruodamas šalutinius triukšmus', 'tiesiu keliu, ignoruojant šalutinius triukšmus'],
 
+  // ── Rezultato ekrano 9-a partija (2026-09-21) ──
+  // Asmenų nesutapimas: "kai nusprendžia" (3 asm.) sumaišyta su "laikaisi" (2 asm., "tu") tame pačiame sakinyje
+  ['Kai nusprendžia, laikaisi savo pasirinkimo tvirtai', 'Kai nusprendi, laikaisi savo pasirinkimo tvirtai'],
+  // Asmenų nesutapimas sudėtiniame sakinyje su "ir": "užsidarai" (tu) + "sprendžia" (jis/ji) — turi būti "sprendi"
+  ['užsidarai ir sprendžia problemą savarankiškai', 'užsidarai ir sprendi problemą savarankiškai'],
+  // LYTIES NEUTRALUMAS: "esi produktyviausias" — gimininis aukščiausiojo laipsnio būdvardis (ta pati "esi + būdvardis" konstrukcija)
+  ['sunkiausiomis akimirkomis esi produktyviausias', 'sunkiausiomis akimirkomis veiki produktyviausiai'],
+
   // ── Rezultato ekrano nuotraukų 3-a partija (2026-09-20) ──
   // Asmenų nesutapimas sakinio viduje: "tavo kūnas įvykdai" (3-io asmens
   // vardažodis + 2-o asmens veiksmažodžio galūnė) — turi būti "įvykdo".
@@ -989,7 +997,16 @@ const KNOWN_REGEX_FIXES = [
 
   // Neteisingai uždėta nosinė ant "-auji" tipo veiksmažodžių ("tu" forma): bendrauji, keliauji,
   // dalyvauji ir pan. baigiasi paprastu "i", NE "į" (KLAIDA: "bendraujį" — nėra tokio žodžio)
-  [/\b(\p{L}*auj)į\b/gu, '$1i']
+  [/\b(\p{L}*auj)į\b/gu, '$1i'],
+
+  // LYTIES NEUTRALUMAS (bendra taisyklė): "esi [būdvardis]iausias" — aukščiausiojo laipsnio būdvardis
+  // visada gali būti perrašytas į neutralų prieveiksmį "veiki [būdvardis]iausiai" (pvz. "esi produktyviausias"
+  // → "veiki produktyviausiai"). Veikia ir moteriškai giminei ("esi produktyviausia" — ta pati problema).
+  [/\b[Ee]si (\p{L}+?)iausi(?:as|a)\b/gu, 'veiki $1iausiai'],
+
+  // Asmenų nesutapimas: "kai nusprendžia," (3 asm.) — šioje app'oje VISADA kreipiamasi "tu", tad be aiškaus
+  // trečio asmens daiktavardžio prieš tai, "kai nusprendžia" turi būti "kai nusprendi"
+  [/\b([Kk])ai nusprendžia,/g, '$1ai nusprendi,']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1178,7 +1195,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
 - Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis"). Ypač dažna klaida po žodžio "su" (reikalauja instrumentalio): KLAIDA "su nedideliu komanda" (mat "komanda" — moteriškos giminės) — teisingai "su nedidele komanda"
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
-- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena", "pats/pati" ARBA gimininę dativo formą kaip "pirmam/pirmai" (pvz. "būti pirmam" → "būti pirmiau" arba "veikti pirmiausia") (abu vienišumo/savarankiškumo prasme, pvz. "sprendi viską pats", "išspręsti pats", "stengiesi pats") — DĖMESIO: "pats/pati" bloguok TIK šia prasme, o ne kai tai sustiprina daiktavardį ("pats faktas", "pati situacija" — čia PALIK, nes tai neapibūdina žmogaus giminės) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai"; "sprendi viską pats" → "sprendi viską savarankiškai"; "stengiesi išspręsti pats" → "stengiesi išspręsti savarankiškai"). PAVOJINGIAUSIA konstrukcija — "esi/liksi + būdvardis": "esi atviras" → "atvirai priimi"; "esi ištikimas ir atidus" → "elgiesi ištikimai ir dėmesingai". Taip pat "Kartą X-ęs, ..." sakinio pradžioje (KLAIDA: "Kartą nusprendęs" — teisingai: "Kai kartą apsisprendi")
+- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena", "pats/pati" ARBA gimininę dativo formą kaip "pirmam/pirmai" (pvz. "būti pirmam" → "būti pirmiau" arba "veikti pirmiausia") (abu vienišumo/savarankiškumo prasme, pvz. "sprendi viską pats", "išspręsti pats", "stengiesi pats") — DĖMESIO: "pats/pati" bloguok TIK šia prasme, o ne kai tai sustiprina daiktavardį ("pats faktas", "pati situacija" — čia PALIK, nes tai neapibūdina žmogaus giminės) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai"; "sprendi viską pats" → "sprendi viską savarankiškai"; "stengiesi išspręsti pats" → "stengiesi išspręsti savarankiškai"). PAVOJINGIAUSIA konstrukcija — "esi/liksi + būdvardis": "esi atviras" → "atvirai priimi"; "esi ištikimas ir atidus" → "elgiesi ištikimai ir dėmesingai"; "esi produktyviausias" → "veiki produktyviausiai" (BENDRA TAISYKLĖ: bet kurį "esi + [būdvardis]iausias" aukščiausiojo laipsnio junginį visada gali perrašyti kaip "veiki [tas pats būdvardis]iausiai"). Taip pat "Kartą X-ęs, ..." sakinio pradžioje (KLAIDA: "Kartą nusprendęs" — teisingai: "Kai kartą apsisprendi")
 - "vienas/viena" + daugiskaitos kilmininkas su "-iausių/-iausios" PRIVALO turėti "iš" tarp jų (KLAIDA: "yra tavo vienas stipriausių variklių" — teisingai: "yra vienas iš tavo stipriausių variklių")
 - Asmenų sutapimas sudėtiniame sakinyje su "ir": abu veiksmažodžiai, valdomi to paties "tu", turi tą pačią galūnę (KLAIDA: "pajunti iš tolo ir ... atsitraukia" — teisingai: "... ir atsitrauki")
 - ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
