@@ -939,6 +939,9 @@ const KNOWN_GRAMMAR_FIXES = [
   // Išgalvotas veiksmažodis: sumaišyti "vaikytis" (sekti/gaudyti) ir "vaikščioti" (eiti) kamienai —
   // neigiama sangrąžinio "vaikytis" forma taisyklingai "nesivaikai" (ne "vaikstai")
   ['Nesivaikstai paskui kitus', 'Nesivaikai paskui kitus'],
+  // Išgalvotas žodis: "judėti" nereguliarus — esamojo laiko kamienas "jud-" (judu/judi/juda),
+  // NE bendraties kamienas "judėj-" (KLAIDA "judėji", tokio žodžio nėra)
+  ['Judėji link to', 'Judi link to'],
   // Išgalvotas daiktavardis: "iešką" nėra — ieškoti → ieškojimas
   ['motyvacijos iešką', 'motyvacijos ieškojimą'],
   // LYTIES NEUTRALUMAS: gimininis dalyvis "esi pradėjęs" — perrašyta į esamąjį laiką
@@ -1042,6 +1045,9 @@ const KNOWN_REGEX_FIXES = [
   // veiksmažodžių esamojo laiko kamienas skiriasi nuo pusdalyvio kamieno, pvz. "užsibūti":
   // pusdalyvis "užsibūdamas", bet padalyvis "užsibūnant", ne "užsibūant").
   [/\bneužsibūdamas\b/g, 'neužsibūnant'],
+  // judėti nereguliarus: bendraties kamienas "judėj-" klaidingai panaudotas vietoj tikro "jud-"
+  [/\bJudėji\b/g, 'Judi'],
+  [/\bjudėji\b/g, 'judi'],
   [/\bužsibūdamas\b/g, 'užsibūnant'],
   [/\bgalvodamas\b/g, 'galvojant'],
   [/\bignoruodamas\b/g, 'ignoruojant'],
@@ -1263,6 +1269,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
   (1) SUMAIŠYTAS ASMUO: 3-io asmens kamienas (su priebalsio minkštinimu č/dž/š) sujungtas su 2-o asmens ("tu") galūne. PAVYZDŽIAI NEEGZISTUOJANČIŲ ŽODŽIŲ: "leidžiesi" [nėra — tik "leidiesi" (tu) arba "leidžiasi" (jis)], "pakenči" [nėra — tik "pakenti" (tu) arba "pakenčia" (jis)], "užduši" [nėra — tik "uždusi" (tu)], "iešką" [nėra — tik "ieškojimą"].
   (2) SUMAIŠYTI DU SKIRTINGI ŽODŽIAI, kurie skamba/atrodo panašiai: KLAIDA "nesivaikstai" (sumaišyti "vaikytis" [sekti paskui] ir "vaikščioti" [eiti] — teisingai neigiama sangrąžinio "vaikytis" forma yra "nesivaikai"). Jei rašai retesnį veiksmažodį, PIRMA įsitikink, kurio TIKSLIAI veiksmažodžio formą rašai, o ne pasitikėk tuo, "kas skamba panašiai".
   (3) SUKURTAS DAIKTAVARDIS PAGAL NETEISINGĄ PRIESAGOS ANALOGIJĄ: KLAIDA "užtikrintimi" (nėra tokio žodžio — sumaišyta "užtikrintumas" su "-imas" tipo priesaga; teisingas natūralus žodis šiai reikšmei yra "pasitikėjimas savimi", instrumentalis "pasitikėjimu savimi").
+  (4) TIESIOGIAI PANAUDOTAS BENDRATIES KAMIENAS NEREGULIARIAM VEIKSMAŽODŽIUI, kurio esamojo laiko kamienas SKIRIASI nuo bendraties: KLAIDA "judėji" (bendratis "judėti", bet esamasis laikas nereguliarus: judu/judi/juda — teisingai "judi", NE "judėji"). Jei veiksmažodis atrodo neįprastas, PATIKRINK jo esamojo laiko formą atskirai nuo bendraties — daugelis lietuviškų veiksmažodžių šiuos du kamienus turi skirtingus.
   SAUGIKLIS ("kai abejoji"): jei rašydamas RETESNĮ ar SUDĖTINGESNĮ žodį (ne kasdienį, dažną) NESI 100% TIKRAS dėl jo tikslios formos — NERIZIKUOK, o rinkis PAPRASTESNĮ, DAŽNĄ, TAU VISIŠKAI ŽINOMĄ sinonimą, kurio teisingumu esi tikras. Geriau paprastas ir teisingas žodis, nei įspūdingas ir išgalvotas.
   SAVIPATIKRA prieš rašant bet kurio veiksmažodžio asmenuojamą formą: mintyse sukonjuguok VISĄ trumpą paradigmą (aš/tu/jis) — jei bent viena forma "nesiklauso" ar atrodo dirbtinė, tikriausiai kamienas pasirinktas klaidingai. TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (teisingai "bendrauji", be nosinės). Prieš rašydamas bet kurio veiksmažodžio "tu" formą, paklausk savęs: ar šis TIKSLUS žodis (šis raidžių derinys) tikrai vartojamas lietuvių kalboje, ar aš jį tiesiog sukonstravau pagal panašumą į kitą formą?
 - ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi"); pakęsti → "tu pakenti" (NE "pakenči"); dusti/uždusti → "tu dusi/uždusi" (NE "duši/užduši"); spręsti → "tu sprendi" (NE "sprendžiai" — tokio žodžio nėra) — priebalsio minkštinimas (č/š prieš i) lieka TIK 1 ir 3 asmenyje, 2-am asmeniui ("tu") kamienas lieka KIETAS. Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
@@ -1531,6 +1538,7 @@ TAISYKLĖS:
   (1) SUMAIŠYTAS ASMUO: 3-io asmens kamienas (su priebalsio minkštinimu č/dž/š) sujungtas su 2-o asmens ("tu") galūne (KLAIDA "leidžiesi" [tik "leidiesi" arba "leidžiasi"], "pakenči" [tik "pakenti" arba "pakenčia"], "užduši" [tik "uždusi"], "iešką" [tik "ieškojimą"], "pusiau kelio" [tik "pusiaukelėje"]).
   (2) SUMAIŠYTI DU SKIRTINGI, PANAŠIAI SKAMBANTYS VEIKSMAŽODŽIAI (KLAIDA "nesivaikstai" — sumaišyti "vaikytis" [sekti paskui] ir "vaikščioti" [eiti]; teisingai "nesivaikai"). Jei rašai retesnį veiksmažodį, būk TIKRAS, kurio TIKSLIAI veiksmažodžio formą rašai.
   (3) SUKURTAS DAIKTAVARDIS PAGAL NETEISINGĄ PRIESAGOS ANALOGIJĄ (KLAIDA "užtikrintimi" — teisingas natūralus žodis yra "pasitikėjimas savimi", instr. "pasitikėjimu savimi").
+  (4) TIESIOGIAI PANAUDOTAS BENDRATIES KAMIENAS NEREGULIARIAM VEIKSMAŽODŽIUI (KLAIDA "judėji" — bendratis "judėti", bet esamasis laikas nereguliarus: judu/judi/juda; teisingai "judi"). Jei veiksmažodis atrodo neįprastas, patikrink jo esamojo laiko formą ATSKIRAI nuo bendraties — daugelio lietuviškų veiksmažodžių šie du kamienai skiriasi.
   SAUGIKLIS: jei rašydamas retesnį/sudėtingesnį žodį NESI 100% TIKRAS dėl tikslios jo formos — NERIZIKUOK, rinkis paprastesnį, dažną, TAU VISIŠKAI ŽINOMĄ sinonimą. Geriau paprastas ir teisingas žodis, nei įspūdingas ir išgalvotas.
   TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (teisingai "bendrauji"). Rašydamas KIEKVIENĄ "tu" formos veiksmažodį, mintyse sukonjuguok trumpą paradigmą (aš/tu/jis) — jei bent viena forma "nesiklauso", kamienas tikriausiai parinktas klaidingai.
 - KATEGORIŠKA TAISYKLĖ: žodis "tu" NIEKADA nestovi šalia veiksmažodžio su "-au" galūne (tai visada 1-asis asmuo, "aš" forma) — KLAIDA "tu išlaikau" (teisingai "tu išlaikai"), KLAIDA "tu žinau" (teisingai "tu žinai"). Jei rašai "tu" + "-au" formą, tai 100% klaida
