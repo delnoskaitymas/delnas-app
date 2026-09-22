@@ -946,6 +946,8 @@ const KNOWN_GRAMMAR_FIXES = [
   ['Kai nusprendžia, laikaisi savo pasirinkimo tvirtai', 'Kai nusprendi, laikaisi savo pasirinkimo tvirtai'],
   // Asmenų nesutapimas sudėtiniame sakinyje su "ir": "užsidarai" (tu) + "sprendžia" (jis/ji) — turi būti "sprendi"
   ['užsidarai ir sprendžia problemą savarankiškai', 'užsidarai ir sprendi problemą savarankiškai'],
+  // Būtasis laikas vietoj esamojo: kreipiantis "tu", visada esamuoju laiku
+  ['nesujaudina — išlaikei ramybę ten', 'nesujaudina — išlaikai ramybę ten'],
   // LYTIES NEUTRALUMAS: "esi produktyviausias" — gimininis aukščiausiojo laipsnio būdvardis (ta pati "esi + būdvardis" konstrukcija)
   ['sunkiausiomis akimirkomis esi produktyviausias', 'sunkiausiomis akimirkomis veiki produktyviausiai'],
 
@@ -964,6 +966,15 @@ const KNOWN_REGEX_FIXES = [
   [/\btikies\b/g, 'tikiesi'],            // "ką tikies sužinoti" → "ką tikiesi sužinoti"
   [/\b([Ll])aukei\b/g, '$1auki'],        // "Laukei 'idealaus momento'" → "Lauki ..." (jau 4-a skirtinga vieta)
   [/\b([Ss])iekei\b/g, '$1ieki'],        // "Siekei ne tik rezultato" → "Sieki ..."
+  // SKIRTINGA linksniuotės klasė: laikyti/palaikyti/sulaikyti/išlaikyti/atlaikyti ir pan. (-yti)
+  // esamajame laike baigiasi "-ai" (laikau/laikai/laiko), NE "-i" — todėl atskiras regex nuo
+  // laukei/siekei aukščiau. Veikia bet kuriam priešdėliui ir išsaugo didžiąją raidę sakinio pradžioje.
+  [/\b(\p{L}*)laikei\b/giu, (full, prefix) => {
+    const isCapital = full[0] !== full[0].toLowerCase();
+    let result = prefix.toLowerCase() + 'laikai';
+    if (isCapital) result = result.charAt(0).toUpperCase() + result.slice(1);
+    return result;
+  }],
   [/\blinkimas\b/g, 'polinkis'],         // neegzistuojantis "linkimas"; \b apsaugo "sulinkimas"
 
   // ── Neteisingos "tu" formos (nereguliarūs veiksmažodžiai) — 2-a nuotraukų partija ──
