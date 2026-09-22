@@ -948,8 +948,9 @@ const KNOWN_GRAMMAR_FIXES = [
   ['užsidarai ir sprendžia problemą savarankiškai', 'užsidarai ir sprendi problemą savarankiškai'],
   // Būtasis laikas vietoj esamojo: kreipiantis "tu", visada esamuoju laiku
   ['nesujaudina — išlaikei ramybę ten', 'nesujaudina — išlaikai ramybę ten'],
-  // LYTIES NEUTRALUMAS: gimininis padalyvys "neužsibūdamas" → neutralus "neužsibūnant"
-  ['žaibiškai, neužsibūdamas prie smulkmenų', 'žaibiškai, neužsibūnant prie smulkmenų'],
+  // LYTIES NEUTRALUMAS: gimininis padalyvys "neužsibūdamas"/"užsibūdamas" → neutralus "-ant" (žodžio
+  // lygiu, kad veiktų NEPRIKLAUSOMAI nuo likusio sakinio — anksčiau buvo pririšta prie viso sakinio
+  // ir nesuveikė kitame kontekste, žr. vartotojo pranešimą 2026-09-22)
   // LYTIES NEUTRALUMAS + asmenų nesutapimas: "esi stabilus"/"išvedamas" gimininiai, "tu išlaikau" — 1 asmuo prie "tu"
   ['Emociškai esi stabilus ir sunkiai išvedamas iš pusiausvyros — net kai aplinkui chaosas, tu išlaikau ramybę ir susikaupimą.',
    'Emociškai išlaikai stabilumą, ir tave sunku išvesti iš pusiausvyros — net kai aplinkui chaosas, tu išlaikai ramybę ir susikaupimą.'],
@@ -1028,7 +1029,18 @@ const KNOWN_REGEX_FIXES = [
   // klaida (žodis "tu" reikalauja 2-o asmens) — šios klasės veiksmažodžiams (laikau/laikai,
   // žinau/žinai, matau/matai, rašau/rašai ir pan.) 2-as asmuo visada "-ai". Priešdėlis bent
   // 2 raidžių, kad neužkliūtų trumpi ne-veiksmažodžiai kaip "jau", "sau", "tau".
-  [/\b([Tt])u (\p{L}{2,})au\b/gu, '$1u $2ai']
+  [/\b([Tt])u (\p{L}{2,})au\b/gu, '$1u $2ai'],
+
+  // LYTIES NEUTRALUMAS (žodžio lygiu, ne sakinio — veikia bet kuriame kontekste):
+  // gimininiai padalyviai "-damas" → neutralus "-ant". Kiekvienas veiksmažodis pridedamas
+  // atskirai, nes mechaninis "-damas"→"-ant" keitimas NĖRA visada teisingas (kai kurių
+  // veiksmažodžių esamojo laiko kamienas skiriasi nuo pusdalyvio kamieno, pvz. "užsibūti":
+  // pusdalyvis "užsibūdamas", bet padalyvis "užsibūnant", ne "užsibūant").
+  [/\bneužsibūdamas\b/g, 'neužsibūnant'],
+  [/\bužsibūdamas\b/g, 'užsibūnant'],
+  [/\bgalvodamas\b/g, 'galvojant'],
+  [/\bignoruodamas\b/g, 'ignoruojant'],
+  [/\babejodamas\b/g, 'abejojant']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1191,9 +1203,41 @@ function applyProofreadCorrections(result, corrections) {
   return stats;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// AUTOMATINĖ GIMININGŲ FORMŲ PAIEŠKA (bendra taisyklė, ne žodžių sąrašas)
+// Vietoj to, kad kiekvieną naują giminę turintį žodį reikėtų rankiniu būdu
+// įtraukti į žodyną, ši funkcija PATI suranda BET KOKĮ žodį su giminės
+// požymiu būdingomis galūnėmis (-damas/-dama pusdalyviai, -ęs/-usi dalyviai)
+// ir perduoda juos AI korektoriui — nes TIK AI (ne regex) tikrai žino
+// teisingą kiekvieno konkretaus veiksmažodžio neutralią formą (pvz. kad
+// "užsibūdamas" → "užsibūnant", o "galvodamas" → "galvojant" — skirtingi
+// kamienai, mechaninio taisymo taisyklės čia nėra).
+// ═══════════════════════════════════════════════════════════════════
+const GENDERED_SUFFIX_PATTERNS = [/\b\p{L}+damas\b/gu, /\b\p{L}+dama\b/gu, /\b\p{L}+ęs\b/gu, /\b\p{L}+usi\b/gu];
+
+function findPossiblyGenderedWords(result) {
+  const found = new Set();
+  for (const f of [...PROOFREAD_TEXT_FIELDS, ...PROOFREAD_INSIGHT_FIELDS]) {
+    const values = Array.isArray(result[f]) ? result[f] : [result[f]];
+    for (const v of values) {
+      if (typeof v !== 'string') continue;
+      for (const re of GENDERED_SUFFIX_PATTERNS) {
+        const matches = v.match(re);
+        if (matches) matches.forEach(w => found.add(w));
+      }
+    }
+  }
+  return [...found];
+}
+
 async function proofreadAnalysis(result) {
   const textToProof = {};
   for (const f of [...PROOFREAD_TEXT_FIELDS, ...PROOFREAD_INSIGHT_FIELDS]) textToProof[f] = result[f];
+
+  const flaggedWords = findPossiblyGenderedWords(result);
+  const flaggedNote = flaggedWords.length > 0
+    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS (galūnės -damas/-dama/-ęs/-usi dažnai žymi giminę): ${flaggedWords.map(w => `"${w}"`).join(', ')}. KIEKVIENĄ iš jų PRIVALAI patikrinti: jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") — jis PRIVALO būti pakeistas į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus veiksmažodžio formą, ne mechaninį "-damas"→"-ant" keitimą, nes kai kurių veiksmažodžių kamienas skiriasi). Jei žodis apibūdina KITĄ žmogų (ne skaitytoją) — jo keisti NEREIKIA.`
+    : '';
 
   const body = JSON.stringify({
     model: PROOFREAD_MODEL,
@@ -1203,7 +1247,7 @@ async function proofreadAnalysis(result) {
       role: 'user',
       content: [{
         type: 'text',
-        text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.
+        text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.${flaggedNote}
 
 ═══ A DALIS — GRAMATIKA ═══
 PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIEKVIENĄ sakinio žodį — ne tik tuos, kurie sutampa su pavyzdžiais apačioje. Kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis privalo turėti taisyklingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su žodžiu, prie kurio šliejasi. Žemiau esantis sąrašas — tik DAŽNIAUSIŲ klaidų iliustracija, NE baigtinis sąrašas: jei tekste randi bet kokį žodį, kurio forma atrodo neįprasta, dirbtinė ar sugalvota — pataisyk jį taip, kaip tikrai kalbėtų gimtakalbis, NET jei tokio konkretaus žodžio nėra nė viename pavyzdyje. Kiekvieną tokį pataisymą taip pat grąžink pagal žemiau nurodytą "pataisymai" formatą.
