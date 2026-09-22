@@ -887,6 +887,12 @@ const KNOWN_GRAMMAR_FIXES = [
   // "vienas/viena" be "iš" prieš aukščiausiojo laipsnio kilmininką — žodžių tvarkos klaida
   ['yra tavo vienas stipriausių vidinių variklių', 'yra vienas iš tavo stipriausių vidinių variklių'],
 
+  // ── Rezultato ekrano nuotraukų 5-a partija (2026-09-20) ──
+  // Giminės nesutapimas: "komanda" moteriškos giminės, bet būdvardis vyriškos ("nedideliu")
+  ['su nedideliu komanda', 'su nedidele komanda'],
+  // Per sudėtingas/knyginis žodis (pažeidžia jau esamą stiliaus taisyklę, žr. DRAUDŽIAMA sąrašą)
+  ['ieškoti konsensuso', 'siekti bendro sutarimo'],
+
   // ── Rezultato ekrano nuotraukų 3-a partija (2026-09-20) ──
   // Asmenų nesutapimas sakinio viduje: "tavo kūnas įvykdai" (3-io asmens
   // vardažodis + 2-o asmens veiksmažodžio galūnė) — turi būti "įvykdo".
@@ -1114,7 +1120,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
 - LINKSNIAI: daiktavardis veiksmažodžio papildinyje turi būti teisingu linksniu (pvz. "branduolį sudaro", NE "branduolą sudaro")
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
 - Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
-- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis")
+- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis"). Ypač dažna klaida po žodžio "su" (reikalauja instrumentalio): KLAIDA "su nedideliu komanda" (mat "komanda" — moteriškos giminės) — teisingai "su nedidele komanda"
 - Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
 - LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena" (vienišumo prasme) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai"). PAVOJINGIAUSIA konstrukcija — "esi/liksi + būdvardis": "esi atviras" → "atvirai priimi"; "esi ištikimas ir atidus" → "elgiesi ištikimai ir dėmesingai". Taip pat "Kartą X-ęs, ..." sakinio pradžioje (KLAIDA: "Kartą nusprendęs" — teisingai: "Kai kartą apsisprendi")
 - "vienas/viena" + daugiskaitos kilmininkas su "-iausių/-iausios" PRIVALO turėti "iš" tarp jų (KLAIDA: "yra tavo vienas stipriausių variklių" — teisingai: "yra vienas iš tavo stipriausių variklių")
@@ -1130,7 +1136,7 @@ Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fr
 - Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
 - Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
 - Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
-- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika" — pakeisk paprastesniais
+- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika", "konsensusas" (→ "bendras sutarimas") — pakeisk paprastesniais
 - Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
 - "_insights" laukuose parašyti trečiuoju asmeniu/bendratimi punktai (žr. A dalies paskutinį punktą aukščiau) — perrašyk į "tu/tavo" formą
 
@@ -1374,7 +1380,7 @@ TAISYKLĖS:
 - SVARBU (IŠGALVOTI ŽODŽIAI): dažniausia priežastis, kodėl atsiranda žodis, kurio lietuvių kalboje IŠVIS NĖRA (ne šiaip neteisinga forma, o apskritai neegzistuojantis žodis) — sumaišomas 3-io asmens kamienas su priebalsio minkštinimu (č/dž/š) ir 2-o asmens ("tu") galūnė (PAVYZDŽIAI NEEGZISTUOJANČIŲ ŽODŽIŲ: "leidžiesi" [nėra — tik "leidiesi" arba "leidžiasi"], "pakenči" [nėra — tik "pakenti" arba "pakenčia"], "užduši" [nėra — tik "uždusi"]). Rašydamas KIEKVIENĄ "tu" formos veiksmažodį, patikrink: ar šis TIKSLUS raidžių derinys tikrai vartojamas lietuvių kalboje, ar jis tik SUKONSTRUOTAS pagal panašumą?
 - SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — ŠI KLAIDA YPAČ DAŽNA, kai tarp "tu" ir veiksmažodžio įsiterpia kitas žodis (įvardis, papildinys) — patikrink VISUS veiksmažodžius, kurių veiksnys yra "tu", NEPRIKLAUSOMAI nuo to, kiek žodžių juos skiria sakinyje
 - SVARBU (dažna klaida sudėtiniuose sakiniuose su "ir"): kai vienas "tu" veiksnys valdo KELIS veiksmažodžius, sujungtus "ir" (pvz. "tu pradedi X ir ___ Y"), ANTRASIS veiksmažodis PRIVALO turėti TĄ PATĮ "tu" asmenį/galūnę kaip pirmasis — KLAIDA: "tu pradedi veikti ir baigia anksčiau" (teisingai: "tu pradedi veikti ir baigi anksčiau"). Kiekviename tokiame sakinyje patikrink VISUS veiksmažodžius, ne tik pirmą
-- SVARBU (giminės/linksnio sutapimas): būdvardis PRIVALO sutapti su daiktavardžiu gimine, skaičiumi ir linksniu — KLAIDA: "korporatyvinė kopėčių lipimas" (daiktavardis "lipimas" yra vyriškos giminės, teisingai: "korporatyvinis kopėčių lipimas"). Prieš atiduodamas atsakymą, kiekvienai būdvardis+daiktavardis porai patikrink, ar giminės sutampa
+- SVARBU (giminės/linksnio sutapimas): būdvardis PRIVALO sutapti su daiktavardžiu gimine, skaičiumi ir linksniu — KLAIDA: "korporatyvinė kopėčių lipimas" (daiktavardis "lipimas" yra vyriškos giminės, teisingai: "korporatyvinis kopėčių lipimas"). Prieš atiduodamas atsakymą, kiekvienai būdvardis+daiktavardis porai patikrink, ar giminės sutampa. Ypač dažna klaida po žodžio "su": KLAIDA "su nedideliu komanda" ("komanda" — moteriškos giminės) — teisingai "su nedidele komanda"
 - SVARBU (sakinio konstrukcija): NIEKADA nekelk bendraties (veiksmažodžio su "-ti") priešais veiksnį ir pagalbinį veiksmažodį tokia tvarka "Tu [bendratis] geriausiai gali tada" — tai NETAISYKLINGA lietuvių kalbos žodžių tvarka. KLAIDA: "Tu pasiekti rezultatų geriausiai gali tada, kai..." (teisingai arba: "Rezultatų geriausiai pasieki tada, kai..." arba: "Geriausius rezultatus pasieki tada, kai..."). Naudok įprastą, natūralią lietuvių sakinio tvarką — jei abejoji, perskaityk sakinį garsiai sau: ar taip iš tikrųjų kalbėtų gyvas žmogus?
 - GALUTINĖ KALBOS PATIKRA (privaloma prieš atiduodant atsakymą): perskaityk VISĄ sugeneruotą tekstą dar kartą TIK kalbos taisyklingumo požiūriu (ignoruodamas turinį) — patikrink KIEKVIENĄ sakinį dėl: (1) veiksmažodžio asmens/galūnės sutapimo su "tu", ypač sudėtiniuose sakiniuose su "ir"/"o"/kableliais; (2) būdvardžio ir daiktavardžio giminės/linksnio sutapimo; (3) natūralios, taisyklingos žodžių tvarkos. Jei randi bent vieną klaidą — pataisyk ją prieš atiduodamas galutinį atsakymą
 - SVARBU (kita dažna klaida): NEPRIDĖK sangrąžos dalelytės "-si", jei veiksmažodis nėra sangrąžinis — KLAIDA: "tu siekiesi pusiausvyros" (teisingai: "tu sieki pusiausvyros"), KLAIDA: "tu jo nepaleidžiai" (teisingai: "tu jo nepaleidi"). Jei abejoji, ar veiksmažodis sangrąžinis, naudok paprastesnę, be "-si" formą
@@ -1382,7 +1388,7 @@ TAISYKLĖS:
 - SVARBU ("vienas/viena" + aukščiausiojo laipsnio žodis): prieš daugiskaitos kilmininką su "-iausių/-iausios" PRIVALO būti žodis "iš" (KLAIDA: "yra tavo vienas stipriausių variklių" — teisingai: "yra vienas iš tavo stipriausių variklių")
 - SVARBU (žodžių reikšmė): žodis "akcija" lietuviškai reiškia akcijų paketą/nuolaidą, NE "action" — jei nori pasakyti "veiksmas/poelgis", naudok žodį "veiksmas"
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
-- DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika")
+- DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika", "konsensusas" — vietoj jo "bendras sutarimas")
 - DRAUDŽIAMA: gatvės stiliaus, žargoninė, per daug šnekamoji kalba, sutrumpinimai
 - DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
 - KRITIŠKAI SVARBU (JSON formatui): NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje, nei akcentuojant žodį/frazę, nei kaip citatos ženklo — NET IR VIENĄ KARTĄ, nes tai sugadina JSON struktūrą. Jei nori pabrėžti ar "iškelti" žodį/frazę, naudok TIK paprastą kablelinę kabutę 'štai taip' (apostrofus), niekada ne „lietuviškas" ar tiesiogines dvigubas kabutes. Tai taikoma VISUR — visuose skyriuose ir insights laukuose.
