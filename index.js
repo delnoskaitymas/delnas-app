@@ -916,7 +916,18 @@ const KNOWN_REGEX_FIXES = [
   // (dž lieka tik 1 ir 3 asmenyje: leidžiuosi / leidiesi / leidžiasi).
   // Raidžių dydis (didžioji/mažoji) IŠSAUGOMAS.
   [/\bLeidžiesi\b/g, 'Leidiesi'],
-  [/\bleidžiesi\b/g, 'leidiesi']
+  [/\bleidžiesi\b/g, 'leidiesi'],
+
+  // pakęsti: "tu" forma taisyklingai "pakenti" (kamienas be č), ne "pakenči"
+  // (pakenčiu / pakenti / pakenčia — č lieka tik 1 ir 3 asmenyje, kaip ir leistis aukščiau)
+  [/\bNepakenči\b/g, 'Nepakenti'],
+  [/\bnepakenči\b/g, 'nepakenti'],
+  [/\bPakenči\b/g, 'Pakenti'],
+  [/\bpakenči\b/g, 'pakenti'],
+
+  // dusti/uždusti: būsimojo laiko "tu" forma taisyklingai "uždusi" (kamienas be minkštinimo), ne "užduši"
+  [/\bUžduši\b/g, 'Uždusi'],
+  [/\bužduši\b/g, 'uždusi']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1098,7 +1109,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
 - Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
 - Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
-- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi" — dž lieka tik 1 ir 3 asmenyje). Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
+- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi"); pakęsti → "tu pakenti" (NE "pakenči"); dusti/uždusti → "tu dusi/uždusi" (NE "duši/užduši") — priebalsio minkštinimas (č/š prieš i) lieka TIK 1 ir 3 asmenyje, 2-am asmeniui ("tu") kamienas lieka KIETAS. Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
 - RAŠYBA IR ATSKIRAI RAŠOMI ŽODŽIAI: "anksčiau" (NE "ankščiau"), "pabaigos"; sulipę žodžiai skiriami ("jau žengi", NE "jaužengi")
 - LINKSNIAI: daiktavardis veiksmažodžio papildinyje turi būti teisingu linksniu (pvz. "branduolį sudaro", NE "branduolą sudaro")
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
