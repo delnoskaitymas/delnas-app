@@ -948,6 +948,11 @@ const KNOWN_GRAMMAR_FIXES = [
   ['užsidarai ir sprendžia problemą savarankiškai', 'užsidarai ir sprendi problemą savarankiškai'],
   // Būtasis laikas vietoj esamojo: kreipiantis "tu", visada esamuoju laiku
   ['nesujaudina — išlaikei ramybę ten', 'nesujaudina — išlaikai ramybę ten'],
+  // LYTIES NEUTRALUMAS: gimininis padalyvys "neužsibūdamas" → neutralus "neužsibūnant"
+  ['žaibiškai, neužsibūdamas prie smulkmenų', 'žaibiškai, neužsibūnant prie smulkmenų'],
+  // LYTIES NEUTRALUMAS + asmenų nesutapimas: "esi stabilus"/"išvedamas" gimininiai, "tu išlaikau" — 1 asmuo prie "tu"
+  ['Emociškai esi stabilus ir sunkiai išvedamas iš pusiausvyros — net kai aplinkui chaosas, tu išlaikau ramybę ir susikaupimą.',
+   'Emociškai išlaikai stabilumą, ir tave sunku išvesti iš pusiausvyros — net kai aplinkui chaosas, tu išlaikai ramybę ir susikaupimą.'],
   // LYTIES NEUTRALUMAS: "esi produktyviausias" — gimininis aukščiausiojo laipsnio būdvardis (ta pati "esi + būdvardis" konstrukcija)
   ['sunkiausiomis akimirkomis esi produktyviausias', 'sunkiausiomis akimirkomis veiki produktyviausiai'],
 
@@ -1017,7 +1022,13 @@ const KNOWN_REGEX_FIXES = [
 
   // Asmenų nesutapimas: "kai nusprendžia," (3 asm.) — šioje app'oje VISADA kreipiamasi "tu", tad be aiškaus
   // trečio asmens daiktavardžio prieš tai, "kai nusprendžia" turi būti "kai nusprendi"
-  [/\b([Kk])ai nusprendžia,/g, '$1ai nusprendi,']
+  [/\b([Kk])ai nusprendžia,/g, '$1ai nusprendi,'],
+
+  // BENDRA APSAUGA: "tu" + veiksmažodis su 1-o asmens galūne "-au" yra savaime prieštaringa
+  // klaida (žodis "tu" reikalauja 2-o asmens) — šios klasės veiksmažodžiams (laikau/laikai,
+  // žinau/žinai, matau/matai, rašau/rašai ir pan.) 2-as asmuo visada "-ai". Priešdėlis bent
+  // 2 raidžių, kad neužkliūtų trumpi ne-veiksmažodžiai kaip "jau", "sau", "tau".
+  [/\b([Tt])u (\p{L}{2,})au\b/gu, '$1u $2ai']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1196,6 +1207,7 @@ async function proofreadAnalysis(result) {
 
 ═══ A DALIS — GRAMATIKA ═══
 PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIEKVIENĄ sakinio žodį — ne tik tuos, kurie sutampa su pavyzdžiais apačioje. Kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis privalo turėti taisyklingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su žodžiu, prie kurio šliejasi. Žemiau esantis sąrašas — tik DAŽNIAUSIŲ klaidų iliustracija, NE baigtinis sąrašas: jei tekste randi bet kokį žodį, kurio forma atrodo neįprasta, dirbtinė ar sugalvota — pataisyk jį taip, kaip tikrai kalbėtų gimtakalbis, NET jei tokio konkretaus žodžio nėra nė viename pavyzdyje. Kiekvieną tokį pataisymą taip pat grąžink pagal žemiau nurodytą "pataisymai" formatą.
+- KATEGORIŠKA TAISYKLĖ: žodis "tu" NIEKADA nestovi šalia veiksmažodžio su "-au" galūne (tai visada 1-asis asmuo, "aš" forma) — KLAIDA "tu išlaikau" (teisingai "tu išlaikai"), KLAIDA "tu žinau" (teisingai "tu žinai"). Jei matai "tu" + "-au" formą, tai 100% klaida
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
 - Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
 - Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį. DAŽNIAUSIA TOKIŲ IŠGALVOTŲ ŽODŽIŲ PRIEŽASTIS: sumaišomas 3-io asmens kamienas (su priebalsio minkštinimu: č, dž, š) su 2-o asmens ("tu") galūne — rezultatas yra žodis, kurio LIETUVIŲ KALBOJE APSKRITAI NĖRA, ne šiaip klaidinga forma (KLAIDA-NEEGZISTUOJANTYS ŽODŽIAI: "leidžiesi" [nėra tokio žodžio — yra tik "leidiesi" (tu) arba "leidžiasi" (jis)], "pakenči" [nėra — yra tik "pakenti" (tu) arba "pakenčia" (jis)], "užduši" [nėra — yra tik "uždusi" (tu) arba jis/ji dus/duš- kitos formos], "iešką" [nėra — yra tik "ieškojimą"]). TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (teisingai "bendrauji", be nosinės). Prieš rašydamas bet kurio veiksmažodžio "tu" formą, paklausk savęs: ar šis TIKSLUS žodis (šis raidžių derinys) tikrai vartojamas lietuvių kalboje, ar aš jį tiesiog sukonstravau pagal panašumą į kitą formą?
@@ -1462,6 +1474,7 @@ TAISYKLĖS:
 - PAGRINDINĖ KALBOS TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau, taikoma KIEKVIENAM žodžiui be išimties): kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis PRIVALO turėti taisyklingą lietuvių kalbos gramatinę formą — teisingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su tuo žodžiu, prie kurio jis šliejasi. Žemiau pateikti pavyzdžiai (dažniausios klaidos) yra TIK ILIUSTRACIJA, o ne baigtinis sąrašas — jei rašai žodį, kurio nėra pavyzdžiuose, VIS TIEK patikrink jo formą taip, lyg tai darytum gimtakalbis: ar taip iš tikrųjų kalbėtum su draugu? Jei suabejoji dėl bet kurios formos (retesnio veiksmažodžio, mažiau įprasto linksnio) — RINKIS FORMĄ, KURIĄ TIKRAI VARTOTŲ GIMTAKALBIS, o ne tą, kuri tik "skamba panašiai" ar "atrodo taisyklinga"
 - Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
 - SVARBU (IŠGALVOTI ŽODŽIAI): dažniausia priežastis, kodėl atsiranda žodis, kurio lietuvių kalboje IŠVIS NĖRA (ne šiaip neteisinga forma, o apskritai neegzistuojantis žodis) — sumaišomas 3-io asmens kamienas su priebalsio minkštinimu (č/dž/š) ir 2-o asmens ("tu") galūnė (PAVYZDŽIAI NEEGZISTUOJANČIŲ ŽODŽIŲ: "leidžiesi" [nėra — tik "leidiesi" arba "leidžiasi"], "pakenči" [nėra — tik "pakenti" arba "pakenčia"], "užduši" [nėra — tik "uždusi"], "iešką" [nėra — tik "ieškojimą"], "pusiau kelio" [nėra — tik "pusiaukelėje", vienas žodis]). TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (tokio žodžio nėra — teisingai "bendrauji", be nosinės). Rašydamas KIEKVIENĄ "tu" formos veiksmažodį, patikrink: ar šis TIKSLUS raidžių derinys tikrai vartojamas lietuvių kalboje, ar jis tik SUKONSTRUOTAS pagal panašumą?
+- KATEGORIŠKA TAISYKLĖ: žodis "tu" NIEKADA nestovi šalia veiksmažodžio su "-au" galūne (tai visada 1-asis asmuo, "aš" forma) — KLAIDA "tu išlaikau" (teisingai "tu išlaikai"), KLAIDA "tu žinau" (teisingai "tu žinai"). Jei rašai "tu" + "-au" formą, tai 100% klaida
 - SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — ŠI KLAIDA YPAČ DAŽNA, kai tarp "tu" ir veiksmažodžio įsiterpia kitas žodis (įvardis, papildinys) — patikrink VISUS veiksmažodžius, kurių veiksnys yra "tu", NEPRIKLAUSOMAI nuo to, kiek žodžių juos skiria sakinyje
 - SVARBU (dažna klaida sudėtiniuose sakiniuose su "ir"): kai vienas "tu" veiksnys valdo KELIS veiksmažodžius, sujungtus "ir" (pvz. "tu pradedi X ir ___ Y"), ANTRASIS veiksmažodis PRIVALO turėti TĄ PATĮ "tu" asmenį/galūnę kaip pirmasis — KLAIDA: "tu pradedi veikti ir baigia anksčiau" (teisingai: "tu pradedi veikti ir baigi anksčiau"). Kiekviename tokiame sakinyje patikrink VISUS veiksmažodžius, ne tik pirmą
 - SVARBU (giminės/linksnio sutapimas): būdvardis PRIVALO sutapti su daiktavardžiu gimine, skaičiumi ir linksniu — KLAIDA: "korporatyvinė kopėčių lipimas" (daiktavardis "lipimas" yra vyriškos giminės, teisingai: "korporatyvinis kopėčių lipimas"). Prieš atiduodamas atsakymą, kiekvienai būdvardis+daiktavardis porai patikrink, ar giminės sutampa. Ypač dažna klaida po žodžio "su": KLAIDA "su nedideliu komanda" ("komanda" — moteriškos giminės) — teisingai "su nedidele komanda"
