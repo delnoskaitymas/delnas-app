@@ -874,7 +874,12 @@ const KNOWN_GRAMMAR_FIXES = [
   ['sėkmė labiausiai įmanoma ten', 'sėkmė labiausiai pasiekiama ten'],
   // Kliūtys: sugadintas prompto frazės nuosėdų sakinys
   ['Kasdien įpročiai, kurie vėlina sėkmę, yra tie, kai atidėlioji pradžią', 'Kasdienis įprotis, vėlinantis sėkmę, yra pradžios atidėliojimas'],
-  ['Kasdien įpročiai', 'Kasdieniai įpročiai']
+  ['Kasdien įpročiai', 'Kasdieniai įpročiai'],
+
+  // ── Rezultato ekrano nuotraukų 3-a partija (2026-09-20) ──
+  // Asmenų nesutapimas sakinio viduje: "tavo kūnas įvykdai" (3-io asmens
+  // vardažodis + 2-o asmens veiksmažodžio galūnė) — turi būti "įvykdo".
+  ['ką nusprendžia tavo protas, tavo kūnas įvykdai', 'ką nusprendžia tavo protas, tą tavo kūnas įvykdo']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -894,7 +899,13 @@ const KNOWN_REGEX_FIXES = [
   [/(?<!\p{L})(\p{L}*)leidži(?:ai)?(?!\p{L})/gu, '$1leidi'], // leisti: "praleidži", "nepaleidži", "atleidžiai" → "praleidi", "nepaleidi", "atleidi"
   [/\bpranokai\b/g, 'pranoksti'],         // pranokti: tu pranoksti
   [/\b(renkies|vadovaujies|elgies|jaučies|stengies)\b/g, '$1i'], // sangrąžinė "-iesi" (trūkstamas galūnės -i)
-  [/\bpabalos\b/g, 'pabaigos']            // rašybos klaida
+  [/\bpabalos\b/g, 'pabaigos'],            // rašybos klaida
+
+  // leistis: "tu" forma taisyklingai "leidiesi" (kamienas be dž), ne "leidžiesi"
+  // (dž lieka tik 1 ir 3 asmenyje: leidžiuosi / leidiesi / leidžiasi).
+  // Raidžių dydis (didžioji/mažoji) IŠSAUGOMAS.
+  [/\bLeidžiesi\b/g, 'Leidiesi'],
+  [/\bleidžiesi\b/g, 'leidiesi']
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1072,10 +1083,11 @@ async function proofreadAnalysis(result) {
         text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.
 
 ═══ A DALIS — GRAMATIKA ═══
+PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIEKVIENĄ sakinio žodį — ne tik tuos, kurie sutampa su pavyzdžiais apačioje. Kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis privalo turėti taisyklingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su žodžiu, prie kurio šliejasi. Žemiau esantis sąrašas — tik DAŽNIAUSIŲ klaidų iliustracija, NE baigtinis sąrašas: jei tekste randi bet kokį žodį, kurio forma atrodo neįprasta, dirbtinė ar sugalvota — pataisyk jį taip, kaip tikrai kalbėtų gimtakalbis, NET jei tokio konkretaus žodžio nėra nė viename pavyzdyje. Kiekvieną tokį pataisymą taip pat grąžink pagal žemiau nurodytą "pataisymai" formatą.
 - Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
 - Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
 - Patikrink, ar VISI žodžiai tikrai egzistuoja lietuvių kalboje — jei randi žodį, kuris atrodo sugalvotas/neteisingai sudarytas (pvz. "veiksmi" vietoj "veiki"), pakeisk į teisingą, realiai egzistuojantį žodį
-- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"). Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
+- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi" — dž lieka tik 1 ir 3 asmenyje). Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
 - RAŠYBA IR ATSKIRAI RAŠOMI ŽODŽIAI: "anksčiau" (NE "ankščiau"), "pabaigos"; sulipę žodžiai skiriami ("jau žengi", NE "jaužengi")
 - LINKSNIAI: daiktavardis veiksmažodžio papildinyje turi būti teisingu linksniu (pvz. "branduolį sudaro", NE "branduolą sudaro")
 - Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
@@ -1333,6 +1345,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
+- PAGRINDINĖ KALBOS TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau, taikoma KIEKVIENAM žodžiui be išimties): kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis PRIVALO turėti taisyklingą lietuvių kalbos gramatinę formą — teisingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su tuo žodžiu, prie kurio jis šliejasi. Žemiau pateikti pavyzdžiai (dažniausios klaidos) yra TIK ILIUSTRACIJA, o ne baigtinis sąrašas — jei rašai žodį, kurio nėra pavyzdžiuose, VIS TIEK patikrink jo formą taip, lyg tai darytum gimtakalbis: ar taip iš tikrųjų kalbėtum su draugu? Jei suabejoji dėl bet kurios formos (retesnio veiksmažodžio, mažiau įprasto linksnio) — RINKIS FORMĄ, KURIĄ TIKRAI VARTOTŲ GIMTAKALBIS, o ne tą, kuri tik "skamba panašiai" ar "atrodo taisyklinga"
 - Kalba: TAISYKLINGA lietuvių kalba — teisingi linksniai, galūnės, sakinio konstrukcijos. Kreipkis "tu"
 - SVARBU (dažna klaida): kreipiantis "tu", veiksmažodis VISADA baigiasi "-i" (pvz. "tu sieki", "tu bendrauji", "tu jauti", "tu elgiesi"), NIEKADA "-a"/"-ia" (KLAIDA: "tu siekia", "tu bendraujį", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — ŠI KLAIDA YPAČ DAŽNA, kai tarp "tu" ir veiksmažodžio įsiterpia kitas žodis (įvardis, papildinys) — patikrink VISUS veiksmažodžius, kurių veiksnys yra "tu", NEPRIKLAUSOMAI nuo to, kiek žodžių juos skiria sakinyje
 - SVARBU (dažna klaida sudėtiniuose sakiniuose su "ir"): kai vienas "tu" veiksnys valdo KELIS veiksmažodžius, sujungtus "ir" (pvz. "tu pradedi X ir ___ Y"), ANTRASIS veiksmažodis PRIVALO turėti TĄ PATĮ "tu" asmenį/galūnę kaip pirmasis — KLAIDA: "tu pradedi veikti ir baigia anksčiau" (teisingai: "tu pradedi veikti ir baigi anksčiau"). Kiekviename tokiame sakinyje patikrink VISUS veiksmažodžius, ne tik pirmą
@@ -1387,6 +1400,7 @@ Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą.
 5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
+6. GRAMATIKA (patikrink KIEKVIENĄ žodį, ne tik tuos, kurie panašūs į pavyzdžius aukščiau): ar kiekvieno veiksmažodžio ASMUO ir GALŪNĖ teisingi kreipiantis "tu"? Ar kiekvieno būdvardžio/dalyvio GIMINĖ, SKAIČIUS ir LINKSNIS sutampa su daiktavardžiu, prie kurio jis šliejasi? Ar kiekvieno daiktavardžio LINKSNIS teisingas jo vietai sakinyje (pvz. veiksmažodžio papildinys — galininkas, ne vardininkas)? Jei bet kuris žodis atrodo bent kiek neįprastas ar dirbtinis — PAKEISK jį į formą, kurią tikrai vartotų gimtakalbis, NET jei tokio konkretaus žodžio nėra jokiame pavyzdyje aukščiau
 Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi penki atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
