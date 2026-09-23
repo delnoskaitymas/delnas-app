@@ -992,8 +992,22 @@ const KNOWN_REGEX_FIXES = [
   [/\blinkimas\b/g, 'polinkis'],         // neegzistuojantis "linkimas"; \b apsaugo "sulinkimas"
 
   // ── Neteisingos "tu" formos (nereguliarūs veiksmažodžiai) — 2-a nuotraukų partija ──
-  [/\b([Nn]e)?ieški\b/g, '$1ieškai'],    // "Neieški" → "Neieškai", "ieški" → "ieškai" (ieškoti: tu ieškai)
-  [/\bieškoi\b/g, 'ieškai'],
+  [/\b((?:ne)?)ieški\b/giu, (full, prefix) => {
+    const isCapital = full[0] !== full[0].toLowerCase();
+    let result = prefix.toLowerCase() + 'ieškai';
+    if (isCapital) result = result.charAt(0).toUpperCase() + result.slice(1);
+    return result;
+  }], // "Neieški"/"neieški"/"ieški"/"Ieški" → visos "-ai" formos (ieškoti: tu ieškai)
+  // ieškoti: VISI "ieškoi" (išgalvota forma) variantai vienu regex — su/be "ne-" priešdėlio,
+  // su didžiąja/mažąja raide sakinio pradžioje. Ankstesnis siauras regex NEVEIKĖ su "ne-"
+  // priešdėliu (nėra žodžio ribos tarp "ne" ir "ieškoi") ir žodyno įrašas neveikė su didžiąja
+  // raide (case-sensitive) — abi spragos ištaisytos šiuo vienu, bendru regex.
+  [/\b((?:ne)?)ieškoi\b/giu, (full, prefix) => {
+    const isCapital = full[0] !== full[0].toLowerCase();
+    let result = prefix.toLowerCase() + 'ieškai';
+    if (isCapital) result = result.charAt(0).toUpperCase() + result.slice(1);
+    return result;
+  }],
   [/(?<!\p{L})(\p{L}*)leidži(?:ai)?(?!\p{L})/gu, '$1leidi'], // leisti: "praleidži", "nepaleidži", "atleidžiai" → "praleidi", "nepaleidi", "atleidi"
   [/\bpranokai\b/g, 'pranoksti'],         // pranokti: tu pranoksti
   [/\b(renkies|vadovaujies|elgies|jaučies|stengies|imies)\b/g, '$1i'], // sangrąžinė "-iesi" (trūkstamas galūnės -i)
@@ -1044,11 +1058,12 @@ const KNOWN_REGEX_FIXES = [
   // atskirai, nes mechaninis "-damas"→"-ant" keitimas NĖRA visada teisingas (kai kurių
   // veiksmažodžių esamojo laiko kamienas skiriasi nuo pusdalyvio kamieno, pvz. "užsibūti":
   // pusdalyvis "užsibūdamas", bet padalyvis "užsibūnant", ne "užsibūant").
-  [/\bneužsibūdamas\b/g, 'neužsibūnant'],
+  // "užsibūti" gerundo (neužsibūnant) klaidingi variantai — įvairios sugalvotos priesagos vietoj "-nant"
+  [/\bneužsibū(?:damas|dama|davęs|davusi|dave)\b/g, 'neužsibūnant'],
+  [/\bužsibū(?:damas|dama|davęs|davusi|dave)\b/g, 'užsibūnant'],
   // judėti nereguliarus: bendraties kamienas "judėj-" klaidingai panaudotas vietoj tikro "jud-"
   [/\bJudėji\b/g, 'Judi'],
   [/\bjudėji\b/g, 'judi'],
-  [/\bužsibūdamas\b/g, 'užsibūnant'],
   [/\bgalvodamas\b/g, 'galvojant'],
   [/\bignoruodamas\b/g, 'ignoruojant'],
   [/\babejodamas\b/g, 'abejojant']
@@ -1258,7 +1273,7 @@ async function proofreadAnalysis(result) {
       role: 'user',
       content: [{
         type: 'text',
-        text: `Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.${flaggedNote}
+        text: `TU ESI PASKUTINĖ GYNYBOS LINIJA PRIEŠ TAI, KĄ PAMATYS MOKANTIS KLIENTAS. Šis tekstas jau parašytas — tavo vienintelis tikslas yra rasti KIEKVIENĄ likusią kalbos klaidą (gramatinę, išgalvotą žodį, netinkamą giminę, per sudėtingą žodį) ir ją ištaisyti. Praleista klaida yra rimtesnė nei per daug atsargus pataisymas — abejonės atveju TIKRINK, o ne praleisk. Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.${flaggedNote}
 
 ═══ A DALIS — GRAMATIKA ═══
 PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIEKVIENĄ sakinio žodį — ne tik tuos, kurie sutampa su pavyzdžiais apačioje. Kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis privalo turėti taisyklingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su žodžiu, prie kurio šliejasi. Žemiau esantis sąrašas — tik DAŽNIAUSIŲ klaidų iliustracija, NE baigtinis sąrašas: jei tekste randi bet kokį žodį, kurio forma atrodo neįprasta, dirbtinė ar sugalvota — pataisyk jį taip, kaip tikrai kalbėtų gimtakalbis, NET jei tokio konkretaus žodžio nėra nė viename pavyzdyje. Kiekvieną tokį pataisymą taip pat grąžink pagal žemiau nurodytą "pataisymai" formatą.
@@ -1269,7 +1284,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
   (1) SUMAIŠYTAS ASMUO: 3-io asmens kamienas (su priebalsio minkštinimu č/dž/š) sujungtas su 2-o asmens ("tu") galūne. PAVYZDŽIAI NEEGZISTUOJANČIŲ ŽODŽIŲ: "leidžiesi" [nėra — tik "leidiesi" (tu) arba "leidžiasi" (jis)], "pakenči" [nėra — tik "pakenti" (tu) arba "pakenčia" (jis)], "užduši" [nėra — tik "uždusi" (tu)], "iešką" [nėra — tik "ieškojimą"].
   (2) SUMAIŠYTI DU SKIRTINGI ŽODŽIAI, kurie skamba/atrodo panašiai: KLAIDA "nesivaikstai" (sumaišyti "vaikytis" [sekti paskui] ir "vaikščioti" [eiti] — teisingai neigiama sangrąžinio "vaikytis" forma yra "nesivaikai"). Jei rašai retesnį veiksmažodį, PIRMA įsitikink, kurio TIKSLIAI veiksmažodžio formą rašai, o ne pasitikėk tuo, "kas skamba panašiai".
   (3) SUKURTAS DAIKTAVARDIS PAGAL NETEISINGĄ PRIESAGOS ANALOGIJĄ: KLAIDA "užtikrintimi" (nėra tokio žodžio — sumaišyta "užtikrintumas" su "-imas" tipo priesaga; teisingas natūralus žodis šiai reikšmei yra "pasitikėjimas savimi", instrumentalis "pasitikėjimu savimi").
-  (4) TIESIOGIAI PANAUDOTAS BENDRATIES KAMIENAS NEREGULIARIAM VEIKSMAŽODŽIUI, kurio esamojo laiko kamienas SKIRIASI nuo bendraties: KLAIDA "judėji" (bendratis "judėti", bet esamasis laikas nereguliarus: judu/judi/juda — teisingai "judi", NE "judėji"). Jei veiksmažodis atrodo neįprastas, PATIKRINK jo esamojo laiko formą atskirai nuo bendraties — daugelis lietuviškų veiksmažodžių šiuos du kamienus turi skirtingus.
+  (4) TIESIOGIAI PANAUDOTAS BENDRATIES KAMIENAS NEREGULIARIAM VEIKSMAŽODŽIUI, kurio esamojo laiko kamienas SKIRIASI nuo bendraties: KLAIDA "judėji" (bendratis "judėti", bet esamasis laikas nereguliarus: judu/judi/juda — teisingai "judi", NE "judėji"). Jei veiksmažodis atrodo neįprastas, PATIKRINK jo esamojo laiko formą atskirai nuo bendraties — daugelis lietuviškų veiksmažodžių šiuos du kamienus turi skirtingus. TAIP PAT NIEKADA nenaudok "-dav-" priesagos (davęs/davusi/-uodavo ir pan.) kreipiantis "tu" apie esamą veiksmą — ši priesaga žymi PASIKARTOJANTĮ VEIKSMĄ PRAEITYJE ("used to") ir visiškai netinka šiam tekstui (KLAIDA "neužsibūdavęs" — teisingai "neužsibūnant").
   SAUGIKLIS ("kai abejoji"): jei rašydamas RETESNĮ ar SUDĖTINGESNĮ žodį (ne kasdienį, dažną) NESI 100% TIKRAS dėl jo tikslios formos — NERIZIKUOK, o rinkis PAPRASTESNĮ, DAŽNĄ, TAU VISIŠKAI ŽINOMĄ sinonimą, kurio teisingumu esi tikras. Geriau paprastas ir teisingas žodis, nei įspūdingas ir išgalvotas.
   SAVIPATIKRA prieš rašant bet kurio veiksmažodžio asmenuojamą formą: mintyse sukonjuguok VISĄ trumpą paradigmą (aš/tu/jis) — jei bent viena forma "nesiklauso" ar atrodo dirbtinė, tikriausiai kamienas pasirinktas klaidingai. TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (teisingai "bendrauji", be nosinės). Prieš rašydamas bet kurio veiksmažodžio "tu" formą, paklausk savęs: ar šis TIKSLUS žodis (šis raidžių derinys) tikrai vartojamas lietuvių kalboje, ar aš jį tiesiog sukonstravau pagal panašumą į kitą formą?
 - ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi"); pakęsti → "tu pakenti" (NE "pakenči"); dusti/uždusti → "tu dusi/uždusi" (NE "duši/užduši"); spręsti → "tu sprendi" (NE "sprendžiai" — tokio žodžio nėra) — priebalsio minkštinimas (č/š prieš i) lieka TIK 1 ir 3 asmenyje, 2-am asmeniui ("tu") kamienas lieka KIETAS. Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
@@ -1286,6 +1301,7 @@ PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIE
 - Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
 - NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
 - VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
+- GREITAS BAIGIAMASIS SĄRAŠAS (peržiūrėk KIEKVIENĄ sakinį ir punktą šiuo sąrašu prieš atiduodamas atsakymą): (1) "pats/pati" ar "vienas/viena" savarankiškumo prasme? (2) "esi/liksi + būdvardis", ypač "+iausias/+iausia"? (3) "tu" + veiksmažodis su "-au" galūne? (4) "-damas/-dama" padalyvys? (5) bet koks sugalvotas/neegzistuojantis žodis? (6) sudėtingas/knyginis/svetimas žodis? Kiekvienas rastas atvejis — PRIVALOMAS pataisymas "pataisymai" sąraše, net jei jo nebuvo nė viename pavyzdyje aukščiau.
 
 ═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
 Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
@@ -1310,6 +1326,8 @@ NEPERRAŠYK viso teksto. Grąžink TIKTAI pataisymų sąrašą. Kiekvienas patai
 - Jei sakinys taisyklingas — apie jį NIEKO negrąžink. Jokių pataisymų "dėl stiliaus" ar "kad skambėtų geriau".
 - Tas pats fragmentas — ne daugiau kaip vienas pataisymas; pataisymai neturi persidengti. Jei tas pats klaidingas žodis kartojasi keliuose sakiniuose — kiekvienam sakiniui atskiras pataisymas.
 - Jei klaidų nėra: {"pataisymai": []}
+
+GALUTINIS, ABSOLIUTAUS PRIORITETO REIKALAVIMAS (viršija VISKĄ aukščiau, jei kyla bent menkiausias konfliktas): peržvelk KIEKVIENĄ žodį žemiau esančiame tekste — ne tik tuos, kurie sutampa su A/B dalių pavyzdžiais. Jei žodis (a) neegzistuoja lietuvių kalboje, (b) turi neteisingą asmenį/laiką/linksnį/galūnę, (c) turi giminės žymę apie skaitytoją, arba (d) yra sudėtingas/knyginis/svetimas — jis PRIVALO patekti į pataisymų sąrašą. TAISYKLĖ ABEJONĖS ATVEJU: jei abejoji, ar konkretus žodis teisingas — PASIŪLYK pataisymą su paprastesniu, tau 100% žinomu ir saugiu žodžiu, o ne palik abejotiną formą nepaliestą.
 
 Atsakymo formatas (TIKTAI JSON, be paaiškinimų ir be markdown): {"pataisymai": [ ... ]}
 
@@ -1503,7 +1521,9 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
     ...imageBlocks,
     {
       type: 'text',
-      text: `Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave yra${name ? ' ' + name + ' —' : ''} kairio ir dešinio delno nuotraukos. Matai juos aiškiai.
+      text: `PIRMENYBĖ (svarbiau už viską kitą šiame prompte): šį tekstą skaitys realus žmogus, sumokėjęs pinigus, gimtąja lietuvių kalba. VIENA gramatinė ar sugalvoto žodžio klaida iškart sugriauna pasitikėjimą visu produktu — net jei turinys puikus. Taisyklinga, natūrali, gimtakalbio lietuvių kalba yra LYGIAVERTIS reikalavimas turinio kokybei, o kilus konfliktui tarp „skambesnio" žodžio ir „paprasto bei tikrai teisingo" — VISADA rink paprastą ir teisingą. Detalios kalbos taisyklės pateiktos žemiau ir GALUTINIAME PATIKRINIME prieš pat atsakymo pabaigą — jos privalomos be išimčių.
+
+Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave yra${name ? ' ' + name + ' —' : ''} kairio ir dešinio delno nuotraukos. Matai juos aiškiai.
 
 ${bruozaiText}Remdamasis TIKTAI tuo, ką realiai MATAI šiuose konkrečiuose delnuose (aukščiau esančiais vizualiniais parametrais), parašyk tikslią, konkrečią, MAKSIMALIAI TIKSLIĄ chiromantijos analizę lietuvių kalba BŪTENT apie šį žmogų — remiantis BŪTENT ŠIAIS delnais, ne bendrais chiromantijos principais. Tai NĖRA bendro pobūdžio tekstas — kiekvienas sakinys turi remtis tuo, ką matai ŠIUOSE delnuose, ir turi būti toks specifiškas, kad netiktų jokiam kitam žmogui.
 
@@ -1597,7 +1617,10 @@ Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą.
 5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
 6. GRAMATIKA (patikrink KIEKVIENĄ žodį, ne tik tuos, kurie panašūs į pavyzdžius aukščiau): ar kiekvieno veiksmažodžio ASMUO ir GALŪNĖ teisingi kreipiantis "tu"? Ar kiekvieno būdvardžio/dalyvio GIMINĖ, SKAIČIUS ir LINKSNIS sutampa su daiktavardžiu, prie kurio jis šliejasi? Ar kiekvieno daiktavardžio LINKSNIS teisingas jo vietai sakinyje (pvz. veiksmažodžio papildinys — galininkas, ne vardininkas)? Jei bet kuris žodis atrodo bent kiek neįprastas ar dirbtinis — PAKEISK jį į formą, kurią tikrai vartotų gimtakalbis, NET jei tokio konkretaus žodžio nėra jokiame pavyzdyje aukščiau
-Jei BENT VIENAS atsakymas yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi penki atsakymai būtų "taip", PRIEŠ tęsdamas toliau. Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus faktas", VISADA rink antrąjį.
+7. GREITAS SĄRAŠAS DAŽNIAUSIŲ PRASISKVERBIANČIŲ KLAIDŲ (patikrink KIEKVIENĄ atskirai): ar NĖRA žodžio "pats/pati" ar "vienas/viena" savarankiškumo prasme? Ar NĖRA "esi/liksi + būdvardis" (ypač "+iausias/+iausia" superlatyvo)? Ar NĖRA "tu" šalia veiksmažodžio su "-au" galūne (visada 1 asmuo, savaime prieštaringa klaida)? Ar NĖRA "-damas/-dama" padalyvio? Ar tikrai NĖ VIENAS žodis nėra sugalvotas (žr. IŠGALVOTI ŽODŽIAI skyrių žemiau)? Ar NĖRA sudėtingo/knyginio/svetimo žodžio, kurio nevartotum kalbėdamas su draugu?
+Jei BENT VIENAS atsakymas iš 1-7 yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. JEI PERRAŠEI BENT VIENĄ SAKINĮ PATAISYDAMAS KLAIDĄ — prieš atiduodamas galutinį atsakymą, PERSKAITYK TĄ PATAISYTĄ SAKINĮ DAR KARTĄ NUO PRADŽIOS per visus 7 klausimus (pataisymas pats gali įnešti naują klaidą). Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus/taisyklingas faktas", VISADA rink antrąjį.
+
+GALUTINIS, ABSOLIUTAUS PRIORITETO REIKALAVIMAS (viršija VISKĄ aukščiau esantį, jei kyla bent menkiausias konfliktas): prieš siųsdamas atsakymą, įsitikink DĖL KIEKVIENO ATSKIRO ŽODŽIO, kad (a) jis TIKRAI egzistuoja lietuvių kalboje — ne panašus, o TIKRAS; (b) kreipiantis "tu" jo asmuo ir laikas teisingi; (c) jis neturi jokios giminės žymės apie skaitytoją; (d) jis nėra iš draudžiamų sudėtingų/knyginių/svetimų žodžių sąrašo; (e) jame nėra tiesioginio fizinio delno/rankos požymio paminėjimo. TAISYKLĖ ABEJONĖS ATVEJU: jei dėl BENT VIENO žodžio ar sakinio liko kad ir mažiausia abejonė — NERAŠYK JO. Rinkis paprastesnį, trumpesnį, TAU 100% ŽINOMĄ ir SAUGŲ variantą. Visada geriau paprastas, aiškiai teisingas tekstas, nei įspūdingas, bet rizikingas.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
