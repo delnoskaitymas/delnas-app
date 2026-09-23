@@ -939,6 +939,17 @@ const KNOWN_GRAMMAR_FIXES = [
   // Išgalvotas veiksmažodis: sumaišyti "vaikytis" (sekti/gaudyti) ir "vaikščioti" (eiti) kamienai —
   // neigiama sangrąžinio "vaikytis" forma taisyklingai "nesivaikai" (ne "vaikstai")
   ['Nesivaikstai paskui kitus', 'Nesivaikai paskui kitus'],
+  // Dar vienas "vaikytis" klaidos variantas: 3-io asmens forma "vaikosi" panaudota vietoj "tu" formos "vaikaisi"
+  ['nesivaikosi kiekvienos naujos galimybės', 'nesivaikai kiekvienos naujos galimybės'],
+  // LYTIES NEUTRALUMAS: "pačiam" — giminė dativo forma ("pats" šeima), ta pati klaidos rūšis kaip "pirmam"/"tvirtam"
+  ['tau svarbu pačiam valdyti savo kelią', 'tau svarbu savarankiškai valdyti savo kelią'],
+  // LYTIES NEUTRALUMAS (geltonas sakinys): "esi/išlieki + būdvardis" konstrukcija
+  ['Išlieki stabilus chaoso akivaizdoje', 'Išlaikai stabilumą chaoso akivaizdoje'],
+  // Linksnio nesutapimas (geltonas sakinys): "Aiškus" (vardininkas) + "matymą" (galininkas) — turi sutapti
+  ['Aiškus matymą be iliuzijų', 'Aiškus matymas be iliuzijų'],
+  // LYTIES NEUTRALUMAS: du giminę turintys būdvardžiai viename sakinyje ("teisiam", "nepakankamas")
+  ['Paleisk poreikį visada būti teisiam — klaidos yra dalis kelio, ne ženklas, kad esi nepakankamas.',
+   'Paleisk poreikį visada įrodyti savo teisumą — klaidos yra dalis kelio, ne ženklas, kad tau ko nors trūksta.'],
   // Išgalvotas žodis: "judėti" nereguliarus — esamojo laiko kamienas "jud-" (judu/judi/juda),
   // NE bendraties kamienas "judėj-" (KLAIDA "judėji", tokio žodžio nėra)
   ['Judėji link to', 'Judi link to'],
@@ -1238,8 +1249,22 @@ function applyProofreadCorrections(result, corrections) {
 // teisingą kiekvieno konkretaus veiksmažodžio neutralią formą (pvz. kad
 // "užsibūdamas" → "užsibūnant", o "galvodamas" → "galvojant" — skirtingi
 // kamienai, mechaninio taisymo taisyklės čia nėra).
+//
+// PAPILDOMOS DVI KATEGORIJOS (2026-09-23), taip pat aptinkamos AUTOMATIŠKAI:
+// (A) "pats/pati" įvardžio šeima — BAIGTINIS, saugus žodžių sąrašas (visos
+//     linksniuotės formos), nes tai uždaras gramatinis rinkinys, ne atviras
+//     žodynas. Pažymima VISADA — AI pati sprendžia, ar konkretus pasitaikymas
+//     apibūdina skaitytoją (tada keisti) ar sustiprina daiktavardį, pvz.
+//     "pats faktas" (tada nekeisti).
+// (B) "esi/tampi/liksi/išlieki + žodis" — pati pavojingiausia konstrukcija
+//     (nustatyta per daugybę šios app'os klaidų: "esi atviras", "esi
+//     produktyviausias", "išlieki stabilus" ir pan.) — žodis po šių
+//     veiksmažodžių beveik visada yra tarinio būdvardis, tad pažymimas
+//     AUTOMATIŠKAI, nepriklausomai nuo konkrečios galūnės.
 // ═══════════════════════════════════════════════════════════════════
 const GENDERED_SUFFIX_PATTERNS = [/\b\p{L}+damas\b/gu, /\b\p{L}+dama\b/gu, /\b\p{L}+ęs\b/gu, /\b\p{L}+usi\b/gu];
+const GENDERED_PRONOUN_FORMS = new Set(['pats', 'pati', 'paties', 'pačios', 'pačiam', 'pačiai', 'patį', 'pačią', 'pačiu', 'pačia', 'pačiame', 'pačioje', 'patys']);
+const PREDICATE_VERB_RE = /\b(?:esi|tampi|liksi|išlieki)\s+(\p{L}+)/giu;
 
 function findPossiblyGenderedWords(result) {
   const found = new Set();
@@ -1251,6 +1276,11 @@ function findPossiblyGenderedWords(result) {
         const matches = v.match(re);
         if (matches) matches.forEach(w => found.add(w));
       }
+      const words = v.match(/\p{L}+/gu) || [];
+      for (const w of words) {
+        if (GENDERED_PRONOUN_FORMS.has(w.toLowerCase())) found.add(w);
+      }
+      for (const pm of v.matchAll(PREDICATE_VERB_RE)) found.add(pm[1]);
     }
   }
   return [...found];
@@ -1262,7 +1292,7 @@ async function proofreadAnalysis(result) {
 
   const flaggedWords = findPossiblyGenderedWords(result);
   const flaggedNote = flaggedWords.length > 0
-    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS (galūnės -damas/-dama/-ęs/-usi dažnai žymi giminę): ${flaggedWords.map(w => `"${w}"`).join(', ')}. KIEKVIENĄ iš jų PRIVALAI patikrinti: jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") — jis PRIVALO būti pakeistas į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus veiksmažodžio formą, ne mechaninį "-damas"→"-ant" keitimą, nes kai kurių veiksmažodžių kamienas skiriasi). Jei žodis apibūdina KITĄ žmogų (ne skaitytoją) — jo keisti NEREIKIA.`
+    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS: ${flaggedWords.map(w => `"${w}"`).join(', ')}. Jie pateko į šį sąrašą dėl vienos iš trijų priežasčių: (1) galūnė -damas/-dama/-ęs/-usi (pusdalyvis/dalyvis — dažnai gimininis); (2) žodis iš "pats/pati" įvardžio šeimos (pats, pati, paties, pačiam, pačiai, pačią, pačiu, pačia, patį, pačios, pačiame, pačioje, patys — dažnai reiškia "savarankiškai/vienas", giminė); (3) žodis IŠ KARTO po "esi"/"tampi"/"liksi"/"išlieki" — beveik visada tarinio būdvardis (pvz. "esi atviras", "išlieki stabilus"). KIEKVIENĄ iš jų PRIVALAI patikrinti: jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") IR turi giminės žymę arba yra "pats/pati" savarankiškumo prasme — jis PRIVALO būti pakeistas į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį, daiktavardį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus žodžio formą, ne mechaninį keitimą, nes kamienai gali skirtis). Jei žodis apibūdina KITĄ žmogų, yra jau neutralus (pvz. daiktavardis), arba "pats/pati" tik sustiprina daiktavardį ("pats faktas") — jo keisti NEREIKIA.`
     : '';
 
   const body = JSON.stringify({
