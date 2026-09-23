@@ -950,6 +950,9 @@ const KNOWN_GRAMMAR_FIXES = [
   // LYTIES NEUTRALUMAS: du giminę turintys būdvardžiai viename sakinyje ("teisiam", "nepakankamas")
   ['Paleisk poreikį visada būti teisiam — klaidos yra dalis kelio, ne ženklas, kad esi nepakankamas.',
    'Paleisk poreikį visada įrodyti savo teisumą — klaidos yra dalis kelio, ne ženklas, kad tau ko nors trūksta.'],
+  // Asmenų nesutapimas sudėtiniame sakinyje su "ir" (dar vienas atvejis — "priimi" tu, "neieško" jis)
+  ['Priimi atsakomybę už savo pasirinkimus ir neieško išorinių pateisinimų.',
+   'Priimi atsakomybę už savo pasirinkimus ir neieškai išorinių pateisinimų.'],
   // Išgalvotas žodis: "judėti" nereguliarus — esamojo laiko kamienas "jud-" (judu/judi/juda),
   // NE bendraties kamienas "judėj-" (KLAIDA "judėji", tokio žodžio nėra)
   ['Judėji link to', 'Judi link to'],
@@ -1265,6 +1268,11 @@ function applyProofreadCorrections(result, corrections) {
 const GENDERED_SUFFIX_PATTERNS = [/\b\p{L}+damas\b/gu, /\b\p{L}+dama\b/gu, /\b\p{L}+ęs\b/gu, /\b\p{L}+usi\b/gu];
 const GENDERED_PRONOUN_FORMS = new Set(['pats', 'pati', 'paties', 'pačios', 'pačiam', 'pačiai', 'patį', 'pačią', 'pačiu', 'pačia', 'pačiame', 'pačioje', 'patys']);
 const PREDICATE_VERB_RE = /\b(?:esi|tampi|liksi|išlieki)\s+(\p{L}+)/giu;
+// (C) "-iesi" galūnė — teisinga TIK sangrąžiniams veiksmažodžiams (jautiesi, stengiesi,
+// elgiesi), bet AI kartais ją klaidingai prideda ir prie nesangrąžinių (KLAIDA "siekiesi"
+// — "siekti" nėra sangrąžinis, teisingai "sieki"). Pažymima VISADA; AI pati (jau turi
+// taisyklę apie tai) sprendžia, ar konkretus veiksmažodis tikrai sangrąžinis.
+const REFLEXIVE_SUFFIX_RE = /\b\p{L}+iesi\b/gu;
 
 function findPossiblyGenderedWords(result) {
   const found = new Set();
@@ -1281,6 +1289,8 @@ function findPossiblyGenderedWords(result) {
         if (GENDERED_PRONOUN_FORMS.has(w.toLowerCase())) found.add(w);
       }
       for (const pm of v.matchAll(PREDICATE_VERB_RE)) found.add(pm[1]);
+      const reflexiveMatches = v.match(REFLEXIVE_SUFFIX_RE);
+      if (reflexiveMatches) reflexiveMatches.forEach(w => found.add(w));
     }
   }
   return [...found];
@@ -1292,7 +1302,7 @@ async function proofreadAnalysis(result) {
 
   const flaggedWords = findPossiblyGenderedWords(result);
   const flaggedNote = flaggedWords.length > 0
-    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS: ${flaggedWords.map(w => `"${w}"`).join(', ')}. Jie pateko į šį sąrašą dėl vienos iš trijų priežasčių: (1) galūnė -damas/-dama/-ęs/-usi (pusdalyvis/dalyvis — dažnai gimininis); (2) žodis iš "pats/pati" įvardžio šeimos (pats, pati, paties, pačiam, pačiai, pačią, pačiu, pačia, patį, pačios, pačiame, pačioje, patys — dažnai reiškia "savarankiškai/vienas", giminė); (3) žodis IŠ KARTO po "esi"/"tampi"/"liksi"/"išlieki" — beveik visada tarinio būdvardis (pvz. "esi atviras", "išlieki stabilus"). KIEKVIENĄ iš jų PRIVALAI patikrinti: jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") IR turi giminės žymę arba yra "pats/pati" savarankiškumo prasme — jis PRIVALO būti pakeistas į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį, daiktavardį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus žodžio formą, ne mechaninį keitimą, nes kamienai gali skirtis). Jei žodis apibūdina KITĄ žmogų, yra jau neutralus (pvz. daiktavardis), arba "pats/pati" tik sustiprina daiktavardį ("pats faktas") — jo keisti NEREIKIA.`
+    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS: ${flaggedWords.map(w => `"${w}"`).join(', ')}. Jie pateko į šį sąrašą dėl vienos iš KETURIŲ priežasčių: (1) galūnė -damas/-dama/-ęs/-usi (pusdalyvis/dalyvis — dažnai gimininis); (2) žodis iš "pats/pati" įvardžio šeimos (pats, pati, paties, pačiam, pačiai, pačią, pačiu, pačia, patį, pačios, pačiame, pačioje, patys — dažnai reiškia "savarankiškai/vienas", giminė); (3) žodis IŠ KARTO po "esi"/"tampi"/"liksi"/"išlieki" — beveik visada tarinio būdvardis (pvz. "esi atviras", "išlieki stabilus"); (4) galūnė -iesi — teisinga TIK sangrąžiniams veiksmažodžiams (jautiesi, stengiesi, elgiesi), bet dažnai klaidingai pridedama ir prie nesangrąžinių (KLAIDA "siekiesi" — teisingai "sieki", nes "siekti" nesangrąžinis). KIEKVIENĄ iš jų PRIVALAI patikrinti: (1)-(3) atvejais — jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") IR turi giminės žymę arba yra "pats/pati" savarankiškumo prasme — jis PRIVALO būti pakeistas į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį, daiktavardį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus žodžio formą, ne mechaninį keitimą, nes kamienai gali skirtis); (4) atveju — jei veiksmažodis NĖRA tikrai sangrąžinis, pašalink "-si" dalelytę. Jei žodis apibūdina KITĄ žmogų, yra jau neutralus, "pats/pati" tik sustiprina daiktavardį ("pats faktas"), arba veiksmažodis TIKRAI sangrąžinis (pvz. "jautiesi", "elgiesi") — jo keisti NEREIKIA.`
     : '';
 
   const body = JSON.stringify({
