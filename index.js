@@ -771,6 +771,25 @@ function repairJsonBySchema(text) {
 // bendrą taisymą kaip paskutinę atsarginę priemonę.
 // Jei NIEKAS nepavyksta, meta ORIGINALIĄ klaidą (informatyvesnė log'ams).
 // ═══════════════════════════════════════════════════════════════════
+function parseJsonLenient(text) {
+  try {
+    return JSON.parse(text);
+  } catch (originalErr) {
+    try {
+      const schemaFixed = repairJsonBySchema(text);
+      if (schemaFixed) return JSON.parse(schemaFixed);
+    } catch (schemaErr) {
+      console.error('[parseJsonLenient] schemos taisymas nepavyko:', schemaErr.message);
+    }
+    try {
+      return JSON.parse(repairJsonString(text));
+    } catch (repairErr) {
+      console.error('[parseJsonLenient] bendras taisymas irgi nepavyko:', repairErr.message);
+      throw originalErr;
+    }
+  }
+}
+
 // ŽINOMŲ, PASIKARTOJANČIŲ KLAIDINGŲ ŽODŽIŲ SĄRAŠAS (2026-09 papildymas)
 // Priežastis: pastebėta, kad AI korektūros žingsnis (žingsnis 3) KARTAIS
 // pats sukuria NAUJĄ, netaisyklingą žodžio formą, bandydamas ištaisyti
@@ -783,12 +802,6 @@ function repairJsonBySchema(text) {
 // nepriklausomai nuo AI atsakymo. Sąrašą galima papildyti ateityje,
 // radus naujų pasikartojančių klaidų.
 // ═══════════════════════════════════════════════════════════════════
-// Korektūros (3 žingsnio) modelis. Numatytasis nesikeičia; norint išbandyti
-// kitą modelį pakanka Railway Variables pridėti PROOFREAD_MODEL=<modelio pavadinimas>
-// (be kodo keitimo ir be naujo failo). Žingsnis 2 naudoja assistant prefill, todėl
-// jo modelio nekeičiame be atskiro patikrinimo.
-const PROOFREAD_MODEL = process.env.PROOFREAD_MODEL || 'claude-sonnet-4-5';
-
 const KNOWN_GRAMMAR_FIXES = [
   ['neieškoi', 'neieškai'],
   ['neieškoji', 'neieškai'],
@@ -1180,317 +1193,6 @@ function applyKnownGrammarFixes(result) {
   return result;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ŽINGSNIS 3 (korektūra) — PATAISYMŲ (diff) REŽIMAS
-// Korektūros AI negrąžina viso teksto, o tik sąrašą:
-//   {laukas, indeksas, originalas, pataisyta}
-// Pataisymas taikomas TIK jei "originalas" TIKSLIAI randamas nurodytame lauke.
-// Nerastas / įtartinas pataisymas ATMETAMAS (tekstas lieka nepakeistas), todėl
-// korektūra fiziškai negali sugadinti sakinių, kurių ji nelietė.
-// ═══════════════════════════════════════════════════════════════════
-const PROOFREAD_TEXT_FIELDS = ['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
-const PROOFREAD_INSIGHT_FIELDS = ['prigimtines_insights','gyvenimo_insights','santykiai_insights','finansai_insights','galimybes_insights','pokyciai_insights','klutys_insights'];
-
-// Grąžina pataisymų masyvą (gali būti tuščias = klaidų nerasta) arba null (atsakymo neįmanoma perskaityti).
-function extractCorrectionsFromText(text) {
-  if (typeof text !== 'string') return null;
-  const tryParse = (s) => { try { return JSON.parse(s); } catch (e) { return null; } };
-  const o1 = text.indexOf('{'), o2 = text.lastIndexOf('}');
-  if (o1 !== -1 && o2 > o1) {
-    const parsed = tryParse(text.slice(o1, o2 + 1));
-    if (parsed && Array.isArray(parsed.pataisymai)) return parsed.pataisymai;
-  }
-  const a1 = text.indexOf('['), a2 = text.lastIndexOf(']');
-  if (a1 !== -1 && a2 > a1) {
-    const parsed = tryParse(text.slice(a1, a2 + 1));
-    if (Array.isArray(parsed)) return parsed;
-  }
-  return null;
-}
-
-function applyProofreadCorrections(result, corrections) {
-  const stats = { applied: 0, rejected: 0, reasons: {} };
-  const reject = (why) => { stats.rejected++; stats.reasons[why] = (stats.reasons[why] || 0) + 1; };
-  if (!Array.isArray(corrections)) return stats;
-
-  for (const c of corrections.slice(0, 80)) {
-    if (!c || typeof c !== 'object') { reject('ne objektas'); continue; }
-    const originalas = c.originalas;
-    let pataisyta = c.pataisyta;
-    if (typeof originalas !== 'string' || typeof pataisyta !== 'string' || originalas.trim().length < 4 || !pataisyta.trim()) {
-      reject('tuščias arba per trumpas'); continue;
-    }
-    pataisyta = pataisyta.replace(/"/g, "'");
-    if (pataisyta === originalas) { reject('be pakeitimo'); continue; }
-    // Apsauga nuo pernelyg didelių pokyčių (turinio ištrynimo ar išpūtimo)
-    if (pataisyta.length > originalas.length * 3 + 40 || pataisyta.length < originalas.length * 0.25) {
-      reject('nepagrįstas ilgis'); continue;
-    }
-
-    let container, key;
-    if (PROOFREAD_TEXT_FIELDS.includes(c.laukas)) {
-      container = result; key = c.laukas;
-    } else if (PROOFREAD_INSIGHT_FIELDS.includes(c.laukas) && Array.isArray(result[c.laukas])) {
-      const idx = (typeof c.indeksas === 'string' && /^\d+$/.test(c.indeksas)) ? parseInt(c.indeksas, 10) : c.indeksas;
-      if (!Number.isInteger(idx) || idx < 0 || idx >= result[c.laukas].length) { reject('neteisingas indeksas'); continue; }
-      container = result[c.laukas]; key = idx;
-    } else {
-      reject('nežinomas laukas'); continue;
-    }
-
-    const current = container[key];
-    if (typeof current !== 'string') { reject('laukas ne tekstas'); continue; }
-    // Sutapimas tik prie ŽODŽIŲ RIBŲ: fragmentas negali prasidėti/baigtis kito žodžio viduryje
-    // (pvz. "artot" neturi pakeisti dalies žodžio "kartotinis").
-    const isLetter = (ch) => !!ch && /\p{L}/u.test(ch);
-    const startsLetter = isLetter(originalas[0]);
-    const endsLetter = isLetter(originalas[originalas.length - 1]);
-    let pos = -1, from = 0;
-    while (true) {
-      const p = current.indexOf(originalas, from);
-      if (p === -1) break;
-      const before = p > 0 ? current[p - 1] : '';
-      const after = p + originalas.length < current.length ? current[p + originalas.length] : '';
-      if (!(startsLetter && isLetter(before)) && !(endsLetter && isLetter(after))) { pos = p; break; }
-      from = p + 1;
-    }
-    if (pos === -1) { reject('originalas nerastas tekste'); continue; }
-    container[key] = current.slice(0, pos) + pataisyta + current.slice(pos + originalas.length);
-    stats.applied++;
-  }
-  return stats;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// AUTOMATINĖ GIMININGŲ FORMŲ PAIEŠKA (bendra taisyklė, ne žodžių sąrašas)
-// Vietoj to, kad kiekvieną naują giminę turintį žodį reikėtų rankiniu būdu
-// įtraukti į žodyną, ši funkcija PATI suranda BET KOKĮ žodį su giminės
-// požymiu būdingomis galūnėmis (-damas/-dama pusdalyviai, -ęs/-usi dalyviai)
-// ir perduoda juos AI korektoriui — nes TIK AI (ne regex) tikrai žino
-// teisingą kiekvieno konkretaus veiksmažodžio neutralią formą (pvz. kad
-// "užsibūdamas" → "užsibūnant", o "galvodamas" → "galvojant" — skirtingi
-// kamienai, mechaninio taisymo taisyklės čia nėra).
-//
-// PAPILDOMOS DVI KATEGORIJOS (2026-09-23), taip pat aptinkamos AUTOMATIŠKAI:
-// (A) "pats/pati" įvardžio šeima — BAIGTINIS, saugus žodžių sąrašas (visos
-//     linksniuotės formos), nes tai uždaras gramatinis rinkinys, ne atviras
-//     žodynas. Pažymima VISADA — AI pati sprendžia, ar konkretus pasitaikymas
-//     apibūdina skaitytoją (tada keisti) ar sustiprina daiktavardį, pvz.
-//     "pats faktas" (tada nekeisti).
-// (B) "esi/tampi/liksi/išlieki + žodis" — pati pavojingiausia konstrukcija
-//     (nustatyta per daugybę šios app'os klaidų: "esi atviras", "esi
-//     produktyviausias", "išlieki stabilus" ir pan.) — žodis po šių
-//     veiksmažodžių beveik visada yra tarinio būdvardis, tad pažymimas
-//     AUTOMATIŠKAI, nepriklausomai nuo konkrečios galūnės.
-// ═══════════════════════════════════════════════════════════════════
-// PASTABA: naudojame (?<!\p{L}) vietoj \b prieš \p{L}+ — JavaScript "\b" yra pagrįstas
-// TIK ASCII raidėmis (net su "u" žyma), tad lietuviškos raidės su diakritikais (Ą,Č,Ę,Ė,
-// Į,Š,Ų,Ū,Ž) NĖRA laikomos "žodžio raidėmis" \b požiūriu — tai nutylomai "nukanda" pirmą
-// žodžio raidę, kai žodis prasideda viena iš šių raidžių (pvz. "Žinau" → sugauna tik "inau").
-// (?<!\p{L}) ir (?!\p{L}) yra Unicode-teisingos ribos, veikiančios su VISOMIS raidėmis.
-const GENDERED_SUFFIX_PATTERNS = [/(?<!\p{L})\p{L}+damas(?!\p{L})/gu, /(?<!\p{L})\p{L}+dama(?!\p{L})/gu, /(?<!\p{L})\p{L}+ęs(?!\p{L})/gu, /(?<!\p{L})\p{L}+usi(?!\p{L})/gu];
-const GENDERED_PRONOUN_FORMS = new Set(['pats', 'pati', 'paties', 'pačios', 'pačiam', 'pačiai', 'patį', 'pačią', 'pačiu', 'pačia', 'pačiame', 'pačioje', 'patys']);
-const PREDICATE_VERB_RE = /\b(?:esi|tampi|liksi|išlieki)\s+(\p{L}+)/giu;
-// (C) "-iesi" galūnė — teisinga TIK sangrąžiniams veiksmažodžiams (jautiesi, stengiesi,
-// elgiesi), bet AI kartais ją klaidingai prideda ir prie nesangrąžinių (KLAIDA "siekiesi"
-// — "siekti" nėra sangrąžinis, teisingai "sieki"). Pažymima VISADA; AI pati (jau turi
-// taisyklę apie tai) sprendžia, ar konkretus veiksmažodis tikrai sangrąžinis.
-const REFLEXIVE_SUFFIX_RE = /(?<!\p{L})\p{L}+iesi(?!\p{L})/gu;
-// (D) BET KOKS žodis, pasibaigiantis "-au" (BE prieš tai einančio "i") — visas šis tekstas
-// VISADA kreipiasi "tu", tad 1-ojo asmens galūnė "-au" (matau, žinau, laikau, išlaikau...)
-// čia VISADA klaida, net jei žodis "tu" nestovi tiesiogiai šalia (implicitinis veiksnys).
-// "-iau" (palyginamojo laipsnio prieveiksmiai: geriau, greičiau, anksčiau, labiau...) SAUGŪS
-// ir NEPAŽYMIMI — tai didelė, produktyvi ir visada teisinga kategorija.
-const BARE_AU_RE = /(?<!\p{L})\p{L}+au(?!\p{L})/gu;
-const AU_SAFE_WORDS = new Set(['jau', 'sau', 'tau', 'nau']);
-
-function isSuspiciousAuWord(w) {
-  const lw = w.toLowerCase();
-  if (AU_SAFE_WORDS.has(lw)) return false;
-  if (lw.endsWith('iau')) return false;
-  return true;
-}
-
-function findPossiblyGenderedWords(result) {
-  const found = new Set();
-  for (const f of [...PROOFREAD_TEXT_FIELDS, ...PROOFREAD_INSIGHT_FIELDS]) {
-    const values = Array.isArray(result[f]) ? result[f] : [result[f]];
-    for (const v of values) {
-      if (typeof v !== 'string') continue;
-      for (const re of GENDERED_SUFFIX_PATTERNS) {
-        const matches = v.match(re);
-        if (matches) matches.forEach(w => found.add(w));
-      }
-      const words = v.match(/\p{L}+/gu) || [];
-      for (const w of words) {
-        if (GENDERED_PRONOUN_FORMS.has(w.toLowerCase())) found.add(w);
-      }
-      for (const pm of v.matchAll(PREDICATE_VERB_RE)) found.add(pm[1]);
-      const reflexiveMatches = v.match(REFLEXIVE_SUFFIX_RE);
-      if (reflexiveMatches) reflexiveMatches.forEach(w => found.add(w));
-      const auMatches = v.match(BARE_AU_RE);
-      if (auMatches) auMatches.forEach(w => { if (isSuspiciousAuWord(w)) found.add(w); });
-    }
-  }
-  return [...found];
-}
-
-async function proofreadAnalysis(result) {
-  const textToProof = {};
-  for (const f of [...PROOFREAD_TEXT_FIELDS, ...PROOFREAD_INSIGHT_FIELDS]) textToProof[f] = result[f];
-
-  const flaggedWords = findPossiblyGenderedWords(result);
-  const flaggedNote = flaggedWords.length > 0
-    ? `\n\nAUTOMATINĖ PATIKRA RADO ŠIUOS ĮTARTINUS ŽODŽIUS: ${flaggedWords.map(w => `"${w}"`).join(', ')}. ŠIS SĄRAŠAS PRIVALO BŪTI PERŽIŪRĖTAS PILNAI — kiekvienam žodžiui atskirai, be išimčių. NEUŽTENKA jį perskaityti bendrai; kiekvienam iš jų priimk AIŠKŲ sprendimą (keisti / nekeisti) ir jei keiti, GRĄŽINK jį "pataisymai" sąraše. Jie pateko į šį sąrašą dėl vienos iš KETURIŲ priežasčių: (1) galūnė -damas/-dama/-ęs/-usi (pusdalyvis/dalyvis — dažnai gimininis); (2) žodis iš "pats/pati" įvardžio šeimos (pats, pati, paties, pačiam, pačiai, pačią, pačiu, pačia, patį, pačios, pačiame, pačioje, patys — dažnai reiškia "savarankiškai/vienas", giminė); (3) žodis IŠ KARTO po "esi"/"tampi"/"liksi"/"išlieki" — beveik visada tarinio būdvardis (pvz. "esi atviras", "išlieki stabilus"); (4) galūnė -iesi — teisinga TIK sangrąžiniams veiksmažodžiams (jautiesi, stengiesi, elgiesi), bet dažnai klaidingai pridedama ir prie nesangrąžinių (KLAIDA "siekiesi" — teisingai "sieki", nes "siekti" nesangrąžinis); (5) žodis baigiasi "-au" (BE "i" prieš tai) — tai VISADA 1-ojo asmens ("aš") galūnė, o šis tekstas VISADA kreipiasi "tu" (net jei žodis "tu" nestovi tiesiogiai šalia — veiksnys dažnai numanomas) — KLAIDA "išlaikau stabilumą" (teisingai "išlaikai stabilumą"), KLAIDA "matau" (teisingai "matai"). SPRENDIMO TAISYKLĖ (1)-(3) atvejais: jei žodis apibūdina PATĮ SKAITYTOJĄ (o ne kitą, trečią asmenį, pvz. "daugelis... būtų praradę") IR turi giminės žymę arba yra "pats/pati" savarankiškumo prasme — PRIVALOMAI keisk į giminės neturinčią formą (asmenuojamą veiksmažodį, prieveiksmį, daiktavardį arba "-ant" tipo padalyvį — parink TEISINGĄ to konkretaus žodžio formą, ne mechaninį keitimą, nes kamienai gali skirtis); (4) atveju — jei veiksmažodis NĖRA tikrai sangrąžinis, PRIVALOMAI pašalink "-si" dalelytę; (5) atveju — PRIVALOMAI pakeisk "-au" į "-ai" (ar kitą teisingą "tu" galūnę pagal to veiksmažodžio tipą, žr. asmenavimo lentelę aukščiau A DALYJE). Nekeisti leidžiama TIK jei: žodis apibūdina aiškiai KITĄ, trečią asmenį; jau yra neutralus (pvz. daiktavardis, kuris nesikeičia pagal skaitytojo lytį); "pats/pati" tik sustiprina daiktavardį ("pats faktas"); veiksmažodis TIKRAI sangrąžinis (pvz. "jautiesi", "elgiesi"); arba žodis baigiasi "-iau" (palyginamojo laipsnio prieveiksmis, pvz. "geriau", "greičiau", "anksčiau" — VISADA teisingas, NIEKADA nekeisti). ABEJOJI — NEPALIK NEPAKEISTO: geriau nereikalingas, bet saugus pataisymas, nei praleista giminės klaida.`
-    : '';
-
-  const body = JSON.stringify({
-    model: PROOFREAD_MODEL,
-    max_tokens: 4000,
-    temperature: 0,
-    messages: [{
-      role: 'user',
-      content: [{
-        type: 'text',
-        text: `TU ESI PASKUTINĖ GYNYBOS LINIJA PRIEŠ TAI, KĄ PAMATYS MOKANTIS KLIENTAS. Šis tekstas jau parašytas — tavo vienintelis tikslas yra rasti KIEKVIENĄ likusią kalbos klaidą (gramatinę, išgalvotą žodį, netinkamą giminę, per sudėtingą žodį) ir ją ištaisyti. Praleista klaida yra rimtesnė nei per daug atsargus pataisymas — abejonės atveju TIKRINK, o ne praleisk. Tu esi lietuvių kalbos korektorius IR taisyklių laikymosi tikrintojas. Žemiau — JSON su jau paruoštu tekstu. Tavo užduotis — DVI dalys. NIEKO KITO nekeisk (jokio tono, jokio sakinių skaičiaus, jokio stiliaus) — TIK žemiau nurodytus dalykus. Tu NEPERRAŠAI viso teksto — grąžini TIKTAI konkrečių pataisymų sąrašą (formatas apačioje). Jei sakinys jau taisyklingas ir atitinka taisykles — apie jį negrąžink NIEKO.${flaggedNote}
-
-═══ A DALIS — GRAMATIKA ═══
-PAGRINDINĖ TAISYKLĖ (svarbesnė už bet kurį pavyzdį žemiau): patikrink KIEKVIENĄ sakinio žodį — ne tik tuos, kurie sutampa su pavyzdžiais apačioje. Kiekvienas veiksmažodis, būdvardis, dalyvis ir daiktavardis privalo turėti taisyklingą ASMENĮ, SKAIČIŲ, LAIKĄ, LINKSNĮ ir GIMINĖS sutapimą su žodžiu, prie kurio šliejasi. Žemiau esantis sąrašas — tik DAŽNIAUSIŲ klaidų iliustracija, NE baigtinis sąrašas: jei tekste randi bet kokį žodį, kurio forma atrodo neįprasta, dirbtinė ar sugalvota — pataisyk jį taip, kaip tikrai kalbėtų gimtakalbis, NET jei tokio konkretaus žodžio nėra nė viename pavyzdyje. Kiekvieną tokį pataisymą taip pat grąžink pagal žemiau nurodytą "pataisymai" formatą.
-- KATEGORIŠKA TAISYKLĖ: žodis "tu" NIEKADA nestovi šalia veiksmažodžio su "-au" galūne (tai visada 1-asis asmuo, "aš" forma) — KLAIDA "tu išlaikau" (teisingai "tu išlaikai"), KLAIDA "tu žinau" (teisingai "tu žinai"). Jei matai "tu" + "-au" formą, tai 100% klaida
-- Kreipiantis "tu", veiksmažodis baigiasi "-i" (pvz. "tu sieki", "tu jauti"), NE "-a"/"-ia" (KLAIDA: "tu siekia", "tu jaučia", "tu ją pralaužia" [teisingai: "tu ją pralauži"], "tu per daug laiko skiria" [teisingai: "tu per daug laiko skiri"]) — PATIKRINK YPATINGAI ATIDŽIAI, kai tarp "tu" ir veiksmažodžio yra kitas žodis (įvardis, papildinys) — tokiais atvejais ši klaida praslysta dažniausiai
-- Kreipiantis "tu", veiksmažodis turi būti DABARTINIO laiko forma (pvz. "tu ieškai", "tu jauti"), NE BŪSIMOJO (KLAIDA: "tu ieškosi", "tu uždirbsi" — teisingai "tu ieškai", "tu uždirbi") IR NE BŪTOJO laiko forma (KLAIDA: "tu laukei", "tu neatskleidei" — teisingai "tu lauki", "tu neatskleidi"), NEBENT sakinys aiškiai kalba apie ateitį/praeitį — patikrink, ar visas sakinys/pastraipa nuosekliai vartoja TĄ PATĮ laiką (šiame appe beveik visada dabartinį, nes aprašomas pastovus charakterio bruožas, ne vienkartinis įvykis)
-- KRITIŠKAI SVARBU — IŠGALVOTI ŽODŽIAI (dažniausia ir pavojingiausia šio teksto klaidų rūšis): kiekvienas žodis PRIVALO būti TIKRAS, egzistuojantis lietuvių kalbos žodis — ne panašus į tikrą, o TIKRAS. Trys dažniausios išgalvotų žodžių atsiradimo priežastys, kurių KIEKVIENOS turi būti sąmoningai vengiama:
-  (1) SUMAIŠYTAS ASMUO: 3-io asmens kamienas (su priebalsio minkštinimu č/dž/š) sujungtas su 2-o asmens ("tu") galūne. PAVYZDŽIAI NEEGZISTUOJANČIŲ ŽODŽIŲ: "leidžiesi" [nėra — tik "leidiesi" (tu) arba "leidžiasi" (jis)], "pakenči" [nėra — tik "pakenti" (tu) arba "pakenčia" (jis)], "užduši" [nėra — tik "uždusi" (tu)], "iešką" [nėra — tik "ieškojimą"].
-  (2) SUMAIŠYTI DU SKIRTINGI ŽODŽIAI, kurie skamba/atrodo panašiai: KLAIDA "nesivaikstai" (sumaišyti "vaikytis" [sekti paskui] ir "vaikščioti" [eiti] — teisingai neigiama sangrąžinio "vaikytis" forma yra "nesivaikai"). Jei rašai retesnį veiksmažodį, PIRMA įsitikink, kurio TIKSLIAI veiksmažodžio formą rašai, o ne pasitikėk tuo, "kas skamba panašiai".
-  (3) SUKURTAS DAIKTAVARDIS PAGAL NETEISINGĄ PRIESAGOS ANALOGIJĄ: KLAIDA "užtikrintimi" (nėra tokio žodžio — sumaišyta "užtikrintumas" su "-imas" tipo priesaga; teisingas natūralus žodis šiai reikšmei yra "pasitikėjimas savimi", instrumentalis "pasitikėjimu savimi").
-  (4) TIESIOGIAI PANAUDOTAS BENDRATIES KAMIENAS NEREGULIARIAM VEIKSMAŽODŽIUI, kurio esamojo laiko kamienas SKIRIASI nuo bendraties: KLAIDA "judėji" (bendratis "judėti", bet esamasis laikas nereguliarus: judu/judi/juda — teisingai "judi", NE "judėji"). Jei veiksmažodis atrodo neįprastas, PATIKRINK jo esamojo laiko formą atskirai nuo bendraties — daugelis lietuviškų veiksmažodžių šiuos du kamienus turi skirtingus.
-  (5) NEREIKALINGAI PRIDĖTA DAŽNINĖ PRIESAGA "-inėti/-inėja" (reiškia PASIKARTOJANTĮ veiksmą, pvz. "vaikščioti"→"vaikštinėti") ten, kur reikia PAPRASTOS veiksmažodžio formos: KLAIDA "neperdeginėji" (bendratis "perdegti" — tu perdegi, NE "neperdeginėji"). Jei abejoji, ar veiksmažodžiui reikia šios priesagos, PASIRINK PAPRASTESNĘ, be "-inėti", formą. TAIP PAT NIEKADA nenaudok "-dav-" priesagos (davęs/davusi/-uodavo ir pan.) kreipiantis "tu" apie esamą veiksmą — ši priesaga žymi PASIKARTOJANTĮ VEIKSMĄ PRAEITYJE ("used to") ir visiškai netinka šiam tekstui (KLAIDA "neužsibūdavęs" — teisingai "neužsibūnant").
-  SAUGIKLIS ("kai abejoji"): jei rašydamas RETESNĮ ar SUDĖTINGESNĮ žodį (ne kasdienį, dažną) NESI 100% TIKRAS dėl jo tikslios formos — NERIZIKUOK, o rinkis PAPRASTESNĮ, DAŽNĄ, TAU VISIŠKAI ŽINOMĄ sinonimą, kurio teisingumu esi tikras. Geriau paprastas ir teisingas žodis, nei įspūdingas ir išgalvotas.
-  SAVIPATIKRA prieš rašant bet kurio veiksmažodžio asmenuojamą formą: mintyse sukonjuguok VISĄ trumpą paradigmą (aš/tu/jis) — jei bent viena forma "nesiklauso" ar atrodo dirbtinė, tikriausiai kamienas pasirinktas klaidingai. TAIP PAT PATIKRINK NOSINES RAIDES (į, ų, ą, ę): jos NEPRIDEDAMOS prie "tu" formos veiksmažodžių savavališkai — KLAIDA "bendraujį" (teisingai "bendrauji", be nosinės). Prieš rašydamas bet kurio veiksmažodžio "tu" formą, paklausk savęs: ar šis TIKSLUS žodis (šis raidžių derinys) tikrai vartojamas lietuvių kalboje, ar aš jį tiesiog sukonstravau pagal panašumą į kitą formą?
-- ASMENAVIMO LENTELĖ (nereguliarios "tu" formos, kuriose klystama DAŽNIAUSIAI — teisingos TIK šios): ieškoti → "tu ieškai" (NE "ieški", NE "ieškoi"); leisti ir jo priešdėliniai veiksmažodžiai → "tu paleidi", "tu praleidi", "tu atleidi", "tu išleidi" (NE "paleidži", NE "praleidži"); pranokti → "tu pranoksti" (NE "pranokai"); rinktis → "tu renkiesi" (NE "renkies"); vadovautis → "tu vadovaujiesi" (NE "vadovaujies"); tikėtis → "tu tikiesi" (NE "tikies"); leistis → "tu leidiesi" (NE "leidžiesi"); pakęsti → "tu pakenti" (NE "pakenči"); dusti/uždusti → "tu dusi/uždusi" (NE "duši/užduši"); spręsti → "tu sprendi" (NE "sprendžiai" — tokio žodžio nėra) — priebalsio minkštinimas (č/š prieš i) lieka TIK 1 ir 3 asmenyje, 2-am asmeniui ("tu") kamienas lieka KIETAS. Sangrąžinių veiksmažodžių "tu" forma baigiasi "-iesi"
-- RAŠYBA IR ATSKIRAI RAŠOMI ŽODŽIAI: "anksčiau" (NE "ankščiau"), "pabaigos"; sulipę žodžiai skiriami ("jau žengi", NE "jaužengi")
-- LINKSNIAI: daiktavardis veiksmažodžio papildinyje turi būti teisingu linksniu (pvz. "branduolį sudaro", NE "branduolą sudaro")
-- Kreipiantis "tu", NENAUDOK bendraties (veiksmažodžio su "-ti") ten, kur reikia asmenuojamos formos (KLAIDA: "kad neišlieti jausmų" — teisingai "kad neišlieji jausmų", nes kreipiamasi "tu")
-- Sudėtiniuose sakiniuose su "ir": ANTRASIS veiksmažodis turi tą pačią "tu" galūnę kaip pirmasis (KLAIDA: "tu pradedi veikti ir baigia" — teisingai "...ir baigi")
-- Būdvardis PRIVALO sutapti su daiktavardžiu gimine/skaičiumi/linksniu (KLAIDA: "korporatyvinė kopėčių lipimas" — teisingai "korporatyvinis"). Ypač dažna klaida po žodžio "su" (reikalauja instrumentalio): KLAIDA "su nedideliu komanda" (mat "komanda" — moteriškos giminės) — teisingai "su nedidele komanda"
-- Sangrąžos dalelytė "-si" NEPRIDEDAMA, jei veiksmažodis nesangrąžinis (KLAIDA: "tu siekiesi" — teisingai "tu sieki")
-- LYTIES NEUTRALUMAS: jei randi BET KOKĮ giminę turintį žodį, apibūdinantį PATĮ ŽMOGŲ — būtojo laiko dalyvį (-ęs/-usi: "pasirengęs", "atradęs", "įpratęs", "likęs", "susikaupęs"), padalyvį (-damas/-dama: "laukdamas", "žinodamas", "veikdamas"), ar paprastą būdvardį (-as/-a, -am/-ai: "priklausomas", "laisvam", "ramus", "efektyvus"), ar žodį "vienas/viena", "pats/pati" ARBA gimininę dativo formą kaip "pirmam/pirmai" (pvz. "būti pirmam" → "būti pirmiau" arba "veikti pirmiausia") (abu vienišumo/savarankiškumo prasme, pvz. "sprendi viską pats", "išspręsti pats", "stengiesi pats") — DĖMESIO: "pats/pati" bloguok TIK šia prasme, o ne kai tai sustiprina daiktavardį ("pats faktas", "pati situacija" — čia PALIK, nes tai neapibūdina žmogaus giminės) — PERRAŠYK sakinį taip, kad šio žodžio nebeliktų — naudok asmenuojamą veiksmažodžio formą, prieveiksmį ar daiktavardį (pvz. "ar esi pasirengęs žengti" → "ar jau žengsi"; "jaustis laisvam" → "jaustis laisvai"; "esi įpratęs" → "stengiesi"; "išlieki ramus ir susikaupęs" → "išlaikai ramybę ir susikaupimą"; "kai esi vienas" → "kai dirbi savarankiškai"; "sprendi viską pats" → "sprendi viską savarankiškai"; "stengiesi išspręsti pats" → "stengiesi išspręsti savarankiškai"). PAVOJINGIAUSIA konstrukcija — "esi/liksi + būdvardis": "esi atviras" → "atvirai priimi"; "esi ištikimas ir atidus" → "elgiesi ištikimai ir dėmesingai"; "esi produktyviausias" → "veiki produktyviausiai" (BENDRA TAISYKLĖ: bet kurį "esi + [būdvardis]iausias" aukščiausiojo laipsnio junginį visada gali perrašyti kaip "veiki [tas pats būdvardis]iausiai"). Taip pat "Kartą X-ęs, ..." sakinio pradžioje (KLAIDA: "Kartą nusprendęs" — teisingai: "Kai kartą apsisprendi")
-- "vienas/viena" + daugiskaitos kilmininkas su "-iausių/-iausios" PRIVALO turėti "iš" tarp jų (KLAIDA: "yra tavo vienas stipriausių variklių" — teisingai: "yra vienas iš tavo stipriausių variklių")
-- Asmenų sutapimas sudėtiniame sakinyje su "ir": abu veiksmažodžiai, valdomi to paties "tu", turi tą pačią galūnę (KLAIDA: "pajunti iš tolo ir ... atsitraukia" — teisingai: "... ir atsitrauki")
-- ŽODŽIŲ REIKŠMĖ: jei randi žodį "akcija" panaudotą veiksmo/poelgio prasme — pakeisk į "veiksmas" (lietuviškai "akcija" reiškia tik akcijų paketą biržoje arba nuolaidą, ne "action")
-- Natūrali, taisyklinga žodžių tvarka (ne knyginė/nenatūrali)
-- KRITIŠKAI SVARBU — VERTIMO POJŪTIS: patikrink, ar tekstas neskamba kaip išverstas iš anglų kalbos — pažodinės kalkės, angliška sakinio struktūra ar žodžių tvarka, perkelta į lietuvių kalbą. TESTAS: ar taip SAVAIME parašytų gimtakalbis lietuvis, negalvodamas apie jokią kitą kalbą? Jei sakinys "kvepia vertimu" — tai pataisymas, kurį PRIVALAI pasiūlyti, net jei gramatiškai formaliai teisingas
-- NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje — tik paprasta kablelinė 'štai taip', nes tiesioginė kabutė sugadina JSON
-- VISUOSE "_insights" laukuose (trumpi punktai) PATIKRINK TĄ PATĮ — jie taip pat privalo būti "tu/tavo" forma, NE trečiuoju asmeniu ir NE bendratimi (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Tai VIENODAI svarbu kaip pagrindinio teksto tikrinimas — _insights DAŽNAI turi šią klaidą, patikrink KIEKVIENĄ punktą visuose _insights laukuose
-- GREITAS BAIGIAMASIS SĄRAŠAS (peržiūrėk KIEKVIENĄ sakinį ir punktą šiuo sąrašu prieš atiduodamas atsakymą): (1) "pats/pati" ar "vienas/viena" savarankiškumo prasme? (2) "esi/liksi + būdvardis", ypač "+iausias/+iausia"? (3) "tu" + veiksmažodis su "-au" galūne? (4) "-damas/-dama" padalyvys? (5) bet koks sugalvotas/neegzistuojantis žodis? (6) sudėtingas/knyginis/svetimas žodis? Kiekvienas rastas atvejis — PRIVALOMAS pataisymas "pataisymai" sąraše, net jei jo nebuvo nė viename pavyzdyje aukščiau.
-
-═══ B DALIS — TAISYKLIŲ LAIKYMASIS (turinio taisyklės, kurių originalus tekstas turėjo laikytis, bet galėjo praleisti) ═══
-Jei randi ŽEMIAU IŠVARDYTŲ dalykų — PERRAŠYK TIK tą konkretų sakinio fragmentą taip, kad pažeidimo nebeliktų, IŠLAIKYDAMAS likusią sakinio faktinę mintį apie žmogų (nemesk viso sakinio, jei įmanoma jį pataisyti):
-- BET KOKS fizinio delno/rankos požymio paminėjimas (pvz. "tavo nykščio storis", "tavo delno plotis", "tavo pirštų ilgis", "tavo odos reljefas", "tavo sąnarių įtempimas", "tavo delno forma", konkrečių linijų pavadinimai kaip "širdies linija"/"gyvenimo linija"/"likimo linija", ar formalūs anatomijos terminai kaip "Jupiterio kalva") — PERRAŠYK IŠMESDAMAS fizinio požymio aprašymą VISIŠKAI, palikdamas TIK psichologinę/asmeninę išvadą (pvz. "Tavo nykščio storis ir tvirta struktūra atskleidžia, kad priimi sprendimus greitai" → "Sprendimus priimi greitai ir juos retai keiti"; "tavo širdies linija yra gili" → tiesiog išmesk šią dalį, palik likusią sakinio mintį apie jausmų valdymą ar pan.). Skaitytojas NETURI matyti jokio fizinio požymio ar "įrodymo" — tik pačią išvadą
-- Žodžiai "gali būti", "tikėtina", "galima manyti", "energija", "vibracija" — perfrazuok be jų
-- Žodis "galva" mąstymo/proto prasme — pakeisk į "protas"
-- Metaforos/palyginimai su "kaip...", "tarsi...", "panašiai kaip...", "lyg..." — perrašyk tiesiogiai, be palyginimo
-- Sudėtingi/knyginiai žodžiai: "manifestuoja", "transformacija", "potencialas" (kaip terminas), "orientyras", "dinamika", "konsensusas" (→ "bendras sutarimas"), "delegauti/delegavimas" (→ "perduoti kitiems"), "struktūra" kaip abstraktus terminas, "faktorius" (→ "veiksnys"), "kontempliacija" (→ "apmąstymas") — pakeisk paprastesniais. BENDRA TAISYKLĖ (svarbesnė už šį sąrašą): šis sąrašas TIK ILIUSTRUOJA — jei sutinki BET KOKĮ žodį, kurio nevartotum kalbėdamas su draugu prie kavos (svetimžodį, terminą, kanceliarizmą, pernelyg "protingai" skambantį žodį), PAKEISK jį paprastesniu, kasdieniu lietuvišku atitikmeniu, NET jei šio konkretaus žodžio sąraše nėra
-- Hipotetiniai "jei"/"kai"/"įsivaizduok" scenarijai vietoj tiesioginių faktų — perrašyk kaip tiesioginį faktą
-- "_insights" laukuose parašyti trečiuoju asmeniu/bendratimi punktai (žr. A dalies paskutinį punktą aukščiau) — perrašyk į "tu/tavo" formą
-
-Jei DALIES B pažeidimų NĖRA — nieko nekeisk toje dalyje, tiesiog palik tekstą originalų.
-
-═══ KAIP GRĄŽINTI ATSAKYMĄ ═══
-NEPERRAŠYK viso teksto. Grąžink TIKTAI pataisymų sąrašą. Kiekvienas pataisymas — vienas objektas:
-{"laukas": "klutys", "indeksas": null, "originalas": "tiksli ištrauka iš to lauko teksto", "pataisyta": "ta pati ištrauka su ištaisyta klaida"}
-
-- "laukas" — vienas iš žemiau esančio JSON raktų (pvz. "santykiai" arba "klutys_insights").
-- "indeksas" — tekstiniams laukams (santykiai, klutys ir pan.) rašyk null; "_insights" laukams — punkto numerį masyve (0, 1 arba 2).
-- "originalas" — TIKSLI kopija iš to lauko teksto: simbolis į simbolį, įskaitant tarpus, brūkšnius (—) ir kablelius. Jei nors vienas simbolis nesutaps, pataisymas bus ATMESTAS. Kopijuok visą sakinį (kai reikia keisti kelis žodžius, giminę ar sakinio konstrukciją) arba trumpesnę ištrauką (kai klaida viename žodyje), bet pakankamai ilgą, kad ji būtų vienareikšmė.
-- "pataisyta" — ta pati ištrauka su ištaisyta klaida: keisk TIK tai, ką būtina pataisyti, kitus žodžius palik tokius pat. Pataisyta ištrauka turi derėti su aplinkiniu tekstu (asmuo, laikas, giminė, linksnis). Nenaudok tiesioginės kabutės simbolio " — tik 'štai taip'.
-- Jei sakinys taisyklingas — apie jį NIEKO negrąžink. Jokių pataisymų "dėl stiliaus" ar "kad skambėtų geriau".
-- Tas pats fragmentas — ne daugiau kaip vienas pataisymas; pataisymai neturi persidengti. Jei tas pats klaidingas žodis kartojasi keliuose sakiniuose — kiekvienam sakiniui atskiras pataisymas.
-- Jei klaidų nėra: {"pataisymai": []}
-
-GALUTINIS, ABSOLIUTAUS PRIORITETO REIKALAVIMAS — 100% TAISYKLINGA LIETUVIŲ KALBA (viršija VISKĄ aukščiau, jei kyla bent menkiausias konfliktas): peržvelk KIEKVIENĄ žodį žemiau esančiame tekste per VISAS šias kategorijas, ne tik tas, kurios sutampa su A/B dalių pavyzdžiais:
-  (1) ASMUO/LAIKAS: ar kiekvienas veiksmažodis teisingo asmens (kreipiantis "tu") ir esamojo laiko (ne būtojo, ne 1-o/3-io asmens)?
-  (2) GIMINĖ: ar NĖRA nė vieno dalyvio (-ęs/-usi), padalyvio (-damas/-dama), gimininio būdvardžio (įskaitant po "esi/tampi/liksi/išlieki"), "vienas/viena" ar "pats/pati" šeimos žodžio, ar gimininio datyvo (pirmam, tvirtam) apibūdinančio SKAITYTOJĄ?
-  (3) LINKSNIAI/GALŪNĖS: ar būdvardis sutampa su daiktavardžiu gimine/skaičiumi/linksniu? Ar visos galūnės (įskaitant nosines į/ų/ą/ę) teisingos?
-  (4) SANGRĄŽA: ar "-si"/"-iesi" pridėta TIK tikrai sangrąžiniams veiksmažodžiams?
-  (5) EGZISTAVIMAS: ar KIEKVIENAS žodis TIKRAI egzistuoja lietuvių kalboje (ne sumaišytas asmuo, ne sumaišyti du veiksmažodžiai, ne klaidinga priesagos analogija, ne bendraties kamienas vietoj nereguliaraus, ne nereikalinga "-inėti" priesaga)?
-  (6) VERTIMO POJŪTIS: ar sakinys neskamba kaip išverstas iš anglų kalbos (kalkė, svetima struktūra)?
-  (7) SUDĖTINGUMAS: ar žodis nėra knyginis/mokslinis/svetimas?
-Jei žodis pažeidžia BENT VIENĄ iš šių septynių kategorijų — jis PRIVALO patekti į pataisymų sąrašą. TAISYKLĖ ABEJONĖS ATVEJU: jei abejoji, ar konkretus žodis teisingas — PASIŪLYK pataisymą su paprastesniu, tau 100% žinomu ir saugiu žodžiu, o ne palik abejotiną formą nepaliestą.
-
-Atsakymo formatas (TIKTAI JSON, be paaiškinimų ir be markdown): {"pataisymai": [ ... ]}
-
-TEKSTAS TIKRINIMUI (JSON):
-${JSON.stringify(textToProof)}
-
-ATSAKYK TIKTAI JSON. Pradėk nuo {.`
-      }]
-    }]
-  });
-
-  let data = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
-        body
-      });
-      data = await r.json();
-    } catch (networkErr) {
-      console.log(`[proofreadAnalysis] tinklo klaida, bandymas ${attempt}/2: ${networkErr.message}`);
-      data = null;
-      if (attempt < 2) { await new Promise(res => setTimeout(res, 2000)); continue; }
-      break;
-    }
-    if (data?.error?.type === 'overloaded_error' && attempt < 2) {
-      await new Promise(res => setTimeout(res, 2000));
-      continue;
-    }
-    break;
-  }
-
-  if (!data || !data.content || data.content.length === 0) {
-    if (data?.error) console.warn('[proofreadAnalysis] API klaida:', JSON.stringify(data.error));
-    console.warn('[proofreadAnalysis] korektūra nepavyko — paliekamas originalus (žingsnio 2) tekstas');
-    return null;
-  }
-  if (data.stop_reason === 'max_tokens') console.warn('[proofreadAnalysis] atsakymas nukirptas (max_tokens) — pataisymų sąrašas gali būti nepilnas');
-
-  const corrections = extractCorrectionsFromText(data.content.map(b => b.text || '').join(''));
-  if (corrections === null) {
-    console.warn('[proofreadAnalysis] nepavyko perskaityti pataisymų sąrašo — paliekamas originalus tekstas');
-    return null;
-  }
-  const stats = applyProofreadCorrections(result, corrections);
-  const why = stats.rejected ? ' (atmetimo priežastys: ' + JSON.stringify(stats.reasons) + ')' : '';
-  console.log(`[proofreadAnalysis] pasiūlyta ${corrections.length}, pritaikyta ${stats.applied}, atmesta ${stats.rejected}${why}`);
-  return stats;
-}
-
-function parseJsonLenient(text) {
-  try {
-    return JSON.parse(text);
-  } catch (originalErr) {
-    try {
-      const schemaFixed = repairJsonBySchema(text);
-      if (schemaFixed) return JSON.parse(schemaFixed);
-    } catch (schemaErr) {
-      console.error('[parseJsonLenient] schemos taisymas nepavyko:', schemaErr.message);
-    }
-    try {
-      return JSON.parse(repairJsonString(text));
-    } catch (repairErr) {
-      console.error('[parseJsonLenient] bendras taisymas irgi nepavyko:', repairErr.message);
-      throw originalErr;
-    }
-  }
-}
-
 // --- Pagrindinė Claude analizės funkcija ---
 async function runPalmAnalysis(photos, name, sessionId) {
 
@@ -1643,10 +1345,9 @@ TAISYKLĖS:
 - DRAUDŽIAMA: "gali būti", "tikėtina", "galima manyti", "energija", "vibracija"
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
-- Kalba: TAISYKLINGA, natūrali lietuvių kalba — teisingi linksniai, galūnės, asmenys, laikai. Kreipkis "tu", esamuoju laiku (KLAIDA: "tu siekia", "tu jaučia", "tu žinau", "tu siekiesi" [siekti nesangrąžinis] — teisingai "tu sieki", "tu jauti", "tu žinai", "tu sieki"). Sudėtiniame sakinyje su "ir" abu veiksmažodžiai — ta pati "tu" galūnė.
-- Kiekvienas žodis privalo TIKRAI egzistuoti lietuvių kalboje — jei abejoji dėl retesnio žodžio ar veiksmažodžio formos, rinkis paprastesnį, tau gerai žinomą sinonimą, o ne rizikuok.
-- Skaitytojo lytis nežinoma — NEVARTOK giminę turinčių žodžių apie jį (dalyvių: pasirengęs/-usi; padalyvių: laukdamas/-a; būdvardžių po "esi/tampi/liksi/išlieki": "esi atviras" → "atvirai priimi"; žodžių "vienas/viena", "pats/pati", "pirmam/tvirtam"). Būdvardis sutampa su daiktavardžiu gimine/skaičiumi/linksniu.
-- Rašyk taip, kaip natūraliai kalbėtų gimtakalbis lietuvis — ne kaip pažodinis vertimas iš anglų kalbos.
+- Rašyk taisyklinga, natūralia lietuvių kalba, kreipdamasis "tu" esamuoju laiku. Jei abejoji dėl retesnio žodžio formos, rinkis paprastesnį, tau gerai žinomą.
+- Skaitytojo lytis nežinoma, tad geriau vengti aiškiai giminę turinčių žodžių apie jį (pvz. "pasirengęs", "laukdamas") — rink neutralią formą, kai natūraliai išeina.
+- Rašyk taip, kaip natūraliai kalbėtų gimtakalbis lietuvis.
 - Žodis "akcija" lietuviškai reiškia akcijų paketą/nuolaidą, NE "action" — naudok "veiksmas".
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
 - DRAUDŽIAMA: sudėtingi, knyginiai, moksliniai ar oficialūs žodžiai (pvz. "manifestuoja", "transformacija", "potencialas" kaip terminas, "orientyras", "dinamika", "konsensusas" — vietoj jo "bendras sutarimas", "delegauti/delegavimas" — vietoj jo "perduoti kitiems", "faktorius" — vietoj jo "veiksnys", "kontempliacija" — vietoj jo "apmąstymas". BENDRA TAISYKLĖ (svarbesnė už šį sąrašą): šis sąrašas TIK ILIUSTRUOJA — jei parašai BET KOKĮ žodį, kurio nevartotum kalbėdamas su draugu prie kavos, PAKEISK jį paprastesniu, kasdieniu atitikmeniu, NET jei šio konkretaus žodžio sąraše nėra)
@@ -1785,38 +1486,9 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
 
   // ═══════════════════════════════════════════════════════════════════
-  // ŽINGSNIS 3: ATSKIRA KALBOS KOREKTŪRA + TAISYKLIŲ LAIKYMOSI PATIKRA
-  // (2026-09 papildymas, išplėsta po realaus pastebėjimo, kad žingsnis 2
-  // kartais pažeidžia savo pačios taisykles, pvz. paminėdamas konkrečios
-  // linijos pavadinimą, nors tai aiškiai uždrausta jo paties prompte).
-  // Priežastis: Žingsnio 2 pabaigoje AI jau instruktuojamas pats
-  // peržiūrėti savo tekstą TOS PAČIOS generacijos ribose — bet tas pats
-  // procesas, kuris ką tik SUKŪRĖ tekstą, nėra patikimiausias jį
-  // kritiškai peržiūrėdamas iš karto, nei gramatikos, nei taisyklių
-  // laikymosi prasme. Šis žingsnis yra VISIŠKAI ATSKIRAS, švarus API
-  // kvietimas dviem tikslams: (A) gramatikos klaidų taisymui, (B)
-  // taisyklių pažeidimų (pvz. linijų pavadinimų, draudžiamų žodžių)
-  // aptikimui ir minimaliam perrašymui, IŠLAIKANT likusį turinį.
-  // Jei šis žingsnis dėl bet kokios priežasties nepavyksta (tinklo
-  // klaida, blogas JSON ir pan.) — GRĄŽINAME PRADINĮ (žingsnio 2)
-  // rezultatą, o NE metame klaidą: tai kokybės PAGERINIMAS, ne būtina
-  // sąlyga, tad jos nesėkmė neturi sugadinti visos analizės.
-  // ═══════════════════════════════════════════════════════════════════
-  // (2026-09-20) Korektūra dabar grąžina TIK pataisymų sąrašą, o ne visą
-  // perrašytą tekstą (žr. proofreadAnalysis). Pataisymas pritaikomas tik jei
-  // jo "originalas" TIKSLIAI sutampa su esamu tekstu — todėl jau taisyklingi
-  // sakiniai lieka lygiai tokie patys ir korektūra nebegali jų sugadinti.
-  // (2026-09-24) IŠJUNGTA vartotojo prašymu: 3 žingsnis (AI korektorius) pats pradėjo
-  // ĮNEŠTI naujas klaidas (iškraipytus žodžius, neteisingą asmenį/giminę, bendratį vietoj
-  // asmenuojamos formos) — greičiausiai dėl per daug sukaupto prompto sudėtingumo abiejuose
-  // žingsniuose ("rule interference"). Tekstas dabar eina tiesiai iš žingsnio 2 į
-  // deterministinį žodyno/regex saugiklį (applyKnownGrammarFixes žemiau), kuris NIEKADA
-  // neprideda naujų klaidų — tik taiso jau žinomus, patikrintus atvejus.
-  // try {
-  //   await proofreadAnalysis(result);
-  // } catch (proofErr) {
-  //   console.warn('[runPalmAnalysis] Žingsnis 3 (korektūra) klaida, paliekamas originalas:', proofErr.message);
-  // }
+  // 3 žingsnis (AI korektūra) PILNAI PAŠALINTAS (2026-09-24, vartotojo prašymu) —
+  // jis pats kurdavo naujas klaidas (iškraipytus žodžius, neteisingą asmenį/giminę).
+  // Tekstas eina tiesiai iš žingsnio 2 į deterministinį žodyno/regex saugiklį žemiau.
 
   // Galutinis, DETERMINISTINIS saugiklis — taikomas VISADA, nepriklausomai
   // nuo to, ar žingsnis 3 pavyko, ar ne (žr. KNOWN_GRAMMAR_FIXES aukščiau).
