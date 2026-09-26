@@ -1017,7 +1017,8 @@ window.addEventListener('DOMContentLoaded',async()=>{
 // aiškus, draugiškas pranešimas.
 function showAnalysisError(){
   const rn=document.getElementById('res-name');
-  if(rn) rn.textContent='Tavo asmeninė delnų analizė';
+  const _errName=window.userName||window._userName||'';
+  if(rn) rn.textContent=_errName?(_errName+' — Tavo asmeninė delnų analizė'):'Tavo asmeninė delnų analizė';
   // SVARBU: pirmasis .rs blokas TURI likti matomas — jame (per #r-char)
   // rodomas pats klaidos pranešimas. Anksčiau ČIA BUVO BUGAS: visi .rs
   // blokai (įskaitant PIRMĄJĮ) būdavo paslepiami PRIEŠ įrašant pranešimą
@@ -1046,8 +1047,8 @@ function showAnalysisError(){
   if(firstRs){
     firstRs.innerHTML = '<div style="text-align:center;padding:8px 4px">'
       + '<div style="font-size:15px;color:var(--gold2);font-weight:600;margin-bottom:10px;font-family:\'Playfair Display\',serif">Analizės sugeneruoti nepavyko</div>'
-      + '<div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:16px">Atsiprašome — įvyko klaida ruošiant tavo asmeninį gyvenimo žemėlapį. Tavo mokėjimas užregistruotas, ir mes greitai su tavimi susisieksime.</div>'
-      + '<div style="font-size:12px;color:var(--muted);line-height:1.6">Prašome susisiekti: <a href="mailto:info@delnaskaitymas.lt" style="color:var(--gold2)">info@delnaskaitymas.lt</a></div>'
+      + '<div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:6px">Atsiprašome — įvyko klaida ruošiant tavo asmeninį gyvenimo žemėlapį. Tavo mokėjimas užregistruotas, ir mes greitai su tavimi susisieksime.</div>'
+      + '<div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.6">Jei per 48 val. nesusisieksime, parašyk mums: <a href="mailto:info@delnaskaitymas.lt" style="color:var(--gold2)">info@delnaskaitymas.lt</a></div>'
       + '</div>';
   }
   document.querySelectorAll('.rs-reveal,.rs-body p,.insight-card').forEach(el=>{
@@ -1289,7 +1290,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           if(_navigated) return;
           _showedErrorMessage=true;
           const row=document.getElementById('pay-wait-row');
-          if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Mūsų komanda susisieks su tavimi el. paštu artimiausiu metu.</span>';
+          if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Tavo mokėjimas užregistruotas – susisieksime el. paštu artimiausiu metu.</span>';
         },45000);
         // Sėkmės ekranas ("Mokėjimas sėkmingas!") turi būti rodomas LYGIAI
         // 2.5s, tada švelniai (go() fade animacija) pereiti į rezultatų
