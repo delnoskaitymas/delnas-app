@@ -602,7 +602,7 @@ function diagnozuotiKlaida(errorMessage) {
   return null; // nežinoma/kita priežastis — rodomas tik bendras tekstas
 }
 
-function logAnalysisFailure({ name, email, sessionId, errorMessage }) {
+function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage }) {
   try {
     const displayName = name || 'kliente';
     const diagnoze = diagnozuotiKlaida(errorMessage);
@@ -627,7 +627,7 @@ DELNAS komanda`;
         <h2 style="color:#b00020">Analizė galutinai nepavyko apmokėjusiam klientui</h2>
         <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
         <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
-        <p><strong>sessionId:</strong> ${escapeHtml(sessionId || '(nėra)')}</p>
+        <p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber || '(nėra)')}</p>
         <p><strong>Klaidos pranešimas:</strong> ${escapeHtml(errorMessage || '(nežinoma)')}</p>
         ${diagnoze ? `<div style="background:#fff3f3;border:1px solid #f0b8b8;border-radius:8px;padding:14px 16px;margin:16px 0"><strong style="color:#b00020">Tikėtina priežastis: ${escapeHtml(diagnoze.pavadinimas)}</strong><p style="margin:8px 0 0">${escapeHtml(diagnoze.sprendimas)}</p></div>` : ''}
         <hr style="margin:20px 0;border:none;border-top:1px solid #ddd">
@@ -636,7 +636,7 @@ DELNAS komanda`;
         <p><strong>2.</strong> Nusiųsk klientui (${escapeHtml(email || '')}) atsiprašymo laišką — paruoštas juodraštis žemiau, gali kopijuoti ir įklijuoti tiesiai:</p>
         <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:8px;padding:16px;margin-top:8px;white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;color:#222">${escapeHtml(apologyDraft)}</div>
       </div>`
-    }).then(() => console.log(`[logAnalysisFailure] klaidos laiškas išsiųstas į ${ADMIN_EMAIL} (sessionId=${sessionId||'?'})`))
+    }).then(() => console.log(`[logAnalysisFailure] klaidos laiškas išsiųstas į ${ADMIN_EMAIL} (orderNumber=${orderNumber||'?'}, sessionId=${sessionId||'?'})`))
       .catch(e => console.error('[logAnalysisFailure] klaida siunčiant klaidos laišką:', e.message));
   } catch (e) {
     console.error('[logAnalysisFailure] bendra klaida:', e.message);
@@ -1937,7 +1937,7 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
 // žinotų, jog PROBLEMA BUVO, net jei ji galiausiai išsisprendė pati, o
 // klientas rezultatą gavo. Tai leidžia sekti tokius atvejus ir, jei jie
 // kartojasi, ieškoti gilesnės priežasties.
-function logRecoveredAfterDelay({ name, email, sessionId }) {
+function logRecoveredAfterDelay({ name, email, sessionId, orderNumber }) {
   try {
     mailer.sendMail({
       from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
@@ -1947,10 +1947,10 @@ function logRecoveredAfterDelay({ name, email, sessionId }) {
         <h2 style="color:#a07828">Analizė užtruko/rodė klaidą, bet GALIAUSIAI sėkmingai baigėsi</h2>
         <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
         <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
-        <p><strong>sessionId:</strong> ${escapeHtml(sessionId || '(nėra)')}</p>
+        <p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber || '(nėra)')}</p>
         <p>Klientui rezultatų ekrane BUVO parodytas atsiprašymo/klaidos pranešimas (analizė užtruko ilgiau nei 45s), BET analizė vis dėlto vėliau sėkmingai baigėsi ir klientas GAVO savo rezultatą. Papildomai susisiekti su klientu NEBŪTINA — bet verta stebėti, ar tokie atvejai nesikartoja per dažnai (tai rodytų nuolatinę, o ne vienkartinę problemą).</p>
       </div>`
-    }).then(() => console.log(`[logRecoveredAfterDelay] laiškas išsiųstas į ${ADMIN_EMAIL} (sessionId=${sessionId||'?'})`))
+    }).then(() => console.log(`[logRecoveredAfterDelay] laiškas išsiųstas į ${ADMIN_EMAIL} (orderNumber=${orderNumber||'?'}, sessionId=${sessionId||'?'})`))
       .catch(e => console.error('[logRecoveredAfterDelay] klaida siunčiant laišką:', e.message));
   } catch (e) {
     console.error('[logRecoveredAfterDelay] bendra klaida:', e.message);
@@ -1959,11 +1959,12 @@ function logRecoveredAfterDelay({ name, email, sessionId }) {
 
 app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => {
   try {
-    const { name, email, sessionId } = req.body;
+    const { name, email, sessionId, orderNumber } = req.body;
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
-    logRecoveredAfterDelay({ name, email, sessionId });
+    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
+    logRecoveredAfterDelay({ name, email, sessionId, orderNumber });
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-recovered-after-error] klaida:', err);
@@ -2022,12 +2023,13 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
 
 app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
   try {
-    const { photos, name, email, token, sessionId } = req.body;
+    const { photos, name, email, token, sessionId, orderNumber } = req.body;
 
     if (typeof token !== 'string' || token.length === 0) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
+    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
     if (photos && photos.length > 0 && !isValidPhotosArray(photos)) return res.status(400).json({ error: 'Neteisingas nuotraukų formatas' });
 
     const tokenEntry = validTokens.get(token);
@@ -2103,7 +2105,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           // Ta pati apsauga kaip aukščiau — grąžiname klaidą IŠKART, o NE
           // triname cache ir paleidžiame naują brangų AI kvietimą.
           console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė nepavyko laukimo lango metu (${entry.error}), grąžinam klaidą IŠKART`);
-          logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, errorMessage: entry.error });
+          logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, orderNumber, errorMessage: entry.error });
           analysisCache.delete(sessionId);
           deleteAnalysisSessionFromDisk(sessionId);
           return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
@@ -2123,7 +2125,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         // atsitiktinė). Dabar VIETOJ TO iškart grąžiname jau žinomą
         // klaidą klientui — jokio naujo AI kvietimo, jokio kartojimo.
         console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė ANKSČIAU NEPAVYKO (${cached.error}), grąžinam klaidą IŠKART (be pakartotinio AI kvietimo)`);
-        logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, errorMessage: cached.error });
+        logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, orderNumber, errorMessage: cached.error });
         analysisCache.delete(sessionId);
         deleteAnalysisSessionFromDisk(sessionId);
         return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
@@ -2171,7 +2173,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     // PASTABA: 'userName'/'tokenEntry' čia NEPASIEKIAMI (deklaruoti try
     // bloke aukščiau, kitame scope) — naudojame tiesiogiai iš req.body tai,
     // ką klientas atsiuntė (pakankama pranešimui administratoriui).
-    logAnalysisFailure({ name: req.body && req.body.name, email: req.body && req.body.email, sessionId: req.body && req.body.sessionId, errorMessage: err.message });
+    logAnalysisFailure({ name: req.body && req.body.name, email: req.body && req.body.email, sessionId: req.body && req.body.sessionId, orderNumber: req.body && req.body.orderNumber, errorMessage: err.message });
     res.status(500).json({ error: err.message });
   }
 });
