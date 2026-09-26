@@ -1777,6 +1777,32 @@ Be precise and objective — do not round everything to convenient default numbe
 });
 
 // --- ENDPOINT: Paleisti foninę analizę ---
+// --- LAIKINAS TESTAVIMO ENDPOINT'AS (2026-09-26) ---
+// Leidžia rankiniu būdu iššaukti bet kurį iš klaidos-laiškų scenarijų, kad
+// administratorius galėtų PATIKRINTI, kaip laiškai realiai atrodo pašte,
+// NELAUKIANT tikros klaidos su tikru klientu. NIEKO nekeičia realiuose
+// duomenyse — tik siunčia laišką su testiniais pavyzdiniais duomenimis.
+// SVARBU: šį endpoint'ą reikėtų PAŠALINTI (arba bent pakeisti raktą), kai
+// testavimas baigtas — jis apsaugotas tik paprastu raktu URL adrese, ne
+// tikru prisijungimu.
+app.get('/test-klaidos-laiskas', (req, res) => {
+  if (req.query.key !== 'delnas-test-2026') return res.status(403).send('Neteisingas raktas.');
+  const tipas = req.query.tipas || 'bendra';
+  const testData = { name: 'Testinis Vardas', email: 'test@example.com', sessionId: 'test-session-123' };
+  if (tipas === 'kreditai') {
+    logAnalysisFailure({ ...testData, errorMessage: 'invalid_request_error: Your credit balance is too low to access the Claude API. Please go to Plans & Billing to upgrade or purchase credits.' });
+  } else if (tipas === 'raktas') {
+    logAnalysisFailure({ ...testData, errorMessage: 'authentication_error: invalid x-api-key' });
+  } else if (tipas === 'atgavo') {
+    logRecoveredAfterDelay(testData);
+  } else if (tipas === 'krachas') {
+    pranesApieServerioKlaida('TESTINIS krachas (rankinis testavimas)', new Error('Tai testinė klaida, sukurta rankiniu būdu — ne tikras gedimas.'));
+  } else {
+    logAnalysisFailure({ ...testData, errorMessage: 'Tuščias Claude atsakymas (testinė bendra klaida)' });
+  }
+  res.send(`Testinis '${tipas}' laiškas išsiųstas į ${ADMIN_EMAIL}. Patikrink savo paštą (gali užtrukti kelias sekundes, patikrink ir Spam aplanką).`);
+});
+
 app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
