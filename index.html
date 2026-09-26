@@ -1360,7 +1360,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       try{
         const ar=await fetchWithTimeout('/analyze-palm',{
           method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||''})
+          body:JSON.stringify({photos:photoData,name:userName,email:window._userEmail||'',token:window.palmToken,sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})
         },15000);
         ad=await ar.json();
         updatePayDiag('atsakymas #'+(attempt+1)+': '+(ad&&ad.pending?'dar ruošiama':(ad&&ad.error?'KLAIDA: '+ad.error:'gauta')));
@@ -1409,7 +1409,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // kad problema BUVO, net jei pati išsisprendė.
     if(_showedErrorMessage){
       fetch('/notify-recovered-after-error',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:userName||'',email:window._userEmail||'',sessionId:window.bgSessionId||''})
+        body:JSON.stringify({name:userName||'',email:window._userEmail||'',sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})
       }).catch(e=>console.error('[notify-recovered-after-error] klaida:',e));
     }
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
@@ -1541,7 +1541,7 @@ async function onPaymentSuccess(name,email){
     if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
     fetch('/analyze-palm',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||''})
+      body:JSON.stringify({photos:photoData,name:window.userName||name,token:window.palmToken||'',sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})
     }).then(r=>r.json()).then(result=>{
       if(result.error&&result.error.includes('NEDELNAS')){
         alert('Nepavyko atpažinti delno vienoje iš nuotraukų. Prašome nufotografuoti dar kartą — apmokėjimas jau įvykdytas, papildomai mokėti NEREIKĖS.');
@@ -2765,7 +2765,7 @@ async function finalizeRetryAfterPayment(){
     if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
     if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
     const r=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({photos:photoData,name:window.userName||window._userName||'',email:window._userEmail||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
+      body:JSON.stringify({photos:photoData,name:window.userName||window._userName||'',email:window._userEmail||'',token:window.palmToken||'',sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
     const result=await r.json();
     if(result&&result.error&&result.error.includes('NEDELNAS')){
       alert('Deja, vėl nepavyko atpažinti delno. Prašome pabandyti nufotografuoti dar kartą — apmokėjimas jau įvykdytas, papildomai mokėti NEREIKĖS.');
@@ -2844,7 +2844,7 @@ async function callClaude(){
   const photoData=[];
   if(photoLeft) photoData.push({type:'image/jpeg',data:photoLeft.split(',')[1]});
   if(photoRight) photoData.push({type:'image/jpeg',data:photoRight.split(',')[1]});
-  const res=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
+  const res=await fetch('/analyze-palm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:photoData,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||''})});
   if(!res.ok){const err=await res.json();throw new Error(err.error||'Įvyko klaida. Prašome bandyti dar kartą.');}
   return await res.json();
 }
