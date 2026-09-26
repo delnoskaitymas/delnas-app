@@ -1193,6 +1193,11 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
  }
  updatePayDiag('pradžia');
  let _navigated=false;
+ // Pažymima true, jei vartotojui BUVO parodytas atsiprašymo/klaidos
+ // pranešimas (žr. 45s setTimeout žemiau) — naudojama toliau, kad, jei
+ // rezultatas VIS DĖLTO vėliau sėkmingai atkeliauja, apie tai būtų
+ // pranešta administratoriui (žr. finalAd šaką žemiau).
+ let _showedErrorMessage=false;
  const _watchdog=setTimeout(()=>{
    if(_navigated)return;
    _navigated=true;
@@ -1282,6 +1287,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         // kaip įprastai.
         setTimeout(()=>{
           if(_navigated) return;
+          _showedErrorMessage=true;
           const row=document.getElementById('pay-wait-row');
           if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Mūsų komanda susisieks su tavimi el. paštu artimiausiu metu.</span>';
         },45000);
@@ -1396,6 +1402,15 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   window._fetchResultsInProgress=false;
 
   if(finalAd){
+    // Jei vartotojui BUVO parodytas 45s atsiprašymo/klaidos pranešimas, BET
+    // rezultatas vis dėlto sėkmingai atkeliavo — pranešame administratoriui
+    // (fire-and-forget, nesustabdo/nelaukia perėjimo į rezultatų ekraną),
+    // kad problema BUVO, net jei pati išsisprendė.
+    if(_showedErrorMessage){
+      fetch('/notify-recovered-after-error',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:userName||'',email:window._userEmail||'',sessionId:window.bgSessionId||''})
+      }).catch(e=>console.error('[notify-recovered-after-error] klaida:',e));
+    }
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
     // (anksčiau papildomas app-wrap opacity blukimas persidengdavo su go() animacija
     // ir sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatus)
