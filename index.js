@@ -9,6 +9,22 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Laiko limitas (timeout) serverio pusės užklausoms į Claude API.
+// PATAISYMAS (2026-09-26): anksčiau šie fetch() kvietimai NETURĖJO jokio
+// laiko limito — jei Anthropic API atsakymas "pakimba" (užstringa dėl
+// tinklo ar serverio problemos), await fetch() laukdavo AMŽINAI, niekada
+// nemesdamas klaidos. Dėl to fono analizė likdavo įstrigusi statuse
+// 'step2' visam laikui (klientas amžinai gaudavo "dar ruošiama"), ypač
+// pasikartotinai paleidus analizę po serverio persikrovimo
+// (restoreAnalysisSessionsOnStartup). Dabar kiekviena užklausa automatiškai
+// nutraukiama po nurodyto laiko, kad esamas pakartotinio bandymo (retry)
+// ciklas galėtų suveikti, o ne kaboti be galo.
+function fetchWithTimeout(url, options = {}, timeoutMs = 90000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 // Paleidimo diagnostika: jei ANTHROPIC_API_KEY nenustatytas arba akivaizdžiai
 // neteisingo formato, KIEKVIENA analizė nuosekliai (ne atsitiktinai)
 // žlugtų su "Tuščias Claude atsakymas" — o priežastis (blogas/trūkstamas
@@ -548,6 +564,34 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
       .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
   } catch (e) {
     console.error('[sendPaymentSuccessEmails] bendra klaida:', e.message);
+  }
+}
+
+// PATAISYMAS (2026-09-26): jei APMOKĖJĘS klientas galiausiai NEGAUNA
+// savo rezultato (analizė galutinai nepavyko po visų pakartotinių
+// bandymų — pvz. dėl serverio gedimo, Anthropic API klaidos ar laiko
+// limito), administratoriui (info@) IŠKART automatiškai išsiunčiamas
+// el. laiškas su [KLAIDA] žyme temoje — kad jį būtų lengva atskirti nuo
+// įprastų užsakymų patvirtinimų ir, panorėjus, susirinkti į atskirą
+// pašto aplanką/filtrą pagal šią žymę.
+function logAnalysisFailure({ name, email, sessionId, errorMessage }) {
+  try {
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `[KLAIDA] Klientas apmokėjo, bet negavo analizės`,
+      html: `<div style="font-family:Georgia,serif;padding:20px">
+        <h2 style="color:#b00020">Analizė galutinai nepavyko apmokėjusiam klientui</h2>
+        <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
+        <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
+        <p><strong>sessionId:</strong> ${escapeHtml(sessionId || '(nėra)')}</p>
+        <p><strong>Klaidos pranešimas:</strong> ${escapeHtml(errorMessage || '(nežinoma)')}</p>
+        <p>Klientas MOKĖJO, bet negavo rezultato. Rekomenduojama kuo greičiau susisiekti su klientu ir/arba rankiniu būdu pakartoti analizę, arba grąžinti pinigus.</p>
+      </div>`
+    }).then(() => console.log(`[logAnalysisFailure] klaidos laiškas išsiųstas į ${ADMIN_EMAIL} (sessionId=${sessionId||'?'})`))
+      .catch(e => console.error('[logAnalysisFailure] klaida siunčiant klaidos laišką:', e.message));
+  } catch (e) {
+    console.error('[logAnalysisFailure] bendra klaida:', e.message);
   }
 }
 
@@ -1271,16 +1315,25 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
 
   let step1Data;
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: step1Body
-    });
-    step1Data = await r.json();
+    try {
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: step1Body
+      }, 90000);
+      step1Data = await r.json();
+    } catch (networkErr) {
+      // Laiko limitas suveikė (užklausa "pakibo") arba kitas tinklo trikdis —
+      // traktuojame kaip laikiną, bandome dar kartą, o NE kaboti be galo.
+      console.log(`Žingsnis 1 tinklo/laiko klaida, bandymas ${attempt}/3: ${networkErr.message}`);
+      step1Data = null;
+      if (attempt < 3) { await new Promise(res => setTimeout(res, 3000 * attempt)); continue; }
+      break;
+    }
     if (step1Data?.error?.type === 'overloaded_error') {
       console.log(`Žingsnis 1 perkrautas, bandymas ${attempt}/3...`);
       if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
@@ -1416,7 +1469,12 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   for (let attempt = 1; attempt <= 3; attempt++) {
     let r;
     try {
-      r = await fetch('https://api.anthropic.com/v1/messages', {
+      // SVARBU (laiko limitas): žingsnis 2 generuoja iki 10000 žetonų
+      // atsakymą, tad jam skiriame ilgesnį limitą (150s) nei žingsniui 1
+      // (90s, mažesnis atsakymas) — vis tiek pakankamai griežta riba, kad
+      // "pakibusi" užklausa nekabotų amžinai, bet nenutrauktų realiai
+      // vykstančio, tik lėtesnio generavimo per anksti.
+      r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1432,7 +1490,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
             { role: 'assistant', content: '{' }
           ]
         })
-      });
+      }, 150000);
       step2Data = await r.json();
     } catch (networkErr) {
       // Trumpalaikis tinklo trikdis (fetch() pats metė klaidą) — taip
@@ -1900,6 +1958,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
           // Ta pati apsauga kaip aukščiau — grąžiname klaidą IŠKART, o NE
           // triname cache ir paleidžiame naują brangų AI kvietimą.
           console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė nepavyko laukimo lango metu (${entry.error}), grąžinam klaidą IŠKART`);
+          logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, errorMessage: entry.error });
           analysisCache.delete(sessionId);
           deleteAnalysisSessionFromDisk(sessionId);
           return res.status(500).json({ error: entry.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
@@ -1919,6 +1978,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         // atsitiktinė). Dabar VIETOJ TO iškart grąžiname jau žinomą
         // klaidą klientui — jokio naujo AI kvietimo, jokio kartojimo.
         console.log(`[analyze-palm] sessionId=${sessionId} -> fono analizė ANKSČIAU NEPAVYKO (${cached.error}), grąžinam klaidą IŠKART (be pakartotinio AI kvietimo)`);
+        logAnalysisFailure({ name: userName, email: email || tokenEntry.email, sessionId, errorMessage: cached.error });
         analysisCache.delete(sessionId);
         deleteAnalysisSessionFromDisk(sessionId);
         return res.status(500).json({ error: cached.error || 'Analizė nepavyko. Prašome bandyti dar kartą arba susisiekti: info@delnaskaitymas.lt' });
@@ -1954,7 +2014,19 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
 
   } catch (err) {
     console.error('Klaida /analyze-palm:', err);
+    // NEDELNAS = AI nustatė, kad nuotraukoje nėra delno — tai NE gedimas,
+    // o įprastas, teisingas validacijos atmetimas, tad administratoriui
+    // apie tai NEPRANEŠAME (priešingu atveju kiekvienas netinkamos
+    // nuotraukos bandymas siųstų nereikalingą "gedimo" laišką).
     if (err.message.startsWith('NEDELNAS')) return res.json({ error: err.message });
+    // Bet koks KITAS netikėtas gedimas čia — o mokėjimo tokenas jau
+    // patvirtintas (t.y. klientas TIKRAI apmokėjo) — reiškia, kad
+    // apmokėjęs klientas ką tik negavo savo rezultato. Pranešame
+    // administratoriui iškart, automatiškai.
+    // PASTABA: 'userName'/'tokenEntry' čia NEPASIEKIAMI (deklaruoti try
+    // bloke aukščiau, kitame scope) — naudojame tiesiogiai iš req.body tai,
+    // ką klientas atsiuntė (pakankama pranešimui administratoriui).
+    logAnalysisFailure({ name: req.body && req.body.name, email: req.body && req.body.email, sessionId: req.body && req.body.sessionId, errorMessage: err.message });
     res.status(500).json({ error: err.message });
   }
 });
