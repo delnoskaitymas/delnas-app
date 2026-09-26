@@ -1290,7 +1290,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
           if(_navigated) return;
           _showedErrorMessage=true;
           const row=document.getElementById('pay-wait-row');
-          if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Tavo mokėjimas užregistruotas – mūsų komanda susisieks su tavimi el. paštu artimiausiu metu.</span>';
+          if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Tavo mokėjimas užregistruotas – mūsų komanda susisieks su tavimi el. paštu artimiausiu metu ir automatiškai grąžins sumokėtą sumą.</span>';
         },45000);
         // Sėkmės ekranas ("Mokėjimas sėkmingas!") turi būti rodomas LYGIAI
         // 2.5s, tada švelniai (go() fade animacija) pereiti į rezultatų
