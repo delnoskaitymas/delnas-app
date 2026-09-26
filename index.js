@@ -574,19 +574,67 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
 // el. laiškas su [KLAIDA] žyme temoje — kad jį būtų lengva atskirti nuo
 // įprastų užsakymų patvirtinimų ir, panorėjus, susirinkti į atskirą
 // pašto aplanką/filtrą pagal šią žymę.
+// Atpažįsta, ar klaidos priežastis yra baigęsi/išsekę Anthropic API
+// kreditai arba negaliojantis/pasibaigęs API raktas — abu atvejai KRITIŠKAI
+// svarbūs, nes jie sustabdo VISŲ (ne tik vieno) klientų analizes, kol
+// nepataisyta. Tokiu atveju administratoriui pateikiamas KONKRETUS,
+// tikslinis sprendimas vietoj bendro "grąžink pinigus" patarimo.
+function diagnozuotiKlaida(errorMessage) {
+  const msg = (errorMessage || '').toLowerCase();
+  if (msg.includes('credit balance') || msg.includes('insufficient') || msg.includes('billing') || msg.includes('quota')) {
+    return {
+      pavadinimas: 'BAIGĖSI ANTHROPIC API KREDITAI',
+      sprendimas: 'Eik į https://console.anthropic.com/settings/billing ir papildyk kreditus (balansą). Kol kreditų nėra, NĖ VIENAS klientas negalės gauti analizės — tai SKUBI problema.'
+    };
+  }
+  if (msg.includes('invalid_request_error') || msg.includes('authentication_error') || msg.includes('permission_error') || msg.includes('api key') || msg.includes('api-key')) {
+    return {
+      pavadinimas: 'NEGALIOJANTIS ARBA NETEISINGAS API RAKTAS',
+      sprendimas: 'Railway → Variables patikrink ANTHROPIC_API_KEY reikšmę — ji gali būti pasibaigusi, ištrinta ar neteisingai nukopijuota. Sugeneruok naują raktą https://console.anthropic.com/settings/keys ir įrašyk jį iš naujo.'
+    };
+  }
+  if (msg.includes('rate_limit') || msg.includes('overloaded')) {
+    return {
+      pavadinimas: 'LAIKINAS ANTHROPIC API PERKROVIMAS',
+      sprendimas: 'Tai paprastai laikina (Anthropic serverių apkrova) — sistema jau bandė pakartotinai automatiškai. Jei kartojasi dažnai, verta pasitikrinti API naudojimo limitus (rate limits) Anthropic Console.'
+    };
+  }
+  return null; // nežinoma/kita priežastis — rodomas tik bendras tekstas
+}
+
 function logAnalysisFailure({ name, email, sessionId, errorMessage }) {
   try {
+    const displayName = name || 'kliente';
+    const diagnoze = diagnozuotiKlaida(errorMessage);
+    // Paruoštas, kopijuoti-įklijuoti tinkantis atsiprašymo laiško juodraštis
+    // klientui — kad admin neturėtų kaskart galvoti, ką parašyti.
+    const apologyDraft = `Sveiki, ${displayName},
+
+Atsiprašome — bandant paruošti jūsų asmeninę delnų analizę, mūsų sistemoje įvyko techninė klaida, ir rezultatas nebuvo sėkmingai sugeneruotas.
+
+Jau grąžinome jums sumokėtą sumą (12,99 €) — ji turėtų pasirodyti jūsų sąskaitoje per kelias darbo dienas, priklausomai nuo jūsų banko.
+
+Labai atsiprašome už nepatogumus. Jei norėtumėte pabandyti dar kartą, mielai jums padėsime.
+
+Pagarbiai,
+DELNAS komanda`;
+
     mailer.sendMail({
       from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
-      subject: `[KLAIDA] Klientas apmokėjo, bet negavo analizės`,
+      subject: diagnoze ? `[KLAIDA] ${diagnoze.pavadinimas}` : `[KLAIDA] Klientas apmokėjo, bet negavo analizės`,
       html: `<div style="font-family:Georgia,serif;padding:20px">
         <h2 style="color:#b00020">Analizė galutinai nepavyko apmokėjusiam klientui</h2>
         <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
         <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
         <p><strong>sessionId:</strong> ${escapeHtml(sessionId || '(nėra)')}</p>
         <p><strong>Klaidos pranešimas:</strong> ${escapeHtml(errorMessage || '(nežinoma)')}</p>
-        <p>Klientas MOKĖJO, bet negavo rezultato. Rekomenduojama kuo greičiau susisiekti su klientu ir/arba rankiniu būdu pakartoti analizę, arba grąžinti pinigus.</p>
+        ${diagnoze ? `<div style="background:#fff3f3;border:1px solid #f0b8b8;border-radius:8px;padding:14px 16px;margin:16px 0"><strong style="color:#b00020">Tikėtina priežastis: ${escapeHtml(diagnoze.pavadinimas)}</strong><p style="margin:8px 0 0">${escapeHtml(diagnoze.sprendimas)}</p></div>` : ''}
+        <hr style="margin:20px 0;border:none;border-top:1px solid #ddd">
+        <h3 style="color:#333">Ką daryti su ŠIUO klientu (2 žingsniai):</h3>
+        <p><strong>1.</strong> Stripe Dashboard'e susirask šį mokėjimą (pagal el. paštą <strong>${escapeHtml(email || '')}</strong> arba apytikslį laiką) ir grąžink klientui <strong>12,99 €</strong>.</p>
+        <p><strong>2.</strong> Nusiųsk klientui (${escapeHtml(email || '')}) atsiprašymo laišką — paruoštas juodraštis žemiau, gali kopijuoti ir įklijuoti tiesiai:</p>
+        <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:8px;padding:16px;margin-top:8px;white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;color:#222">${escapeHtml(apologyDraft)}</div>
       </div>`
     }).then(() => console.log(`[logAnalysisFailure] klaidos laiškas išsiųstas į ${ADMIN_EMAIL} (sessionId=${sessionId||'?'})`))
       .catch(e => console.error('[logAnalysisFailure] klaida siunčiant klaidos laišką:', e.message));
@@ -673,6 +721,53 @@ async function sendEmail({ from, to, subject, html, attachments }) {
 // mailer.sendMail({...}) iškvietimo žemiau, "mailer" objektas paliekamas
 // su ta pačia .sendMail() sąsaja, bet viduje naudoja sendEmail() (Resend).
 const mailer = { sendMail: (opts) => sendEmail(opts) };
+
+// --- BENDRAS SAUGIKLIS (2026-09-26): jei serveryje įvyktų BET KOKIA kita,
+// nenumatyta klaida (ne tik delnų analizėje — bet kur visame serveryje),
+// kurios niekas kitas "nepagavo" — administratorius APIE TAI TAIP PAT
+// sužino automatiškai, el. laišku. Be šio saugiklio, tokia klaida
+// paprasčiausiai atsispindėtų tik Railway Deploy Logs, kurių niekas
+// nuolat nestebi, ir administratorius apie rimtą gedimą sužinotų tik
+// tada, kai (jei) kažkas parašytų skundą.
+let _lastCrashEmailAt = 0;
+function pranesApieServerioKlaida(pobudis, err) {
+  try {
+    const now = Date.now();
+    // Apsauga nuo "laiškų lavinos": jei klaidos kartojasi paeiliui (pvz.
+    // ciklas), siunčiame ne dažniau kaip kartą per 5 minutes.
+    if (now - _lastCrashEmailAt < 5 * 60 * 1000) {
+      console.error(`[pranesApieServerioKlaida] praleidžiama (per dažnai) — ${pobudis}:`, err && err.message);
+      return;
+    }
+    _lastCrashEmailAt = now;
+    const stack = (err && err.stack) ? err.stack : String(err);
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `[KLAIDA] Serverio gedimas (${pobudis})`,
+      html: `<div style="font-family:Georgia,serif;padding:20px">
+        <h2 style="color:#b00020">Serveryje įvyko nenumatyta klaida</h2>
+        <p><strong>Pobūdis:</strong> ${escapeHtml(pobudis)}</p>
+        <p>Tai reiškia, kad serveryje kažkas neveikia taip, kaip turėtų — GALI paveikti visus vartotojus, ne tik vieną konkretų klientą. Rekomenduojama kuo greičiau patikrinti Railway Deploy Logs, kad įsitikintum, jog aplikacija toliau veikia normaliai.</p>
+        <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:8px;padding:16px;margin-top:8px;white-space:pre-wrap;font-family:monospace;font-size:12px;color:#333;max-height:400px;overflow:auto">${escapeHtml(stack).slice(0, 4000)}</div>
+      </div>`
+    }).catch(e => console.error('[pranesApieServerioKlaida] klaida siunčiant laišką:', e.message));
+  } catch (e) {
+    console.error('[pranesApieServerioKlaida] bendra klaida:', e.message);
+  }
+}
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+  pranesApieServerioKlaida('uncaughtException — nepagauta klaida kode', err);
+  // PASTABA: NEBAIGIAME proceso (process.exit) — Railway automatiškai
+  // perkrautų serverį pačiu blogiausiu metu (per kliento analizę), o
+  // dauguma uncaughtException atvejų šiame kode yra iš pavienių async
+  // callback'ų, ne visos aplikacijos būsenos sugadinimo.
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+  pranesApieServerioKlaida('unhandledRejection — nepagautas Promise atmetimas', reason instanceof Error ? reason : new Error(String(reason)));
+});
 
 // --- JSON taisymo pagalbinė funkcija ---
 // PRIEŽASTIS: AI modelis generuoja JSON, kuriame ilgi laisvo teksto laukai
@@ -1515,7 +1610,15 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
     // Diagnostikai: jei tai buvo API klaida (ne tiesiog netikėtai tuščias
     // atsakymas), užloginame TIKSLŲ jos tipą/pranešimą — anksčiau ši
     // informacija tiesiog dingdavo, o klaida atrodydavo nepaaiškinama.
-    if (step2Data?.error) console.error('[runPalmAnalysis] Žingsnis 2 galutinė klaida:', JSON.stringify(step2Data.error));
+    if (step2Data?.error) {
+      console.error('[runPalmAnalysis] Žingsnis 2 galutinė klaida:', JSON.stringify(step2Data.error));
+      // SVARBU: PERDUODAME tikslų API klaidos tipą/tekstą toliau (o NE
+      // bendrą "Tuščias Claude atsakymas") — kitaip administratoriaus
+      // klaidos laiške dingsta pati svarbiausia informacija (pvz., kad
+      // baigėsi API kreditai ar negalioja raktas), ir problemą tenka
+      // spėlioti vietoj to, kad ją iš karto pasakytų klaidos pranešimas.
+      throw new Error(`${step2Data.error.type || 'API klaida'}: ${step2Data.error.message || 'Tuščias Claude atsakymas'}`);
+    }
     throw new Error('Tuščias Claude atsakymas');
   }
   if (step2Data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
