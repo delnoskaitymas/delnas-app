@@ -1826,6 +1826,48 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// PATAISYMAS (2026-09-26): jei klientui rezultatų ekrane BUVO parodytas
+// atsiprašymo/klaidos pranešimas (t.y. analizė užtruko neįprastai ilgai —
+// žr. 15s/45s pranešimus kliento pusėje), BET analizė VIS DĖLTO vėliau
+// sėkmingai baigėsi ir klientas gavo savo rezultatą — administratorius
+// (info@) vis tiek apie tai informuojamas (su [KLAIDA] žyme temoje), kad
+// žinotų, jog PROBLEMA BUVO, net jei ji galiausiai išsisprendė pati, o
+// klientas rezultatą gavo. Tai leidžia sekti tokius atvejus ir, jei jie
+// kartojasi, ieškoti gilesnės priežasties.
+function logRecoveredAfterDelay({ name, email, sessionId }) {
+  try {
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `[KLAIDA] Klientas GAVO rezultatą, bet po vėlavimo/klaidos`,
+      html: `<div style="font-family:Georgia,serif;padding:20px">
+        <h2 style="color:#a07828">Analizė užtruko/rodė klaidą, bet GALIAUSIAI sėkmingai baigėsi</h2>
+        <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
+        <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
+        <p><strong>sessionId:</strong> ${escapeHtml(sessionId || '(nėra)')}</p>
+        <p>Klientui rezultatų ekrane BUVO parodytas atsiprašymo/klaidos pranešimas (analizė užtruko ilgiau nei 45s), BET analizė vis dėlto vėliau sėkmingai baigėsi ir klientas GAVO savo rezultatą. Papildomai susisiekti su klientu NEBŪTINA — bet verta stebėti, ar tokie atvejai nesikartoja per dažnai (tai rodytų nuolatinę, o ne vienkartinę problemą).</p>
+      </div>`
+    }).then(() => console.log(`[logRecoveredAfterDelay] laiškas išsiųstas į ${ADMIN_EMAIL} (sessionId=${sessionId||'?'})`))
+      .catch(e => console.error('[logRecoveredAfterDelay] klaida siunčiant laišką:', e.message));
+  } catch (e) {
+    console.error('[logRecoveredAfterDelay] bendra klaida:', e.message);
+  }
+}
+
+app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => {
+  try {
+    const { name, email, sessionId } = req.body;
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
+    logRecoveredAfterDelay({ name, email, sessionId });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[notify-recovered-after-error] klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Klientas iškviečia šį endpoint'ą TIKSLIAI TADA, kai atsidaro rezultato
 // ekranas — PDF (sugeneruotas kliento pusėje, tas pats, kaip "Atsisiųsti
 // PDF" mygtukas) išsiunčiamas į vartotojo el. paštą iš
