@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<title>DELNAS — kalėdinė vaizdo reklama</title>
+<link href="assets/fonts.css" rel="stylesheet">
+<style>
+  :root{--gold:#d4a843;--gold2:#f0d58a;--muted:rgba(255,255,255,.7);--faint:rgba(255,255,255,.4)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#000;width:1080px;height:1920px;overflow:hidden;font-family:'DM Sans',sans-serif;color:#fff}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 40%,rgba(212,168,67,.14),transparent 60%),radial-gradient(ellipse at 50% 110%,rgba(120,20,30,.4),transparent 60%),#05070f}
+  .sn{position:absolute;border-radius:50%;background:#fff;pointer-events:none;z-index:5}
+  .scene{position:absolute;inset:0;opacity:0}
+  .c{position:absolute;left:0;right:0;text-align:center}
+  h1{font:400 96px/1.05 'Playfair Display'}
+  h1 em{font-style:italic;color:var(--gold)}
+  .sub{font:300 40px/1.35 'DM Sans';color:var(--muted)}
+  .brand{font:700 40px 'Playfair Display';letter-spacing:.32em;color:var(--gold)}
+  .fine{font:400 24px 'DM Sans';color:var(--faint)}
+  .hand{position:absolute;background:url(assets/delnas.jpg) center/cover no-repeat;
+    -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%);
+    filter:sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.05) contrast(1.05)}
+  .scan{position:absolute;height:6px;background:linear-gradient(90deg,transparent,#f5d061,transparent);
+    box-shadow:0 0 30px 8px rgba(245,208,97,.55)}
+  .step{display:flex;align-items:center;gap:34px;margin:0 110px;padding:34px 40px;border:1.5px solid rgba(212,168,67,.4);
+    border-radius:26px;background:rgba(255,255,255,.04)}
+  .step .n{flex:none;width:92px;height:92px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+    font:400 46px 'Playfair Display';color:var(--gold)}
+  .step b{font:400 44px 'Playfair Display';text-align:left}
+  .phone{position:absolute;left:250px;width:580px;height:1100px;border-radius:80px;background:#0b0b0b;
+    border:3px solid rgba(212,168,67,.6);box-shadow:0 30px 90px rgba(0,0,0,.8),0 0 70px rgba(212,168,67,.22);padding:26px}
+  .scr{width:100%;height:100%;border-radius:58px;background:#000;overflow:hidden;padding:80px 40px 30px}
+  .t1{font:400 17px 'DM Sans';letter-spacing:.25em;color:var(--gold);text-align:center;text-transform:uppercase}
+  .t2{font:400 44px/1.1 'Playfair Display';text-align:center;margin:14px 0 22px}
+  .ch{border-top:1px solid rgba(212,168,67,.22);padding:16px 0 6px;opacity:0}
+  .ch b{display:block;font:400 23px 'Playfair Display';color:var(--gold2);margin-bottom:10px}
+  .bar{height:9px;border-radius:5px;background:rgba(255,255,255,.14);margin-bottom:8px}
+  .cta{display:inline-flex;align-items:center;gap:14px;background:linear-gradient(180deg,var(--gold2),var(--gold));color:#140f02;
+    font:500 42px 'DM Sans';padding:32px 64px;border-radius:999px;box-shadow:0 0 50px rgba(212,168,67,.45)}
+  .lbl{position:absolute;font:400 40px 'Playfair Display';color:#f5d061;white-space:nowrap}
+  .lbl small{display:block;font:300 26px 'DM Sans';color:var(--muted)}
+  .pct{font:700 150px/1 'Playfair Display';color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. Skenavimas (0–2.8 s) -->
+  <div class="scene" id="s1">
+    <div class="hand" style="width:760px;height:1055px;left:160px;top:420px;opacity:.35;filter:grayscale(1) brightness(.8)"></div>
+    <div class="hand" id="s1hand" style="width:760px;height:1055px;left:160px;top:420px"></div>
+    <div class="scan" id="s1scan" style="left:160px;width:760px"></div>
+    <div class="c" id="s1t" style="top:190px"><h1>Ką tau atneš<br><em>2027-ieji?</em></h1></div>
+  </div>
+
+  <!-- 2. Linijos (2.8–6.2 s) -->
+  <div class="scene" id="s2">
+    <div class="c" style="top:190px"><h1 style="font-size:84px">Kiekviena linija<br><em>pasakoja istoriją</em></h1></div>
+    <svg id="palm" viewBox="0 0 400 520" width="690" height="897" style="position:absolute;left:150px;top:520px" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <path id="outline" pathLength="1" d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.6)" stroke-width="3"/>
+      <path class="ln" pathLength="1" d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="#f5d061" stroke-width="6" filter="url(#gl)"/>
+      <path class="ln" pathLength="1" d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="#f5d061" stroke-width="6" filter="url(#gl)"/>
+      <path class="ln" pathLength="1" d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="#f5d061" stroke-width="6" filter="url(#gl)"/>
+      <path class="ln" pathLength="1" d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="#f5d061" stroke-width="6" filter="url(#gl)"/>
+    </svg>
+    <div class="lbl" style="left:70px;top:1390px">Gyvenimo<small>energija</small></div>
+    <div class="lbl" style="left:700px;top:880px">Širdies<small>santykiai</small></div>
+    <div class="lbl" style="left:730px;top:1110px">Galvos<small>sprendimai</small></div>
+    <div class="lbl" style="left:560px;top:1460px">Likimo<small>karjera</small></div>
+  </div>
+
+  <!-- 3. Žingsniai (6.2–9.2 s) -->
+  <div class="scene" id="s3">
+    <div class="c" style="top:260px"><h1 style="font-size:84px">Tereikia<br><em>telefono</em></h1></div>
+    <div style="position:absolute;left:0;right:0;top:620px;display:flex;flex-direction:column;gap:36px">
+      <div class="step"><div class="n">1</div><b>Nufotografuok abu delnus</b></div>
+      <div class="step"><div class="n">2</div><b>AI perskaito linijas</b></div>
+      <div class="step"><div class="n">3</div><b>Gauk savo žemėlapį</b></div>
+    </div>
+    <div class="c" style="top:1270px"><div class="pct" id="pct">0%</div><p class="sub" style="margin-top:14px">Žemėlapis ruošiamas…</p></div>
+  </div>
+
+  <!-- 4. Rezultatas telefone (9.2–12.4 s) -->
+  <div class="scene" id="s4">
+    <div class="c" style="top:150px"><h1 style="font-size:78px">Tavo žemėlapis<br><em>naujiems metams</em></h1></div>
+    <div class="phone" id="phone" style="top:470px"><div class="scr">
+      <div class="t1">Chiromantija · Likimo žemėlapis</div>
+      <div class="t2">Tavo Gyvenimo<br><em style="color:var(--gold)">Žemėlapis</em></div>
+      <div class="ch"><b>I · Stiprybės ir charakteris</b><div class="bar"></div><div class="bar" style="width:84%"></div></div>
+      <div class="ch"><b>II · Kryptis ir tikslai</b><div class="bar"></div><div class="bar" style="width:76%"></div></div>
+      <div class="ch"><b>III · Santykiai</b><div class="bar"></div><div class="bar" style="width:88%"></div></div>
+      <div class="ch"><b>IV · Finansinis potencialas</b><div class="bar"></div><div class="bar" style="width:70%"></div></div>
+      <div class="ch"><b>V · Sėkmės raktas</b><div class="bar" style="width:90%"></div></div>
+      <div class="ch"><b>VI · Artėjantys pokyčiai</b><div class="bar" style="width:80%"></div></div>
+      <div class="ch"><b>VII · Kliūtys</b><div class="bar" style="width:74%"></div></div>
+    </div></div>
+  </div>
+
+  <!-- 5. Pabaiga (12.4–15 s) -->
+  <div class="scene" id="s5">
+    <div class="hand" style="width:560px;height:780px;left:260px;top:330px;opacity:.55"></div>
+    <div class="c" style="top:260px"><div class="brand">DELNAS</div><p class="fine" style="letter-spacing:.3em;margin-top:10px">GYVENIMO ŽEMĖLAPIS</p></div>
+    <div class="c" style="top:1000px"><h1>Pasitik 2027-uosius<br><em>su savo žemėlapiu</em></h1></div>
+    <div class="c" style="top:1290px"><div class="cta" id="cta">Pažvelgti į 2027 →</div></div>
+    <div class="c" style="top:1460px"><p class="sub" style="font-size:36px;color:#fff">delnaskaitymas.lt</p><p class="fine" style="margin-top:12px">Pramoginio pobūdžio · 18+</p></div>
+  </div>
+</div>
+
+<script>
+// Deterministinė animacija: renderAt(t) nupiešia kadrą laiko momentu t (s).
+// video-render.js kviečia ją kiekvienam kadrui (30 fps) ir sujungia į MP4.
+const DUR = 15;
+const $ = id => document.getElementById(id);
+const cl = (x,a=0,b=1) => Math.min(b,Math.max(a,x));
+const ease = x => { x=cl(x); return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; };
+const prog = (t,a,b) => ease((t-a)/(b-a));
+// scenos matomumas su 0.35 s perėjimais
+function vis(t,a,b,f=.35){ return Math.min(prog(t,a,a+f), 1-prog(t,b-f,b)); }
+
+const SNOW=[]; (function(){ let seed=2027; const r=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;};
+  const st=document.getElementById('stage');
+  for(let i=0;i<70;i++){ const d=document.createElement('div'); d.className='sn'; const sz=3+r()*7;
+    d.style.width=d.style.height=sz+'px'; d.style.opacity=(.25+r()*.6).toFixed(2); st.appendChild(d);
+    SNOW.push({d,x:r()*1080,y:r()*1920,v:60+r()*120,w:20+r()*40,ph:r()*6.28}); } })();
+window.renderAt = function(t){
+  SNOW.forEach(s=>{ const y=(s.y+s.v*t)%1960-20, x=s.x+Math.sin(t*1.2+s.ph)*s.w;
+    s.d.style.transform=`translate(${x}px,${y}px)`; });
+  // 1
+  $('s1').style.opacity = 1-prog(t,2.45,2.8); // pirmas kadras iškart matomas (svarbu pirmoms sekundėms)
+  const sc = prog(t,.2,2.2);
+  $('s1hand').style.clipPath = `inset(0 0 ${100-sc*100}% 0)`;
+  $('s1scan').style.top = (420+sc*1055)+'px';
+  $('s1scan').style.opacity = sc>0&&sc<1 ? 1 : 0;
+  $('s1t').style.opacity = .35+.65*prog(t,0,.6);
+  // 2
+  $('s2').style.opacity = vis(t,2.8,6.2);
+  $('outline').style.strokeDasharray = 1;
+  $('outline').style.strokeDashoffset = 1-prog(t,2.9,3.6);
+  const lns=document.querySelectorAll('.ln'), lbls=document.querySelectorAll('.lbl');
+  lns.forEach((p,i)=>{ const a=3.5+i*.55; p.style.strokeDasharray=1; p.style.strokeDashoffset=1-prog(t,a,a+.5); });
+  lbls.forEach((l,i)=>{ const a=3.8+i*.55; l.style.opacity=prog(t,a,a+.3); });
+  // 3
+  $('s3').style.opacity = vis(t,6.2,9.2);
+  document.querySelectorAll('#s3 .step').forEach((s,i)=>{ const a=6.4+i*.45, p=prog(t,a,a+.4);
+    s.style.opacity=p; s.style.transform=`translateX(${(1-p)*-80}px)`; });
+  $('pct').textContent = Math.round(prog(t,7.4,8.9)*99)+'%';
+  // 4
+  $('s4').style.opacity = vis(t,9.2,12.4);
+  $('phone').style.transform = `translateY(${(1-prog(t,9.2,9.9))*300}px)`;
+  document.querySelectorAll('#s4 .ch').forEach((c,i)=>{ const a=9.8+i*.25; c.style.opacity=prog(t,a,a+.3); });
+  // 5
+  $('s5').style.opacity = vis(t,12.4,DUR+1);
+  const pulse = 1+Math.sin(Math.max(0,t-13.2)*Math.PI*1.6)*.035;
+  $('cta').style.transform = `scale(${prog(t,12.8,13.2)*pulse})`;
+};
+window.renderAt(0);
+</script>
+</body>
+</html>

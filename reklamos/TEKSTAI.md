@@ -258,3 +258,55 @@ Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
 **A/B testas:** abu video (1-as tamsus ir 2-as šviesus) dėk į **atskirus** ad set'us su tuo pačiu biudžetu ir auditorija. Po 4–5 dienų palik tą, kurio paspaudimo kaina (CPC) mažesnė ir daugiau žmonių žiūri iki galo („ThruPlay“).
 
 Generuoti: `node reklamos/video-render.js video2.html delnas-reels-draugems-1080x1920.mp4`
+
+---
+
+## 🎄 Kalėdinė banga (rodyti nuo ~lapkričio 15 d.)
+
+| Failas | Formatas | Tema |
+|---|---|---|
+| `23-kaledos-2027-1080x1080.png` | 1:1 | „Ką tau atneš 2027-ieji?“ |
+| `24-kaledos-2027-story-1080x1920.png` | 9:16 | ~~2026~~ 2027 — „Ką tau atneš nauji metai?“ |
+| `25-metu-pabaiga-1080x1350.png` | 4:5 | „Metų pabaiga — laikas pažvelgti į savo kelią“ |
+| `26-dovana-sau-1080x1080.png` | 1:1 | Šviesus · „Dovana sau pačiai“ |
+| `27-kaledu-vakaras-1080x1080.png` | 1:1 | „Kažkas naujo prie šventinio stalo“ (kartu) |
+| `28-kaledu-vakaras-story-1080x1920.png` | 9:16 | Šviesus · „Kas ką atneš naujaisiais metais?“ |
+| `29-nauji-metai-1080x1350.png` | 4:5 | „Nauji metai. Nauji tikslai. Nauji atsakymai.“ |
+| `30-kaledos-landscape-1200x628.png` | 1.91:1 | FB nuoroda / Google Display |
+| `video/delnas-reels-kaledos-1080x1920.mp4` | 9:16, 15 s | Vaizdo įrašas su krentančiu sniegu |
+
+**Kalendorius:**
+
+| Laikotarpis | Rodyti | Kodėl |
+|---|---|---|
+| Lapkr. 15 – gruod. 20 | 23, 25, 26, kalėdinis video | Metų pabaigos apmąstymai, „dovana sau“ |
+| Gruod. 10 – 26 | 27, 28 | Šventiniai vakarai su draugėmis / šeima |
+| Gruod. 26 – saus. 10 | 24, 29, 30 | Naujųjų metų tikslai, „ką atneš 2027-ieji“ |
+
+Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–30 % nuo lapkričio vidurio, o sausio pradžioje (kai kaina krenta) — išnaudoti „Naujų metų“ temą.
+
+**Tekstai:**
+
+**O — 2027 (23, 24, 30, video)**
+> Ką tau atneš 2027-ieji? ✨ Tavo delnai jau žino.
+> Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį: stiprybės, kryptis, santykiai ir artėjantys pokyčiai.
+
+**P — metų pabaiga (25)**
+> Metų pabaiga — geriausias laikas sustoti ir pažvelgti į savo kelią 🕯️
+> Kas tavo stiprybės? Kur veda tavo kelias? Kokie pokyčiai laukia? 7 skyrių asmeninė analizė pagal tavo delnus.
+
+**R — dovana sau (26)**
+> Šias Kalėdas — ir dovana sau 🎄
+> Valanda sau ir asmeninis gyvenimo žemėlapis, prie kurio galėsi sugrįžti visus metus. 14 dienų pinigų grąžinimo garantija.
+
+**S — šventinis vakaras (27, 28)**
+> Kažkas naujo prie šventinio stalo ✨
+> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius — kas jus sieja, kuo skiriatės, ką atneš nauji metai? 👭
+
+**T — Nauji metai (29)**
+> Nauji metai. Nauji tikslai. Nauji atsakymai.
+> Pasitik 2027-uosius su savo gyvenimo žemėlapiu ✦
+
+> ⚠️ Kol programėlėje nėra dovanų kuponų, **nerašyk** „padovanok draugei / nupirk dovaną“ — rašyk tik „dovana sau“ arba „išbandykit kartu“. Kai kuponai atsiras — galima pridėti atskirą „Dovanų kupono“ bangą.
+
+Kalėdinį video generuoti: `node reklamos/video-render.js video3.html delnas-reels-kaledos-1080x1920.mp4`
