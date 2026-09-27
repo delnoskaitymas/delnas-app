@@ -169,6 +169,17 @@ a{color:var(--gold)}
 .gcard .how{font-size:12px;line-height:1.5;color:rgba(255,255,255,.65);margin-top:6px;max-width:230px}
 .gcard .exp{font-size:11px;color:rgba(255,255,255,.4);margin-top:6px}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+/* Kortelės rodinys — viskas viename ekrane */
+body.card-view .wrap{padding-top:12px;padding-bottom:10px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.card-view .wrap > .brand, body.card-view .wrap > .fine{display:none}
+body.card-view #v-card{margin:auto 0}
+#v-card h1{font-size:28px;margin:0 0 4px}
+#v-card .lead{font-size:13px;line-height:1.45}
+#v-card #card-stage{margin-top:12px}
+#v-card .actions{margin-top:12px;gap:8px}
+#v-card .actions .btn{padding:11px 8px;font-size:13.5px;border-radius:14px}
+#v-card .redeemed{margin-top:10px}
+#v-card .how-link{margin:10px auto 0;width:fit-content;text-decoration:underline;text-underline-offset:3px}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
@@ -239,7 +250,7 @@ a{color:var(--gold)}
   <!-- 3. KORTELĖ (po apmokėjimo arba iš el. laiško nuorodos) -->
   <section id="v-card" class="hidden">
     <h1 id="card-title">Dovana <em>paruošta!</em></h1>
-    <p class="lead" id="card-lead">Kortelė jau išsiųsta į tavo el. paštą. Ją gali atsisiųsti, atsispausdinti arba iškart nusiųsti gavėjui.</p>
+    <p class="lead" id="card-lead">Kortelė jau tavo el. pašte. Atsisiųsk ar iškart nusiųsk gavėjui.</p>
     <div id="card-stage"><div id="card-scale">
       <div class="gcard" id="gcard">
         <div class="gh"></div>
@@ -268,8 +279,8 @@ a{color:var(--gold)}
       <button class="btn ghost" id="share">Siųsti gavėjui</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
-    <div class="note" id="link-note">Asmeninė nuoroda: <br><a id="c-link" href="#" style="word-break:break-all"></a></div>
-    <a class="btn ghost" href="/dovana" id="again" style="text-align:center;text-decoration:none;margin-top:16px">Padovanoti dar vieną</a>
+    <a id="c-link" href="#" class="hidden"></a>
+    <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
 
   <!-- 4. KLAIDA -->
@@ -286,7 +297,7 @@ a{color:var(--gold)}
 (function(){
   const $ = id => document.getElementById(id);
   const views = ['v-form','v-wait','v-card','v-error'];
-  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form'); window.scrollTo(0,0); }
+  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form'); document.body.classList.toggle('card-view', v === 'v-card'); window.scrollTo(0,0); }
   const params = new URLSearchParams(location.search);
   let current = null; // rodomo kupono duomenys
 
@@ -325,11 +336,21 @@ a{color:var(--gold)}
   function fmtDate(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function redeemLink(code){ return location.origin + '/?dovana=' + encodeURIComponent(code); }
 
+  // Kortelė sumažinama, kad kartu su mygtukais tilptų į ekraną
+  // (atsisiunčiama kortelė visada pilno dydžio — žr. cardCanvas()).
   function fitCard(){
     const w = Math.min(540, document.querySelector('.wrap').clientWidth);
-    const s = w / 540;
-    $('card-scale').style.transform = 'scale(' + s + ')';
-    $('card-stage').style.height = (760 * s) + 'px';
+    let sc = w / 540;
+    const stage = $('card-stage');
+    stage.style.height = (760 * sc) + 'px';
+    $('card-scale').style.transform = 'scale(' + sc + ')';
+    for (let i = 0; i < 3; i++) {
+      const over = document.documentElement.scrollHeight - window.innerHeight;
+      if (over <= 0) break;
+      sc = Math.max(0.42, (760 * sc - over - 6) / 760);
+      $('card-scale').style.transform = 'scale(' + sc + ')';
+      stage.style.height = Math.floor(760 * sc) + 'px';
+    }
   }
   window.addEventListener('resize', fitCard);
 
