@@ -27,6 +27,17 @@ Norint pakeisti tekstą ar spalvas — redaguok `reklamos.html` ir paleisk `node
 | `15-draugems-story-1080x1920.png` | 9:16 | Šviesus · „Nustebink draugę“ |
 | `16-ruduo-1080x1350.png` | 4:5 | Sezoninis (ruduo) · „Laikas pokyčiams“ |
 
+**3 banga:**
+
+| Failas | Formatas | Tema |
+|---|---|---|
+| `17-horoskopas-1080x1080.png` | 1:1 | „Horoskopas — visiems vienodas. Tavo delnai — tik tavo.“ |
+| `18-rezultatas-telefone-1080x1350.png` | 4:5 | Rezultato peržiūra telefone — „Štai ką gausi“ |
+| `19-karjera-1080x1080.png` | 1:1 | „Karjera. Finansai. Sprendimai.“ (vyrams / verslo auditorijai) |
+| `20-horoskopas-story-1080x1920.png` | 9:16 | Horoskopas vs delnai (Stories) |
+| `21-karusele-1…5-1080x1080.png` | 1:1 ×5 | **Karuselė** apie 4 delno linijas (edukacinė) |
+| `22-3-zingsniai-story-1080x1920.png` | 9:16 | Šviesus · „3 žingsniai“ |
+
 Karuselė (FB/IG): 01 → 02 → 03 → 07.
 
 ---
@@ -183,3 +194,27 @@ Reklamos nuorodoje naudok, pvz.:
 `https://delnaskaitymas.lt/?utm_source=facebook&utm_medium=paid&utm_campaign=banga2&utm_content=11-sviesus-hero`
 
 Pakeisk `utm_content` pagal paveikslėlio pavadinimą. Meta Ads Manager tą patį galima įrašyti laukelyje **„URL parameters“**.
+
+---
+
+## 3 banga — tekstai
+
+**J — horoskopas (17, 20)**
+> Horoskopas vienodas milijonams žmonių. Tavo delnų linijos — tik tavo ✋
+> Nufotografuok delnus ir gauk asmeninį 7 skyrių gyvenimo žemėlapį.
+
+**K — „Štai ką gausi“ (18)**
+> Štai kaip atrodo tavo gyvenimo žemėlapis 👇
+> Stiprybės, kryptis, santykiai, finansai, sėkmės raktas, pokyčiai ir kliūtys — 7 skyriai ekrane ir PDF el. pašte.
+
+**L — karjera (19)** — taikyk ir vyrams, pomėgiai: verslas, investavimas, asmeninis augimas
+> Karjera. Finansai. Sprendimai.
+> Sužinok, ką apie tavo stiprybes ir finansinį potencialą pasakoja delnų linijos. Pramoginė patirtis, verta pabandyti.
+
+**M — karuselė (21-1 … 21-5)** — įkelk kaip „Carousel“ formatą, eilės tvarka 1→5
+> Ar žinai, ką reiškia linijos tavo delne? Braukite → ✋
+> Pagrindinis tekstas trumpas — karuselė pati pasakoja istoriją. Antraštė po kiekviena kortele: „Perskaityk savo linijas“.
+
+**N — 3 žingsniai (22)**
+> 1) Nufotografuok abu delnus 2) AI perskaito linijas 3) Gauk 7 skyrių analizę + PDF. Tiek ✨
+

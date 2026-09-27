@@ -90,6 +90,27 @@
   .line h3{font:400 32px 'Playfair Display'}
   .line p{font:300 22px/1.35 'DM Sans';color:var(--muted)}
   .duo{display:flex;gap:0}
+
+  /* ---- 3 banga ---- */
+  .phone{position:absolute;width:440px;height:900px;border-radius:64px;background:#0b0b0b;
+    border:3px solid rgba(212,168,67,.55);box-shadow:0 30px 90px rgba(0,0,0,.8),0 0 60px rgba(212,168,67,.18);padding:22px;overflow:hidden}
+  .phone .scr{width:100%;height:100%;border-radius:46px;background:#000;overflow:hidden;padding:60px 30px 30px;
+    display:flex;flex-direction:column;gap:16px}
+  .phone .notch{position:absolute;left:50%;top:32px;transform:translateX(-50%);width:120px;height:30px;border-radius:20px;background:#111}
+  .phone .t1{font:400 13px 'DM Sans';letter-spacing:.25em;color:var(--gold);text-align:center;text-transform:uppercase}
+  .phone .t2{font:400 32px/1.1 'Playfair Display';text-align:center;margin-bottom:8px}
+  .phone .ch{border-top:1px solid rgba(212,168,67,.2);padding-top:12px}
+  .phone .ch b{display:block;font:400 17px 'Playfair Display';color:var(--gold2,#f0d58a);margin-bottom:8px}
+  .phone .bar{height:7px;border-radius:4px;background:rgba(255,255,255,.14);margin-bottom:6px}
+  .vs{display:flex;gap:28px}
+  .vs > div{flex:1;border-radius:22px;padding:34px 30px;border:1px solid var(--border)}
+  .vs h3{font:400 38px 'Playfair Display';margin-bottom:18px}
+  .vs li{font:300 25px/1.5 'DM Sans';color:var(--muted);list-style:none;padding-left:34px;position:relative}
+  .vs li::before{position:absolute;left:0}
+  .vs .no li::before{content:"✕";color:rgba(255,255,255,.35)}
+  .vs .yes li::before{content:"✦";color:var(--gold)}
+  .slideno{font:500 20px 'DM Sans';letter-spacing:.2em;color:var(--faint)}
+  .timer{font:700 230px/1 'Playfair Display';color:#a8781f;letter-spacing:-.03em}
 </style>
 </head>
 <body>
@@ -393,6 +414,183 @@
   <div class="row" style="margin-top:auto">
     <div class="cta" style="background:linear-gradient(180deg,#f3c27e,#d98a3c)">Pažvelgti į ateitį →</div>
     <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+
+<!-- ================= 3 BANGA ================= -->
+
+<!-- 17. Horoskopas vs delnai — 1:1 -->
+<div>
+<div class="label">17-horoskopas-1080x1080</div>
+<div class="ad" id="17-horoskopas-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="eyebrow">Tik tavo</div></div>
+  <h1 style="font-size:66px;margin:56px 0 50px">Horoskopas — visiems vienodas.<br><em>Tavo delnai — tik tavo.</em></h1>
+  <div class="vs">
+    <div class="no"><h3 style="color:rgba(255,255,255,.55)">Horoskopas</h3><ul>
+      <li>Tas pats 1/12 žmonių</li><li>Bendri spėjimai</li><li>Pagal gimimo datą</li></ul></div>
+    <div class="yes" style="border-color:rgba(212,168,67,.6);background:rgba(212,168,67,.06)"><h3 style="color:var(--gold)">Delnų analizė</h3><ul>
+      <li>Tik tavo linijos</li><li>7 asmeniniai skyriai</li><li>Pagal tavo nuotraukas</li></ul></div>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Perskaityk savo delnus →</div>
+    <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 18. Telefonas su rezultatu — 4:5 -->
+<div>
+<div class="label">18-rezultatas-telefone-1080x1350</div>
+<div class="ad" id="18-rezultatas-telefone-1080x1350" style="width:1080px;height:1350px;padding:84px">
+  <div class="glow" style="width:900px;height:900px;right:-300px;top:200px"></div>
+  <div class="phone" style="right:90px;top:250px"><div class="notch"></div><div class="scr">
+    <div class="t1">Chiromantija · Likimo žemėlapis</div>
+    <div class="t2">Tavo Gyvenimo<br><em style="color:var(--gold)">Žemėlapis</em></div>
+    <div class="ch"><b>I · Stiprybės ir charakteris</b><div class="bar"></div><div class="bar" style="width:86%"></div><div class="bar" style="width:92%"></div></div>
+    <div class="ch"><b>II · Kryptis ir tikslai</b><div class="bar"></div><div class="bar" style="width:78%"></div></div>
+    <div class="ch"><b>III · Santykiai</b><div class="bar"></div><div class="bar" style="width:88%"></div></div>
+    <div class="ch"><b>IV · Finansinis potencialas</b><div class="bar"></div><div class="bar" style="width:70%"></div></div>
+    <div class="ch"><b>V · Sėkmės raktas</b><div class="bar" style="width:90%"></div></div>
+    <div class="ch"><b>VI · Artėjantys pokyčiai</b><div class="bar"></div><div class="bar" style="width:80%"></div></div>
+    <div class="ch"><b>VII · Kliūtys</b><div class="bar"></div><div class="bar" style="width:74%"></div></div>
+  </div></div>
+  <div class="brand">DELNAS<small>Gyvenimo žemėlapis</small></div>
+  <div style="margin-top:150px;max-width:450px;display:flex;flex-direction:column;gap:30px">
+    <div class="eyebrow">Štai ką gausi</div>
+    <h1 style="font-size:70px">Asmeninis<br><em>žemėlapis</em><br>per kelias<br>minutes</h1>
+    <p class="sub" style="font-size:28px">7 skyriai ekrane + PDF tavo el. pašte.</p>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Gauti savo →</div>
+    <div class="fine" style="text-align:right">Pramoginio<br>pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 19. Karjera ir finansai — 1:1 -->
+<div>
+<div class="label">19-karjera-1080x1080</div>
+<div class="ad" id="19-karjera-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="glow" style="width:800px;height:800px;right:-280px;bottom:-300px"></div>
+  <div class="hand" style="width:480px;height:670px;right:-60px;bottom:-40px;opacity:.75"></div>
+  <div class="brand">DELNAS</div>
+  <div style="margin-top:90px;display:flex;flex-direction:column;gap:14px">
+    <div style="font:400 88px/1 'Playfair Display'">Karjera.</div>
+    <div style="font:400 88px/1 'Playfair Display'">Finansai.</div>
+    <div style="font:italic 400 88px/1 'Playfair Display';color:var(--gold)">Sprendimai.</div>
+  </div>
+  <p class="sub" style="margin-top:40px;max-width:560px">Sužinok, kur slypi tavo stiprybės ir finansinis potencialas — pagal tavo delnų linijas.</p>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Pažvelgti →</div>
+  </div>
+  <div class="fine" style="margin-top:18px">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+</div>
+</div>
+
+<!-- 20. Horoskopas — story 9:16 -->
+<div>
+<div class="label">20-horoskopas-story-1080x1920</div>
+<div class="ad" id="20-horoskopas-story-1080x1920" style="width:1080px;height:1920px;padding:150px 90px 260px;align-items:center;text-align:center">
+  <div class="brand">DELNAS</div>
+  <p class="sub" style="margin-top:110px;font-size:40px;color:rgba(255,255,255,.45)"><s>Horoskopas</s></p>
+  <p class="sub" style="font-size:32px;margin-top:10px;color:rgba(255,255,255,.4)">tas pats milijonams žmonių</p>
+  <div style="margin:70px 0"><svg viewBox="0 0 400 520" width="430" height="560" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/></svg></div>
+  <h1 style="font-size:92px">Tavo delnai —<br><em>tik tavo</em></h1>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:24px;align-items:center">
+    <div class="cta" style="align-self:center">Perskaityk savo linijas →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="label">21-karusele-1-1080x1080</div>
+<div class="ad" id="21-karusele-1-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="slideno">1 / 5</div></div>
+  <div style="display:flex;align-items:center;gap:50px;margin-top:auto;margin-bottom:auto">
+    <div style="flex:none"><svg viewBox="0 0 400 520" width="492" height="640" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="rgba(212,168,67,.6)" stroke-width="3.5"/></svg></div>
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <h1 style="font-size:70px">Tavo delne<br><em>4 pagrindinės<br>linijos</em></h1>
+      <p class="sub" style="font-size:29px">Kiekviena pasakoja apie skirtingą gyvenimo sritį. Braukite →</p>
+    </div>
+  </div>
+  <div class="fine">Pramoginio pobūdžio · 18+</div>
+</div>
+</div>
+<div>
+<div class="label">21-karusele-2-1080x1080</div>
+<div class="ad" id="21-karusele-2-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="slideno">2 / 5</div></div>
+  <div style="display:flex;align-items:center;gap:50px;margin-top:auto;margin-bottom:auto">
+    <div style="flex:none"><svg viewBox="0 0 400 520" width="492" height="640" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="#f5d061" stroke-width="7" filter="url(#gl)"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/></svg></div>
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <h1 style="font-size:70px">Gyvenimo <em>linija</em></h1>
+      <p class="sub" style="font-size:29px">Apjuosia nykščio pagrindą. Chiromantijoje siejama su energija, gyvybingumu ir dideliais gyvenimo pokyčiais.</p>
+    </div>
+  </div>
+  <div class="fine">Pramoginio pobūdžio · 18+</div>
+</div>
+</div>
+<div>
+<div class="label">21-karusele-3-1080x1080</div>
+<div class="ad" id="21-karusele-3-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="slideno">3 / 5</div></div>
+  <div style="display:flex;align-items:center;gap:50px;margin-top:auto;margin-bottom:auto">
+    <div style="flex:none"><svg viewBox="0 0 400 520" width="492" height="640" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="#f5d061" stroke-width="7" filter="url(#gl)"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/></svg></div>
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <h1 style="font-size:70px">Širdies <em>linija</em></h1>
+      <p class="sub" style="font-size:29px">Eina viršutine delno dalimi. Pasakoja apie jausmus, artimus ryšius ir tai, kaip myli.</p>
+    </div>
+  </div>
+  <div class="fine">Pramoginio pobūdžio · 18+</div>
+</div>
+</div>
+<div>
+<div class="label">21-karusele-4-1080x1080</div>
+<div class="ad" id="21-karusele-4-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="slideno">4 / 5</div></div>
+  <div style="display:flex;align-items:center;gap:50px;margin-top:auto;margin-bottom:auto">
+    <div style="flex:none"><svg viewBox="0 0 400 520" width="492" height="640" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="#f5d061" stroke-width="7" filter="url(#gl)"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/></svg></div>
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <h1 style="font-size:70px">Galvos <em>linija</em></h1>
+      <p class="sub" style="font-size:29px">Kerta delno vidurį. Rodo mąstymo būdą, sprendimų priėmimą ir kūrybiškumą.</p>
+    </div>
+  </div>
+  <div class="fine">Pramoginio pobūdžio · 18+</div>
+</div>
+</div>
+<div>
+<div class="label">21-karusele-5-1080x1080</div>
+<div class="ad" id="21-karusele-5-1080x1080" style="width:1080px;height:1080px;padding:80px;align-items:center;text-align:center">
+  <div class="row" style="align-self:stretch"><div class="brand">DELNAS</div><div class="slideno">5 / 5</div></div>
+  <div style="margin-top:40px"><svg viewBox="0 0 400 520" width="323" height="420" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M150 500 L150 470 Q96 440 90 360 L70 300 Q50 255 78 245 Q100 240 112 270 L120 290 L102 110 Q98 80 124 78 Q148 78 150 108 L160 205 L164 70 Q164 42 188 42 Q212 42 212 70 L212 200 L226 88 Q230 62 252 64 Q274 68 272 94 L262 212 L288 142 Q296 120 316 126 Q334 134 328 158 L306 270 Q300 400 272 450 L270 500" stroke="rgba(212,168,67,.55)" stroke-width="3"/><path d="M132 250 Q118 330 140 400 Q152 440 168 472" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M300 262 Q250 250 205 262 Q175 270 158 250" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M134 258 Q190 292 240 304 Q276 312 300 328" stroke="rgba(212,168,67,.25)" stroke-width="3.5"/><path d="M205 470 Q200 380 198 290 Q197 250 190 222" stroke="#f5d061" stroke-width="7" filter="url(#gl)"/></svg></div>
+  <h1 style="font-size:66px;margin-top:30px">Ir <em>likimo linija</em> —<br>karjera ir kelias</h1>
+  <p class="sub" style="margin-top:18px;font-size:29px">Ką rodo <b style="color:#fff;font-weight:500">tavo</b> linijos? Nufotografuok delnus ir sužinok.</p>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:18px;align-items:center">
+    <div class="cta" style="align-self:center">Atskleisti žemėlapį →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 22. 3 minutės — šviesus story -->
+<div>
+<div class="label">22-3-zingsniai-story-1080x1920</div>
+<div class="ad light" id="22-3-zingsniai-story-1080x1920" style="width:1080px;height:1920px;padding:150px 90px 260px;align-items:center;text-align:center">
+  <div class="brand">DELNAS</div>
+  <div class="eyebrow" style="margin-top:140px">Kaip tai veikia?</div>
+  <div class="timer" style="margin-top:40px">3<span style="font-size:.3em;font-weight:400;letter-spacing:0"> žingsniai</span></div>
+  <h1 style="font-size:78px;margin-top:40px">ir visas tavo<br><em>gyvenimo žemėlapis</em></h1>
+  <div style="margin-top:90px;display:flex;flex-direction:column;gap:22px;align-self:stretch;text-align:left">
+    <div class="lock"><i>📷</i><b>Nufotografuok abu delnus</b></div>
+    <div class="lock"><i>✨</i><b>AI perskaito linijas</b></div>
+    <div class="lock"><i>📜</i><b>7 skyrių analizė + PDF</b></div>
+  </div>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:24px;align-items:center">
+    <div class="cta" style="align-self:center">Pradėti dabar →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
   </div>
 </div>
 </div>
