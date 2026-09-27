@@ -83,6 +83,17 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
   #v-form .intro h1{font-size:26px}
   #v-form .intro .hero{width:60px;height:60px}
 }
+/* Kodo įvedimo rodinys */
+body.form-view #v-redeem{margin-top:auto;margin-bottom:auto}
+#v-redeem .intro{margin:0 0 6px;gap:10px;flex-direction:column}
+#v-redeem .intro .hero{width:84px;height:84px;border-width:2px}
+#v-redeem .intro h1{font-size:30px;line-height:1.12;text-align:center}
+#v-redeem .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 16px}
+#v-redeem .card-form{margin-top:0;padding:20px 18px 18px;border-radius:20px}
+#v-redeem label{font-size:11px;margin:0 0 8px;letter-spacing:.13em}
+.code-in{text-align:center;font:700 24px 'Courier New',monospace!important;letter-spacing:.2em;color:var(--gold2)!important;padding:14px!important;text-transform:uppercase}
+#v-redeem .btn{margin-top:14px;padding:15px;font-size:16.5px}
+#v-redeem .how-link{margin:14px auto 0;width:fit-content}
 /* Iš apačios išslenkantis langas */
 .sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
   opacity:0;pointer-events:none;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center}
@@ -265,7 +276,7 @@ body.card-view #v-card{margin:auto 0}
             <div class="qr" id="c-qr"></div>
             <div>
               <div class="code" id="c-code">XXXX-XXXX</div>
-              <div class="how">Nuskenuok kodą arba atidaryk <b style="color:#fff">delnaskaitymas.lt</b> nuorodą — nufotografuok delnus, mokėti nereikės.</div>
+              <div class="how">Nuskenuok QR arba įvesk kodą <b style="color:#fff">delnaskaitymas.lt/kodas</b> — nufotografuok delnus, mokėti nereikės.</div>
               <div class="exp" id="c-exp"></div>
             </div>
           </div>
@@ -283,6 +294,22 @@ body.card-view #v-card{margin:auto 0}
     <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
 
+  <!-- 5. KODO ĮVEDIMAS (/kodas) -->
+  <section id="v-redeem" class="hidden">
+    <div class="intro">
+      <div class="hero"><i></i></div>
+      <h1>Turi <em>dovanų kodą?</em></h1>
+    </div>
+    <p class="lead sm">Įvesk kodą iš dovanų kortelės — ir atskleisk savo gyvenimo žemėlapį.</p>
+    <form class="card-form" id="redeem-form" novalidate>
+      <label for="r-code">Dovanos kodas</label>
+      <input type="text" id="r-code" class="code-in" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button type="submit" class="btn" id="r-btn">Tęsti →</button>
+      <div class="err" id="r-err"></div>
+    </form>
+    <a class="how-link" href="/dovana">🎁 Nori padovanoti kitam?</a>
+  </section>
+
   <!-- 4. KLAIDA -->
   <section id="v-error" class="hidden">
     <div class="status" id="error-txt">Nepavyko rasti kupono.</div>
@@ -296,8 +323,8 @@ body.card-view #v-card{margin:auto 0}
 <script>
 (function(){
   const $ = id => document.getElementById(id);
-  const views = ['v-form','v-wait','v-card','v-error'];
-  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form'); document.body.classList.toggle('card-view', v === 'v-card'); window.scrollTo(0,0); }
+  const views = ['v-form','v-wait','v-card','v-error','v-redeem'];
+  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form' || v === 'v-redeem'); document.body.classList.toggle('card-view', v === 'v-card'); window.scrollTo(0,0); }
   const params = new URLSearchParams(location.search);
   let current = null; // rodomo kupono duomenys
 
@@ -497,7 +524,29 @@ body.card-view #v-card{margin:auto 0}
     } catch (e) { $('error-txt').textContent = 'Kuponas nerastas. Patikrink nuorodą.'; show('v-error'); }
   }
 
-  if (params.get('session_id')) confirmPaid(params.get('session_id'));
+  // ---------- Kodo įvedimas ----------
+  $('r-code').addEventListener('input', () => {
+    // Automatinis formatavimas: didžiosios raidės + brūkšnelis po 4 simbolių
+    const raw = $('r-code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    $('r-code').value = raw.length > 4 ? raw.slice(0, 4) + '-' + raw.slice(4) : raw;
+    $('r-err').style.display = 'none';
+  });
+  $('redeem-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('r-err'), btn = $('r-btn');
+    const code = $('r-code').value.trim();
+    if (code.replace(/-/g, '').length !== 8) { err.textContent = 'Kodą sudaro 8 simboliai, pvz. K7P3-Q9XM.'; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.textContent = 'Tikrinama…';
+    try {
+      const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
+      if (d.valid) { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
+      err.textContent = d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
+    } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
+    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti →';
+  });
+
+  if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
+  else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
   else show('v-form');
 })();
