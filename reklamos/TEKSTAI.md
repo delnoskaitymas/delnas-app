@@ -11,8 +11,32 @@ Norint pakeisti tekstą ar spalvas — redaguok `reklamos.html` ir paleisk `node
 | `04-skyriai-1080x1350.png` | 4:5 | IG feed (užima daugiausia ekrano) |
 | `05-story-hero-1080x1920.png` | 9:16 | IG / FB Stories, Reels, TikTok |
 | `06-story-klausimai-1080x1920.png` | 9:16 | IG / FB Stories, Reels, TikTok |
-| `07-garantija-1080x1080.png` | 1:1 | Retargetingas (buvo svetainėje, nepirko) |
+| `07-garantija-1080x1080.png` | 1:1 | FB / IG feed — pasitikėjimui, kai reklama jau matyta |
 | `08-landscape-1200x628.png` | 1.91:1 | FB nuorodos reklama, Google Display |
+
+**2 banga (kaitaliojimui):**
+
+| Failas | Formatas | Stilius / tema |
+|---|---|---|
+| `09-rankose-1080x1080.png` | 1:1 | Tamsus · „Tavo ateitis — tavo rankose“ |
+| `10-linijos-1080x1350.png` | 4:5 | Tamsus · „Linijos nemeluoja“ (4 delno linijos) |
+| `11-sviesus-hero-1080x1080.png` | 1:1 | Šviesus · „Kas tau lemta?“ |
+| `12-sviesus-story-1080x1920.png` | 9:16 | Šviesus · „Ką pasakoja tavo delnai?“ |
+| `13-sviesus-privalumai-1080x1080.png` | 1:1 | Šviesus · privalumai + garantija |
+| `14-draugems-1080x1080.png` | 1:1 | Tamsus · „Pakviesk draugę — palyginkit“ |
+| `15-draugems-story-1080x1920.png` | 9:16 | Šviesus · „Nustebink draugę“ |
+| `16-ruduo-1080x1350.png` | 4:5 | Sezoninis (ruduo) · „Laikas pokyčiams“ |
+
+**3 banga:**
+
+| Failas | Formatas | Tema |
+|---|---|---|
+| `17-horoskopas-1080x1080.png` | 1:1 | „Horoskopas — visiems vienodas. Tavo delnai — tik tavo.“ |
+| `18-rezultatas-telefone-1080x1350.png` | 4:5 | Rezultato peržiūra telefone — „Štai ką gausi“ |
+| `19-karjera-1080x1080.png` | 1:1 | „Karjera. Finansai. Sprendimai.“ (vyrams / verslo auditorijai) |
+| `20-horoskopas-story-1080x1920.png` | 9:16 | Horoskopas vs delnai (Stories) |
+| `21-karusele-1…5-1080x1080.png` | 1:1 ×5 | **Karuselė** apie 4 delno linijas (edukacinė) |
+| `22-3-zingsniai-story-1080x1920.png` | 9:16 | Šviesus · „3 žingsniai“ |
 
 Karuselė (FB/IG): 01 → 02 → 03 → 07.
 
@@ -101,8 +125,8 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - **Šalis:** Lietuva, kalba — lietuvių. Amžius **18+** (privaloma — app skirtas tik pilnamečiams), geriausiai veikia 22–45.
 - **Pomėgiai:** astrologija, horoskopai, taro, numerologija, dvasingumas, savęs pažinimas, psichologija, meditacija.
 - **Biudžetas testui:** 10–15 €/d., 3–4 skirtingi vizualai viename ad set'e, po 4–5 d. išjungti prasčiausius.
-- **Retargetingas:** svetainės lankytojai per 14 d., kurie nepirko → `07-garantija` + tekstas A.
-- **Lookalike:** kai bus ~100 pirkimų — 1 % lookalike pagal pirkėjus.
+- **Tikslas (Objective):** „Traffic“ (srautas į delnaskaitymas.lt). Meta Pixel svetainėje nenaudojamas, todėl „Sales“ tikslas ir retargetingas pagal svetainės lankytojus neveiks.
+- **Rezultatų matavimas:** kiekvienai reklamai naudok atskirą nuorodą su UTM žyma (žr. žemiau) ir lygink su pirkimais Stripe skydelyje.
 
 ---
 
@@ -112,4 +136,215 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - **Meta** draudžia tekstus, kurie tiesiogiai teigia apie žmogaus asmenines savybes („Ar tu vieniša?“, „Tavo skolos…“). Klausimai apie *ateitį ir potencialą* yra OK, bet venk „tu turi problemų su…“.
 - Nežadėk garantuotų rezultatų ar tikslių spėjimų („sužinosi, kada praturtėsi“). Formuluok kaip „atskleisk“, „pažvelk“, „sužinok, ką pasakoja delnai“.
 - Garantiją visada vadink „14 dienų pinigų grąžinimo garantija“ — tiksliai taip, kaip svetainėje.
-- Svetainėje turi būti įdiegtas **Meta Pixel** (ir/ar Google tag), kad galėtum matuoti pirkimus ir daryti retargetingą — šiuo metu kode jo nėra.
+
+---
+
+## 2 banga — tekstai
+
+**E — „Tavo rankose“ (09)**
+> Sakoma, kad ateitis — tavo rankose. Mes tai priimame tiesiogine prasme ✋
+> Nufotografuok delnus ir per kelias minutes gauk asmeninį gyvenimo žemėlapį.
+
+**F — „Linijos nemeluoja“ (10)**
+> Gyvenimo, širdies, galvos ir likimo linijos — kiekviena pasakoja savo istoriją.
+> Sužinok, ką rodo tavosios ✦ 7 skyrių analizė ekrane ir PDF el. paštu.
+
+**G — šviesus, ramus (11, 12, 13)**
+> Kas tau lemta? 🌙
+> Senovinė chiromantija, šiuolaikiškai: užtenka telefono kameros. Stiprybės, santykiai, finansai ir artėjantys pokyčiai — viename asmeniniame žemėlapyje.
+> 14 dienų pinigų grąžinimo garantija.
+
+**H — su drauge (14, 15)**
+> Merginų vakarui — kažkas naujo ✨
+> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius: kuri iš jūsų gimusi lyderė, o kurios laukia didesni pokyčiai? 👭
+> 👉 delnaskaitymas.lt
+
+**I — ruduo (16)**
+> Ruduo — laikas naujiems sprendimams 🍂
+> Sužinok, kokie lūžiai ir galimybės tavęs laukia artimiausiais mėnesiais. Asmeninis gyvenimo žemėlapis pagal tavo delnus.
+
+**Naujos antraštės (Headline):**
+- Tavo ateitis — tavo rankose
+- Linijos nemeluoja
+- Kas tau lemta?
+- Palyginkit savo žemėlapius su drauge
+- Ruduo — laikas pokyčiams
+
+> Pastaba dėl „draugės“ reklamų: kiekviena draugė perka ir fotografuoja savo delnus pati — dovanų kuponų programa neturi, todėl reklamoje nerašyk „nupirk dovaną“, kad nebūtų klaidinančio pažado.
+
+---
+
+## Kaitaliojimo planas (kas 2–3 savaites)
+
+| Savaitės | Reklamos (feed) | Stories / Reels |
+|---|---|---|
+| 1–2 | 01, 02, 04 | 05, 06 |
+| 3–4 | 09, 10, 14 | 15, 06 |
+| 5–6 | 11, 13, 03 | 12, 05 |
+| 7–8 (ruduo) | 16, 07, geriausia iš 1–6 sav. | geriausia story |
+
+- Viename ad set'e laikyk 3–4 vizualus, Meta pati rodys geriausiai veikiantį.
+- Keisk, kai **dažnis (Frequency) > 2,5** arba paspaudimų kaina (CPC) pakyla ~30 % nuo pradžios.
+- Tamsų ir šviesų stilių testuok **atskiruose** ad set'uose — taip aiškiai matysis, kuris veikia geriau.
+- Geriausias reklamas nemesk — po mėnesio pertraukos jos vėl veikia.
+
+## UTM nuorodos (kad matytum, kuri reklama atnešė lankytoją)
+
+Reklamos nuorodoje naudok, pvz.:
+`https://delnaskaitymas.lt/?utm_source=facebook&utm_medium=paid&utm_campaign=banga2&utm_content=11-sviesus-hero`
+
+Pakeisk `utm_content` pagal paveikslėlio pavadinimą. Meta Ads Manager tą patį galima įrašyti laukelyje **„URL parameters“**.
+
+---
+
+## 3 banga — tekstai
+
+**J — horoskopas (17, 20)**
+> Horoskopas vienodas milijonams žmonių. Tavo delnų linijos — tik tavo ✋
+> Nufotografuok delnus ir gauk asmeninį 7 skyrių gyvenimo žemėlapį.
+
+**K — „Štai ką gausi“ (18)**
+> Štai kaip atrodo tavo gyvenimo žemėlapis 👇
+> Stiprybės, kryptis, santykiai, finansai, sėkmės raktas, pokyčiai ir kliūtys — 7 skyriai ekrane ir PDF el. pašte.
+
+**L — karjera (19)** — taikyk ir vyrams, pomėgiai: verslas, investavimas, asmeninis augimas
+> Karjera. Finansai. Sprendimai.
+> Sužinok, ką apie tavo stiprybes ir finansinį potencialą pasakoja delnų linijos. Pramoginė patirtis, verta pabandyti.
+
+**M — karuselė (21-1 … 21-5)** — įkelk kaip „Carousel“ formatą, eilės tvarka 1→5
+> Ar žinai, ką reiškia linijos tavo delne? Braukite → ✋
+> Pagrindinis tekstas trumpas — karuselė pati pasakoja istoriją. Antraštė po kiekviena kortele: „Perskaityk savo linijas“.
+
+**N — 3 žingsniai (22)**
+> 1) Nufotografuok abu delnus 2) AI perskaito linijas 3) Gauk 7 skyrių analizę + PDF. Tiek ✨
+
+
+---
+
+## Vaizdo reklama (Reels / TikTok / Stories)
+
+Failas: `video/delnas-reels-1080x1920.mp4` — 15 s, 9:16, 1080×1920, H.264, be muzikos.
+
+| Sek. | Scena |
+|---|---|
+| 0–2,8 | „Ką slepia tavo delnai?“ — auksinė linija nuskenuoja delną |
+| 2,8–6,2 | Delno linijos nusipiešia po vieną: gyvenimo, širdies, galvos, likimo |
+| 6,2–9,2 | „Tereikia telefono“ — 3 žingsniai ir procentai 0 → 99 % |
+| 9,2–12,4 | Telefonas su 7 žemėlapio skyriais |
+| 12,4–15 | „Tavo delnai jau žino“ + mygtukas + delnaskaitymas.lt |
+
+**Muzika:** pridėk pačioje Instagram / TikTok programėlėje iš jų licencijuotos bibliotekos (paslaptingas / „ambient“ / „mystical“ stilius). Svetimos muzikos į failą nedėk — reklamą gali užblokuoti dėl autorių teisių.
+
+**Tekstas prie video:**
+> Ką slepia tavo delnai? ✋✨ Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį. Nuoroda — delnaskaitymas.lt
+
+Norint pakeisti tekstą ar laiką — redaguok `video.html` ir paleisk `node reklamos/video-render.js` (reikia ffmpeg su libx264, pvz. `pip install imageio-ffmpeg`, kelias per `FFMPEG` kintamąjį).
+
+### 2-as video — su drauge, šviesus
+
+Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
+
+| Sek. | Scena |
+|---|---|
+| 0–3 | „Kuri iš jūsų — gimusi lyderė?“ — du delnai atskrenda iš šonų („Tu“ / „Ji“) |
+| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai |
+| 6,6–10,4 | „Du delnai — du skirtingi keliai“ — du telefonai su žemėlapiais |
+| 10,4–12,6 | „Kas jus sieja? Kuo jūs skiriatės? Kurios laukia didesni pokyčiai?“ |
+| 12,6–15 | „Nustebink draugę“ + „Išbandyti kartu“ + delnaskaitymas.lt |
+
+**Tekstas prie video:**
+> Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. delnaskaitymas.lt
+
+**A/B testas:** abu video (1-as tamsus ir 2-as šviesus) dėk į **atskirus** ad set'us su tuo pačiu biudžetu ir auditorija. Po 4–5 dienų palik tą, kurio paspaudimo kaina (CPC) mažesnė ir daugiau žmonių žiūri iki galo („ThruPlay“).
+
+Generuoti: `node reklamos/video-render.js video2.html delnas-reels-draugems-1080x1920.mp4`
+
+---
+
+## 🎄 Kalėdinė banga (rodyti nuo ~lapkričio 15 d.)
+
+| Failas | Formatas | Tema |
+|---|---|---|
+| `23-kaledos-2027-1080x1080.png` | 1:1 | „Ką tau atneš 2027-ieji?“ |
+| `24-kaledos-2027-story-1080x1920.png` | 9:16 | ~~2026~~ 2027 — „Ką tau atneš nauji metai?“ |
+| `25-metu-pabaiga-1080x1350.png` | 4:5 | „Metų pabaiga — laikas pažvelgti į savo kelią“ |
+| `26-dovana-sau-1080x1080.png` | 1:1 | Šviesus · „Dovana sau pačiai“ |
+| `27-kaledu-vakaras-1080x1080.png` | 1:1 | „Kažkas naujo prie šventinio stalo“ (kartu) |
+| `28-kaledu-vakaras-story-1080x1920.png` | 9:16 | Šviesus · „Šventiniam vakarui“ (su draugėmis ar šeima) |
+| `29-nauji-metai-1080x1350.png` | 4:5 | „Nauji metai. Nauji tikslai. Nauji atsakymai.“ |
+| `30-kaledos-landscape-1200x628.png` | 1.91:1 | FB nuoroda / Google Display |
+| `video/delnas-reels-kaledos-1080x1920.mp4` | 9:16, 15 s | Vaizdo įrašas su krentančiu sniegu |
+
+**Kalendorius:**
+
+| Laikotarpis | Rodyti | Kodėl |
+|---|---|---|
+| Lapkr. 15 – gruod. 20 | 23, 25, 26, kalėdinis video | Metų pabaigos apmąstymai, „dovana sau“ |
+| Gruod. 10 – 26 | 27, 28 | Šventiniai vakarai su draugėmis / šeima |
+| Gruod. 26 – saus. 10 | 24, 29, 30 | Naujųjų metų tikslai, „ką atneš 2027-ieji“ |
+
+Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–30 % nuo lapkričio vidurio, o sausio pradžioje (kai kaina krenta) — išnaudoti „Naujų metų“ temą.
+
+**Tekstai:**
+
+**O — 2027 (23, 24, 30, video)**
+> Ką tau atneš 2027-ieji? ✨ Tavo delnai jau žino.
+> Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį: stiprybės, kryptis, santykiai ir artėjantys pokyčiai.
+
+**P — metų pabaiga (25)**
+> Metų pabaiga — geriausias laikas sustoti ir pažvelgti į savo kelią 🕯️
+> Kas tavo stiprybės? Kur veda tavo kelias? Kokie pokyčiai laukia? 7 skyrių asmeninė analizė pagal tavo delnus.
+
+**R — dovana sau (26)**
+> Šias Kalėdas — ir dovana sau 🎄
+> Valanda sau ir asmeninis gyvenimo žemėlapis, prie kurio galėsi sugrįžti visus metus. 14 dienų pinigų grąžinimo garantija.
+
+**S — šventinis vakaras (27, 28)**
+> Kažkas naujo prie šventinio stalo ✨
+> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius — kas jus sieja ir kuo skiriatės? 👭
+
+**T — Nauji metai (29)**
+> Nauji metai. Nauji tikslai. Nauji atsakymai.
+> Pasitik 2027-uosius su savo gyvenimo žemėlapiu ✦
+
+> ⚠️ Kol programėlėje nėra dovanų kuponų, **nerašyk** „padovanok draugei / nupirk dovaną“ — rašyk tik „dovana sau“ arba „išbandykit kartu“. Kai kuponai atsiras — galima pridėti atskirą „Dovanų kupono“ bangą.
+
+Kalėdinį video generuoti: `node reklamos/video-render.js video3.html delnas-reels-kaledos-1080x1920.mp4`
+
+---
+
+## 🎉 Progų banga (tinka visoms progoms, rodyti visus metus)
+
+Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai · Valentino dienai · Šventėms** — todėl jos nepririštos prie vienos šventės.
+
+| Failas | Formatas | Antraštė |
+|---|---|---|
+| `31-gimtadienis-1080x1080.png` | 1:1 | „Ypatinga proga — pažvelgti į save“ |
+| `32-gimtadienio-vakarelis-story-1080x1920.png` | 9:16 | „Kažkas kitokio“ (trys delnai) |
+| `33-staigmena-1080x1080.png` | 1:1 | „Surenk draugėms staigmeną“ + 3 žingsniai |
+| `34-staigmena-story-1080x1920.png` | 9:16 | „Vakarėlis, kurį prisiminsit“ |
+| `35-mergvakaris-1080x1080.png` | 1:1 | „Pramoga, kurios dar nebandėt“ |
+| `36-mergvakaris-story-1080x1920.png` | 9:16 | „Tu ir tavo draugės“ |
+| `37-valentino-poroms-1080x1080.png` | 1:1 | „Ką apie jus pasakoja jūsų delnai?“ (dviese) |
+| `38-valentino-sirdies-linija-story-1080x1920.png` | 9:16 | „Širdies linija pasakoja daug“ |
+| `39-valentino-sau-1080x1350.png` | 4:5 | „Pirmiausia — pažink savo širdį“ |
+
+(Failų pavadinimai liko seni, kad nesusipainiotų nuorodos — turinys dabar bendras visoms progoms.)
+
+**Kada rodyti:** visus metus. Prieš konkrečią progą galima padidinti biudžetą: vasario pradžioje (37–39), balandį–rugsėjį (35, 36 — vestuvių sezonas), prieš šventes (32–34).
+
+**Tekstai:**
+
+**U — sau (31, 39)**
+> Gimtadienis, šventė ar tiesiog ypatinga diena — puiki proga pažvelgti į save ✨
+> Asmeninis gyvenimo žemėlapis pagal tavo delnus: stiprybės, kryptis, santykiai ir pokyčiai. Per kelias minutes.
+
+**V — vakarėliui (32–36)**
+> Gimtadieniui, mergvakariui, staigmenai ar tiesiog vakarui su draugėmis 🥂
+> Nufotografuokit delnus ir skaitykit savo gyvenimo žemėlapius kartu. Juoko ir nuostabos netrūks ✨
+
+**X — dviese (37, 38)**
+> Valentino dienai, sukakčiai ar tiesiog vakarui dviese ♥
+> Nufotografuokit delnus ir palyginkit, ką apie jus pasakoja jūsų linijos.
+
+> ⚠️ Reklamose nėra „nupirk dovaną / dovanų kuponas“ — kiekvienas išbando ir moka pats. Porų reklamose nežadama „suderinamumo įvertinimo“ — programėlė analizuoja kiekvieną atskirai, todėl rašoma „palyginkit“.

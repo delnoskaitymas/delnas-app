@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>DELNAS — Dovanų kuponas</title>
+<meta name="description" content="Padovanok asmeninį Gyvenimo žemėlapį pagal delnus. Dovanų kortelė iškart į el. paštą.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+:root{--bg:#000;--gold:#d4a843;--gold2:#f0d58a;--text:#fff;--muted:rgba(255,255,255,.62);--faint:rgba(255,255,255,.35);--border:rgba(212,168,67,.28)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.13),transparent 60%),#000}
+.wrap{max-width:480px;margin:0 auto;padding:28px 16px 40px}
+.brand{text-align:center;font:700 18px 'Playfair Display',serif;letter-spacing:.32em;color:var(--gold)}
+.brand small{display:block;font:400 10px 'DM Sans';letter-spacing:.3em;color:var(--faint);margin-top:4px}
+h1{font:400 34px/1.12 'Playfair Display',serif;text-align:center;margin:26px 0 10px}
+h1 em{font-style:italic;color:var(--gold)}
+.lead{text-align:center;font-size:14.5px;line-height:1.55;color:var(--muted)}
+.hero{position:relative;height:170px;margin:18px auto 8px;width:170px;border-radius:50%;overflow:hidden;border:2px solid rgba(212,168,67,.6);
+  box-shadow:0 0 30px rgba(212,168,67,.3),inset 0 0 24px rgba(212,168,67,.12)}
+.hero i{position:absolute;inset:-6%;background:url(/img/delnas.jpg) center 40%/cover;filter:sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.05)}
+.steps{display:flex;flex-direction:column;gap:8px;margin:22px 0 6px}
+.step{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);line-height:1.4}
+.step b{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  font:400 13px 'Playfair Display';color:var(--gold)}
+.card-form{margin-top:22px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:18px;padding:18px 16px}
+label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px}
+label:first-child{margin-top:0}
+input[type=text],input[type=email],textarea{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;
+  padding:12px 13px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none}
+input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
+textarea{resize:vertical;min-height:84px;line-height:1.45}
+.hint{font-size:11px;color:var(--faint);margin-top:5px;text-align:right}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:12px;line-height:1.5;color:var(--muted);text-transform:none;letter-spacing:0}
+.chk input{margin-top:2px;accent-color:var(--gold);width:16px;height:16px;flex:none}
+a{color:var(--gold)}
+.btn{display:block;width:100%;margin-top:18px;border:none;border-radius:16px;padding:15px;cursor:pointer;
+  background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:500 16px 'DM Sans',sans-serif;
+  box-shadow:0 0 24px rgba(212,168,67,.3)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid rgba(212,168,67,.45);color:var(--gold2);box-shadow:none;margin-top:10px}
+.err{display:none;color:#ff7b7b;font-size:12.5px;margin-top:10px;text-align:center}
+.trust{text-align:center;font-size:11px;color:var(--faint);margin-top:12px;line-height:1.6}
+.fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.3);margin-top:26px;line-height:1.6}
+.hidden{display:none!important}
+.status{text-align:center;color:var(--muted);font-size:14px;margin:40px 0}
+.spin{width:30px;height:30px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold);border-radius:50%;margin:0 auto 14px;animation:sp .9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.note{background:rgba(212,168,67,.07);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--muted);margin-top:14px;text-align:center}
+
+/* --- Dovanų kortelė (540×760 CSS px; atsisiunčiama 2× raiška) --- */
+#card-stage{display:flex;justify-content:center;margin-top:18px}
+#card-scale{transform-origin:top center}
+.gcard{position:relative;width:540px;height:760px;overflow:hidden;border-radius:26px;color:#fff;text-align:center;
+  background:radial-gradient(ellipse at 50% 30%,rgba(212,168,67,.16),transparent 60%),#050505;border:1px solid rgba(212,168,67,.5);
+  font-family:'DM Sans',sans-serif}
+.gcard::after{content:"";position:absolute;inset:14px;border:1px solid rgba(212,168,67,.3);border-radius:18px;pointer-events:none}
+.gcard .gh{position:absolute;left:50%;top:170px;width:360px;height:500px;transform:translateX(-50%);opacity:.22;
+  background:url(/img/delnas.jpg) center/cover;filter:sepia(.6) saturate(1.5);
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 45%,transparent 100%)}
+.gcard .in{position:relative;z-index:1;padding:44px 40px 0;display:flex;flex-direction:column;align-items:center;height:100%}
+.gcard .b{font:700 20px 'Playfair Display',serif;letter-spacing:.34em;color:var(--gold)}
+.gcard .k{font-size:10.5px;letter-spacing:.34em;color:rgba(255,255,255,.5);margin-top:6px}
+.gcard .to{font:400 40px/1.1 'Playfair Display',serif;margin-top:40px}
+.gcard .what{font:400 17px/1.4 'Playfair Display',serif;color:rgba(255,255,255,.78);margin-top:10px}
+.gcard .what em{color:var(--gold)}
+.gcard .msg{font:italic 400 17px/1.5 'Playfair Display',serif;color:var(--gold2);margin-top:24px;max-width:430px;word-wrap:break-word}
+.gcard .from{font-size:14px;color:rgba(255,255,255,.6);margin-top:8px}
+.gcard .qrrow{margin-top:auto;margin-bottom:40px;display:flex;align-items:center;gap:22px;background:rgba(0,0,0,.55);
+  border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:14px 18px;text-align:left}
+.gcard .qr{background:#fff;padding:7px;border-radius:8px;width:118px;height:118px;flex:none}
+.gcard .qr img,.gcard .qr canvas{width:104px!important;height:104px!important;display:block}
+.gcard .code{font:700 23px 'Courier New',monospace;letter-spacing:.14em;color:var(--gold2)}
+.gcard .how{font-size:12px;line-height:1.5;color:rgba(255,255,255,.65);margin-top:6px;max-width:230px}
+.gcard .exp{font-size:11px;color:rgba(255,255,255,.4);margin-top:6px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.actions .btn{margin-top:0;font-size:14px;padding:13px}
+.actions .btn.ghost{margin-top:0}
+.redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">DELNAS<small>Gyvenimo žemėlapis</small></div>
+
+  <!-- 1. UŽSAKYMO FORMA -->
+  <section id="v-form" class="hidden">
+    <h1>Padovanok<br><em>gyvenimo žemėlapį</em></h1>
+    <p class="lead">Asmeninė delnų analizė — stiprybės, kryptis, santykiai, finansai ir artėjantys pokyčiai. Dovanų kortelė su kodu iškart atkeliaus į tavo el. paštą.</p>
+    <div class="hero"><i></i></div>
+    <div class="steps">
+      <div class="step"><b>1</b>Užpildyk kortelę ir apmokėk</div>
+      <div class="step"><b>2</b>Gauk dovanų kortelę su QR kodu el. paštu — persiųsk ar atsispausdink</div>
+      <div class="step"><b>3</b>Gavėjas nufotografuoja delnus ir gauna savo žemėlapį — mokėti jam nereikės</div>
+    </div>
+    <form class="card-form" id="gift-form" novalidate>
+      <label for="f-to">Kam dovanoji</label>
+      <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off">
+      <label for="f-from">Nuo ko</label>
+      <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name">
+      <label for="f-msg">Palinkėjimas (neprivaloma)</label>
+      <textarea id="f-msg" maxlength="300" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
+      <div class="hint"><span id="msg-count">0</span>/300</div>
+      <label for="f-email">Tavo el. paštas</label>
+      <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
+      <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
+      <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span> →</button>
+      <div class="err" id="form-err"></div>
+      <div class="trust">🔒 Saugus mokėjimas per Stripe · Kortelė, Apple Pay, Google Pay, Revolut Pay<br>14 dienų pinigų grąžinimo garantija, kol kuponas nepanaudotas</div>
+    </form>
+  </section>
+
+  <!-- 2. LAUKIMAS -->
+  <section id="v-wait" class="hidden"><div class="status"><div class="spin"></div><span id="wait-txt">Tikriname mokėjimą…</span></div></section>
+
+  <!-- 3. KORTELĖ (po apmokėjimo arba iš el. laiško nuorodos) -->
+  <section id="v-card" class="hidden">
+    <h1 id="card-title">Dovana <em>paruošta!</em></h1>
+    <p class="lead" id="card-lead">Kortelė jau išsiųsta į tavo el. paštą. Ją gali atsisiųsti, atsispausdinti arba iškart nusiųsti gavėjui.</p>
+    <div id="card-stage"><div id="card-scale">
+      <div class="gcard" id="gcard">
+        <div class="gh"></div>
+        <div class="in">
+          <div class="b">DELNAS</div>
+          <div class="k">DOVANŲ KUPONAS</div>
+          <div class="to" id="c-to">🎁 Tau</div>
+          <div class="what">Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus</div>
+          <div class="msg" id="c-msg"></div>
+          <div class="from" id="c-from"></div>
+          <div class="qrrow">
+            <div class="qr" id="c-qr"></div>
+            <div>
+              <div class="code" id="c-code">XXXX-XXXX</div>
+              <div class="how">Nuskenuok kodą arba atidaryk <b style="color:#fff">delnaskaitymas.lt</b> nuorodą — nufotografuok delnus, mokėti nereikės.</div>
+              <div class="exp" id="c-exp"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="redeemed hidden" id="c-redeemed">Šis kuponas jau panaudotas.</div>
+    <div class="actions" id="card-actions">
+      <button class="btn" id="dl-png">Atsisiųsti kortelę</button>
+      <button class="btn ghost" id="dl-pdf">Atsisiųsti PDF</button>
+      <button class="btn ghost" id="share">Siųsti gavėjui</button>
+      <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
+    </div>
+    <div class="note" id="link-note">Asmeninė nuoroda: <br><a id="c-link" href="#" style="word-break:break-all"></a></div>
+    <a class="btn ghost" href="/dovana" id="again" style="text-align:center;text-decoration:none;margin-top:16px">Padovanoti dar vieną</a>
+  </section>
+
+  <!-- 4. KLAIDA -->
+  <section id="v-error" class="hidden">
+    <div class="status" id="error-txt">Nepavyko rasti kupono.</div>
+    <a class="btn" href="/dovana" style="text-align:center;text-decoration:none">Grįžti</a>
+  </section>
+
+  <p class="fine">Pramoginio pobūdžio paslauga, skirta 18+ · <a href="/naudojimosi-salygos">Sąlygos</a> · <a href="/privatumo-politika">Privatumas</a> · info@delnaskaitymas.lt</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const views = ['v-form','v-wait','v-card','v-error'];
+  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0,0); }
+  const params = new URLSearchParams(location.search);
+  let current = null; // rodomo kupono duomenys
+
+  // ---------- 1. Forma ----------
+  function validForm(){
+    return $('f-ok').checked && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('f-email').value.trim());
+  }
+  function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
+  ['f-ok','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
+  $('f-ok').addEventListener('change', refreshBtn);
+  $('f-msg').addEventListener('input', () => { $('msg-count').textContent = $('f-msg').value.length; });
+
+  fetch('/price-info').then(r => r.json()).then(d => {
+    if (d && d.active && d.active.amount) $('price').textContent = (d.active.amount/100).toFixed(2).replace('.', ',') + ' €';
+  }).catch(() => {});
+
+  $('gift-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!validForm()) return;
+    const err = $('form-err'); err.style.display = 'none';
+    const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
+    try {
+      const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+                               recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
+      const d = await r.json();
+      if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
+      location.href = d.url;
+    } catch (ex) {
+      err.textContent = ex.message; err.style.display = 'block';
+      btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + $('price').textContent + '</span> →';
+    }
+  });
+
+  // ---------- 2. Kortelė ----------
+  function fmtDate(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function redeemLink(code){ return location.origin + '/?dovana=' + encodeURIComponent(code); }
+
+  function fitCard(){
+    const w = Math.min(540, document.querySelector('.wrap').clientWidth);
+    const s = w / 540;
+    $('card-scale').style.transform = 'scale(' + s + ')';
+    $('card-stage').style.height = (760 * s) + 'px';
+  }
+  window.addEventListener('resize', fitCard);
+
+  function renderCard(g, opts){
+    current = g;
+    $('c-to').textContent = '🎁 ' + (g.recipientName ? g.recipientName : 'Tau');
+    $('c-msg').textContent = g.message ? '„' + g.message + '“' : '';
+    $('c-from').textContent = g.fromName ? '— nuo ' + g.fromName : '';
+    $('c-code').textContent = g.code;
+    $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
+    const link = redeemLink(g.code);
+    $('c-link').textContent = link; $('c-link').href = link;
+    $('c-qr').innerHTML = '';
+    if (window.QRCode) new QRCode($('c-qr'), { text: link, width: 208, height: 208, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    if (opts && opts.fromEmail) {
+      $('card-title').innerHTML = 'Tavo <em>dovanų kortelė</em>';
+      $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk ją gavėjui.';
+    }
+    const used = g.status && g.status !== 'active';
+    $('c-redeemed').classList.toggle('hidden', !used);
+    if (used) $('c-redeemed').textContent = g.status === 'redeemed' ? 'Šis kuponas jau panaudotas.' : 'Šis kuponas nebegalioja.';
+    show('v-card'); fitCard();
+  }
+
+  // Atsisiuntimui — kortelės kopija be mastelio (html2canvas nemėgsta transform tėvuose).
+  let libsP = null;
+  function loadLibs(){
+    if (libsP) return libsP;
+    const load = src => new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+    libsP = Promise.all([
+      window.html2canvas ? 0 : load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+      window.jspdf ? 0 : load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    ]);
+    return libsP;
+  }
+  async function cardCanvas(){
+    await loadLibs();
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const clone = $('gcard').cloneNode(true); clone.id = '';
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:-10000px;top:0;width:540px;height:760px';
+    box.appendChild(clone); document.body.appendChild(box);
+    try { return await html2canvas(clone, { scale: 2, backgroundColor: '#000', useCORS: true }); }
+    finally { box.remove(); }
+  }
+  function fileBase(){ return 'DELNAS-dovana-' + (current ? current.code : ''); }
+  $('dl-png').addEventListener('click', async () => {
+    const b = $('dl-png'); const t = b.textContent; b.textContent = 'Ruošiama…';
+    try { const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click(); }
+    catch (e) { alert('Nepavyko paruošti kortelės. Pabandyk dar kartą.'); }
+    b.textContent = t;
+  });
+  $('dl-pdf').addEventListener('click', async () => {
+    const b = $('dl-pdf'); const t = b.textContent; b.textContent = 'Ruošiama…';
+    try {
+      const c = await cardCanvas();
+      const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [135, 190] });
+      pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 135, 190);
+      pdf.save(fileBase() + '.pdf');
+    } catch (e) { alert('Nepavyko paruošti PDF. Pabandyk dar kartą.'); }
+    b.textContent = t;
+  });
+  $('copy').addEventListener('click', async () => {
+    const link = redeemLink(current.code);
+    try { await navigator.clipboard.writeText(link); $('copy').textContent = 'Nukopijuota ✓'; }
+    catch (e) { prompt('Nukopijuok nuorodą:', link); }
+    setTimeout(() => { $('copy').textContent = 'Kopijuoti nuorodą'; }, 2000);
+  });
+  $('share').addEventListener('click', async () => {
+    const link = redeemLink(current.code);
+    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : 'tau') + (current.fromName ? ' nuo ' + current.fromName : '') + ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus! Atidaryk nuorodą ir nufotografuok delnus: ';
+    try {
+      // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.
+      if (navigator.canShare) {
+        const c = await cardCanvas();
+        const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+        const file = new File([blob], fileBase() + '.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: text + link }); return; }
+      }
+      if (navigator.share) { await navigator.share({ text: text, url: link }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(text + link); alert('Žinutė su nuoroda nukopijuota — įklijuok ją Messenger ar kitur.'); }
+    catch (e) { prompt('Nukopijuok ir nusiųsk:', text + link); }
+  });
+
+  // ---------- Paleidimas ----------
+  async function confirmPaid(sessionId){
+    show('v-wait');
+    // Stripe kartais pažymi mokėjimą „paid“ po kelių sekundžių — bandome kelis kartus.
+    for (let i = 0; i < 8; i++) {
+      try {
+        const r = await fetch('/gift/confirm?session_id=' + encodeURIComponent(sessionId));
+        const d = await r.json();
+        if (d.paid) { history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); return; }
+        if (r.status === 400) break;
+      } catch (e) {}
+      $('wait-txt').textContent = 'Laukiame mokėjimo patvirtinimo…';
+      await new Promise(r => setTimeout(r, 2500));
+    }
+    $('error-txt').innerHTML = 'Mokėjimo patvirtinti kol kas nepavyko. Jei pinigai nuskaičiuoti — kortelė atkeliaus el. paštu, arba parašyk mums: <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a>';
+    show('v-error');
+  }
+  async function openCard(code){
+    show('v-wait'); $('wait-txt').textContent = 'Įkeliama kortelė…';
+    try {
+      const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
+      if (d.status === 'not_found') throw 0;
+      renderCard(d, { fromEmail: true });
+    } catch (e) { $('error-txt').textContent = 'Kuponas nerastas. Patikrink nuorodą.'; show('v-error'); }
+  }
+
+  if (params.get('session_id')) confirmPaid(params.get('session_id'));
+  else if (params.get('kodas')) openCard(params.get('kodas'));
+  else show('v-form');
+})();
+</script>
+</body>
+</html>

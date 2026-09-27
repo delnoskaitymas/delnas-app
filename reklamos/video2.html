@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<title>DELNAS — vaizdo reklama (draugės, šviesi)</title>
+<link href="assets/fonts.css" rel="stylesheet">
+<style>
+  :root{--ink:#1d160a;--gold:#a8781f;--gold2:#c9a24a;--muted:rgba(29,22,10,.7);--faint:rgba(29,22,10,.5)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1080px;height:1920px;overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--ink)}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 35%,#fffaf0 0%,#f5ead6 55%,#e9d6b3 100%)}
+  #stage::after{content:"";position:absolute;inset:26px;border:1.5px solid rgba(168,120,31,.4);pointer-events:none}
+  .scene{position:absolute;inset:0;opacity:0}
+  .c{position:absolute;left:0;right:0;text-align:center}
+  h1{font:400 92px/1.08 'Playfair Display'}
+  h1 em{font-style:italic;color:var(--gold)}
+  .sub{font:300 40px/1.35 'DM Sans';color:var(--muted)}
+  .brand{font:700 40px 'Playfair Display';letter-spacing:.32em;color:var(--gold)}
+  .eyebrow{font:500 26px 'DM Sans';letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+  .fine{font:400 24px 'DM Sans';color:var(--faint)}
+  .medal{position:absolute;border-radius:50%;overflow:hidden;border:4px solid var(--gold2);background:#000;
+    box-shadow:0 24px 70px rgba(110,75,20,.35),0 0 0 16px rgba(201,162,74,.12)}
+  .medal i{position:absolute;inset:-6%;background:url(assets/delnas.jpg) center 45%/cover;
+    filter:sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.1) contrast(1.05)}
+  .tag{position:absolute;font:500 30px 'DM Sans';letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .step{display:flex;align-items:center;gap:32px;margin:0 110px;padding:32px 40px;border:1.5px solid rgba(168,120,31,.3);
+    border-radius:26px;background:rgba(255,255,255,.6)}
+  .step .n{flex:none;width:88px;height:88px;border-radius:50%;background:var(--ink);color:#f5d98f;display:flex;align-items:center;justify-content:center;
+    font:400 44px 'Playfair Display'}
+  .step b{font:400 42px 'Playfair Display';text-align:left}
+  .mini{position:absolute;width:430px;height:860px;border-radius:64px;background:#0b0b0b;border:3px solid var(--gold2);
+    box-shadow:0 26px 70px rgba(80,55,15,.35);padding:20px}
+  .scr{width:100%;height:100%;border-radius:46px;background:#000;overflow:hidden;padding:60px 28px 20px;color:#fff}
+  .t1{font:500 22px 'DM Sans';letter-spacing:.22em;color:#d4a843;text-align:center;text-transform:uppercase}
+  .t2{font:400 34px/1.1 'Playfair Display';text-align:center;margin:10px 0 18px}
+  .ch{border-top:1px solid rgba(212,168,67,.22);padding:13px 0 4px;opacity:0}
+  .ch b{display:block;font:400 21px 'Playfair Display';color:#f0d58a;margin-bottom:9px}
+  .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.15);margin-bottom:7px}
+  .q{font:400 76px/1.2 'Playfair Display'}
+  .q em{font-style:italic;color:var(--gold)}
+  .cta{display:inline-flex;align-items:center;background:var(--ink);color:#f5d98f;font:500 42px 'DM Sans';
+    padding:32px 64px;border-radius:999px;box-shadow:0 16px 40px rgba(60,40,10,.3)}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. Kabliukas (0–3 s) -->
+  <div class="scene" id="s1">
+    <div class="c" style="top:200px"><div class="eyebrow">Merginų vakarui ✦</div></div>
+    <div class="c" id="s1t" style="top:290px"><h1>Kuri iš jūsų —<br><em>gimusi lyderė?</em></h1></div>
+    <div class="medal" id="m1" style="width:470px;height:470px;left:90px;top:760px"><i></i></div>
+    <div class="medal" id="m2" style="width:470px;height:470px;left:520px;top:880px"><i style="transform:scaleX(-1)"></i></div>
+    <div class="tag" id="tg1" style="left:210px;top:1270px">Tu</div>
+    <div class="tag" id="tg2" style="left:680px;top:1395px">Ji</div>
+  </div>
+
+  <!-- 2. Kaip (3–6.6 s) -->
+  <div class="scene" id="s2">
+    <div class="c" style="top:260px"><h1 style="font-size:84px">Išbandykit<br><em>kartu</em></h1></div>
+    <div style="position:absolute;left:0;right:0;top:640px;display:flex;flex-direction:column;gap:34px">
+      <div class="step"><div class="n">1</div><b>Abi nufotografuojat delnus</b></div>
+      <div class="step"><div class="n">2</div><b>AI perskaito jūsų linijas</b></div>
+      <div class="step"><div class="n">3</div><b>Palyginat savo žemėlapius</b></div>
+    </div>
+  </div>
+
+  <!-- 3. Du žemėlapiai (6.6–10.4 s) -->
+  <div class="scene" id="s3">
+    <div class="c" style="top:190px"><h1 style="font-size:78px">Du delnai —<br><em>du skirtingi keliai</em></h1></div>
+    <div class="mini" id="p1" style="left:85px;top:560px"><div class="scr">
+      <div class="t1">Tavo</div><div class="t2">Gyvenimo<br><em style="color:#d4a843">žemėlapis</em></div>
+      <div class="ch"><b>I · Stiprybės</b><div class="bar"></div><div class="bar" style="width:80%"></div></div>
+      <div class="ch"><b>III · Santykiai</b><div class="bar"></div><div class="bar" style="width:72%"></div></div>
+      <div class="ch"><b>IV · Finansai</b><div class="bar"></div><div class="bar" style="width:86%"></div></div>
+      <div class="ch"><b>V · Sėkmės raktas</b><div class="bar" style="width:90%"></div></div>
+      <div class="ch"><b>VI · Pokyčiai</b><div class="bar"></div><div class="bar" style="width:66%"></div></div>
+    </div></div>
+    <div class="mini" id="p2" style="left:565px;top:560px"><div class="scr">
+      <div class="t1">Jos</div><div class="t2">Gyvenimo<br><em style="color:#d4a843">žemėlapis</em></div>
+      <div class="ch"><b>I · Stiprybės</b><div class="bar" style="width:92%"></div><div class="bar" style="width:70%"></div></div>
+      <div class="ch"><b>III · Santykiai</b><div class="bar"></div><div class="bar" style="width:84%"></div></div>
+      <div class="ch"><b>IV · Finansai</b><div class="bar" style="width:76%"></div></div>
+      <div class="ch"><b>V · Sėkmės raktas</b><div class="bar"></div><div class="bar" style="width:62%"></div></div>
+      <div class="ch"><b>VI · Pokyčiai</b><div class="bar" style="width:88%"></div></div>
+    </div></div>
+  </div>
+
+  <!-- 4. Klausimai (10.4–12.6 s) -->
+  <div class="scene" id="s4">
+    <div style="position:absolute;left:0;right:0;top:600px;display:flex;flex-direction:column;gap:100px;text-align:center">
+      <div class="q">Kas jus <em>sieja?</em></div>
+      <div class="q">Kuo jūs <em>skiriatės?</em></div>
+      <div class="q">Kurios laukia<br><em>didesni pokyčiai?</em></div>
+    </div>
+  </div>
+
+  <!-- 5. Pabaiga (12.6–15 s) -->
+  <div class="scene" id="s5">
+    <div class="c" style="top:230px"><div class="brand">DELNAS</div><p class="fine" style="letter-spacing:.3em;margin-top:10px">GYVENIMO ŽEMĖLAPIS</p></div>
+    <div class="medal" style="width:330px;height:330px;left:215px;top:460px"><i></i></div>
+    <div class="medal" style="width:330px;height:330px;left:535px;top:520px"><i style="transform:scaleX(-1)"></i></div>
+    <div class="c" style="top:990px"><h1>Nustebink<br><em>draugę</em></h1></div>
+    <div class="c" style="top:1290px"><div class="cta" id="cta">Išbandyti kartu →</div></div>
+    <div class="c" style="top:1460px"><p class="sub" style="font-size:36px;color:var(--ink)">delnaskaitymas.lt</p><p class="fine" style="margin-top:12px">Pramoginio pobūdžio · 18+</p></div>
+  </div>
+</div>
+
+<script>
+// Deterministinė animacija: renderAt(t) nupiešia kadrą laiko momentu t (s).
+const DUR = 15;
+const $ = id => document.getElementById(id);
+const cl = (x,a=0,b=1) => Math.min(b,Math.max(a,x));
+const ease = x => { x=cl(x); return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; };
+const prog = (t,a,b) => ease((t-a)/(b-a));
+function vis(t,a,b,f=.35){ return Math.min(prog(t,a,a+f), 1-prog(t,b-f,b)); }
+
+window.renderAt = function(t){
+  // 1 — matoma nuo pirmo kadro
+  $('s1').style.opacity = 1-prog(t,2.65,3);
+  $('s1t').style.opacity = .4+.6*prog(t,0,.5);
+  const m = prog(t,0,.9);
+  $('m1').style.transform = `translateX(${(1-m)*-160}px) rotate(${(1-m)*-8}deg)`;
+  $('m2').style.transform = `translateX(${(1-m)*160}px) rotate(${(1-m)*8}deg)`;
+  $('tg1').style.opacity = prog(t,1,1.4); $('tg2').style.opacity = prog(t,1.3,1.7);
+  // 2
+  $('s2').style.opacity = vis(t,3,6.6);
+  document.querySelectorAll('#s2 .step').forEach((s,i)=>{ const a=3.3+i*.55, p=prog(t,a,a+.4);
+    s.style.opacity=p; s.style.transform=`translateY(${(1-p)*50}px)`; });
+  // 3
+  $('s3').style.opacity = vis(t,6.6,10.4);
+  $('p1').style.transform = `translateY(${(1-prog(t,6.6,7.3))*260}px)`;
+  $('p2').style.transform = `translateY(${(1-prog(t,6.8,7.5))*260}px)`;
+  document.querySelectorAll('#p1 .ch').forEach((c,i)=>{ const a=7.3+i*.3; c.style.opacity=prog(t,a,a+.3); });
+  document.querySelectorAll('#p2 .ch').forEach((c,i)=>{ const a=7.45+i*.3; c.style.opacity=prog(t,a,a+.3); });
+  // 4
+  $('s4').style.opacity = vis(t,10.4,12.6);
+  document.querySelectorAll('#s4 .q').forEach((q,i)=>{ const a=10.5+i*.5; q.style.opacity=prog(t,a,a+.35); });
+  // 5
+  $('s5').style.opacity = vis(t,12.6,DUR+1);
+  const pulse = 1+Math.sin(Math.max(0,t-13.3)*Math.PI*1.6)*.035;
+  $('cta').style.transform = `scale(${prog(t,12.9,13.3)*pulse})`;
+};
+window.renderAt(0);
+</script>
+</body>
+</html>
