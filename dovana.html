@@ -39,15 +39,15 @@ body.form-view .wrap{justify-content:center}
 body.form-view .brand{font-size:16px}
 body.form-view .brand small{font-size:9.5px;margin-top:4px}
 #v-form .intro{margin:0 0 6px;gap:12px;flex-direction:column}
-#v-form .intro .hero{width:86px;height:86px;border-width:2px}
-#v-form .intro h1{font-size:28px;line-height:1.12;text-align:center}
+#v-form .intro .hero{width:90px;height:90px;border-width:2px}
+#v-form .intro h1{font-size:32px;line-height:1.12;text-align:center}
 #v-form .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 12px}
 #v-form .card-form{margin-top:0;padding:20px 18px 18px;border-radius:20px}
-#v-form label{font-size:11px;margin:14px 0 7px;letter-spacing:.13em}
+#v-form label{font-size:11px;margin:12px 0 7px;letter-spacing:.13em}
 #v-form .row2 label,#v-form .card-form > label:first-child{margin-top:0}
 #v-form .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
 #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:13px 14px;font-size:16px}
-#v-form textarea{min-height:0;height:64px;resize:none}
+#v-form textarea{min-height:0;height:56px;resize:none}
 #v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 #v-form .chk{margin-top:18px;font-size:12.5px;line-height:1.5;letter-spacing:0;text-transform:none}
 #v-form .btn{margin-top:16px;padding:16px;font-size:17px}
@@ -57,9 +57,9 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 @media (max-height:700px){
   body.form-view .wrap{padding-top:12px;padding-bottom:6px}
   #v-form .intro{margin:10px 0 4px}
-  #v-form .intro .hero{width:64px;height:64px}
+  #v-form .intro .hero{width:78px;height:78px}
   body.form-view .brand small{display:none}
-  #v-form .intro h1{font-size:24px}
+  #v-form .intro h1{font-size:30px}
   #v-form .intro{margin:0 0 6px;gap:12px}
   #v-form .lead.sm{font-size:13px;margin:0 0 7px}
   #v-form .card-form{padding:13px 14px 12px}
@@ -73,11 +73,15 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 }
 @media (max-height:600px){
   body.form-view .brand small{display:none}
-  #v-form .intro .hero{width:50px;height:50px}
-  #v-form .intro h1{font-size:22px}
+  #v-form .intro .hero{width:58px;height:58px}
+  #v-form .intro h1{font-size:25px}
   #v-form .lead.sm{font-size:12px;margin-bottom:7px}
   #v-form label{margin:7px 0 4px}
   #v-form textarea{height:50px}
+}
+@media (max-width:370px){
+  #v-form .intro h1{font-size:26px}
+  #v-form .intro .hero{width:60px;height:60px}
 }
 /* Iš apačios išslenkantis langas */
 .sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
