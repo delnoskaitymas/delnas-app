@@ -344,11 +344,11 @@ Kalėdinį video generuoti: `node reklamos/video-render.js video3.html delnas-re
 
 **V — vakarėlis / staigmena (32–34)**
 > Ieškai idėjos vakarėliui? 🎉
-> Kiekviena nufotografuoja savo delnus — ir skaitot žemėlapius kartu. Juoko, nuostabos ir netikėtų atradimų garantuota ✨
+> Kiekviena nufotografuoja savo delnus, o tada skaitot žemėlapius kartu. Juoko, nuostabos ir netikėtų atradimų garantuota ✨
 
 **W — mergvakaris (35, 36)**
 > Mergvakario pramoga, kurios dar nebandėt 👰✨
-> Nuotaka ir jos draugės nufotografuoja delnus — ir palyginat, ką pasakoja jūsų linijos. Užtenka telefono.
+> Nuotaka ir jos draugės nufotografuoja delnus ir palygina, ką pasakoja jų linijos. Užtenka telefono.
 
 **X — Valentino poroms (37, 38)**
 > Ką apie meilę pasakoja jūsų delnai? ♥
