@@ -32,6 +32,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .screen.active{display:block;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 #s-home.active{display:flex;flex-direction:column;position:relative;overflow:hidden}
 .s-home-top{display:flex;flex-direction:column;flex:1;min-height:0}
+@media(max-height:540px){.s-home-top>div:first-child{min-height:300px!important}}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
 @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
 @keyframes scanGlow{0%,100%{transform:translateY(-18px);opacity:0}30%{opacity:.5}55%{transform:translateY(18px);opacity:.5}80%{opacity:0}}
@@ -125,6 +126,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-feat{background:#000000;border:1px solid rgba(212,168,67,.55);box-shadow:0 4px 18px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.02) inset}
 .rs-feat::before{opacity:1}
 .rs-label{font-size:12px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600;font-family:'DM Sans',sans-serif;text-shadow:0 0 8px rgba(212,168,67,.4);white-space:nowrap}
+@media(max-width:359px){.rs-label{white-space:normal;letter-spacing:.05em;line-height:1.35}}
+/* Informacijos ekranas žemuose telefonuose: klausimai be paantraščių, kad mokėjimo mygtukas tilptų be slinkimo */
+@media(max-height:660px){#info-qs>div>span:nth-child(2)>span{display:none!important}#info-qs>div{padding:3px 0!important}}
+@media(max-height:580px){#price-info-block>div{padding:4px 18px 6px!important}#price-promo{font-size:24px!important}}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
 .rs-body{font-size:14.5px;color:rgba(255,255,255,.68);line-height:1.4;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
@@ -413,7 +418,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         SUŽINOK SAVO ATSAKYMUS:
         <span style="display:inline-block;width:14px;height:1px;background:var(--gold);opacity:.5"></span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:0">
+      <div id="info-qs" style="display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid rgba(212,168,67,.08)">
           <div style="width:18px;height:18px;border-radius:50%;background:rgba(212,168,67,.1);border:.5px solid rgba(212,168,67,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
           <span style="font-size:10.5px;line-height:1.25;color:#e8e2d4;font-weight:700">Kas tavyje slypi tokio, ko dar neatradai?<span style="display:block;color:rgba(255,255,255,.4);font-weight:400;margin-top:1px">Apie paslėptą potencialą</span></span>
