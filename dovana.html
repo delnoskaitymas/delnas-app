@@ -190,8 +190,6 @@ body.card-view #v-card{margin:auto 0}
 #v-card .actions{margin-top:12px;gap:8px}
 #v-card .actions .btn{padding:11px 8px;font-size:13.5px;border-radius:14px}
 #v-card .redeemed{margin-top:10px}
-.png-hint{margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted);background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:10px 12px;text-align:center}
-.png-hint b{color:var(--gold2);font-weight:500}
 #v-card .how-link{margin:10px auto 0;width:fit-content;text-decoration:underline;text-underline-offset:3px}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
@@ -292,7 +290,6 @@ body.card-view #v-card{margin:auto 0}
       <button class="btn ghost" id="share">Siųsti gavėjui</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
-    <div class="png-hint hidden" id="png-hint">✓ Kortelė atsisiųsta. Siunčiant paveikslėlį, pridėk ir veikiančią nuorodą — spausk <b>„Kopijuoti nuorodą“</b> ir įklijuok ją šalia. Arba naudok <b>„Siųsti gavėjui“</b> — nuoroda bus pridėta automatiškai.</div>
     <a id="c-link" href="#" class="hidden"></a>
     <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
@@ -448,8 +445,6 @@ body.card-view #v-card{margin:auto 0}
     const b = $('dl-png'); const t = b.textContent; b.textContent = 'Ruošiama…';
     try {
       const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click();
-      // Paveikslėlyje nuoroda nepaspaudžiama — primename ją pridėti siunčiant.
-      $('png-hint').classList.remove('hidden'); fitCard();
     }
     catch (e) { alert('Nepavyko paruošti kortelės. Pabandyk dar kartą.'); }
     b.textContent = t;
