@@ -276,7 +276,7 @@ body.card-view #v-card{margin:auto 0}
             <div class="qr" id="c-qr"></div>
             <div>
               <div class="code" id="c-code">XXXX-XXXX</div>
-              <div class="how">Nuskenuok QR arba įvesk kodą <b style="color:#fff">delnaskaitymas.lt/kodas</b> — nufotografuok delnus, mokėti nereikės.</div>
+              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#fff;font-weight:700;text-decoration:underline;text-decoration-color:rgba(212,168,67,.6);text-underline-offset:2px">delnaskaitymas.lt/kodas</a> — nufotografuok delnus, mokėti nereikės.</div>
               <div class="exp" id="c-exp"></div>
             </div>
           </div>
@@ -433,6 +433,10 @@ body.card-view #v-card{margin:auto 0}
     const box = document.createElement('div');
     box.style.cssText = 'position:fixed;left:-10000px;top:0;width:540px;height:760px';
     box.appendChild(clone); document.body.appendChild(box);
+    // Paspaudžiamų vietų koordinatės PDF'ui (kortelės 540×760 px sistemoje)
+    const base = clone.getBoundingClientRect();
+    const rel = el => { const r = el.getBoundingClientRect(); return { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height }; };
+    cardCanvas.rects = { qr: rel(clone.querySelector('.qr')), kodas: rel(clone.querySelector('.kodas-link')) };
     try { return await html2canvas(clone, { scale: 2, backgroundColor: '#000', useCORS: true }); }
     finally { box.remove(); }
   }
@@ -449,6 +453,11 @@ body.card-view #v-card{margin:auto 0}
       const c = await cardCanvas();
       const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [135, 190] });
       pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 135, 190);
+      // Paspaudžiamos nuorodos PDF'e: QR → dovanos nuoroda, tekstas → /kodas
+      const k = 135 / 540, R = cardCanvas.rects || {};
+      const link = (r, url) => { if (r) pdf.link(r.x * k, r.y * k, r.w * k, r.h * k, { url: url }); };
+      link(R.qr, redeemLink(current.code));
+      link(R.kodas, location.origin + '/kodas');
       pdf.save(fileBase() + '.pdf');
     } catch (e) { alert('Nepavyko paruošti PDF. Pabandyk dar kartą.'); }
     b.textContent = t;
