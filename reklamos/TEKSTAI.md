@@ -310,3 +310,53 @@ Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–
 > ⚠️ Kol programėlėje nėra dovanų kuponų, **nerašyk** „padovanok draugei / nupirk dovaną“ — rašyk tik „dovana sau“ arba „išbandykit kartu“. Kai kuponai atsiras — galima pridėti atskirą „Dovanų kupono“ bangą.
 
 Kalėdinį video generuoti: `node reklamos/video-render.js video3.html delnas-reels-kaledos-1080x1920.mp4`
+
+---
+
+## 🎉 Progų banga (gimtadienis, staigmena, mergvakaris, Valentino diena)
+
+| Failas | Formatas | Proga |
+|---|---|---|
+| `31-gimtadienis-1080x1080.png` | 1:1 | Gimtadienis sau — „Geriausia proga pažvelgti į save“ |
+| `32-gimtadienio-vakarelis-story-1080x1920.png` | 9:16 | Gimtadienio vakarėlis — „Kažkas kitokio“ |
+| `33-staigmena-1080x1080.png` | 1:1 | „Surenk draugėms staigmeną“ + 3 žingsniai |
+| `34-staigmena-story-1080x1920.png` | 9:16 | „Vakarėlis, kurį prisiminsit“ |
+| `35-mergvakaris-1080x1080.png` | 1:1 | Mergvakaris — „Pramoga, kurios dar nebandėt“ |
+| `36-mergvakaris-story-1080x1920.png` | 9:16 | „Nuotaka ir jos draugės“ |
+| `37-valentino-poroms-1080x1080.png` | 1:1 | Poroms — „Ką apie meilę pasakoja jūsų delnai?“ |
+| `38-valentino-sirdies-linija-story-1080x1920.png` | 9:16 | „Širdies linija pasakoja daug“ |
+| `39-valentino-sau-1080x1350.png` | 4:5 | Vienišoms / sau — „Pirmiausia — pažink savo širdį“ |
+
+**Kada rodyti:**
+
+| Proga | Laikotarpis | Taikymas |
+|---|---|---|
+| Gimtadienis (31) | Visus metus | Meta „Life events → Upcoming birthday“, jei ši parinktis tavo paskyroje dar yra; kitu atveju — plati auditorija |
+| Gimtadienio vakarėlis, staigmena (32–34) | Visus metus, ypač penktadieniais–šeštadieniais | Moterys 20–40, pomėgiai: vakarėliai, draugystė, pramogos |
+| Mergvakaris (35, 36) | Balandis–rugsėjis (vestuvių sezonas) | „Life events → Engaged“ (susižadėjusios) + jų draugės, pomėgiai: vestuvės |
+| Valentino diena (37–39) | Vasario 1–14 | 37, 38 — poroms („In a relationship“); 39 — visoms (be santykių statuso) |
+
+**Tekstai:**
+
+**U — gimtadienis sau (31)**
+> Su gimtadieniu! 🎂 Geriausia dovana — pažvelgti į save.
+> Asmeninis gyvenimo žemėlapis pagal tavo delnus: stiprybės, kryptis, pokyčiai. Per kelias minutes.
+
+**V — vakarėlis / staigmena (32–34)**
+> Ieškai idėjos vakarėliui? 🎉
+> Kiekviena nufotografuoja savo delnus — ir skaitot žemėlapius kartu. Juoko, nuostabos ir netikėtų atradimų garantuota ✨
+
+**W — mergvakaris (35, 36)**
+> Mergvakario pramoga, kurios dar nebandėt 👰✨
+> Nuotaka ir jos draugės nufotografuoja delnus — ir palyginat, ką pasakoja jūsų linijos. Užtenka telefono.
+
+**X — Valentino poroms (37, 38)**
+> Ką apie meilę pasakoja jūsų delnai? ♥
+> Nufotografuokit delnus ir palyginkit savo širdies linijas — puiki pramoga Valentino vakarui dviese.
+
+**Y — Valentino sau (39)**
+> Vasario 14-ąją — pirmiausia pažink savo širdį ♥
+> Kaip tu myli, ko ieškai santykiuose ir kas tave išskiria — tavo delnuose.
+
+> ⚠️ Reklamose nėra „nupirk dovaną / dovanų kuponas“ — kiekvienas išbando ir moka pats. Porų reklamose nežadama „suderinamumo įvertinimo“ — programėlė analizuoja kiekvieną atskirai, todėl rašoma „palyginkit“.
+> V tekste „Juoko, nuostabos… garantuota“ — jei Meta atmestų kaip pažadą, pakeisk į „Juoko ir nuostabos netrūks“.
