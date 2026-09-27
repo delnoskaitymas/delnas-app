@@ -348,3 +348,37 @@ Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai ·
 > Nufotografuokit delnus ir palyginkit, ką apie jus pasakoja jūsų linijos.
 
 > ⚠️ Reklamose nėra „nupirk dovaną / dovanų kuponas“ — kiekvienas išbando ir moka pats. Porų reklamose nežadama „suderinamumo įvertinimo“ — programėlė analizuoja kiekvieną atskirai, todėl rašoma „palyginkit“.
+
+---
+
+## 🎁 Dovanų kuponų banga → delnaskaitymas.lt/dovana
+
+Visos šios reklamos veda į **delnaskaitymas.lt/dovana** (ne į pagrindinį adresą).
+
+| Failas | Formatas | Antraštė |
+|---|---|---|
+| `40-padovanok-1080x1080.png` | 1:1 | „Padovanok gyvenimo žemėlapį“ + kortelės vaizdas |
+| `41-dovana-kaip-1080x1350.png` | 4:5 | „Dovana draugei — per 2 minutes“ + 3 žingsniai |
+| `42-dovana-progoms-story-1080x1920.png` | 9:16 | „Neįprasta dovana“ + visos progos |
+| `43-paskutines-minutes-1080x1080.png` | 1:1 | Šviesus · „Pamiršai dovaną? Dovana per kelias minutes“ |
+| `44-dovana-landscape-1200x628.png` | 1.91:1 | FB nuoroda / Google Display |
+
+**Nuoroda reklamose:** `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=dovanos`
+
+**Tekstai:**
+
+**Z1 — neįprasta dovana (40, 42, 44)**
+> Ieškai dovanos, kurios draugė dar neturi? 🎁
+> Padovanok asmeninį Gyvenimo žemėlapį pagal jos delnus — su tavo palinkėjimu gražioje kortelėje. Kortelė iškart atkeliauja į tavo el. paštą: atsispausdink arba nusiųsk per Messenger.
+
+**Z2 — kaip veikia (41)**
+> Dovana per 2 minutes ✨
+> 1) Įrašyk vardą ir palinkėjimą 2) Sumokėk — kortelė su QR kodu iškart el. pašte 3) Draugė nuskenuoja QR ir atskleidžia savo žemėlapį. Mokėti jai nereikės.
+
+**Z3 — paskutinės minutės (43)** — ypač tinka likus 1–3 dienoms iki švenčių
+> Pamiršai dovaną? ⏱ Ne bėda.
+> Asmeninis Gyvenimo žemėlapis — be siuntimo ir laukimo. Kortelė tavo el. pašte per kelias minutes. 🎁
+
+**Kada rodyti:** visus metus mažu biudžetu; smarkiai padidinti lapkr. 15 – gruod. 24, vasario 1–14, prieš Motinos dieną (gegužės 1-as sekmadienis). 43-ią — paskutinėmis dienomis prieš šventes.
+
+**Taikymas:** 25–55 m., pomėgiai: dovanos, gimtadieniai, astrologija, savęs pažinimas; Meta „Life events → Close friend's birthday“ (jei yra jūsų paskyroje).
