@@ -2533,7 +2533,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
     <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atskleisti savo žemėlapį →</a></div>
     <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: atidaryk nuorodą telefonu, nufotografuok abu delnus — mokėti nereikės.<br>
+      Kaip panaudoti: atidaryk nuorodą telefonu arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">delnaskaitymas.lt/kodas</a>, tada nufotografuok abu delnus — mokėti nereikės.<br>
       Norint atsispausdinti ar nusiųsti kortelę su QR kodu: <a href="${cardLink}" style="color:#d4a843">atsisiųsti dovanų kortelę</a>.
     </div>
   </div>
@@ -2608,6 +2608,12 @@ cleanupGiftStore();
 setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 
 app.get('/dovana', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'dovana.html'));
+});
+// Dovanos kodo įvedimas ranka (jei gavėjas neskenuoja QR) — tas pats
+// dovana.html, rodinys parenkamas pagal kelią.
+app.get('/kodas', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'dovana.html'));
 });
