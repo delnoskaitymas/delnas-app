@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="lt"><head><meta charset="utf-8">
+<link href="../assets/fonts.css" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:transparent;display:flex;flex-direction:column;gap:40px;padding:20px}
+  /* Ikona 512×512 — delnas auksiniame apskritime */
+  #icon{width:512px;height:512px;background:#000;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 50% 45%,rgba(212,168,67,.22),transparent 65%),#000}
+  #icon .ring{position:absolute;inset:44px;border-radius:50%;border:10px solid #d4a843;overflow:hidden;
+    box-shadow:0 0 40px rgba(212,168,67,.45),inset 0 0 40px rgba(212,168,67,.25)}
+  #icon .ring i{position:absolute;inset:-8%;background:url(../assets/delnas.jpg) center 42%/cover;
+    filter:sepia(.55) saturate(1.7) hue-rotate(-8deg) brightness(1.25) contrast(1.15)}
+  /* Logotipas 1200×360 — permatomas fonas, auksinis užrašas */
+  #logo{width:1040px;height:272px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,rgba(212,168,67,.14),transparent 70%),#000}
+  #logo b{font:700 170px/1 'Playfair Display';letter-spacing:.3em;color:#d4a843;text-shadow:0 0 30px rgba(212,168,67,.35);margin-right:-.3em}
+  #logo small{font:400 40px 'DM Sans';letter-spacing:.42em;color:#f0d58a;margin-top:14px;margin-right:-.42em}
+</style></head>
+<body>
+  <div id="icon"><div class="ring"><i></i></div></div>
+  <div id="logo"><b>DELNAS</b><small>GYVENIMO ŽEMĖLAPIS</small></div>
+</body></html>

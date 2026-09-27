@@ -12,7 +12,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.13),transparent 60%),#000}
-.wrap{max-width:480px;margin:0 auto;padding:28px 16px 40px}
+.wrap{max-width:480px;margin:0 auto;padding:20px 16px 40px}
 .brand{text-align:center;font:700 18px 'Playfair Display',serif;letter-spacing:.32em;color:var(--gold)}
 .brand small{display:block;font:400 10px 'DM Sans';letter-spacing:.3em;color:var(--faint);margin-top:4px}
 h1{font:400 34px/1.12 'Playfair Display',serif;text-align:center;margin:26px 0 10px}
@@ -21,7 +21,93 @@ h1 em{font-style:italic;color:var(--gold)}
 .hero{position:relative;height:170px;margin:18px auto 8px;width:170px;border-radius:50%;overflow:hidden;border:2px solid rgba(212,168,67,.6);
   box-shadow:0 0 30px rgba(212,168,67,.3),inset 0 0 24px rgba(212,168,67,.12)}
 .hero i{position:absolute;inset:-6%;background:url(/img/delnas.jpg) center 40%/cover;filter:sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.05)}
-.steps{display:flex;flex-direction:column;gap:8px;margin:22px 0 6px}
+.steps{display:flex;flex-direction:column;gap:8px;margin:12px 0 6px}
+.intro{display:flex;align-items:center;gap:16px;margin:18px 0 8px}
+.intro .hero{flex:none;width:84px;height:84px;margin:0}
+.intro h1{text-align:left;margin:0;font-size:28px}
+.lead.sm{font-size:13.5px;margin-bottom:4px}
+h2.how{font:400 24px 'Playfair Display',serif;text-align:center;margin:34px 0 4px}
+h2.how em{color:var(--gold);font-style:italic}
+.how-sub{text-align:center;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+/* Kompaktiška forma — visas puslapis telpa į vieną telefono ekraną */
+body.form-view .wrap{padding-top:16px;padding-bottom:12px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.form-view .wrap > .fine{display:none}
+body.form-view #v-form{margin-top:auto;margin-bottom:auto;padding-bottom:6px}
+body.form-view .brand{font-size:16px}
+body.form-view .brand small{font-size:9.5px;margin-top:4px}
+#v-form .intro{margin:10px 0 6px;gap:10px;flex-direction:column}
+#v-form .intro .hero{width:64px;height:64px;border-width:1.5px}
+#v-form .intro h1{font-size:28px;line-height:1.12;text-align:center}
+#v-form .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 12px}
+#v-form .card-form{margin-top:0;padding:16px 16px 14px;border-radius:18px}
+#v-form label{font-size:10.5px;margin:12px 0 6px;letter-spacing:.13em}
+#v-form .row2 label,#v-form .card-form > label:first-child{margin-top:0}
+#v-form .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
+#v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:11px 13px;font-size:16px}
+#v-form textarea{min-height:0;height:68px;resize:none}
+#v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#v-form .chk{margin-top:14px;font-size:12px;line-height:1.5;letter-spacing:0;text-transform:none}
+#v-form .btn{margin-top:14px;padding:15px;font-size:16.5px}
+#v-form .trust{margin-top:10px;font-size:11px}
+.how-link{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
+  letter-spacing:.04em;cursor:pointer;padding:6px 10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.4)}
+@media (max-height:700px){
+  body.form-view .wrap{padding-top:12px;padding-bottom:6px}
+  #v-form .intro{margin:10px 0 4px}
+  #v-form .intro .hero{width:44px;height:44px}
+  body.form-view .brand small{display:none}
+  #v-form .intro h1{font-size:24px}
+  #v-form .intro{margin:6px 0 4px;gap:6px}
+  #v-form .lead.sm{font-size:13px;margin:0 0 9px}
+  #v-form .card-form{padding:13px 14px 12px}
+  #v-form label{margin:9px 0 5px}
+  #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:10px 12px}
+  #v-form textarea{height:56px}
+  #v-form .chk{margin-top:10px;font-size:11.5px}
+  #v-form .btn{margin-top:11px;padding:14px}
+  #v-form .trust{margin-top:8px}
+  .how-link{margin-top:6px}
+}
+@media (max-height:600px){
+  body.form-view .brand small{display:none}
+  #v-form .intro .hero{display:none}
+  #v-form .intro h1{font-size:22px}
+  #v-form .lead.sm{font-size:12px;margin-bottom:7px}
+  #v-form label{margin:7px 0 4px}
+  #v-form textarea{height:50px}
+}
+/* Iš apačios išslenkantis langas */
+.sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{position:relative;width:100%;max-width:480px;background:#070707;border:1px solid rgba(212,168,67,.35);border-bottom:none;
+  border-radius:24px 24px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(212,168,67,.12)}
+.sheet::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(212,168,67,.35);margin:0 auto 4px}
+.sheet-bg.open .sheet{transform:none}
+.sheet h2.how{margin-top:8px}
+.sheet-x{position:absolute;top:12px;right:14px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(212,168,67,.35);
+  background:transparent;color:var(--gold2);font-size:14px;cursor:pointer}
+/* Braukiama „Kaip tai veikia“ karuselė */
+.slides{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  margin:0 -16px;padding:4px 16px 8px;scrollbar-width:none}
+.slides::-webkit-scrollbar{display:none}
+.slide{flex:0 0 80%;scroll-snap-align:center;position:relative;overflow:hidden;border-radius:20px;padding:22px 20px 20px;min-height:250px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.16),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border:1px solid rgba(212,168,67,.32);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.slide .num{position:absolute;top:10px;right:16px;font:700 54px/1 'Playfair Display',serif;color:rgba(212,168,67,.12)}
+.slide .ic{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 18px rgba(212,168,67,.3),inset 0 0 12px rgba(212,168,67,.12);margin-bottom:16px}
+.slide h3{font:400 21px/1.25 'Playfair Display',serif;margin-bottom:8px}
+.slide h3 em{color:var(--gold);font-style:italic}
+.slide p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+.mini{margin-top:14px;border:1px solid rgba(212,168,67,.45);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:12px;background:#050505}
+.mini .q{width:42px;height:42px;border-radius:4px;flex:none;display:block}
+.mini b{display:block;font:700 13px 'Courier New',monospace;letter-spacing:.14em;color:var(--gold2)}
+.mini span{font-size:10.5px;color:var(--faint)}
+.dots{display:flex;justify-content:center;gap:7px;margin-top:10px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(212,168,67,.25);transition:all .3s}
+.dots i.on{width:22px;border-radius:4px;background:var(--gold)}
 .step{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);line-height:1.4}
 .step b{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;
   font:400 13px 'Playfair Display';color:var(--gold)}
@@ -87,29 +173,57 @@ a{color:var(--gold)}
 
   <!-- 1. UŽSAKYMO FORMA -->
   <section id="v-form" class="hidden">
-    <h1>Padovanok<br><em>gyvenimo žemėlapį</em></h1>
-    <p class="lead">Asmeninė delnų analizė — stiprybės, kryptis, santykiai, finansai ir artėjantys pokyčiai. Dovanų kortelė su kodu iškart atkeliaus į tavo el. paštą.</p>
-    <div class="hero"><i></i></div>
-    <div class="steps">
-      <div class="step"><b>1</b>Užpildyk kortelę ir apmokėk</div>
-      <div class="step"><b>2</b>Gauk dovanų kortelę su QR kodu el. paštu — persiųsk ar atsispausdink</div>
-      <div class="step"><b>3</b>Gavėjas nufotografuoja delnus ir gauna savo žemėlapį — mokėti jam nereikės</div>
+    <div class="intro">
+      <div class="hero"><i></i></div>
+      <h1>Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
+    <p class="lead sm">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
-      <label for="f-to">Kam dovanoji</label>
-      <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off">
-      <label for="f-from">Nuo ko</label>
-      <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name">
-      <label for="f-msg">Palinkėjimas (neprivaloma)</label>
-      <textarea id="f-msg" maxlength="300" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
-      <div class="hint"><span id="msg-count">0</span>/300</div>
+      <div class="row2">
+        <div><label for="f-to">Kam dovanoji</label>
+        <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off"></div>
+        <div><label for="f-from">Nuo ko</label>
+        <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name"></div>
+      </div>
+      <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
+      <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span> →</button>
       <div class="err" id="form-err"></div>
-      <div class="trust">🔒 Saugus mokėjimas per Stripe · Kortelė, Apple Pay, Google Pay, Revolut Pay<br>14 dienų pinigų grąžinimo garantija, kol kuponas nepanaudotas</div>
+      <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
+    <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
+    <div class="sheet-bg" id="how-sheet" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
+    <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
+    <h2 class="how">Kaip tai <em>veikia</em></h2>
+    <div class="how-sub">Braukite →</div>
+    <div class="slides" id="slides">
+      <div class="slide">
+        <div class="num">01</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-1.5-3-5-3.5-5-1.2C7 8 12 8 12 8zm0 0c1.5-3 5-3.5 5-1.2C17 8 12 8 12 8z"/></svg></div>
+        <h3>Užpildyk <em>kortelę</em></h3>
+        <p>Įrašyk, kam dovanoji, nuo ko ir palinkėjimą. Sumokėk saugiai per Stripe — kortele, Apple Pay, Google Pay ar Revolut.</p>
+      </div>
+      <div class="slide">
+        <div class="num">02</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
+        <h3>Gauk <em>dovanų kortelę</em></h3>
+        <p>Iškart — ekrane ir el. pašte. Atsispausdink, persiųsk ar nusiųsk per Messenger.</p>
+        <div class="mini"><svg class="q" viewBox="-1 -1 23 23"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#000"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="9" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="17" y="0" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="20" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="14" y="1" width="1" height="1"/><rect x="20" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="14" y="2" width="1" height="1"/><rect x="16" y="2" width="1" height="1"/><rect x="17" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="17" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/><rect x="17" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="20" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="15" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/><rect x="17" y="6" width="1" height="1"/><rect x="18" y="6" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="0" y="8" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="14" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="0" y="9" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="17" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="1" y="10" width="1" height="1"/><rect x="2" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="7" y="10" width="1" height="1"/><rect x="10" y="10" width="1" height="1"/><rect x="14" y="10" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/><rect x="17" y="10" width="1" height="1"/><rect x="1" y="11" width="1" height="1"/><rect x="4" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="6" y="11" width="1" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="10" y="11" width="1" height="1"/><rect x="11" y="11" width="1" height="1"/><rect x="13" y="11" width="1" height="1"/><rect x="17" y="11" width="1" height="1"/><rect x="1" y="12" width="1" height="1"/><rect x="2" y="12" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="4" y="12" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="14" y="12" width="1" height="1"/><rect x="16" y="12" width="1" height="1"/><rect x="17" y="12" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="18" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="0" y="14" width="1" height="1"/><rect x="1" y="14" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="3" y="14" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="5" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/><rect x="12" y="14" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="18" y="14" width="1" height="1"/><rect x="19" y="14" width="1" height="1"/><rect x="0" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="8" y="15" width="1" height="1"/><rect x="11" y="15" width="1" height="1"/><rect x="15" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="19" y="15" width="1" height="1"/><rect x="20" y="15" width="1" height="1"/><rect x="0" y="16" width="1" height="1"/><rect x="2" y="16" width="1" height="1"/><rect x="3" y="16" width="1" height="1"/><rect x="4" y="16" width="1" height="1"/><rect x="6" y="16" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/><rect x="9" y="16" width="1" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="12" y="16" width="1" height="1"/><rect x="16" y="16" width="1" height="1"/><rect x="18" y="16" width="1" height="1"/><rect x="0" y="17" width="1" height="1"/><rect x="2" y="17" width="1" height="1"/><rect x="3" y="17" width="1" height="1"/><rect x="4" y="17" width="1" height="1"/><rect x="6" y="17" width="1" height="1"/><rect x="8" y="17" width="1" height="1"/><rect x="9" y="17" width="1" height="1"/><rect x="10" y="17" width="1" height="1"/><rect x="11" y="17" width="1" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="14" y="17" width="1" height="1"/><rect x="16" y="17" width="1" height="1"/><rect x="17" y="17" width="1" height="1"/><rect x="18" y="17" width="1" height="1"/><rect x="19" y="17" width="1" height="1"/><rect x="20" y="17" width="1" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="18" width="1" height="1"/><rect x="3" y="18" width="1" height="1"/><rect x="4" y="18" width="1" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="10" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="19" y="18" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="9" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="11" y="19" width="1" height="1"/><rect x="13" y="19" width="1" height="1"/><rect x="14" y="19" width="1" height="1"/><rect x="15" y="19" width="1" height="1"/><rect x="19" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="1" y="20" width="1" height="1"/><rect x="2" y="20" width="1" height="1"/><rect x="3" y="20" width="1" height="1"/><rect x="4" y="20" width="1" height="1"/><rect x="5" y="20" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="8" y="20" width="1" height="1"/><rect x="9" y="20" width="1" height="1"/><rect x="10" y="20" width="1" height="1"/><rect x="11" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="13" y="20" width="1" height="1"/><rect x="14" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/></g></svg><div><b>K7P3-Q9XM</b><span>Asmeninė nuoroda ir QR kodas</span></div></div>
+      </div>
+      <div class="slide">
+        <div class="num">03</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11.5V4a1.5 1.5 0 013 0v7.5M14 11.5V5.5a1.5 1.5 0 013 0V13M17 9.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-5-2.7L4.3 14a1.6 1.6 0 012.6-1.8L8 13.5"/></svg></div>
+        <h3>Gavėjas atskleidžia <em>savo žemėlapį</em></h3>
+        <p>Nufotografuoja abu delnus ir per kelias minutes gauna asmeninę 7 skyrių analizę su PDF. Mokėti jam nereikės.</p>
+      </div>
+    </div>
+    <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+    <p class="fine" style="margin-top:16px">Pramoginio pobūdžio paslauga, skirta 18+ · info@delnaskaitymas.lt</p>
+    </div></div>
   </section>
 
   <!-- 2. LAUKIMAS -->
@@ -165,7 +279,7 @@ a{color:var(--gold)}
 (function(){
   const $ = id => document.getElementById(id);
   const views = ['v-form','v-wait','v-card','v-error'];
-  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0,0); }
+  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form'); window.scrollTo(0,0); }
   const params = new URLSearchParams(location.search);
   let current = null; // rodomo kupono duomenys
 
@@ -293,6 +407,28 @@ a{color:var(--gold)}
     try { await navigator.clipboard.writeText(text + link); alert('Žinutė su nuoroda nukopijuota — įklijuok ją Messenger ar kitur.'); }
     catch (e) { prompt('Nukopijuok ir nusiųsk:', text + link); }
   });
+
+  // „Kaip tai veikia?“ langas
+  function sheet(open){ $('how-sheet').classList.toggle('open', open); $('how-sheet').setAttribute('aria-hidden', open ? 'false' : 'true'); }
+  $('how-open').addEventListener('click', () => sheet(true));
+  $('how-close').addEventListener('click', () => sheet(false));
+  $('how-sheet').addEventListener('click', e => { if (e.target === $('how-sheet')) sheet(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') sheet(false); });
+
+  // Karuselės taškeliai
+  (function(){
+    const sl = $('slides'), dots = document.querySelectorAll('#dots i');
+    if (!sl) return;
+    sl.addEventListener('scroll', () => {
+      const w = sl.firstElementChild.getBoundingClientRect().width + 12;
+      const i = Math.round(sl.scrollLeft / w);
+      dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    }, { passive: true });
+    dots.forEach((d, k) => d.addEventListener('click', () => {
+      const w = sl.firstElementChild.getBoundingClientRect().width + 12;
+      sl.scrollTo({ left: k * w, behavior: 'smooth' });
+    }));
+  })();
 
   // ---------- Paleidimas ----------
   async function confirmPaid(sessionId){
