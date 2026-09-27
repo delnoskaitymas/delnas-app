@@ -2238,7 +2238,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       // iškvietimo (žr. komentarą prie funkcijos aukščiau).
       const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
       sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
-      res.json({ paid: true, token, name: finalName, email: finalEmail });
+      res.json({ paid: true, token, name: finalName, email: finalEmail, amount: pi.amount, currency: pi.currency });
     } else {
       res.json({ paid: false, status: pi.status });
     }
@@ -2263,7 +2263,7 @@ app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
       // patikima reikšmė tam pačiam checkout session'ui.
       const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
       sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
-      res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber });
+      res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber, amount: session.amount_total, currency: session.currency });
     } else {
       res.json({ paid: false });
     }
