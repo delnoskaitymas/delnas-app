@@ -64,6 +64,32 @@
   .row{display:flex;justify-content:space-between;align-items:flex-end}
   .chap{font:400 30px/1.3 'Playfair Display';display:flex;gap:18px}
   .chap span{color:var(--gold);width:48px;flex:none}
+
+  /* ---- 2 banga: šviesus stilius ---- */
+  .ad.light{color:#1d160a;background:
+      radial-gradient(ellipse at 50% 28%, #fffaf0 0%, #f5ead6 55%, #e9d6b3 100%)}
+  .ad.light::before{opacity:.5;background-image:
+      radial-gradient(2px 2px at 14% 20%,#c9a24a,transparent),
+      radial-gradient(1.5px 1.5px at 84% 12%,#c9a24a,transparent),
+      radial-gradient(2px 2px at 90% 64%,#c9a24a,transparent),
+      radial-gradient(1.5px 1.5px at 8% 76%,#c9a24a,transparent),
+      radial-gradient(1.5px 1.5px at 62% 92%,#c9a24a,transparent)}
+  .ad.light::after{border-color:rgba(168,120,31,.45)}
+  .ad.light .brand,.ad.light .eyebrow,.ad.light h1 em,.ad.light .star{color:#a8781f}
+  .ad.light .brand small{color:rgba(29,22,10,.45)}
+  .ad.light .sub{color:rgba(29,22,10,.72)}
+  .ad.light .fine{color:rgba(29,22,10,.5)}
+  .ad.light .cta{background:#1d160a;color:#f5d98f;box-shadow:0 12px 30px rgba(60,40,10,.25)}
+  .ad.light .lock{background:rgba(255,255,255,.6);border-color:rgba(168,120,31,.3)}
+  .medal{position:absolute;border-radius:50%;overflow:hidden;border:3px solid #c9a24a;background:#000;
+    box-shadow:0 24px 70px rgba(110,75,20,.35),0 0 0 14px rgba(201,162,74,.12)}
+  .medal i{position:absolute;inset:-6%;background:url(assets/delnas.jpg) center 45%/cover;
+    filter:sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.1) contrast(1.05)}
+  .line{display:flex;gap:18px;align-items:flex-start}
+  .line .dot{flex:none;width:14px;height:14px;border-radius:50%;background:var(--gold);margin-top:12px;box-shadow:0 0 14px rgba(212,168,67,.7)}
+  .line h3{font:400 32px 'Playfair Display'}
+  .line p{font:300 22px/1.35 'DM Sans';color:var(--muted)}
+  .duo{display:flex;gap:0}
 </style>
 </head>
 <body>
@@ -219,6 +245,154 @@
   <div style="margin-top:auto;display:flex;align-items:center;gap:30px">
     <div class="cta" style="font-size:24px;padding:18px 34px">Atskleisti žemėlapį →</div>
     <div class="fine" style="font-size:15px">delnaskaitymas.lt · 18+</div>
+  </div>
+</div>
+</div>
+
+
+<!-- ================= 2 BANGA ================= -->
+
+<!-- 09. Nauja antraštė — tamsus -->
+<div>
+<div class="label">09-rankose-1080x1080</div>
+<div class="ad" id="09-rankose-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="glow" style="width:900px;height:900px;left:90px;top:260px"></div>
+  <div class="hand" style="width:560px;height:780px;left:260px;top:250px;opacity:.8"></div>
+  <div class="row"><div class="brand">DELNAS</div><div class="eyebrow">AI chiromantija</div></div>
+  <h1 style="margin-top:60px;font-size:80px;text-align:center">Tavo ateitis —<br><em>tavo rankose</em></h1>
+  <p class="sub" style="text-align:center;margin-top:20px">Tiesiogine prasme.</p>
+  <div style="margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <div class="cta" style="align-self:center">Pažvelk į savo delnus →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 10. 4 linijos — tamsus 4:5 -->
+<div>
+<div class="label">10-linijos-1080x1350</div>
+<div class="ad" id="10-linijos-1080x1350" style="width:1080px;height:1350px;padding:84px">
+  <div class="glow" style="width:760px;height:760px;left:-260px;top:300px"></div>
+  <div class="hand" style="width:560px;height:780px;left:-150px;top:400px;opacity:.9"></div>
+  <div class="brand">DELNAS<small>Gyvenimo žemėlapis</small></div>
+  <h1 style="margin-top:70px;font-size:76px">Linijos<br><em>nemeluoja</em></h1>
+  <div style="margin:110px 0 0 400px;display:flex;flex-direction:column;gap:56px">
+    <div class="line"><div class="dot"></div><div><h3>Gyvenimo linija</h3><p>Energija ir gyvybingumas</p></div></div>
+    <div class="line"><div class="dot"></div><div><h3>Širdies linija</h3><p>Jausmai ir santykiai</p></div></div>
+    <div class="line"><div class="dot"></div><div><h3>Galvos linija</h3><p>Mąstymas ir sprendimai</p></div></div>
+    <div class="line"><div class="dot"></div><div><h3>Likimo linija</h3><p>Karjera ir gyvenimo kelias</p></div></div>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Perskaityk savo linijas →</div>
+    <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 11. Šviesus hero 1:1 -->
+<div>
+<div class="label">11-sviesus-hero-1080x1080</div>
+<div class="ad light" id="11-sviesus-hero-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="medal" style="width:420px;height:420px;right:70px;top:290px"><i></i></div>
+  <div class="brand">DELNAS<small>Gyvenimo žemėlapis</small></div>
+  <div style="margin-top:110px;max-width:440px;display:flex;flex-direction:column;gap:30px">
+    <h1 style="font-size:78px">Kas tau<br><em>lemta?</em></h1>
+    <p class="sub" style="font-size:29px">Nufotografuok delnus ir gauk asmeninį gyvenimo žemėlapį — per kelias minutes.</p>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Sužinoti dabar →</div>
+    <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 12. Šviesus story 9:16 -->
+<div>
+<div class="label">12-sviesus-story-1080x1920</div>
+<div class="ad light" id="12-sviesus-story-1080x1920" style="width:1080px;height:1920px;padding:150px 90px 260px;align-items:center;text-align:center">
+  <div class="brand">DELNAS<small>Gyvenimo žemėlapis</small></div>
+  <div class="medal" style="width:640px;height:640px;left:220px;top:390px"><i></i></div>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:34px;align-items:center">
+    <h1 style="font-size:92px">Ką pasakoja<br><em>tavo delnai?</em></h1>
+    <p class="sub" style="max-width:820px">Stiprybės, santykiai, finansai ir artėjantys pokyčiai — viename žemėlapyje.</p>
+    <div class="cta" style="align-self:center">Atskleisti žemėlapį →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 13. Šviesus — kodėl verta 1:1 -->
+<div>
+<div class="label">13-sviesus-privalumai-1080x1080</div>
+<div class="ad light" id="13-sviesus-privalumai-1080x1080" style="width:1080px;height:1080px;padding:80px">
+  <div class="row"><div class="brand">DELNAS</div><div class="eyebrow">⏱ Vos kelios minutės</div></div>
+  <h1 style="font-size:70px;margin:60px 0 56px">Senovinė chiromantija.<br><em>Šiuolaikiškai.</em></h1>
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div class="lock"><i>✋</i><b>Tik telefonas — nieko diegti nereikia</b></div>
+    <div class="lock"><i>📜</i><b>7 skyrių asmeninė analizė PDF formatu</b></div>
+    <div class="lock"><i>✨</i><b>Rezultatas iškart ekrane ir el. pašte</b></div>
+    <div class="lock"><i>🛡️</i><b>14 dienų pinigų grąžinimo garantija</b></div>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta">Išbandyti →</div>
+    <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 14. Draugės — tamsus 1:1 -->
+<div>
+<div class="label">14-draugems-1080x1080</div>
+<div class="ad" id="14-draugems-1080x1080" style="width:1080px;height:1080px;padding:80px;align-items:center;text-align:center">
+  <div class="brand">DELNAS</div>
+  <div class="medal" style="width:300px;height:300px;left:210px;top:220px;border-color:var(--gold)"><i></i></div>
+  <div class="medal" style="width:300px;height:300px;left:570px;top:220px;border-color:var(--gold)"><i style="transform:scaleX(-1)"></i></div>
+  <div style="position:absolute;left:0;right:0;top:340px;text-align:center;font:400 60px 'Playfair Display';color:var(--gold)">&amp;</div>
+  <div style="margin-top:500px;display:flex;flex-direction:column;gap:26px;align-items:center">
+    <h1 style="font-size:66px">Pakviesk draugę —<br><em>palyginkit savo žemėlapius</em></h1>
+    <p class="sub" style="font-size:28px">Kuri iš jūsų lyderė? Kurios laukia didesni pokyčiai?</p>
+  </div>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:18px;align-items:center">
+    <div class="cta" style="align-self:center">Išbandyti kartu →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 15. Draugės — šviesus story 9:16 -->
+<div>
+<div class="label">15-draugems-story-1080x1920</div>
+<div class="ad light" id="15-draugems-story-1080x1920" style="width:1080px;height:1920px;padding:150px 90px 260px;align-items:center;text-align:center">
+  <div class="brand">DELNAS</div>
+  <p class="eyebrow" style="margin-top:70px">Merginų vakarui ✦</p>
+  <h1 style="font-size:88px;margin-top:30px">Nustebink<br><em>draugę</em></h1>
+  <div class="medal" style="width:400px;height:400px;left:150px;top:660px"><i></i></div>
+  <div class="medal" style="width:400px;height:400px;left:530px;top:740px"><i style="transform:scaleX(-1)"></i></div>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:30px;align-items:center">
+    <p class="sub" style="max-width:820px">Nufotografuokit delnus ir palyginkit, ką apie kiekvieną pasakoja linijos.</p>
+    <div class="cta" style="align-self:center">Išbandyti kartu →</div>
+    <div class="fine">delnaskaitymas.lt · Pramoginio pobūdžio · 18+</div>
+  </div>
+</div>
+</div>
+
+<!-- 16. Ruduo — sezoninis 4:5 -->
+<div>
+<div class="label">16-ruduo-1080x1350</div>
+<div class="ad" id="16-ruduo-1080x1350" style="width:1080px;height:1350px;padding:84px;background:
+    radial-gradient(ellipse at 70% 35%, rgba(196,110,40,.28), transparent 60%),
+    radial-gradient(ellipse at 20% 100%, rgba(212,168,67,.16), transparent 55%),#070402">
+  <div class="glow" style="width:820px;height:820px;right:-240px;top:120px;background:radial-gradient(circle,rgba(210,120,50,.3),transparent 65%)"></div>
+  <div class="hand" style="width:620px;height:860px;right:-70px;top:260px;filter:sepia(.8) saturate(2.2) hue-rotate(-18deg) brightness(1.05)"></div>
+  <div class="brand">DELNAS<small>Rudens žemėlapis</small></div>
+  <div style="margin-top:360px;max-width:600px;display:flex;flex-direction:column;gap:30px">
+    <div class="eyebrow" style="color:#e39a55">🍂 Naujas sezonas</div>
+    <h1 style="font-size:80px">Ruduo —<br><em style="color:#e8a860">laikas pokyčiams</em></h1>
+    <p class="sub">Sužinok, kokie lūžiai ir galimybės tavęs laukia artimiausiais mėnesiais.</p>
+  </div>
+  <div class="row" style="margin-top:auto">
+    <div class="cta" style="background:linear-gradient(180deg,#f3c27e,#d98a3c)">Pažvelgti į ateitį →</div>
+    <div class="fine" style="text-align:right">delnaskaitymas.lt<br>Pramoginio pobūdžio · 18+</div>
   </div>
 </div>
 </div>
