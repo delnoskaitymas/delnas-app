@@ -222,6 +222,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 }
 #s-info.active{background:var(--bg)}
 .pay-anim-item{opacity:0;transform:translateY(14px)}
+.gift-hide{display:none!important}
 .pay-anim-item.in{opacity:1;transform:translateY(0);transition:opacity .55s cubic-bezier(.25,.46,.45,.94),transform .55s cubic-bezier(.25,.46,.45,.94)}
 .pm-group{background:rgba(212,168,67,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(255,255,255,.08);border-bottom:.5px solid rgba(255,255,255,.03);border-radius:8px;overflow:hidden;margin-bottom:0}
 .pm-row{width:100%;padding:11px 12px;border:none;background:transparent;color:rgba(255,255,255,.72);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;position:relative;transition:background .25s ease,color .25s ease}
@@ -456,6 +457,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Mokėjimo blokas — įplaukia į ekraną -->
     <div id="pay-section" style="display:flex;flex-direction:column;gap:10px">
 
+    <!-- Dovanų kuponas: rodomas TIK atėjus per ?dovana=KODAS nuorodą (žr. applyGiftMode) -->
+    <div id="gift-pay-block" class="pay-anim-item" style="display:none">
+      <div style="background:linear-gradient(135deg,rgba(212,168,67,.12),rgba(212,168,67,.04));border:1px solid rgba(212,168,67,.35);border-radius:18px;padding:16px 18px;text-align:center;box-shadow:0 0 24px rgba(212,168,67,.12)">
+        <div style="font-size:26px;line-height:1">🎁</div>
+        <div id="gift-pay-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--gold2);margin-top:6px">Dovana — jau apmokėta</div>
+        <div id="gift-pay-msg" style="display:none;font-family:'Playfair Display',serif;font-style:italic;font-size:13px;line-height:1.45;color:rgba(255,255,255,.75);margin-top:8px"></div>
+      </div>
+      <button onclick="redeemGiftAndProceed()" id="gift-pay-btn" style="width:100%;margin-top:10px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#1a1204;cursor:pointer">Atskleisti mano žemėlapį →</button>
+      <div id="gift-pay-err" style="display:none;color:#ff8a7a;font-size:11.5px;text-align:center;margin-top:8px;line-height:1.5"></div>
+    </div>
+
     <!-- Kaina + laikmatis — tos pačios spalvos/rėmelio stilius kaip analizės ekrano punktai -->
     <div id="price-info-block" class="pay-anim-item">
       <div style="background:linear-gradient(135deg,rgba(212,168,67,.09),rgba(212,168,67,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:18px;padding:9px 18px 15px;position:relative;overflow:hidden;box-shadow:0 0 28px rgba(212,168,67,.2),0 0 60px rgba(212,168,67,.06),inset 0 1px 0 rgba(255,255,255,.06)">
@@ -506,7 +518,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
-    <div style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
+    <div id="pay-trust-row" style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Vienintelė eilutė: saugumas + garantija (garantijos frazė yra paspaudžiama nuoroda) -->
       <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 dienų pinigų grąžinimo garantija</button></span>
       <!-- Logotipai -->
@@ -776,6 +788,7 @@ setInterval(()=>{
 },20000);
 
 function go(id){
+  if(id==='s-info'&&typeof applyGiftMode==='function') applyGiftMode();
   if(id==='s-home'){
     setTimeout(()=>{
       document.querySelectorAll('.home-bullet').forEach((el,i)=>{
@@ -1248,7 +1261,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
             </div>
           </div>
           <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-            <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
+            <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">${window._isGiftOrder?'Dovana atrakinta! 🎁':'Mokėjimas sėkmingas!'}</div>
           </div>
           <div id="pay-still-working" style="text-align:center;opacity:0;transition:opacity .6s ease;margin-top:4px">
             <div id="pay-wait-row" style="display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.65)">
@@ -1309,8 +1322,21 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   try{
     // 2. Patvirtinti mokėjimą ir gauti token
     const isPI=sessionId&&sessionId.startsWith('pi_');
+    const isGift=sessionId&&sessionId.startsWith('gift:');
     let token='',userName=window._userName||'',userEmail=window._userEmail||'';
-    if(isPI){
+    if(isGift){
+      // Dovanų kuponas: redeemGiftAndProceed() jau panaudojo kodą ir gavo
+      // tokeną. Jei ne — /redeem-gift tai pačiai bgSessionId sesijai grąžina
+      // TĄ PATĮ tokeną (idempotentiška).
+      updatePayDiag('tikrinu dovanos kodą...');
+      let vd=window._giftRedeemResult;
+      if(!vd){
+        const vr=await fetchWithTimeout('/redeem-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:sessionId.slice(5),name:userName,email:userEmail,orderNumber:window._orderNumber||'',bgSessionId:window.bgSessionId||''})},20000);
+        vd=await vr.json();
+      }
+      if(vd&&vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      updatePayDiag('dovana: '+(vd&&vd.paid?'patvirtinta':'NEpatvirtinta'));
+    } else if(isPI){
       updatePayDiag('tikrinu mokėjimą (PI)...');
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
@@ -1480,7 +1506,7 @@ async function onPaymentSuccess(name,email){
           </div>
         </div>
         <div style="text-align:center;animation:paySuccessPop .55s .2s cubic-bezier(.34,1.56,.64,1) both;opacity:0">
-          <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">Mokėjimas sėkmingas!</div>
+          <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--gold2);line-height:1.3;letter-spacing:.01em">${window._isGiftOrder?'Dovana atrakinta! 🎁':'Mokėjimas sėkmingas!'}</div>
         </div>`;
       requestAnimationFrame(()=>{
         paySection.style.transition='opacity .4s ease';
@@ -3831,7 +3857,7 @@ function sendResultPdfEmail(r){
     const dataUri = doc.output('datauristring');
     const base64 = dataUri.split(',').pop();
     fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64})})
+      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,gift:!!window._isGiftOrder})})
       .then(r=>r.json()).then(d=>{
         if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
         else console.log('[sendResultPdfEmail] serveris patvirtino išsiuntimą');
@@ -4997,4 +5023,96 @@ function proceedToPayment(){
   go('s-loading');
   setTimeout(()=>animateLoading(),100);
 }
-</script></body></html>
+</script><script>
+// ═══ DOVANŲ KUPONAS (?dovana=KODAS) ═══
+// Kodas iš nuorodos išsaugomas sessionStorage (išlieka per visą sesiją) ir
+// pašalinamas iš adreso juostos. Mokėjimo ekrane (applyGiftMode) vietoj
+// kainos ir mokėjimo būdų rodoma „Dovana nuo … — jau apmokėta“. Be kodo
+// programėlė veikia lygiai taip pat, kaip anksčiau.
+(function initGiftFromUrl(){
+  try{
+    const p=new URLSearchParams(location.search);
+    const raw=p.get('dovana');
+    if(raw){
+      const c=raw.toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if(c.length===8) sessionStorage.setItem('delnasGiftCode',c.slice(0,4)+'-'+c.slice(4));
+      p.delete('dovana');
+      const qs=p.toString();
+      history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
+    }
+  }catch(e){}
+  let code=null;
+  try{ code=sessionStorage.getItem('delnasGiftCode'); }catch(e){}
+  if(!code) return;
+  window._giftCode=code;
+  fetch('/gift/check?code='+encodeURIComponent(code)).then(r=>r.json()).then(d=>{
+    window._giftInfo=d;
+    if(!d.valid){ try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){} }
+    showGiftWelcome(d);
+    const si=document.getElementById('s-info');
+    if(si&&si.classList.contains('active')) applyGiftMode();
+  }).catch(()=>{});
+})();
+
+function _giftEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Pradžios ekrane — trumpas pasveikinimas (arba pranešimas, kad kodas nebegalioja).
+function showGiftWelcome(d){
+  const home=document.getElementById('s-home');
+  if(!home||document.getElementById('gift-welcome')) return;
+  const n=document.createElement('div');
+  n.id='gift-welcome';
+  n.style.cssText='margin:14px 16px 0;padding:12px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:\'DM Sans\',sans-serif;position:relative;z-index:5';
+  if(d.valid){
+    // Vardai įvedami linksniuojant (Kam: „Ievai“, Nuo ko: „Tomo“).
+    n.innerHTML='<div style="color:var(--gold2);font-size:14px;font-weight:600">🎁 Dovana '+(d.recipientName?_giftEsc(d.recipientName):'tau')+(d.fromName?' nuo '+_giftEsc(d.fromName):'')+'!</div>'+
+      '<div style="color:var(--muted);font-size:12px;margin-top:3px">Nufotografuok delnus — žemėlapis jau apmokėtas.</div>';
+  }else{
+    const why=d.status==='redeemed'?'Šis dovanos kodas jau panaudotas.':d.status==='expired'?'Šio dovanos kodo galiojimas baigėsi.':'Dovanos kodas nerastas arba nebegalioja.';
+    n.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">'+why+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manai, kad tai klaida — parašyk info@delnaskaitymas.lt</div>';
+  }
+  home.prepend(n);
+}
+
+function applyGiftMode(){
+  const blk=document.getElementById('gift-pay-block');
+  if(!blk) return;
+  const g=window._giftInfo;
+  const on=!!(g&&g.valid&&window._giftCode&&!window._giftFailed);
+  blk.style.display=on?'block':'none';
+  ['price-info-block','pm-group','pay-btn','pay-trust-row'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('gift-hide',on);
+  });
+  if(on){
+    document.getElementById('gift-pay-title').textContent=(g.fromName?'Dovana nuo '+g.fromName:'Dovana')+' — jau apmokėta';
+    const m=document.getElementById('gift-pay-msg');
+    if(g.message){ m.textContent='„'+g.message+'“'; m.style.display='block'; } else m.style.display='none';
+  }
+}
+
+async function redeemGiftAndProceed(){
+  const btn=document.getElementById('gift-pay-btn');
+  if(btn){ btn.disabled=true; btn.style.opacity='.6'; btn.textContent='Atrakinama…'; }
+  try{
+    const r=await fetch('/redeem-gift',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code:window._giftCode,name:window._userName||'',email:window._userEmail||'',orderNumber:window._orderNumber||'',bgSessionId:window.bgSessionId||''})});
+    const d=await r.json();
+    if(!d||!d.paid) throw new Error((d&&d.error)||'Nepavyko panaudoti dovanos kodo.');
+    window._giftRedeemResult=d;
+    window._isGiftOrder=true;
+    try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){}
+  }catch(e){
+    // Kodas nebegalioja — grąžiname įprastą mokėjimą, kad žmogus nebūtų užstrigęs.
+    window._giftFailed=true;
+    try{ sessionStorage.removeItem('delnasGiftCode'); }catch(x){}
+    applyGiftMode();
+    if(typeof startPayProgressBar==='function') startPayProgressBar();
+    const pe=document.getElementById('stripe-card-errors');
+    if(pe){ pe.textContent=(e.message||'Nepavyko panaudoti dovanos kodo.')+' Gali užbaigti užsakymą įprastai arba parašyti info@delnaskaitymas.lt'; pe.style.display='block'; }
+    return;
+  }
+  // Toliau — tas pats kelias kaip po įprasto apmokėjimo (analizė, rezultatas, PDF laiškas).
+  await fetchResultsAndNavigate('gift:'+window._giftCode,null);
+}
+</script>
+</body></html>

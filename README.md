@@ -62,6 +62,18 @@ PORT = 3000
 
 ---
 
+## Dovanų kuponai
+
+- Pirkimo puslapis: **https://delnaskaitymas.lt/dovana** (atskiras nuo programėlės — jį galima dėti į reklamas ir Instagram).
+- Po apmokėjimo pirkėjas iškart mato dovanų kortelę (su QR kodu, atsisiunčiama PNG/PDF) ir gauna ją el. paštu; administratorius gauna pranešimą „Parduotas dovanų kuponas“.
+- Gavėjas atidaro nuorodą `delnaskaitymas.lt/?dovana=KODAS` — programėlė veikia kaip įprastai, tik mokėjimo ekrane rodoma „Dovana nuo … — jau apmokėta“. Kodas vienkartinis, galioja 12 mėn.
+- **BŪTINA:** Railway turi būti prijungtas **Volume** ir nustatytas `SHARED_STORAGE_DIR` (pvz. `/data`) — kodai saugomi faile `gift-codes.json`. Be Volume kodai dingtų po kiekvieno deploy'inimo.
+- `APP_DOMAIN` turi būti tikrasis domenas (pvz. `delnaskaitymas.lt`) — iš jo sudaromos nuorodos kortelėse ir Stripe grąžinimo adresai.
+- **Pinigų grąžinimas už kuponą:** Stripe Dashboard → Payments → Refund. Grąžinus pinigus kuponas automatiškai nebegalioja (tikrinama bandant jį panaudoti).
+- Testuoti: Stripe test režimu atidaryk `/dovana`, mokėk kortele `4242 4242 4242 4242`.
+
+---
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 
