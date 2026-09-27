@@ -2533,8 +2533,11 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
     <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atskleisti savo žemėlapį →</a></div>
     <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: atidaryk nuorodą telefonu arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">delnaskaitymas.lt/kodas</a>, tada nufotografuok abu delnus — mokėti nereikės.<br>
-      Norint atsispausdinti ar nusiųsti kortelę su QR kodu: <a href="${cardLink}" style="color:#d4a843">atsisiųsti dovanų kortelę</a>.
+      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">delnaskaitymas.lt/kodas&nbsp;↗</a>, tada nufotografuok abu delnus — mokėti nereikės.
+    </div>
+    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
+      Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
+      <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kortelę</a>
     </div>
   </div>
   <div style="max-width:520px;margin:18px auto 0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;text-align:center">
