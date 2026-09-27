@@ -30,26 +30,50 @@ h2.how{font:400 24px 'Playfair Display',serif;text-align:center;margin:34px 0 4p
 h2.how em{color:var(--gold);font-style:italic}
 .how-sub{text-align:center;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
 /* Kompaktiška forma — visas puslapis telpa į vieną telefono ekraną */
-body.form-view .wrap{padding-top:12px;padding-bottom:12px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.form-view .wrap{padding-top:16px;padding-bottom:12px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 body.form-view .wrap > .fine{display:none}
-body.form-view .brand{font-size:15px}
-body.form-view .brand small{font-size:8.5px;margin-top:3px}
-#v-form .intro{margin:10px 0 4px;gap:12px}
-#v-form .intro .hero{width:58px;height:58px;border-width:1.5px}
-#v-form .intro h1{font-size:23px;line-height:1.1}
-#v-form .lead.sm{font-size:12.5px;line-height:1.45;margin:0 0 8px}
-#v-form .card-form{margin-top:0;padding:12px 14px 12px;border-radius:16px}
-#v-form label{font-size:10px;margin:9px 0 4px;letter-spacing:.12em}
+body.form-view #v-form{margin-top:auto;margin-bottom:auto;padding-bottom:6px}
+body.form-view .brand{font-size:16px}
+body.form-view .brand small{font-size:9.5px;margin-top:4px}
+#v-form .intro{margin:14px 0 6px;gap:14px}
+#v-form .intro .hero{width:68px;height:68px;border-width:1.5px}
+#v-form .intro h1{font-size:26px;line-height:1.12}
+#v-form .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 12px}
+#v-form .card-form{margin-top:0;padding:16px 16px 14px;border-radius:18px}
+#v-form label{font-size:10.5px;margin:12px 0 6px;letter-spacing:.13em}
 #v-form .row2 label,#v-form .card-form > label:first-child{margin-top:0}
 #v-form .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
-#v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:9px 12px;font-size:16px}
-#v-form textarea{min-height:0;height:58px;resize:none}
-#v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-#v-form .chk{margin-top:10px;font-size:11px;line-height:1.45;letter-spacing:0;text-transform:none}
-#v-form .btn{margin-top:10px;padding:13px}
-#v-form .trust{margin-top:8px;font-size:10.5px}
-.how-link{display:block;margin:10px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
+#v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:11px 13px;font-size:16px}
+#v-form textarea{min-height:0;height:68px;resize:none}
+#v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#v-form .chk{margin-top:14px;font-size:12px;line-height:1.5;letter-spacing:0;text-transform:none}
+#v-form .btn{margin-top:14px;padding:15px;font-size:16.5px}
+#v-form .trust{margin-top:10px;font-size:11px}
+.how-link{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
   letter-spacing:.04em;cursor:pointer;padding:6px 10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.4)}
+@media (max-height:700px){
+  body.form-view .wrap{padding-top:12px}
+  #v-form .intro{margin:10px 0 4px}
+  #v-form .intro .hero{width:64px;height:64px}
+  #v-form .intro h1{font-size:25px}
+  #v-form .lead.sm{font-size:13px;margin:0 0 9px}
+  #v-form .card-form{padding:13px 14px 12px}
+  #v-form label{margin:11px 0 5px}
+  #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:10px 12px}
+  #v-form textarea{height:62px}
+  #v-form .chk{margin-top:12px;font-size:12px}
+  #v-form .btn{margin-top:12px;padding:15px}
+  #v-form .trust{margin-top:8px}
+  .how-link{margin-top:6px}
+}
+@media (max-height:600px){
+  body.form-view .brand small{display:none}
+  #v-form .intro .hero{width:52px;height:52px}
+  #v-form .intro h1{font-size:22px}
+  #v-form .lead.sm{font-size:12px;margin-bottom:7px}
+  #v-form label{margin:7px 0 4px}
+  #v-form textarea{height:50px}
+}
 /* Iš apačios išslenkantis langas */
 .sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
   opacity:0;pointer-events:none;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center}
