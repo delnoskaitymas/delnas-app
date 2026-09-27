@@ -239,3 +239,22 @@ Failas: `video/delnas-reels-1080x1920.mp4` — 15 s, 9:16, 1080×1920, H.264, be
 > Ką slepia tavo delnai? ✋✨ Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį. Nuoroda — delnaskaitymas.lt
 
 Norint pakeisti tekstą ar laiką — redaguok `video.html` ir paleisk `node reklamos/video-render.js` (reikia ffmpeg su libx264, pvz. `pip install imageio-ffmpeg`, kelias per `FFMPEG` kintamąjį).
+
+### 2-as video — su drauge, šviesus
+
+Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
+
+| Sek. | Scena |
+|---|---|
+| 0–3 | „Kuri iš jūsų — gimusi lyderė?“ — du delnai atskrenda iš šonų („Tu“ / „Ji“) |
+| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai |
+| 6,6–10,4 | „Du delnai — du skirtingi keliai“ — du telefonai su žemėlapiais |
+| 10,4–12,6 | „Kas jus sieja? Kuo jūs skiriatės? Kurios laukia didesni pokyčiai?“ |
+| 12,6–15 | „Nustebink draugę“ + „Išbandyti kartu“ + delnaskaitymas.lt |
+
+**Tekstas prie video:**
+> Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. delnaskaitymas.lt
+
+**A/B testas:** abu video (1-as tamsus ir 2-as šviesus) dėk į **atskirus** ad set'us su tuo pačiu biudžetu ir auditorija. Po 4–5 dienų palik tą, kurio paspaudimo kaina (CPC) mažesnė ir daugiau žmonių žiūri iki galo („ThruPlay“).
+
+Generuoti: `node reklamos/video-render.js video2.html delnas-reels-draugems-1080x1920.mp4`

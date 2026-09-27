@@ -1,17 +1,20 @@
-// Sugeneruoja MP4 iš video.html: `node reklamos/video-render.js`
+// Sugeneruoja MP4 iš HTML animacijos:
+//   node reklamos/video-render.js                       → video.html
+//   node reklamos/video-render.js video2.html delnas-reels-draugems-1080x1920.mp4
 // Reikia Playwright ir ffmpeg su libx264 (pvz. `pip install imageio-ffmpeg`;
 // kelią galima nurodyti FFMPEG aplinkos kintamuoju).
 const path = require('path'), fs = require('fs'), { execFileSync } = require('child_process');
 const { chromium } = require('playwright');
 const FPS = 30, DUR = 15;
 const ffmpeg = process.env.FFMPEG || 'ffmpeg';
-const out = path.join(__dirname, 'video', 'delnas-reels-1080x1920.mp4');
+const src = process.argv[2] || 'video.html';
+const out = path.join(__dirname, 'video', process.argv[3] || 'delnas-reels-1080x1920.mp4');
 const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'delnas-frames-'));
 
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
-  await page.goto('file://' + path.join(__dirname, 'video.html'));
+  await page.goto('file://' + path.join(__dirname, src));
   await page.evaluate(() => document.fonts.ready);
   const N = FPS * DUR;
   for (let f = 0; f < N; f++) {
