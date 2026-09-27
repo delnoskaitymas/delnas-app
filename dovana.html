@@ -190,6 +190,8 @@ body.card-view #v-card{margin:auto 0}
 #v-card .actions{margin-top:12px;gap:8px}
 #v-card .actions .btn{padding:11px 8px;font-size:13.5px;border-radius:14px}
 #v-card .redeemed{margin-top:10px}
+.png-hint{margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted);background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:10px 12px;text-align:center}
+.png-hint b{color:var(--gold2);font-weight:500}
 #v-card .how-link{margin:10px auto 0;width:fit-content;text-decoration:underline;text-underline-offset:3px}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
@@ -276,7 +278,7 @@ body.card-view #v-card{margin:auto 0}
             <div class="qr" id="c-qr"></div>
             <div>
               <div class="code" id="c-code">XXXX-XXXX</div>
-              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#fff;font-weight:700;text-decoration:underline;text-decoration-color:rgba(212,168,67,.6);text-underline-offset:2px">delnaskaitymas.lt/kodas</a> — nufotografuok delnus, mokėti nereikės.</div>
+              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#f5d061;font-weight:700;text-decoration:underline;text-decoration-color:#f5d061;text-decoration-thickness:1.5px;text-underline-offset:3px;white-space:nowrap">delnaskaitymas.lt/kodas&nbsp;↗</a> — nufotografuok delnus, mokėti nereikės.</div>
               <div class="exp" id="c-exp"></div>
             </div>
           </div>
@@ -290,6 +292,7 @@ body.card-view #v-card{margin:auto 0}
       <button class="btn ghost" id="share">Siųsti gavėjui</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
+    <div class="png-hint hidden" id="png-hint">✓ Kortelė atsisiųsta. Siunčiant paveikslėlį, pridėk ir veikiančią nuorodą — spausk <b>„Kopijuoti nuorodą“</b> ir įklijuok ją šalia. Arba naudok <b>„Siųsti gavėjui“</b> — nuoroda bus pridėta automatiškai.</div>
     <a id="c-link" href="#" class="hidden"></a>
     <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
@@ -443,7 +446,11 @@ body.card-view #v-card{margin:auto 0}
   function fileBase(){ return 'DELNAS-dovana-' + (current ? current.code : ''); }
   $('dl-png').addEventListener('click', async () => {
     const b = $('dl-png'); const t = b.textContent; b.textContent = 'Ruošiama…';
-    try { const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click(); }
+    try {
+      const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click();
+      // Paveikslėlyje nuoroda nepaspaudžiama — primename ją pridėti siunčiant.
+      $('png-hint').classList.remove('hidden'); fitCard();
+    }
     catch (e) { alert('Nepavyko paruošti kortelės. Pabandyk dar kartą.'); }
     b.textContent = t;
   });
@@ -470,14 +477,14 @@ body.card-view #v-card{margin:auto 0}
   });
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
-    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : 'tau') + (current.fromName ? ' nuo ' + current.fromName : '') + ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus! Atidaryk nuorodą ir nufotografuok delnus: ';
+    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : 'tau') + (current.fromName ? ' nuo ' + current.fromName : '') + ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus!\n\n👉 Atidaryk savo dovaną: ';
     try {
       // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.
       if (navigator.canShare) {
         const c = await cardCanvas();
         const blob = await new Promise(r => c.toBlob(r, 'image/png'));
         const file = new File([blob], fileBase() + '.png', { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: text + link }); return; }
+        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: text + link + '\n\nArba įvesk kodą ' + current.code + ' čia: ' + location.origin + '/kodas' }); return; }
       }
       if (navigator.share) { await navigator.share({ text: text, url: link }); return; }
     } catch (e) { if (e && e.name === 'AbortError') return; }
