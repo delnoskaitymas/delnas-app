@@ -385,6 +385,9 @@ body.card-view #v-card{margin:auto 0}
     current = g;
     $('c-to').textContent = '🎁 ' + (g.recipientName ? g.recipientName : 'Tau');
     $('c-msg').textContent = g.message ? '„' + g.message + '“' : '';
+    // Palinkėjimo dydis pagal ilgį: trumpas — didelis, ilgas — mažesnis
+    const ml = (g.message || '').length;
+    $('c-msg').style.fontSize = ml <= 60 ? '24px' : ml <= 150 ? '20px' : '17px';
     $('c-from').textContent = g.fromName ? '— nuo ' + g.fromName : '';
     $('c-code').textContent = g.code;
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
