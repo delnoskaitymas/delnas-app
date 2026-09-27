@@ -257,71 +257,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #stripe-payment-element [class*="nextStep"],
 #stripe-payment-element [class*="p-PaymentMethod-detail--redirect"]{display:none!important;}
 </style>
-<!-- Meta Pixel — įkeliamas TIK lankytojui sutikus su rinkodaros slapukais
-     (ES ePrivacy/BDAR reikalavimas). Sutikimas saugomas localStorage
-     "delnasMarketingConsent" ('1' — sutiko, '0' — atsisakė). Kol lankytojas
-     nesutiko, fbq neegzistuoja ir dlnTrack() nieko nesiunčia. -->
-<script>
-(function(){
-  var PIXEL_ID='942292595606261', KEY='delnasMarketingConsent';
-  function getC(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
-  function setC(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }
-  function loadPixel(){
-    if(window.fbq) return;
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window,document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init',PIXEL_ID);
-    fbq('track','PageView');
-  }
-  function banner(show){
-    var b=document.getElementById('cookie-banner');
-    if(b) b.style.display=show?'flex':'none';
-  }
-  // Įvykio siuntimas į Meta — saugus kvietimas: be sutikimo ar be įkelto
-  // Pixel tiesiog nieko nedaro ir niekada nemeta klaidos į programos logiką.
-  window.dlnTrack=function(ev,params,opts){
-    try{ if(getC()==='1'&&window.fbq) fbq('track',ev,params||{},opts||{}); }catch(e){}
-  };
-  window.dlnSetMarketingConsent=function(ok){
-    setC(ok?'1':'0');
-    banner(false);
-    if(ok){ if(window.fbq) fbq('consent','grant'); else loadPixel(); }
-    else if(window.fbq){ try{ fbq('consent','revoke'); }catch(e){} }
-  };
-  window.dlnOpenCookieSettings=function(){ banner(true); };
-  if(getC()==='1') loadPixel();
-  document.addEventListener('DOMContentLoaded',function(){
-    // "/?slapukai=1" (nuoroda iš Privatumo politikos) leidžia bet kada pakeisti sprendimą
-    var ask=false; try{ ask=new URLSearchParams(location.search).get('slapukai')==='1'; }catch(e){}
-    if(ask||getC()===null) banner(true);
-  });
-})();
-</script>
-<style>
-#cookie-banner{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:99990;max-width:460px;margin:0 auto;
-  background:rgba(10,10,10,.97);border:1px solid rgba(212,168,67,.35);border-radius:14px;padding:14px 14px 12px;
-  flex-direction:column;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-family:'DM Sans',sans-serif}
-#cookie-banner p{font-size:12px;line-height:1.45;color:rgba(255,255,255,.72);margin:0}
-#cookie-banner a{color:#d4a843}
-#cookie-banner .cb-row{display:flex;gap:8px}
-#cookie-banner button{flex:1;border-radius:10px;padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
-#cookie-banner .cb-yes{background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;color:#1a1204;font-weight:500}
-#cookie-banner .cb-no{background:transparent;border:.5px solid rgba(212,168,67,.35);color:rgba(255,255,255,.7)}
-</style>
 </head>
 <body>
-<div id="cookie-banner" role="dialog" aria-label="Slapukų nustatymai">
-  <p>🍪 Naudojame Meta (Facebook) slapukus, kad matuotume reklamų veiksmingumą. Jie įjungiami tik tau sutikus. Daugiau — <a href="/privatumo-politika" target="_blank">Privatumo politikoje</a>.</p>
-  <div class="cb-row">
-    <button class="cb-no" onclick="dlnSetMarketingConsent(false)">Atsisakyti</button>
-    <button class="cb-yes" onclick="dlnSetMarketingConsent(true)">Sutinku</button>
-  </div>
-</div>
 <div id="refund-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:12px" onclick="closeRefundPopup()">
   <div style="background:#0a0a0a;border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:16px 16px 14px;max-width:340px;width:100%;box-shadow:0 0 30px rgba(212,168,67,.12);display:flex;flex-direction:column;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;flex-shrink:0">
@@ -839,11 +776,6 @@ setInterval(()=>{
 },20000);
 
 function go(id){
-  if(id==='s-info'&&!window._dlnCheckoutTracked){
-    window._dlnCheckoutTracked=true;
-    const c=window._dlnPriceCents;
-    dlnTrack('InitiateCheckout',c?{value:c/100,currency:window._dlnCurrency||'EUR'}:{});
-  }
   if(id==='s-home'){
     setTimeout(()=>{
       document.querySelectorAll('.home-bullet').forEach((el,i)=>{
@@ -1036,7 +968,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
   fetch('/price-info').then(r=>r.json()).then(d=>{
     const fmt=c=>(c.amount/100).toFixed(2).replace('.',',');
     const promoEl=document.getElementById('price-promo');
-    if(d.active){ window._dlnPriceCents=d.active.amount; window._dlnCurrency=(d.active.currency||'eur').toUpperCase(); }
     if(promoEl&&d.active) promoEl.innerHTML=fmt(d.active)+'<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span>';
   }).catch(()=>{/* liks statinis numatytasis skaičius */});
   const params2=new URLSearchParams(window.location.search);
@@ -1383,14 +1314,14 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('tikrinu mokėjimą (PI)...');
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._dlnPaidAmount=vd.amount;window._dlnPaidCurrency=vd.currency;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
       if(vd.email){ window._userEmail=vd.email; window.userEmail=vd.email; }
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
       const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||'')+'&bgSessionId='+encodeURIComponent(window.bgSessionId||''),{},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._dlnPaidAmount=vd.amount;window._dlnPaidCurrency=vd.currency;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
       // SVARBU: jei naršyklės sessionStorage per Stripe Checkout peradresavimą
       // "pametė" bgSessionId/orderNumber (žinoma iOS Safari problema), čia
       // juos atstatome iš PATIKIMO serverio atsakymo (Stripe metadata) —
@@ -1409,16 +1340,6 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     }
     if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
     window.palmToken=token;window.userName=userName;window._userName=userName;
-    // Meta Pixel: Purchase — tik po serverio patvirtinto apmokėjimo. eventID ir
-    // sessionStorage žymė apsaugo nuo dvigubo pirkimo skaičiavimo.
-    try{
-      const pk='dlnPurchaseTracked_'+sessionId;
-      if(!sessionStorage.getItem(pk)){
-        sessionStorage.setItem(pk,'1');
-        const cents=window._dlnPaidAmount||window._dlnPriceCents;
-        dlnTrack('Purchase',{value:cents?cents/100:0,currency:(window._dlnPaidCurrency||window._dlnCurrency||'EUR').toUpperCase(),content_name:'Gyvenimo žemėlapis'},{eventID:String(sessionId)});
-      }
-    }catch(e){}
 
     // 3. Siųsti analizę - nuotraukos iš visų šaltinių
     const p1=window._savedPhotoLeft||photoLeft;
@@ -1701,7 +1622,6 @@ function acceptConsentAndStart(){
 }
 
 function _startAppReal(){
-  dlnTrack('ViewContent',{content_name:'Gyvenimo žemėlapis'});
   // Pradedame krauti tikslų rankos-taškų (MediaPipe) aptikimo modelį iš karto,
   // fone, kol vartotojas dar mato siluetą/kamerą — kad jis būtų JAU paruoštas,
   // kai vartotojas paspaus fotografuoti mygtuką (jokio papildomo laukimo).
@@ -5059,7 +4979,6 @@ function proceedToPayment(){
     return;
   }
   if(err) err.style.display='none';
-  dlnTrack('Lead');
   window._userName=name;window.userName=name;
   window._userEmail=email;window.userEmail=email;
   // Sugeneruoti vienetinį užsakymo numerį IŠ KARTO, kai tik gautas vardas
