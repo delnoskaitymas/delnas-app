@@ -29,6 +29,39 @@ h1 em{font-style:italic;color:var(--gold)}
 h2.how{font:400 24px 'Playfair Display',serif;text-align:center;margin:34px 0 4px}
 h2.how em{color:var(--gold);font-style:italic}
 .how-sub{text-align:center;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+/* Kompaktiška forma — visas puslapis telpa į vieną telefono ekraną */
+body.form-view .wrap{padding-top:12px;padding-bottom:12px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.form-view .wrap > .fine{display:none}
+body.form-view .brand{font-size:15px}
+body.form-view .brand small{font-size:8.5px;margin-top:3px}
+#v-form .intro{margin:10px 0 4px;gap:12px}
+#v-form .intro .hero{width:58px;height:58px;border-width:1.5px}
+#v-form .intro h1{font-size:23px;line-height:1.1}
+#v-form .lead.sm{font-size:12.5px;line-height:1.45;margin:0 0 8px}
+#v-form .card-form{margin-top:0;padding:12px 14px 12px;border-radius:16px}
+#v-form label{font-size:10px;margin:9px 0 4px;letter-spacing:.12em}
+#v-form .row2 label,#v-form .card-form > label:first-child{margin-top:0}
+#v-form .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
+#v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:9px 12px;font-size:16px}
+#v-form textarea{min-height:0;height:58px;resize:none}
+#v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#v-form .chk{margin-top:10px;font-size:11px;line-height:1.45;letter-spacing:0;text-transform:none}
+#v-form .btn{margin-top:10px;padding:13px}
+#v-form .trust{margin-top:8px;font-size:10.5px}
+.how-link{display:block;margin:10px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
+  letter-spacing:.04em;cursor:pointer;padding:6px 10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.4)}
+/* Iš apačios išslenkantis langas */
+.sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{position:relative;width:100%;max-width:480px;background:#070707;border:1px solid rgba(212,168,67,.35);border-bottom:none;
+  border-radius:24px 24px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(212,168,67,.12)}
+.sheet::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(212,168,67,.35);margin:0 auto 4px}
+.sheet-bg.open .sheet{transform:none}
+.sheet h2.how{margin-top:8px}
+.sheet-x{position:absolute;top:12px;right:14px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(212,168,67,.35);
+  background:transparent;color:var(--gold2);font-size:14px;cursor:pointer}
 /* Braukiama „Kaip tai veikia“ karuselė */
 .slides{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
   margin:0 -16px;padding:4px 16px 8px;scrollbar-width:none}
@@ -120,20 +153,25 @@ a{color:var(--gold)}
     </div>
     <p class="lead sm">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
-      <label for="f-to">Kam dovanoji</label>
-      <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off">
-      <label for="f-from">Nuo ko</label>
-      <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name">
-      <label for="f-msg">Palinkėjimas (neprivaloma)</label>
-      <textarea id="f-msg" maxlength="300" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
-      <div class="hint"><span id="msg-count">0</span>/300</div>
+      <div class="row2">
+        <div><label for="f-to">Kam dovanoji</label>
+        <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off"></div>
+        <div><label for="f-from">Nuo ko</label>
+        <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name"></div>
+      </div>
+      <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
+      <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span> →</button>
       <div class="err" id="form-err"></div>
-      <div class="trust">🔒 Saugus mokėjimas per Stripe · Kortelė, Apple Pay, Google Pay, Revolut Pay<br>14 dienų pinigų grąžinimo garantija, kol kuponas nepanaudotas</div>
+      <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
+    <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
+    <div class="sheet-bg" id="how-sheet" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
+    <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
     <h2 class="how">Kaip tai <em>veikia</em></h2>
     <div class="how-sub">Braukite →</div>
     <div class="slides" id="slides">
@@ -158,6 +196,8 @@ a{color:var(--gold)}
       </div>
     </div>
     <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+    <p class="fine" style="margin-top:16px">Pramoginio pobūdžio paslauga, skirta 18+ · info@delnaskaitymas.lt</p>
+    </div></div>
   </section>
 
   <!-- 2. LAUKIMAS -->
@@ -213,7 +253,7 @@ a{color:var(--gold)}
 (function(){
   const $ = id => document.getElementById(id);
   const views = ['v-form','v-wait','v-card','v-error'];
-  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0,0); }
+  function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); document.body.classList.toggle('form-view', v === 'v-form'); window.scrollTo(0,0); }
   const params = new URLSearchParams(location.search);
   let current = null; // rodomo kupono duomenys
 
@@ -341,6 +381,13 @@ a{color:var(--gold)}
     try { await navigator.clipboard.writeText(text + link); alert('Žinutė su nuoroda nukopijuota — įklijuok ją Messenger ar kitur.'); }
     catch (e) { prompt('Nukopijuok ir nusiųsk:', text + link); }
   });
+
+  // „Kaip tai veikia?“ langas
+  function sheet(open){ $('how-sheet').classList.toggle('open', open); $('how-sheet').setAttribute('aria-hidden', open ? 'false' : 'true'); }
+  $('how-open').addEventListener('click', () => sheet(true));
+  $('how-close').addEventListener('click', () => sheet(false));
+  $('how-sheet').addEventListener('click', e => { if (e.target === $('how-sheet')) sheet(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') sheet(false); });
 
   // Karuselės taškeliai
   (function(){
