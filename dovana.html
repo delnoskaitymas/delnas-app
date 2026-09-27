@@ -26,7 +26,29 @@ h1 em{font-style:italic;color:var(--gold)}
 .intro .hero{flex:none;width:84px;height:84px;margin:0}
 .intro h1{text-align:left;margin:0;font-size:28px}
 .lead.sm{font-size:13.5px;margin-bottom:4px}
-h2.how{font:400 20px 'Playfair Display',serif;text-align:center;margin:28px 0 4px;color:var(--gold2)}
+h2.how{font:400 24px 'Playfair Display',serif;text-align:center;margin:34px 0 4px}
+h2.how em{color:var(--gold);font-style:italic}
+.how-sub{text-align:center;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+/* Braukiama „Kaip tai veikia“ karuselė */
+.slides{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  margin:0 -16px;padding:4px 16px 8px;scrollbar-width:none}
+.slides::-webkit-scrollbar{display:none}
+.slide{flex:0 0 80%;scroll-snap-align:center;position:relative;overflow:hidden;border-radius:20px;padding:22px 20px 20px;min-height:250px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.16),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border:1px solid rgba(212,168,67,.32);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.slide .num{position:absolute;top:10px;right:16px;font:700 54px/1 'Playfair Display',serif;color:rgba(212,168,67,.12)}
+.slide .ic{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 18px rgba(212,168,67,.3),inset 0 0 12px rgba(212,168,67,.12);margin-bottom:16px}
+.slide h3{font:400 21px/1.25 'Playfair Display',serif;margin-bottom:8px}
+.slide h3 em{color:var(--gold);font-style:italic}
+.slide p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+.mini{margin-top:14px;border:1px solid rgba(212,168,67,.45);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:12px;background:#050505}
+.mini .q{width:42px;height:42px;border-radius:4px;flex:none;display:block}
+.mini b{display:block;font:700 13px 'Courier New',monospace;letter-spacing:.14em;color:var(--gold2)}
+.mini span{font-size:10.5px;color:var(--faint)}
+.dots{display:flex;justify-content:center;gap:7px;margin-top:10px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(212,168,67,.25);transition:all .3s}
+.dots i.on{width:22px;border-radius:4px;background:var(--gold)}
 .step{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);line-height:1.4}
 .step b{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;
   font:400 13px 'Playfair Display';color:var(--gold)}
@@ -112,12 +134,30 @@ a{color:var(--gold)}
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · Kortelė, Apple Pay, Google Pay, Revolut Pay<br>14 dienų pinigų grąžinimo garantija, kol kuponas nepanaudotas</div>
     </form>
-    <h2 class="how">Kaip tai veikia</h2>
-    <div class="steps">
-      <div class="step"><b>1</b>Užpildyk kortelę ir apmokėk</div>
-      <div class="step"><b>2</b>Gauk dovanų kortelę su QR kodu el. paštu — persiųsk ar atsispausdink</div>
-      <div class="step"><b>3</b>Gavėjas nufotografuoja delnus ir gauna savo žemėlapį — mokėti jam nereikės</div>
+    <h2 class="how">Kaip tai <em>veikia</em></h2>
+    <div class="how-sub">Braukite →</div>
+    <div class="slides" id="slides">
+      <div class="slide">
+        <div class="num">01</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-1.5-3-5-3.5-5-1.2C7 8 12 8 12 8zm0 0c1.5-3 5-3.5 5-1.2C17 8 12 8 12 8z"/></svg></div>
+        <h3>Užpildyk <em>kortelę</em></h3>
+        <p>Įrašyk, kam dovanoji, nuo ko ir palinkėjimą. Sumokėk saugiai per Stripe — kortele, Apple Pay, Google Pay ar Revolut.</p>
+      </div>
+      <div class="slide">
+        <div class="num">02</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
+        <h3>Gauk <em>dovanų kortelę</em></h3>
+        <p>Iškart — ekrane ir el. pašte. Atsispausdink, persiųsk ar nusiųsk per Messenger.</p>
+        <div class="mini"><svg class="q" viewBox="-1 -1 23 23"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#000"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="9" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="17" y="0" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="20" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="14" y="1" width="1" height="1"/><rect x="20" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="14" y="2" width="1" height="1"/><rect x="16" y="2" width="1" height="1"/><rect x="17" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="17" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/><rect x="17" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="20" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="15" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/><rect x="17" y="6" width="1" height="1"/><rect x="18" y="6" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="0" y="8" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="14" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="0" y="9" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="17" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="1" y="10" width="1" height="1"/><rect x="2" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="7" y="10" width="1" height="1"/><rect x="10" y="10" width="1" height="1"/><rect x="14" y="10" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/><rect x="17" y="10" width="1" height="1"/><rect x="1" y="11" width="1" height="1"/><rect x="4" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="6" y="11" width="1" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="10" y="11" width="1" height="1"/><rect x="11" y="11" width="1" height="1"/><rect x="13" y="11" width="1" height="1"/><rect x="17" y="11" width="1" height="1"/><rect x="1" y="12" width="1" height="1"/><rect x="2" y="12" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="4" y="12" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="14" y="12" width="1" height="1"/><rect x="16" y="12" width="1" height="1"/><rect x="17" y="12" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="18" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="0" y="14" width="1" height="1"/><rect x="1" y="14" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="3" y="14" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="5" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/><rect x="12" y="14" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="18" y="14" width="1" height="1"/><rect x="19" y="14" width="1" height="1"/><rect x="0" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="8" y="15" width="1" height="1"/><rect x="11" y="15" width="1" height="1"/><rect x="15" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="19" y="15" width="1" height="1"/><rect x="20" y="15" width="1" height="1"/><rect x="0" y="16" width="1" height="1"/><rect x="2" y="16" width="1" height="1"/><rect x="3" y="16" width="1" height="1"/><rect x="4" y="16" width="1" height="1"/><rect x="6" y="16" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/><rect x="9" y="16" width="1" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="12" y="16" width="1" height="1"/><rect x="16" y="16" width="1" height="1"/><rect x="18" y="16" width="1" height="1"/><rect x="0" y="17" width="1" height="1"/><rect x="2" y="17" width="1" height="1"/><rect x="3" y="17" width="1" height="1"/><rect x="4" y="17" width="1" height="1"/><rect x="6" y="17" width="1" height="1"/><rect x="8" y="17" width="1" height="1"/><rect x="9" y="17" width="1" height="1"/><rect x="10" y="17" width="1" height="1"/><rect x="11" y="17" width="1" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="14" y="17" width="1" height="1"/><rect x="16" y="17" width="1" height="1"/><rect x="17" y="17" width="1" height="1"/><rect x="18" y="17" width="1" height="1"/><rect x="19" y="17" width="1" height="1"/><rect x="20" y="17" width="1" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="18" width="1" height="1"/><rect x="3" y="18" width="1" height="1"/><rect x="4" y="18" width="1" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="10" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="19" y="18" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="9" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="11" y="19" width="1" height="1"/><rect x="13" y="19" width="1" height="1"/><rect x="14" y="19" width="1" height="1"/><rect x="15" y="19" width="1" height="1"/><rect x="19" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="1" y="20" width="1" height="1"/><rect x="2" y="20" width="1" height="1"/><rect x="3" y="20" width="1" height="1"/><rect x="4" y="20" width="1" height="1"/><rect x="5" y="20" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="8" y="20" width="1" height="1"/><rect x="9" y="20" width="1" height="1"/><rect x="10" y="20" width="1" height="1"/><rect x="11" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="13" y="20" width="1" height="1"/><rect x="14" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/></g></svg><div><b>K7P3-Q9XM</b><span>Asmeninė nuoroda ir QR kodas</span></div></div>
+      </div>
+      <div class="slide">
+        <div class="num">03</div>
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11.5V4a1.5 1.5 0 013 0v7.5M14 11.5V5.5a1.5 1.5 0 013 0V13M17 9.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-5-2.7L4.3 14a1.6 1.6 0 012.6-1.8L8 13.5"/></svg></div>
+        <h3>Gavėjas atskleidžia <em>savo žemėlapį</em></h3>
+        <p>Nufotografuoja abu delnus ir per kelias minutes gauna asmeninę 7 skyrių analizę su PDF. Mokėti jam nereikės.</p>
+      </div>
     </div>
+    <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
   </section>
 
   <!-- 2. LAUKIMAS -->
@@ -301,6 +341,21 @@ a{color:var(--gold)}
     try { await navigator.clipboard.writeText(text + link); alert('Žinutė su nuoroda nukopijuota — įklijuok ją Messenger ar kitur.'); }
     catch (e) { prompt('Nukopijuok ir nusiųsk:', text + link); }
   });
+
+  // Karuselės taškeliai
+  (function(){
+    const sl = $('slides'), dots = document.querySelectorAll('#dots i');
+    if (!sl) return;
+    sl.addEventListener('scroll', () => {
+      const w = sl.firstElementChild.getBoundingClientRect().width + 12;
+      const i = Math.round(sl.scrollLeft / w);
+      dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    }, { passive: true });
+    dots.forEach((d, k) => d.addEventListener('click', () => {
+      const w = sl.firstElementChild.getBoundingClientRect().width + 12;
+      sl.scrollTo({ left: k * w, behavior: 'smooth' });
+    }));
+  })();
 
   // ---------- Paleidimas ----------
   async function confirmPaid(sessionId){
