@@ -270,7 +270,7 @@ Generuoti: `node reklamos/video-render.js video2.html delnas-reels-draugems-1080
 | `25-metu-pabaiga-1080x1350.png` | 4:5 | „Metų pabaiga — laikas pažvelgti į savo kelią“ |
 | `26-dovana-sau-1080x1080.png` | 1:1 | Šviesus · „Dovana sau pačiai“ |
 | `27-kaledu-vakaras-1080x1080.png` | 1:1 | „Kažkas naujo prie šventinio stalo“ (kartu) |
-| `28-kaledu-vakaras-story-1080x1920.png` | 9:16 | Šviesus · „Kas ką atneš naujaisiais metais?“ |
+| `28-kaledu-vakaras-story-1080x1920.png` | 9:16 | Šviesus · „Šventiniam vakarui“ (su draugėmis ar šeima) |
 | `29-nauji-metai-1080x1350.png` | 4:5 | „Nauji metai. Nauji tikslai. Nauji atsakymai.“ |
 | `30-kaledos-landscape-1200x628.png` | 1.91:1 | FB nuoroda / Google Display |
 | `video/delnas-reels-kaledos-1080x1920.mp4` | 9:16, 15 s | Vaizdo įrašas su krentančiu sniegu |
@@ -301,7 +301,7 @@ Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–
 
 **S — šventinis vakaras (27, 28)**
 > Kažkas naujo prie šventinio stalo ✨
-> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius — kas jus sieja, kuo skiriatės, ką atneš nauji metai? 👭
+> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius — kas jus sieja ir kuo skiriatės? 👭
 
 **T — Nauji metai (29)**
 > Nauji metai. Nauji tikslai. Nauji atsakymai.
