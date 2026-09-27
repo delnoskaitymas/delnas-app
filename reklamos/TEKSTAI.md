@@ -218,3 +218,24 @@ Pakeisk `utm_content` pagal paveikslėlio pavadinimą. Meta Ads Manager tą pat�
 **N — 3 žingsniai (22)**
 > 1) Nufotografuok abu delnus 2) AI perskaito linijas 3) Gauk 7 skyrių analizę + PDF. Tiek ✨
 
+
+---
+
+## Vaizdo reklama (Reels / TikTok / Stories)
+
+Failas: `video/delnas-reels-1080x1920.mp4` — 15 s, 9:16, 1080×1920, H.264, be muzikos.
+
+| Sek. | Scena |
+|---|---|
+| 0–2,8 | „Ką slepia tavo delnai?“ — auksinė linija nuskenuoja delną |
+| 2,8–6,2 | Delno linijos nusipiešia po vieną: gyvenimo, širdies, galvos, likimo |
+| 6,2–9,2 | „Tereikia telefono“ — 3 žingsniai ir procentai 0 → 99 % |
+| 9,2–12,4 | Telefonas su 7 žemėlapio skyriais |
+| 12,4–15 | „Tavo delnai jau žino“ + mygtukas + delnaskaitymas.lt |
+
+**Muzika:** pridėk pačioje Instagram / TikTok programėlėje iš jų licencijuotos bibliotekos (paslaptingas / „ambient“ / „mystical“ stilius). Svetimos muzikos į failą nedėk — reklamą gali užblokuoti dėl autorių teisių.
+
+**Tekstas prie video:**
+> Ką slepia tavo delnai? ✋✨ Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį. Nuoroda — delnaskaitymas.lt
+
+Norint pakeisti tekstą ar laiką — redaguok `video.html` ir paleisk `node reklamos/video-render.js` (reikia ffmpeg su libx264, pvz. `pip install imageio-ffmpeg`, kelias per `FFMPEG` kintamąjį).
