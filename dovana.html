@@ -30,13 +30,13 @@ h2.how{font:400 24px 'Playfair Display',serif;text-align:center;margin:34px 0 4p
 h2.how em{color:var(--gold);font-style:italic}
 .how-sub{text-align:center;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
 /* Kompaktiška forma — visas puslapis telpa į vieną telefono ekraną */
-body.form-view .wrap{padding-top:16px;padding-bottom:12px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.form-view .wrap{padding-top:16px;padding-bottom:8px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 body.form-view .wrap > .fine{display:none}
-body.form-view #v-form{margin-top:auto;margin-bottom:auto;padding-bottom:6px}
+body.form-view #v-form{padding-bottom:0}
 body.form-view .brand{font-size:16px}
 body.form-view .brand small{font-size:9.5px;margin-top:4px}
-#v-form .intro{margin:10px 0 6px;gap:10px;flex-direction:column}
-#v-form .intro .hero{width:64px;height:64px;border-width:1.5px}
+#v-form .intro{margin:8px 0 6px;gap:8px;flex-direction:column}
+#v-form .intro .hero{width:74px;height:74px;border-width:1.5px}
 #v-form .intro h1{font-size:28px;line-height:1.12;text-align:center}
 #v-form .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 12px}
 #v-form .card-form{margin-top:0;padding:16px 16px 14px;border-radius:18px}
@@ -54,15 +54,15 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 @media (max-height:700px){
   body.form-view .wrap{padding-top:12px;padding-bottom:6px}
   #v-form .intro{margin:10px 0 4px}
-  #v-form .intro .hero{width:44px;height:44px}
+  #v-form .intro .hero{width:58px;height:58px}
   body.form-view .brand small{display:none}
   #v-form .intro h1{font-size:24px}
   #v-form .intro{margin:6px 0 4px;gap:6px}
-  #v-form .lead.sm{font-size:13px;margin:0 0 9px}
+  #v-form .lead.sm{font-size:13px;margin:0 0 7px}
   #v-form .card-form{padding:13px 14px 12px}
   #v-form label{margin:9px 0 5px}
   #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:10px 12px}
-  #v-form textarea{height:56px}
+  #v-form textarea{height:50px}
   #v-form .chk{margin-top:10px;font-size:11.5px}
   #v-form .btn{margin-top:11px;padding:14px}
   #v-form .trust{margin-top:8px}
@@ -70,7 +70,7 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 }
 @media (max-height:600px){
   body.form-view .brand small{display:none}
-  #v-form .intro .hero{display:none}
+  #v-form .intro .hero{width:44px;height:44px}
   #v-form .intro h1{font-size:22px}
   #v-form .lead.sm{font-size:12px;margin-bottom:7px}
   #v-form label{margin:7px 0 4px}
@@ -186,7 +186,7 @@ a{color:var(--gold)}
         <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name"></div>
       </div>
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
-      <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! Tegul tavo kelias būna šviesus ✨"></textarea>
+      <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
