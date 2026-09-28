@@ -1681,52 +1681,61 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   return result;
 }
 
-// --- Asmeninis ženklas ---
-// Simbolių sąrašas turi sutapti su SIGIL_SYMBOLS index.html faile.
-// Reikšmės ir sąsajos su delnu remiasi klasikine chiromantija (pirštai =
-// planetų kalneliai, nykštys = valia, Veneros/Mėnulio kalneliai ir kt.).
+// --- Asmeninis ženklas („Delno žvaigždynas“) ---
+// 7 chiromantijos kalneliai; kiekvienam AI parenka vieną iš 3 simbolių,
+// pažymi 2–3 ryškiausius ir nustato stichiją pagal delno formą.
+// Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.html faile.
 const SIGIL_SYMBOLS = {
-  zvaigzde:  { lt: 'Žvaigždė',  reiksme: 'intuicija',                 delnas: 'bendras delno piešinys, pirštų galiukai' },
-  saule:     { lt: 'Saulė',     reiksme: 'lyderystė ir energija',     delnas: 'bevardis pirštas ir Saulės kalnelis po juo' },
-  menulis:   { lt: 'Mėnulis',   reiksme: 'jautrumas ir vidinis pasaulis', delnas: 'Mėnulio kalnelis — delno apačia priešingoje nykščiui pusėje' },
-  banga:     { lt: 'Banga',     reiksme: 'empatija',                  delnas: 'minkštas, apvalus delno kraštas, pailga delno forma' },
-  kalnas:    { lt: 'Kalnas',    reiksme: 'ištvermė',                  delnas: 'didysis (vidurinis) pirštas ir tvirta, kvadratinė delno forma' },
-  medis:     { lt: 'Medis',     reiksme: 'stabilumas ir šaknys',      delnas: 'gyvenimo linija aplink nykščio pagrindą' },
-  raktas:    { lt: 'Raktas',    reiksme: 'finansinė sėkmė',           delnas: 'mažasis pirštas ir Merkurijaus kalnelis' },
-  kompasas:  { lt: 'Kompasas',  reiksme: 'aiški kryptis',             delnas: 'likimo linija ir smilius' },
-  spirale:   { lt: 'Spiralė',   reiksme: 'pokyčiai ir kūryba',        delnas: 'kairio ir dešinio delno skirtumai' },
-  akis:      { lt: 'Akis',      reiksme: 'įžvalgumas',                delnas: 'proto linija' },
-  begalybe:  { lt: 'Begalybė',  reiksme: 'gilūs ryšiai',              delnas: 'širdies linija ir pirštų tarpai' },
-  sirdis:    { lt: 'Širdis',    reiksme: 'meilė',                     delnas: 'širdies linija' },
-  liepsna:   { lt: 'Liepsna',   reiksme: 'aistra',                    delnas: 'Veneros kalnelis — nykščio pagrindas' },
-  trikampis: { lt: 'Trikampis', reiksme: 'valia',                     delnas: 'nykštys — jo ilgis ir tvirtumas' },
-  rodykle:   { lt: 'Rodyklė',   reiksme: 'augimas',                   delnas: 'smilius — Jupiterio pirštas' },
+  karuna: 'Karūna', kompasas: 'Kompasas', rodykle: 'Rodyklė', kalnas: 'Kalnas', medis: 'Medis', akis: 'Akis',
+  saule: 'Saulė', zvaigzde: 'Žvaigždė', spirale: 'Spiralė', raktas: 'Raktas', plunksna: 'Plunksna', begalybe: 'Begalybė',
+  trikampis: 'Trikampis', skydas: 'Skydas', liepsna: 'Liepsna', sirdis: 'Širdis', roze: 'Rožė', menulis: 'Mėnulis', banga: 'Banga',
+};
+const SIGIL_MOUNTS = {
+  jupiteris:  { lt: 'Jupiterio kalnelis (po smiliumi)', tema: 'lyderystė, ambicijos, pasitikėjimas', opts: { karuna: 'lyderystė', kompasas: 'aiški kryptis', rodykle: 'augimas' } },
+  saturnas:   { lt: 'Saturno kalnelis (po didžiuoju pirštu)', tema: 'atsakomybė, stabilumas, išmintis', opts: { kalnas: 'ištvermė', medis: 'stabilumas ir šaknys', akis: 'įžvalgumas' } },
+  saule:      { lt: 'Saulės kalnelis (po bevardžiu pirštu)', tema: 'kūryba, sėkmė, pripažinimas', opts: { saule: 'šviesa ir pripažinimas', zvaigzde: 'intuicija ir viltis', spirale: 'kūryba ir pokyčiai' } },
+  merkurijus: { lt: 'Merkurijaus kalnelis (po mažuoju pirštu)', tema: 'bendravimas, finansai, verslumas', opts: { raktas: 'finansinė sėkmė', plunksna: 'bendravimas ir žodis', begalybe: 'gilūs ryšiai' } },
+  marsas:     { lt: 'Marso laukas (delno viduryje)', tema: 'drąsa, valia, ištvermė sunkumuose', opts: { trikampis: 'valia', skydas: 'drąsa ir apsauga', liepsna: 'veržlumas' } },
+  venera:     { lt: 'Veneros kalnelis (nykščio pagrinde)', tema: 'meilė, aistra, šiluma', opts: { sirdis: 'meilė', liepsna: 'aistra', roze: 'švelnumas' } },
+  menulis:    { lt: 'Mėnulio kalnelis (delno apačioje, išorinėje pusėje)', tema: 'intuicija, jausmai, vaizduotė', opts: { menulis: 'jautrumas ir vidinis pasaulis', banga: 'empatija', akis: 'įžvalgumas' } },
+};
+const SIGIL_ELEMENTS = {
+  zeme: 'Žemė — kvadratinis delnas, trumpesni pirštai: praktiškumas, patikimumas',
+  oras: 'Oras — kvadratinis delnas, ilgi pirštai: protas, bendravimas',
+  ugnis: 'Ugnis — pailgas delnas, trumpesni pirštai: energija, veržlumas',
+  vanduo: 'Vanduo — pailgas delnas, ilgi pirštai: jausmai, intuicija',
 };
 
 function validateSigil(z) {
-  if (!z || typeof z !== 'object' || !Array.isArray(z.simboliai)) return null;
-  const seen = new Set();
-  const simboliai = [];
-  for (const it of z.simboliai) {
+  if (!z || typeof z !== 'object' || !z.kalneliai || typeof z.kalneliai !== 'object') return null;
+  const clean = t => String(t || '').replace(/["„“]/g, '').replace(/\s+/g, ' ').trim();
+  const kalneliai = {};
+  for (const [m, def] of Object.entries(SIGIL_MOUNTS)) {
+    const it = z.kalneliai[m];
     const key = String(it && it.s || '').trim().toLowerCase();
-    const tekstas = String(it && it.tekstas || '').replace(/\s+/g, ' ').trim().slice(0, 180);
-    if (!SIGIL_SYMBOLS[key] || seen.has(key) || !tekstas) continue;
-    seen.add(key);
-    simboliai.push({ s: key, tekstas });
-    if (simboliai.length === 4) break;
+    const tekstas = clean(it && it.tekstas).slice(0, 180);
+    if (!def.opts[key] || !tekstas) return null;
+    kalneliai[m] = { s: key, tekstas };
   }
-  const pavadinimas = String(z.pavadinimas || '').replace(/["„“]/g, '').trim().slice(0, 32);
-  if (simboliai.length !== 4 || !pavadinimas) return null;
-  return { pavadinimas, simboliai };
+  const stipriausi = [...new Set((Array.isArray(z.stipriausi) ? z.stipriausi : []).map(x => String(x).trim().toLowerCase()))]
+    .filter(m => SIGIL_MOUNTS[m]).slice(0, 3);
+  const stichija = String(z.stichija || '').trim().toLowerCase().replace(/ž/g, 'z').replace(/ė/g, 'e');
+  const pavadinimas = clean(z.pavadinimas).slice(0, 32);
+  const pasakojimas = clean(z.pasakojimas).slice(0, 400);
+  const stichijos_tekstas = clean(z.stichijos_tekstas).slice(0, 200);
+  if (stipriausi.length < 2 || !SIGIL_ELEMENTS[stichija] || !pavadinimas) return null;
+  return { pavadinimas, stichija, stichijos_tekstas, pasakojimas, stipriausi, kalneliai };
 }
 
 async function generatePersonalSigil(bruozai, result, name) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
-  const list = Object.entries(SIGIL_SYMBOLS)
-    .map(([k, v]) => `- ${k}: ${v.lt} — ${v.reiksme} (delne: ${v.delnas})`).join('\n');
+  const mounts = Object.entries(SIGIL_MOUNTS).map(([k, v]) =>
+    `- ${k}: ${v.lt} — ${v.tema}. Galimi simboliai: ${Object.entries(v.opts).map(([s, r]) => `${s} (${SIGIL_SYMBOLS[s]} — ${r})`).join(', ')}`).join('\n');
+  const elements = Object.entries(SIGIL_ELEMENTS).map(([k, v]) => `- ${k}: ${v}`).join('\n');
   const summary = [
     'Stiprybės: ' + (result.stiprybes_sarasas || []).join(', '),
     'Charakteris: ' + (result.prigimtines_insights || []).join('; '),
+    'Kryptis: ' + (result.gyvenimo_insights || []).join('; '),
     'Santykiai: ' + (result.santykiai_insights || []).join('; '),
     'Finansai: ' + (result.finansai_insights || []).join('; '),
     'Sėkmės raktas: ' + (result.galimybes_insights || []).join('; '),
@@ -1735,8 +1744,11 @@ async function generatePersonalSigil(bruozai, result, name) {
   ].join('\n');
   const observations = (bruozai || []).map((b, i) => `${i + 1}. ${b}`).join('\n');
 
-  const prompt = `Sukurk asmeninį gyvenimo žemėlapio ženklą žmogui${name ? ' vardu ' + name : ''}. Ženklą sudaro 4 simboliai iš ŠIO fiksuoto sąrašo (naudok tik šiuos raktus):
-${list}
+  const prompt = `Sukurk asmeninį delno žvaigždyną žmogui${name ? ' vardu ' + name : ''}. Jį sudaro 7 chiromantijos kalneliai — kiekvienam parenki VIENĄ simbolį iš jam leidžiamų:
+${mounts}
+
+Stichija (pagal delno formą ir pirštų ilgį):
+${elements}
 
 Delnų pastebėjimai:
 ${observations || '(nėra)'}
@@ -1745,14 +1757,17 @@ Analizės išvados:
 ${summary}
 
 Užduotis:
-1. Parink 4 skirtingus simbolius, kurie GERIAUSIAI atspindi šį žmogų pagal analizės išvadas ir delnų pastebėjimus. Pirmas — pagrindinė, ryškiausia savybė (ženklo centras), kiti trys — kitos svarbios savybės iš skirtingų gyvenimo sričių.
-2. Kiekvienam simboliui parašyk VIENĄ trumpą sakinį (iki 16 žodžių), kuris susieja simbolį su konkrečia to žmogaus delno vieta ar linija (nurodyta skliausteliuose) ir su jo savybe iš analizės. Pavyzdys: „Tavo ryškus Mėnulio kalnelis rodo stiprią intuiciją ir turtingą vidinį pasaulį.“ Kreipkis „tu“ forma, esamuoju laiku.
-3. Sugalvok ženklo pavadinimą: 2–3 žodžiai, poetiškas, bet paprastas (pvz. Vidinė šviesa, Tylioji jėga, Kelrodis).
+1. Kiekvienam iš 7 kalnelių parink simbolį (tik iš to kalnelio leidžiamų), geriausiai atitinkantį šį žmogų.
+2. Kiekvienam kalneliui parašyk VIENĄ trumpą sakinį (iki 16 žodžių), kuris susieja tą delno vietą su šio žmogaus savybe iš analizės. Pvz.: „Ryškus Mėnulio kalnelis rodo stiprią intuiciją ir turtingą vidinį pasaulį.“ Kreipkis „tu“ forma, esamuoju laiku.
+3. Pažymėk 2 arba 3 ryškiausius šio žmogaus kalnelius (stipriausi).
+4. Nustatyk stichiją pagal delno formą ir pirštų ilgį iš pastebėjimų; parašyk vieną sakinį, ką ji reiškia šiam žmogui.
+5. Parašyk 2 sakinius (pasakojimas), kaip visas žvaigždynas kartu apibūdina šį žmogų.
+6. Sugalvok žvaigždyno pavadinimą: 2–3 žodžiai, poetiškas, bet paprastas (pvz. Tylioji jėga, Kelrodis, Vidinė ugnis).
 
 Kalba: taisyklinga, natūrali lietuvių kalba, be giminę turinčių dalyvių (skaitytojo lytis nežinoma). Teksto viduje nenaudok dvigubų kabučių.
 
 Atsakyk TIK JSON:
-{"pavadinimas":"...","simboliai":[{"s":"raktas","tekstas":"..."},{"s":"...","tekstas":"..."},{"s":"...","tekstas":"..."},{"s":"...","tekstas":"..."}]}`;
+{"pavadinimas":"...","stichija":"vanduo","stichijos_tekstas":"...","pasakojimas":"...","stipriausi":["menulis","venera"],"kalneliai":{"jupiteris":{"s":"...","tekstas":"..."},"saturnas":{"s":"...","tekstas":"..."},"saule":{"s":"...","tekstas":"..."},"merkurijus":{"s":"...","tekstas":"..."},"marsas":{"s":"...","tekstas":"..."},"venera":{"s":"...","tekstas":"..."},"menulis":{"s":"...","tekstas":"..."}}}`;
 
   const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1763,11 +1778,11 @@ Atsakyk TIK JSON:
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-5',
-      max_tokens: 800,
+      max_tokens: 1500,
       temperature: 0.3,
       messages: [{ role: 'user', content: prompt }]
     })
-  }, 45000);
+  }, 50000);
   const data = await r.json();
   if (data?.error) throw new Error(`${data.error.type}: ${data.error.message || ''}`);
   const text = (data.content || []).map(b => b.text || '').join('');
@@ -1775,8 +1790,11 @@ Atsakyk TIK JSON:
   if (!m) throw new Error('JSON nerastas');
   const z = validateSigil(parseJsonLenient(m[0]));
   if (!z) throw new Error('netinkamas ženklo formatas');
-  const fixed = z.simboliai.map(it => ({ s: it.s, tekstas: applyTextFixes(it.tekstas).text }));
-  return { pavadinimas: z.pavadinimas, simboliai: fixed };
+  const fix = t => applyTextFixes(t).text;
+  for (const k of Object.keys(z.kalneliai)) z.kalneliai[k].tekstas = fix(z.kalneliai[k].tekstas);
+  z.stichijos_tekstas = fix(z.stichijos_tekstas);
+  z.pasakojimas = fix(z.pasakojimas);
+  return z;
 }
 
 // --- ENDPOINT: Greita delno validacija ---
