@@ -130,38 +130,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 /* Informacijos ekranas žemuose telefonuose: klausimai be paantraščių, kad mokėjimo mygtukas tilptų be slinkimo */
 @media(max-height:660px){#info-qs>div>span:nth-child(2)>span{display:none!important}#info-qs>div{padding:3px 0!important}}
 @media(max-height:580px){#price-info-block>div{padding:4px 18px 6px!important}#price-promo{font-size:24px!important}}
-/* Delno žvaigždynas: atsiskleidimo animacija ir blokas */
-#r-sigil{width:280px;max-width:80vw;margin:4px auto 0;filter:drop-shadow(0 0 10px rgba(212,168,67,.28))}
-#r-sigil svg{width:100%;height:auto;display:block}
-.sg-cap{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:rgba(240,201,106,.85);height:20px;margin-top:4px;transition:opacity .8s ease 3.6s}
-#r-sigil-wrap.sg-shown .sg-cap{opacity:0}
-#r-sigil .sg-dot,#r-sigil .sg-sym,#r-sigil .sg-fade{opacity:0}
-#r-sigil .sg-line{stroke-dasharray:1;stroke-dashoffset:1}
-#r-sigil.play .sg-dot{animation:sgFade .5s ease forwards;animation-delay:calc(var(--i) * 28ms)}
-#r-sigil.play .sg-line{animation:sgDraw 1.3s ease forwards;animation-delay:calc(1.1s + var(--i) * .35s)}
-#r-sigil.play .sg-fade{animation:sgFade 1s ease forwards 2.2s}
-#r-sigil.play .sg-sym{transform-box:fill-box;transform-origin:center;animation:sgPop .7s cubic-bezier(.2,.9,.3,1.3) forwards;animation-delay:calc(2.4s + var(--i) * .22s)}
-@keyframes sgFade{to{opacity:1}}
-@keyframes sgDraw{to{stroke-dashoffset:0}}
-@keyframes sgPop{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
-.sg-after{opacity:0;transform:translateY(10px);transition:opacity .9s ease 4s,transform .9s ease 4s}
-#r-sigil-wrap.sg-shown .sg-after{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){#r-sigil .sg-dot,#r-sigil .sg-sym,#r-sigil .sg-fade{opacity:1;animation:none!important}#r-sigil .sg-line{stroke-dashoffset:0;animation:none!important}.sg-after,.sg-cap{transition:none!important}}
-.sg-num{font-family:'Playfair Display',serif;font-size:15px;letter-spacing:.2em;color:var(--gold);margin-top:6px}
-.sg-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:26px;color:var(--gold2);margin:2px 0 8px}
+/* Delno žvaigždynas */
 .sg-el{font-size:13px;color:var(--gold2);margin-bottom:12px;line-height:1.5}
-.sg-story{font-family:'Playfair Display',serif;font-style:italic;font-size:14px;line-height:1.6;color:rgba(255,255,255,.75);margin:0 4px 14px}
-.sg-list{display:flex;flex-direction:column;gap:10px;text-align:left}
-.sg-it{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.5;color:rgba(255,255,255,.7)}
-.sg-it svg{flex:none;margin-top:2px;opacity:.7}.sg-it.st svg{opacity:1}
+.sg-list{display:flex;flex-direction:column;gap:7px;text-align:left}
+.sg-it{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.4;color:rgba(255,255,255,.68)}
+.sg-it svg{flex:none;opacity:.7}.sg-it.st svg{opacity:1}
 .sg-it b{color:#e8e2d4}.sg-it.st b{color:var(--gold2)}.sg-z{color:rgba(212,168,67,.7);font-size:11.5px}
-.sg-how{text-align:left;margin-top:16px;padding:12px 14px;border-radius:12px;background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.22);font-size:12px;line-height:1.6;color:rgba(255,255,255,.68)}
-.sg-how b{color:#e8e2d4}.sg-how>b:first-child{color:var(--gold2)}
-.sg-dl-h{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold2);margin:18px 0 10px}
-.sg-dl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sg-tile{background:rgba(212,168,67,.05);border:.5px solid rgba(212,168,67,.35);border-radius:12px;padding:10px 8px 9px;color:var(--gold2);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px}
-.sg-tile b{font-size:13px}.sg-tile small{font-size:11px;color:var(--muted)}
-.sg-prev{width:100%;height:120px;background:center/contain no-repeat;margin-bottom:6px}
+.sg-how{text-align:center;margin-top:12px;font-size:11.5px;line-height:1.55;color:rgba(212,168,67,.6)}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
 .rs-body{font-size:14.5px;color:rgba(255,255,255,.68);line-height:1.4;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
@@ -722,18 +697,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Asmeninis delno žvaigždynas (žr. renderSigil) -->
     <div class="rs rs-std" id="r-sigil-wrap" style="display:none;text-align:center">
       <div class="rs-label" style="justify-content:center">Tavo delno žvaigždynas</div>
-      <div class="sg-cap">Tavo delne atsiskleidžia…</div>
-      <div id="r-sigil"></div>
-      <div class="sg-after">
-        <div id="r-sigil-num" class="sg-num"></div>
-        <div id="r-sigil-title" class="sg-title"></div>
-        <div id="r-sigil-el" class="sg-el"></div>
-        <div id="r-sigil-story" class="sg-story"></div>
-        <div id="r-sigil-list" class="sg-list"></div>
-        <div class="sg-how"><b>✦ Kaip sudarytas tavo žvaigždynas?</b><br>Chiromantijoje delnas skirstomas į 7 kalnelius — kiekvienas siejamas su tam tikra gyvenimo sritimi (pvz. Jupiterio kalnelis po smiliumi — su lyderyste, Veneros kalnelis prie nykščio — su meile). Tavo žvaigždyne kiekvienas simbolis stovi <b>toje delno vietoje, iš kurios jis kilęs</b>, o jį sujungia tavo delno linijos. Simbolius parinko AI pagal tai, ką matė tavo delnų nuotraukose ir analizėje; <b>išryškinti</b> — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.</div>
-        <div class="sg-dl-h">Išsisaugok savo žvaigždyną</div>
-        <div id="r-sigil-dl" class="sg-dl"></div>
-      </div>
+      <img id="r-sigil-img" alt="Tavo delno žvaigždynas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:4px auto 12px;background:#050403">
+      <div id="r-sigil-el" class="sg-el"></div>
+      <div id="r-sigil-list" class="sg-list"></div>
+      <div class="sg-how">Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs; išryškinti — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.</div>
+      <button onclick="downloadSigil()" style="width:100%;margin-top:14px;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti žvaigždyną</button>
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
@@ -3342,8 +3310,9 @@ function renderInsights(containerId, insights){
 
 // ═══ ASMENINIS ŽENKLAS: „Delno žvaigždynas“ ═══
 // 7 chiromantijos kalneliai — kiekviename simbolis, kurį serveris parenka pagal
-// analizę (result.zenklas); 2–3 ryškiausi išryškinami. Senesniems rezultatams
-// be šio lauko viskas parenkama pagal raktažodžius analizės tekste.
+// analizę (result.zenklas); 2–3 ryškiausi išryškinami. Žvaigždynas piešiamas ant
+// vartotojo delno nuotraukos (jei ji dar atmintyje), kitaip — ant tamsaus fono.
+// Senesniems rezultatams be šio lauko viskas parenkama pagal raktažodžius.
 // Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.js faile.
 const SIGIL_SYMBOLS = {
   karuna: { lt: "Karūna", d: "M-40 26 L-40-14 L-20 6 L0-30 L20 6 L40-14 L40 26Z M-40 38 L40 38" },
@@ -3400,177 +3369,121 @@ const SIGIL_KW = {
 const SIGIL_EL_KW = { vanduo: ['jausm', 'jautr', 'intuic', 'empat'], ugnis: ['energ', 'veržl', 'aistr', 'lyder', 'drąs'], oras: ['protas', 'analit', 'bendrav', 'logik', 'smals'], zeme: ['stabil', 'praktišk', 'patikim', 'ištverm', 'kantr'] };
 
 function sigilHash(str) { let h = 2166136261; for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-function sigilRoman(n) { if (!n) return '0'; const t = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]; let o = ''; for (const [v, s] of t) while (n >= v) { o += s; n -= v; } return o; }
 
 function deriveSigil(r) {
   const text = [...(r.stiprybes_sarasas || []), r.prigimtines_stiprybes || '', ...['prigimtines', 'gyvenimo', 'santykiai', 'finansai', 'galimybes', 'pokyciai', 'klutys'].flatMap(k => r[k + '_insights'] || [])].join(' ').toLowerCase();
   const score = words => words.reduce((n, w) => n + (text.split(w).length - 1), 0);
   const kalneliai = {}, mountScore = {};
   SIGIL_MOUNTS.forEach(m => {
-    const best = m.opts.map((s, i) => ({ s, sc: score(SIGIL_KW[s]), i })).sort((a, b) => b.sc - a.sc || a.i - b.i)[0];
-    const meaning = SIGIL_MEANING[best.s];
-    kalneliai[m.k] = { s: best.s, tekstas: meaning[0].toUpperCase() + meaning.slice(1) + '.' };
+    kalneliai[m.k] = m.opts.map((s, i) => ({ s, sc: score(SIGIL_KW[s]), i })).sort((a, b) => b.sc - a.sc || a.i - b.i)[0].s;
     mountScore[m.k] = m.opts.reduce((n, s) => n + score(SIGIL_KW[s]), 0);
   });
   const stipriausi = SIGIL_MOUNTS.map((m, i) => ({ k: m.k, sc: mountScore[m.k], i })).sort((a, b) => b.sc - a.sc || a.i - b.i).slice(0, 2).map(x => x.k);
   const stichija = Object.keys(SIGIL_EL_KW).map((k, i) => ({ k, sc: score(SIGIL_EL_KW[k]), i })).sort((a, b) => b.sc - a.sc || a.i - b.i)[0].k;
   const titles = { menulis: 'Tylioji jėga', venera: 'Šilta širdis', jupiteris: 'Kelrodis', saturnas: 'Tvirtas kelias', saule: 'Vidinė šviesa', merkurijus: 'Atviros durys', marsas: 'Vidinė ugnis' };
-  return { pavadinimas: titles[stipriausi[0]], stichija, stichijos_tekstas: '', pasakojimas: '', stipriausi, kalneliai };
+  return { pavadinimas: titles[stipriausi[0]], stichija, stipriausi, kalneliai };
 }
 
 function sigilValid(z) {
-  return z && z.kalneliai && SIGIL_ELEMENTS[z.stichija] && Array.isArray(z.stipriausi) &&
-    SIGIL_MOUNTS.every(m => z.kalneliai[m.k] && m.opts.includes(z.kalneliai[m.k].s));
+  return z && z.kalneliai && SIGIL_ELEMENTS[z.stichija] && Array.isArray(z.stipriausi) && z.pavadinimas &&
+    SIGIL_MOUNTS.every(m => m.opts.includes(z.kalneliai[m.k]));
 }
 
-// Žvaigždyno SVG. anim=true — su klasėmis atsiskleidimo animacijai (tik ekrane).
-function sigilSvg(z, name, { color = '#d4a843', bg = null, anim = false, size = null } = {}) {
-  const sw = 2.4, h = sigilHash(name + Object.values(z.kalneliai).map(x => x.s).join());
+// Žvaigždyno SVG (be fono — piešiamas ant nuotraukos arba tamsaus fono)
+function sigilSvg(z, name, { color = '#d4a843', disc = '#050403' } = {}) {
+  const sw = 2.4, h = sigilHash(name + SIGIL_MOUNTS.map(m => z.kalneliai[m.k]).join());
   const g = [];
-  const cls = (c, i) => anim ? ` class="${c}" style="--i:${i}"` : '';
   // Kalnelių vietos — su nedideliu, kiekvienam žmogui skirtingu poslinkiu
   const pos = {};
   SIGIL_MOUNTS.forEach((m, i) => { pos[m.k] = [m.x + ((h >> (i * 3)) % 9) - 4, m.y + ((h >> (i * 3 + 1)) % 9) - 4]; });
-  // Išorinis žvaigždžių ovalas
   const off = h % 6;
   for (let i = 0; i < 48; i++) {
     const a = i / 48 * Math.PI * 2;
-    g.push(`<circle${cls('sg-dot', i)} cx="${(210 + 172 * Math.cos(a)).toFixed(1)}" cy="${(250 + 196 * Math.sin(a)).toFixed(1)}" r="${(i + off) % 6 ? 1.3 : 2.6}" fill="${color}" stroke="none"/>`);
+    g.push(`<circle cx="${(210 + 172 * Math.cos(a)).toFixed(1)}" cy="${(250 + 196 * Math.sin(a)).toFixed(1)}" r="${(i + off) % 6 ? 1.3 : 2.6}" fill="${color}" stroke="none"/>`);
   }
-  // Delno linijos: širdies, proto, gyvenimo (+ plona likimo)
+  // Delno linijos: širdies, proto, gyvenimo ir plona likimo
   const P = k => pos[k];
-  const lines = [
-    `M292 196 C262 204 228 190 196 194 C168 198 146 190 136 174`,
-    `M104 206 C160 220 230 230 ${P('menulis')[0] + 10} ${P('menulis')[1] - 34}`,
-    `M106 200 C80 250 84 300 ${P('venera')[0] + 16} ${P('venera')[1] + 60}`,
-  ];
-  lines.forEach((d, i) => g.push(`<path${cls('sg-line', i)} d="${d}" pathLength="1" stroke-width="${sw * 0.55}"/>`));
-  g.push(`<path${cls('sg-fade', 0)} d="M${P('saturnas')[0]} ${P('saturnas')[1] + 30} L${P('marsas')[0]} ${P('marsas')[1] - 30} M${P('marsas')[0]} ${P('marsas')[1] + 30} L206 410" stroke-width="${sw * 0.45}" stroke-dasharray="1 7"/>`);
+  g.push(`<path d="M292 196 C262 204 228 190 196 194 C168 198 146 190 136 174" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M104 206 C160 220 230 230 ${P('menulis')[0] + 10} ${P('menulis')[1] - 34}" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M106 200 C80 250 84 300 ${P('venera')[0] + 16} ${P('venera')[1] + 60}" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M${P('saturnas')[0]} ${P('saturnas')[1] + 30} L${P('marsas')[0]} ${P('marsas')[1] - 30} M${P('marsas')[0]} ${P('marsas')[1] + 30} L206 410" stroke-width="${sw * 0.45}" stroke-dasharray="1 7"/>`);
   // Simboliai kalneliuose (ryškiausi — su spinduliais)
-  SIGIL_MOUNTS.forEach((m, i) => {
+  SIGIL_MOUNTS.forEach(m => {
     const [x, y] = pos[m.k], st = z.stipriausi.includes(m.k), sc = st ? 0.34 : 0.27;
-    let o = `<circle cx="${x}" cy="${y}" r="${st ? 27 : 21}" fill="${bg || '#050403'}" stroke="none"/>`;
+    g.push(`<circle cx="${x}" cy="${y}" r="${st ? 27 : 21}" fill="${disc}" stroke="none"/>`);
     if (st) {
-      o += `<circle cx="${x}" cy="${y}" r="22" stroke-width="${sw * 0.5}"/>`;
-      for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4; o += `<line x1="${(x + 26 * Math.cos(a)).toFixed(1)}" y1="${(y + 26 * Math.sin(a)).toFixed(1)}" x2="${(x + 31 * Math.cos(a)).toFixed(1)}" y2="${(y + 31 * Math.sin(a)).toFixed(1)}" stroke-width="${sw * 0.5}"/>`; }
+      g.push(`<circle cx="${x}" cy="${y}" r="22" stroke-width="${sw * 0.5}"/>`);
+      for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4; g.push(`<line x1="${(x + 26 * Math.cos(a)).toFixed(1)}" y1="${(y + 26 * Math.sin(a)).toFixed(1)}" x2="${(x + 31 * Math.cos(a)).toFixed(1)}" y2="${(y + 31 * Math.sin(a)).toFixed(1)}" stroke-width="${sw * 0.5}"/>`); }
     } else {
-      o += `<circle cx="${x}" cy="${y}" r="19" stroke-width="${sw * 0.4}" stroke-dasharray="1 4"/>`;
+      g.push(`<circle cx="${x}" cy="${y}" r="19" stroke-width="${sw * 0.4}" stroke-dasharray="1 4"/>`);
     }
-    o += `<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k].s].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(sw / sc * 0.8).toFixed(2)}"/>`;
-    g.push(`<g${cls('sg-sym', i)}>${o}</g>`);
+    g.push(`<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k]].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(sw / sc * 0.8).toFixed(2)}"/>`);
   });
-  const dims = size ? ` width="${size}" height="${Math.round(size * 412 / 360)}"` : '';
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 44 360 412"${dims}>${bg ? `<rect x="30" y="44" width="360" height="412" fill="${bg}"/>` : ''}<g fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g></svg>`;
-}
-
-// „Delno parašas“: viena plona vientisa linija per visus 7 simbolius (tatuiruotei)
-function sigilSignatureSvg(z, color = '#111111', bg = '#ffffff') {
-  const order = ['venera', 'marsas', 'jupiteris', 'saturnas', 'saule', 'merkurijus', 'menulis'];
-  const byK = Object.fromEntries(SIGIL_MOUNTS.map(m => [m.k, m]));
-  const pts = [[byK.venera.x + 8, byK.venera.y + 48], ...order.map(k => [byK[k].x, byK[k].y]), [byK.menulis.x - 22, byK.menulis.y + 46]];
-  let d = `M${pts[0][0]} ${pts[0][1]}`;
-  for (let i = 0; i < pts.length - 1; i++) { // Catmull-Rom → Bezier
-    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-    d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]} ${p2[1]}`;
-  }
-  let syms = '';
-  order.forEach(k => {
-    const [x, y] = [byK[k].x, byK[k].y], st = z.stipriausi.includes(k), sc = st ? 0.3 : 0.24;
-    syms += `<circle cx="${x}" cy="${y}" r="${st ? 20 : 16}" fill="${bg}" stroke="none"/><path d="${SIGIL_SYMBOLS[z.kalneliai[k].s].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(1.1 / sc).toFixed(2)}"/>`;
-  });
-  const end = pts[pts.length - 1];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="50 60 320 400"><rect x="50" y="60" width="320" height="400" fill="${bg}"/><g fill="none" stroke="${color}" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/>${syms}<path d="M${end[0]} ${end[1] - 6} L${end[0] + 1.6} ${end[1] - 1.6} L${end[0] + 6} ${end[1]} L${end[0] + 1.6} ${end[1] + 1.6} L${end[0]} ${end[1] + 6} L${end[0] - 1.6} ${end[1] + 1.6} L${end[0] - 6} ${end[1]} L${end[0] - 1.6} ${end[1] - 1.6}Z" fill="${color}" stroke="none"/></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 44 360 412" width="720" height="824"><g fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g></svg>`;
 }
 
 function sigilLoadImg(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 }
-const sigilSvgUrl = svg => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 
-function sigilTitle(z, name) { return sigilRoman(sigilHash(name + z.pavadinimas) % 22) + ' · ' + z.pavadinimas; }
-
-// Atsisiunčiami formatai (drobė). scale<1 — mažas peržiūros variantas.
-async function sigilCanvas(kind, scale = 1) {
+// Galutinis paveikslėlis 1080×1350: žvaigždynas ant delno nuotraukos (arba tamsaus fono) + pavadinimas
+async function sigilCanvas() {
   const z = window._sigilData, name = window._sigilName || '';
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
-  const sizes = { korta: [1080, 1800], uzsklanda: [1080, 1920], nuotrauka: [1080, 1350], parasas: [1600, 2000] };
-  const [W, H] = sizes[kind];
-  const c = document.createElement('canvas'); c.width = Math.round(W * scale); c.height = Math.round(H * scale);
-  const ctx = c.getContext('2d'); ctx.scale(scale, scale);
-  const gold = '#d4a843', gold2 = '#f0c96a';
-  const text = (t, x, y, font, color, spacing) => { ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'center'; if (spacing) t = t.split('').join(String.fromCharCode(8202)); ctx.fillText(t, x, y); };
-  const darkBg = cy => { const g = ctx.createRadialGradient(W / 2, cy, 40, W / 2, cy, H * 0.75); g.addColorStop(0, '#18130a'); g.addColorStop(1, '#000000'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); };
-  const el = SIGIL_ELEMENTS[z.stichija];
-
-  if (kind === 'parasas') {
-    const img = await sigilLoadImg(sigilSvgUrl(sigilSignatureSvg(z)));
-    ctx.drawImage(img, 0, 0, W, H);
-    return c;
+  const W = 1080, H = 1350;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  // Dešinio delno nuotrauka tinka tiesiogiai; kairio — žvaigždynas atspindimas (nykštys kitoje pusėje)
+  const photo = (typeof photoRight !== 'undefined' && photoRight) || (typeof photoLeft !== 'undefined' && photoLeft) || null;
+  const mirror = !(typeof photoRight !== 'undefined' && photoRight) && !!photo;
+  let hasPhoto = false;
+  if (photo) {
+    try {
+      const ph = await sigilLoadImg(photo);
+      const s = Math.max(W / ph.width, H / ph.height);
+      ctx.drawImage(ph, (W - ph.width * s) / 2, (H - ph.height * s) / 2, ph.width * s, ph.height * s);
+      ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, 0, W, H);
+      const v = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.2, W / 2, H * 0.45, W * 0.9);
+      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)');
+      ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+      hasPhoto = true;
+    } catch (e) { console.warn('[sigilCanvas] nuotraukos klaida:', e); }
   }
-  const star = await sigilLoadImg(sigilSvgUrl(sigilSvg(z, name, { bg: kind === 'nuotrauka' ? '#050403' : null })));
-  const starH = w => w * 412 / 360;
-
-  if (kind === 'korta') {
-    darkBg(700);
-    ctx.strokeStyle = gold; ctx.lineWidth = 3; ctx.strokeRect(40, 40, W - 80, H - 80);
-    ctx.lineWidth = 1.2; ctx.strokeRect(60, 60, W - 120, H - 120);
-    [[60, 60], [W - 60, 60], [60, H - 60], [W - 60, H - 60]].forEach(([x, y]) => {
-      ctx.beginPath(); ctx.moveTo(x, y - 18); ctx.lineTo(x + 5, y - 5); ctx.lineTo(x + 18, y); ctx.lineTo(x + 5, y + 5); ctx.lineTo(x, y + 18); ctx.lineTo(x - 5, y + 5); ctx.lineTo(x - 18, y); ctx.lineTo(x - 5, y - 5); ctx.closePath(); ctx.fillStyle = gold; ctx.fill();
-    });
-    text(sigilRoman(sigilHash(name + z.pavadinimas) % 22), W / 2, 170, "700 64px 'Playfair Display', serif", gold2);
-    ctx.fillStyle = gold; ctx.fillRect(W / 2 - 60, 200, 120, 2);
-    ctx.drawImage(star, (W - 840) / 2, 250, 840, starH(840));
-    text(z.pavadinimas, W / 2, 1340, "italic 700 84px 'Playfair Display', serif", gold2);
-    const eImg = await sigilLoadImg(sigilSvgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 -24 48 48"><path d="${el.d}" fill="none" stroke="${gold}" stroke-width="3" stroke-linejoin="round"/></svg>`));
-    ctx.drawImage(eImg, W / 2 - 24, 1385, 48, 48);
-    text((el.lt + ' stichija').toUpperCase(), W / 2, 1490, "500 30px 'DM Sans', sans-serif", gold, true);
-    if (name) text(name.toUpperCase(), W / 2, 1545, "400 24px 'DM Sans', sans-serif", 'rgba(255,255,255,.55)', true);
-    text('delnaskaitymas.lt', W / 2, H - 100, "400 24px 'DM Sans', sans-serif", 'rgba(255,255,255,.4)');
-  } else if (kind === 'uzsklanda') {
-    darkBg(1100);
-    ctx.drawImage(star, (W - 940) / 2, 600, 940, starH(940));
-    text(z.pavadinimas, W / 2, 1760, "italic 700 60px 'Playfair Display', serif", gold2);
-  } else if (kind === 'nuotrauka') {
-    const photo = window.photoRight || window.photoLeft || (typeof photoRight !== 'undefined' && photoRight) || (typeof photoLeft !== 'undefined' && photoLeft);
-    const mirror = !(window.photoRight || (typeof photoRight !== 'undefined' && photoRight));
-    const ph = await sigilLoadImg(photo);
-    const s = Math.max(W / ph.width, H / ph.height);
-    ctx.drawImage(ph, (W - ph.width * s) / 2, (H - ph.height * s) / 2, ph.width * s, ph.height * s);
-    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, 0, W, H);
-    const v = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.2, W / 2, H * 0.45, W * 0.9); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
-    const clear = await sigilLoadImg(sigilSvgUrl(sigilSvg(z, name, {})));
-    ctx.save();
-    if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
-    ctx.shadowColor = 'rgba(240,201,106,.9)'; ctx.shadowBlur = 18;
-    ctx.drawImage(clear, (W - 900) / 2, 150, 900, starH(900));
-    ctx.restore();
-    ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = 12;
-    text(z.pavadinimas, W / 2, 1250, "italic 700 66px 'Playfair Display', serif", gold2);
-    ctx.shadowBlur = 0;
+  if (!hasPhoto) {
+    const g = ctx.createRadialGradient(W / 2, 560, 40, W / 2, 560, 1000);
+    g.addColorStop(0, '#18130a'); g.addColorStop(1, '#000000');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
+  const star = await sigilLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sigilSvg(z, name)));
+  ctx.save();
+  if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+  ctx.shadowColor = 'rgba(240,201,106,.9)'; ctx.shadowBlur = hasPhoto ? 18 : 10;
+  ctx.drawImage(star, (W - 900) / 2, 130, 900, 900 * 412 / 360);
+  ctx.restore();
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = 12;
+  ctx.fillStyle = '#f0c96a';
+  ctx.font = "italic 700 66px 'Playfair Display', serif";
+  ctx.fillText(z.pavadinimas, W / 2, 1250);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.font = "400 22px 'DM Sans', sans-serif";
+  ctx.fillText('delnaskaitymas.lt', W / 2, 1310);
   return c;
 }
 
-const SIGIL_FORMATS = [
-  { k: 'korta', lt: 'Delno korta', sub: 'taro kortos stiliumi' },
-  { k: 'uzsklanda', lt: 'Ekrano užsklanda', sub: 'telefonui' },
-  { k: 'nuotrauka', lt: 'Ant tavo delno', sub: 'tavo nuotrauka' },
-  { k: 'parasas', lt: 'Delno parašas', sub: 'tatuiruotei, spaudai' },
-];
-
-async function downloadSigil(kind) {
+async function downloadSigil() {
   try {
     if (!window._sigilData) return;
-    const c = await sigilCanvas(kind, 1);
-    const blob = await new Promise(res => c.toBlob(res, 'image/png'));
-    const fileName = 'delno-zvaigzdynas-' + kind + '.png';
-    const file = new File([blob], fileName, { type: 'image/png' });
+    const c = await sigilCanvas();
+    const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
+    const file = new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: 'Mano delno žvaigždynas' }); return; }
       catch (e) { if (e && e.name === 'AbortError') return; }
     }
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = fileName;
+    const a = document.createElement('a'); a.href = url; a.download = 'delno-zvaigzdynas.jpg';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   } catch (e) {
@@ -3583,49 +3496,23 @@ function renderSigil(r) {
   const wrap = document.getElementById('r-sigil-wrap');
   if (!wrap || !r) return;
   const z = sigilValid(r.zenklas) ? r.zenklas : deriveSigil(r);
-  const name = r.userName || window.userName || '';
-  window._sigilData = z; window._sigilName = name;
-  const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  window._sigilData = z; window._sigilName = r.userName || window.userName || '';
   const el = SIGIL_ELEMENTS[z.stichija];
-  const art = document.getElementById('r-sigil');
-  art.innerHTML = sigilSvg(z, name, { anim: true });
-  document.getElementById('r-sigil-num').textContent = sigilRoman(sigilHash(name + z.pavadinimas) % 22);
-  document.getElementById('r-sigil-title').textContent = z.pavadinimas;
-  document.getElementById('r-sigil-el').innerHTML = `<svg viewBox="-24 -24 48 48" width="18" height="18" style="vertical-align:-3px;margin-right:7px"><path d="${el.d}" fill="none" stroke="#d4a843" stroke-width="3.5" stroke-linejoin="round"/></svg>${el.lt} stichija <span style="color:var(--muted)">— ${esc(z.stichijos_tekstas || el.apie)}</span>`;
-  const story = document.getElementById('r-sigil-story');
-  story.textContent = z.pasakojimas || ''; story.style.display = z.pasakojimas ? '' : 'none';
+  document.getElementById('r-sigil-el').innerHTML = `<svg viewBox="-24 -24 48 48" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><path d="${el.d}" fill="none" stroke="#d4a843" stroke-width="3.5" stroke-linejoin="round"/></svg>${el.lt} stichija <span style="color:var(--muted)">— ${el.apie}</span>`;
   const mounts = SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k));
   document.getElementById('r-sigil-list').innerHTML = mounts.map(m => {
-    const it = z.kalneliai[m.k], st = z.stipriausi.includes(m.k);
-    return `<div class="sg-it${st ? ' st' : ''}"><svg viewBox="-50 -50 100 100" width="28" height="28"><path d="${SIGIL_SYMBOLS[it.s].d}" fill="none" stroke="#d4a843" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div><b>${SIGIL_SYMBOLS[it.s].lt}</b> <span class="sg-z">· ${m.lt}${st ? ' · ryškiausias' : ''}</span><br>${esc(it.tekstas)}</div></div>`;
+    const s = z.kalneliai[m.k], st = z.stipriausi.includes(m.k);
+    return `<div class="sg-it${st ? ' st' : ''}"><svg viewBox="-50 -50 100 100" width="22" height="22"><path d="${SIGIL_SYMBOLS[s].d}" fill="none" stroke="#d4a843" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>${SIGIL_SYMBOLS[s].lt}</b> <span class="sg-z">· ${m.lt}</span> — ${SIGIL_MEANING[s]}</div></div>`;
   }).join('');
-  // Atsisiuntimo plytelės su mažomis peržiūromis
-  const hasPhoto = !!((typeof photoRight !== 'undefined' && photoRight) || (typeof photoLeft !== 'undefined' && photoLeft));
-  const dl = document.getElementById('r-sigil-dl');
-  dl.innerHTML = SIGIL_FORMATS.filter(f => f.k !== 'nuotrauka' || hasPhoto).map(f =>
-    `<button class="sg-tile" onclick="downloadSigil('${f.k}')"><span class="sg-prev" id="sg-prev-${f.k}"></span><b>${f.lt}</b><small>${f.sub}</small></button>`).join('');
-  SIGIL_FORMATS.forEach(f => {
-    const box = document.getElementById('sg-prev-' + f.k);
-    if (box) sigilCanvas(f.k, 0.14).then(c => { box.style.backgroundImage = `url(${c.toDataURL('image/png')})`; }).catch(() => {});
-  });
+  const img = document.getElementById('r-sigil-img');
+  img.removeAttribute('src');
   wrap.style.display = '';
-  // Atsiskleidimo animacija — kai blokas pasirodo ekrane
-  art.classList.remove('play');
-  wrap.classList.remove('sg-shown');
-  const play = () => { art.classList.add('play'); wrap.classList.add('sg-shown'); };
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) play();
-  else if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { play(); io.disconnect(); } }, { threshold: 0.35 });
-    io.observe(art);
-  } else play();
-  // PDF'ui — auksinis žvaigždynas ant juodo fono
-  window._sigilPng = null;
-  window._sigilReady = sigilLoadImg(sigilSvgUrl(sigilSvg(z, name, { bg: '#000000' }))).then(img => {
-    const c = document.createElement('canvas'); c.width = 720; c.height = Math.round(720 * 412 / 360);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    window._sigilPng = c.toDataURL('image/png');
-  }).catch(e => console.error('[renderSigil] PNG klaida:', e));
+  // Paveikslėlis ekranui ir PDF'ui
+  window._sigilImg = null;
+  window._sigilReady = sigilCanvas().then(c => {
+    window._sigilImg = c.toDataURL('image/jpeg', 0.88);
+    img.src = window._sigilImg;
+  }).catch(e => console.error('[renderSigil] klaida:', e));
 }
 
 function displayResult(r){
@@ -4098,7 +3985,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   });
 
   // Asmeninis delno žvaigždynas — atskiras puslapis (jei paveikslėlis jau paruoštas)
-  if(window._sigilPng && window._sigilData){
+  if(window._sigilImg && window._sigilData){
     const z = window._sigilData;
     y = newPage() - 6;
     doc.setFont('NotoSans','bold');
@@ -4106,34 +3993,27 @@ function buildResultPdfDoc(r, name, orderNumber){
     doc.setTextColor(...GOLD);
     doc.text('TAVO DELNO ŽVAIGŽDYNAS', W/2, y, {align:'center'});
     y += 5;
-    const imgW = 78, imgH = imgW * 412 / 360;
-    doc.addImage(window._sigilPng, 'PNG', W/2 - imgW/2, y, imgW, imgH);
+    const imgW = 104, imgH = imgW * 1350 / 1080;
+    doc.addImage(window._sigilImg, 'JPEG', W/2 - imgW/2, y, imgW, imgH);
     y += imgH + 9;
-    doc.setFontSize(22);
-    doc.setTextColor(...GOLD2);
-    doc.text(sigilTitle(z, window._sigilName || ''), W/2, y, {align:'center'});
-    y += 8;
     const el = SIGIL_ELEMENTS[z.stichija];
     doc.setFont('NotoSans','normal');
     doc.setFontSize(12);
     doc.setTextColor(...GOLD);
-    doc.splitTextToSize(el.lt + ' stichija — ' + (z.stichijos_tekstas || el.apie), maxW).forEach(ln => { doc.text(ln, W/2, y, {align:'center'}); y += 5.6; });
-    y += 4;
+    doc.text(el.lt + ' stichija — ' + el.apie, W/2, y, {align:'center'});
+    y += 9;
     SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k)).forEach(m => {
-      const it = z.kalneliai[m.k];
+      const s = z.kalneliai[m.k];
       doc.setFont('NotoSans','bold');
       doc.setFontSize(11.5);
       doc.setTextColor(...GOLD2);
-      doc.text(SIGIL_SYMBOLS[it.s].lt, margin, y);
+      doc.text(SIGIL_SYMBOLS[s].lt, margin + 8, y);
       doc.setFont('NotoSans','normal');
       doc.setTextColor(...MUTED);
-      doc.setFontSize(9.5);
-      doc.text(m.lt, margin, y + 4.6);
-      doc.setFontSize(11.5);
+      doc.text(m.lt, margin + 40, y);
       doc.setTextColor(...BODY);
-      const lines = doc.splitTextToSize(it.tekstas, maxW - 48);
-      lines.forEach((ln, i) => doc.text(ln, margin + 48, y + i * 5.4));
-      y += Math.max(2, lines.length) * 5.4 + 3.4;
+      doc.text(SIGIL_MEANING[s], margin + 98, y);
+      y += 6.6;
     });
     doc.setFontSize(9.5);
     doc.setTextColor(DIVIDER[0], DIVIDER[1], DIVIDER[2]);

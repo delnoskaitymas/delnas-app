@@ -1683,7 +1683,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
 // --- Asmeninis ženklas („Delno žvaigždynas“) ---
 // 7 chiromantijos kalneliai; kiekvienam AI parenka vieną iš 3 simbolių,
-// pažymi 2–3 ryškiausius ir nustato stichiją pagal delno formą.
+// pažymi 2–3 ryškiausius, nustato stichiją pagal delno formą ir pavadinimą.
 // Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.html faile.
 const SIGIL_SYMBOLS = {
   karuna: 'Karūna', kompasas: 'Kompasas', rodykle: 'Rodyklė', kalnas: 'Kalnas', medis: 'Medis', akis: 'Akis',
@@ -1708,23 +1708,19 @@ const SIGIL_ELEMENTS = {
 
 function validateSigil(z) {
   if (!z || typeof z !== 'object' || !z.kalneliai || typeof z.kalneliai !== 'object') return null;
-  const clean = t => String(t || '').replace(/["„“]/g, '').replace(/\s+/g, ' ').trim();
   const kalneliai = {};
   for (const [m, def] of Object.entries(SIGIL_MOUNTS)) {
-    const it = z.kalneliai[m];
-    const key = String(it && it.s || '').trim().toLowerCase();
-    const tekstas = clean(it && it.tekstas).slice(0, 180);
-    if (!def.opts[key] || !tekstas) return null;
-    kalneliai[m] = { s: key, tekstas };
+    const v = z.kalneliai[m];
+    const key = String(v && typeof v === 'object' ? v.s : v || '').trim().toLowerCase();
+    if (!def.opts[key]) return null;
+    kalneliai[m] = key;
   }
   const stipriausi = [...new Set((Array.isArray(z.stipriausi) ? z.stipriausi : []).map(x => String(x).trim().toLowerCase()))]
     .filter(m => SIGIL_MOUNTS[m]).slice(0, 3);
   const stichija = String(z.stichija || '').trim().toLowerCase().replace(/ž/g, 'z').replace(/ė/g, 'e');
-  const pavadinimas = clean(z.pavadinimas).slice(0, 32);
-  const pasakojimas = clean(z.pasakojimas).slice(0, 400);
-  const stichijos_tekstas = clean(z.stichijos_tekstas).slice(0, 200);
+  const pavadinimas = String(z.pavadinimas || '').replace(/["„“]/g, '').replace(/\s+/g, ' ').trim().slice(0, 32);
   if (stipriausi.length < 2 || !SIGIL_ELEMENTS[stichija] || !pavadinimas) return null;
-  return { pavadinimas, stichija, stichijos_tekstas, pasakojimas, stipriausi, kalneliai };
+  return { pavadinimas, stichija, stipriausi, kalneliai };
 }
 
 async function generatePersonalSigil(bruozai, result, name) {
@@ -1735,7 +1731,6 @@ async function generatePersonalSigil(bruozai, result, name) {
   const summary = [
     'Stiprybės: ' + (result.stiprybes_sarasas || []).join(', '),
     'Charakteris: ' + (result.prigimtines_insights || []).join('; '),
-    'Kryptis: ' + (result.gyvenimo_insights || []).join('; '),
     'Santykiai: ' + (result.santykiai_insights || []).join('; '),
     'Finansai: ' + (result.finansai_insights || []).join('; '),
     'Sėkmės raktas: ' + (result.galimybes_insights || []).join('; '),
@@ -1744,7 +1739,7 @@ async function generatePersonalSigil(bruozai, result, name) {
   ].join('\n');
   const observations = (bruozai || []).map((b, i) => `${i + 1}. ${b}`).join('\n');
 
-  const prompt = `Sukurk asmeninį delno žvaigždyną žmogui${name ? ' vardu ' + name : ''}. Jį sudaro 7 chiromantijos kalneliai — kiekvienam parenki VIENĄ simbolį iš jam leidžiamų:
+  const prompt = `Sudaryk asmeninį delno žvaigždyną žmogui${name ? ' vardu ' + name : ''}. Jį sudaro 7 chiromantijos kalneliai — kiekvienam parenki VIENĄ simbolį iš jam leidžiamų:
 ${mounts}
 
 Stichija (pagal delno formą ir pirštų ilgį):
@@ -1758,16 +1753,12 @@ ${summary}
 
 Užduotis:
 1. Kiekvienam iš 7 kalnelių parink simbolį (tik iš to kalnelio leidžiamų), geriausiai atitinkantį šį žmogų.
-2. Kiekvienam kalneliui parašyk VIENĄ trumpą sakinį (iki 16 žodžių), kuris susieja tą delno vietą su šio žmogaus savybe iš analizės. Pvz.: „Ryškus Mėnulio kalnelis rodo stiprią intuiciją ir turtingą vidinį pasaulį.“ Kreipkis „tu“ forma, esamuoju laiku.
-3. Pažymėk 2 arba 3 ryškiausius šio žmogaus kalnelius (stipriausi).
-4. Nustatyk stichiją pagal delno formą ir pirštų ilgį iš pastebėjimų; parašyk vieną sakinį, ką ji reiškia šiam žmogui.
-5. Parašyk 2 sakinius (pasakojimas), kaip visas žvaigždynas kartu apibūdina šį žmogų.
-6. Sugalvok žvaigždyno pavadinimą: 2–3 žodžiai, poetiškas, bet paprastas (pvz. Tylioji jėga, Kelrodis, Vidinė ugnis).
-
-Kalba: taisyklinga, natūrali lietuvių kalba, be giminę turinčių dalyvių (skaitytojo lytis nežinoma). Teksto viduje nenaudok dvigubų kabučių.
+2. Pažymėk 2 arba 3 ryškiausius šio žmogaus kalnelius (stipriausi).
+3. Nustatyk stichiją pagal delno formą ir pirštų ilgį iš pastebėjimų.
+4. Sugalvok žvaigždyno pavadinimą: 2–3 žodžiai taisyklinga lietuvių kalba, poetiškas, bet paprastas (pvz. Tylioji jėga, Kelrodis, Vidinė ugnis).
 
 Atsakyk TIK JSON:
-{"pavadinimas":"...","stichija":"vanduo","stichijos_tekstas":"...","pasakojimas":"...","stipriausi":["menulis","venera"],"kalneliai":{"jupiteris":{"s":"...","tekstas":"..."},"saturnas":{"s":"...","tekstas":"..."},"saule":{"s":"...","tekstas":"..."},"merkurijus":{"s":"...","tekstas":"..."},"marsas":{"s":"...","tekstas":"..."},"venera":{"s":"...","tekstas":"..."},"menulis":{"s":"...","tekstas":"..."}}}`;
+{"pavadinimas":"...","stichija":"vanduo","stipriausi":["menulis","venera"],"kalneliai":{"jupiteris":"...","saturnas":"...","saule":"...","merkurijus":"...","marsas":"...","venera":"...","menulis":"..."}}`;
 
   const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1778,11 +1769,11 @@ Atsakyk TIK JSON:
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1500,
+      max_tokens: 400,
       temperature: 0.3,
       messages: [{ role: 'user', content: prompt }]
     })
-  }, 50000);
+  }, 40000);
   const data = await r.json();
   if (data?.error) throw new Error(`${data.error.type}: ${data.error.message || ''}`);
   const text = (data.content || []).map(b => b.text || '').join('');
@@ -1790,10 +1781,6 @@ Atsakyk TIK JSON:
   if (!m) throw new Error('JSON nerastas');
   const z = validateSigil(parseJsonLenient(m[0]));
   if (!z) throw new Error('netinkamas ženklo formatas');
-  const fix = t => applyTextFixes(t).text;
-  for (const k of Object.keys(z.kalneliai)) z.kalneliai[k].tekstas = fix(z.kalneliai[k].tekstas);
-  z.stichijos_tekstas = fix(z.stichijos_tekstas);
-  z.pasakojimas = fix(z.pasakojimas);
   return z;
 }
 
