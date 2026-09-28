@@ -252,8 +252,8 @@ body.card-view #v-card{margin:auto 0}
       <div class="slide">
         <div class="num">03</div>
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11.5V4a1.5 1.5 0 013 0v7.5M14 11.5V5.5a1.5 1.5 0 013 0V13M17 9.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-5-2.7L4.3 14a1.6 1.6 0 012.6-1.8L8 13.5"/></svg></div>
-        <h3>Gavėjas atskleidžia <em>savo žemėlapį</em></h3>
-        <p>Nufotografuoja abu delnus ir per kelias minutes gauna asmeninę 7 skyrių analizę su PDF. Mokėti jam nereikės.</p>
+        <h3>Dovana atskleidžia <em>asmeninį žemėlapį</em></h3>
+        <p>Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.</p>
       </div>
     </div>
     <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
@@ -267,7 +267,7 @@ body.card-view #v-card{margin:auto 0}
   <!-- 3. KORTELĖ (po apmokėjimo arba iš el. laiško nuorodos) -->
   <section id="v-card" class="hidden">
     <h1 id="card-title">Dovana <em>paruošta!</em></h1>
-    <p class="lead" id="card-lead">Kortelė jau tavo el. pašte. Atsisiųsk ar iškart nusiųsk gavėjui.</p>
+    <p class="lead" id="card-lead">Kortelė jau tavo el. pašte. Atsisiųsk ar iškart nusiųsk tam, kam dovanoji.</p>
     <div id="card-stage"><div id="card-scale">
       <div class="gcard" id="gcard">
         <div class="gh"></div>
@@ -293,7 +293,7 @@ body.card-view #v-card{margin:auto 0}
     <div class="actions" id="card-actions">
       <button class="btn" id="dl-png">Atsisiųsti kortelę</button>
       <button class="btn ghost" id="dl-pdf">Atsisiųsti PDF</button>
-      <button class="btn ghost" id="share">Siųsti gavėjui</button>
+      <button class="btn ghost" id="share">Išsiųsti dovaną</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
     <a id="c-link" href="#" class="hidden"></a>
@@ -403,7 +403,7 @@ body.card-view #v-card{margin:auto 0}
     if (window.QRCode) new QRCode($('c-qr'), { text: link, width: 208, height: 208, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
     if (opts && opts.fromEmail) {
       $('card-title').innerHTML = 'Tavo <em>dovanų kortelė</em>';
-      $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk ją gavėjui.';
+      $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk ją tam, kam dovanoji.';
     }
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
