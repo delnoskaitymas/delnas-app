@@ -2111,7 +2111,7 @@ app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => 
 // rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, orderNumber, pdfBase64, gift } = req.body;
+    const { email, name, orderNumber, pdfBase64, sigil, gift } = req.body;
     const isGift = gift === true;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
@@ -2119,6 +2119,10 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
       return res.status(400).json({ error: 'Neteisingas arba per didelis PDF turinys' });
     }
+    // Neprivalomas delno žvaigždynas: trys JPG priedai (su delnu, be delno, aprašas)
+    const jpgOk = b => typeof b === 'string' && b.length > 0 && b.length <= 4_000_000 && /^[A-Za-z0-9+/=]+$/.test(b);
+    const sigilData = sigil && validateSigil(sigil.data);
+    const hasSigil = !!(sigilData && jpgOk(sigil.delnas) && jpgOk(sigil.tamsus) && jpgOk(sigil.aprasas));
     // Papildoma apsauga: jei šis TIKSLUS užsakymo numeris jau kartą gavo
     // PDF laišką (pvz. dėl naršyklės atnaujinimo su tuo pačiu session_id
     // URL adrese), NEBEsiunčiame antro egzemplioriaus. Grąžiname "ok",
@@ -2134,12 +2138,16 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       subject: isGift
         ? `${name ? escapeHtml(name) + ' — ' : ''}tavo dovana: gyvenimo žemėlapis paruoštas 🎁`
         : `${name ? escapeHtml(name) + ' — ' : ''}Mokėjimas gautas, tavo gyvenimo žemėlapis paruoštas ✦`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir draugei:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">${hasSigil ? `Prieduose rasi pilną savo gyvenimo žemėlapį (PDF) ir asmeninį delno žvaigždyną „${escapeHtml(sigilData.pavadinimas)}“ — 3 paveikslėlius: su delnu, be delno ir jo aprašą.` : 'Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.'}</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir draugei:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
         encoding: 'base64'
-      }]
+      }, ...(hasSigil ? [
+        { filename: 'delno-zvaigzdynas-su-delnu.jpg', content: sigil.delnas, encoding: 'base64' },
+        { filename: 'delno-zvaigzdynas-be-delno.jpg', content: sigil.tamsus, encoding: 'base64' },
+        { filename: 'delno-zvaigzdynas-aprasas.jpg', content: sigil.aprasas, encoding: 'base64' }
+      ] : [])]
     });
     console.log(`[email-result-pdf] PDF (su užsakymo patvirtinimu) išsiųstas į ${email}`);
     res.json({ ok: true });
