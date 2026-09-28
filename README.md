@@ -74,6 +74,15 @@ PORT = 3000
 
 ---
 
+## Porų suderinamumas
+
+- Puslapis `delnaskaitymas.lt/pora`: abiejų partnerių vardai, užsakovo el. paštas, mokėjimas per Stripe Checkout (19,99 €).
+- Po mokėjimo grįžtama į `/?pora=SESSION_ID`: pirmiausia vienas, tada kitas partneris nufotografuoja abu delnus, AI palygina visus 4 delnus.
+- Rezultatas (suderinamumo % ir 7 skyriai) rodomas ekrane, PDF išsiunčiamas užsakovui, tau atkeliauja pranešimas „Nauja porų analizė“.
+- Tą pačią nuorodą atidarius vėl — rodomas tas pats rezultatas (naujo AI kvietimo nėra).
+- Užsakymai saugomi `SHARED_STORAGE_DIR/pora-orders.json` 90 dienų; nuotraukos nesaugomos.
+- Kainą galima pakeisti Railway kintamuoju `PORA_PRICE_CENTS` (pvz. `1999` = 19,99 €); atskiro Stripe produkto kurti nereikia.
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 
