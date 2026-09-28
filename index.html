@@ -136,6 +136,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sg-it{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.4;color:rgba(255,255,255,.68)}
 .sg-it svg{flex:none;opacity:.7}.sg-it.st svg{opacity:1}
 .sg-it b{color:#e8e2d4}.sg-it.st b{color:var(--gold2)}.sg-z{color:rgba(212,168,67,.7);font-size:11.5px}
+.sg-opts{display:inline-flex;gap:4px;padding:3px;border-radius:999px;border:.5px solid rgba(212,168,67,.4);margin:2px 0 10px}
+.sg-opt{background:none;border:none;border-radius:999px;padding:7px 16px;font:600 12.5px 'DM Sans',sans-serif;color:rgba(212,168,67,.75);cursor:pointer}
+.sg-opt.on{background:linear-gradient(125deg,#f5d061,#c98a1f);color:#140f02}
 .sg-how{text-align:center;margin-top:12px;font-size:11.5px;line-height:1.55;color:rgba(212,168,67,.6)}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
@@ -697,6 +700,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Asmeninis delno žvaigždynas (žr. renderSigil) -->
     <div class="rs rs-std" id="r-sigil-wrap" style="display:none;text-align:center">
       <div class="rs-label" style="justify-content:center">Tavo delno žvaigždynas</div>
+      <div class="sg-opts"><button class="sg-opt on" data-k="delnas" onclick="selectSigil('delnas')">Su delnu</button><button class="sg-opt" data-k="tamsus" onclick="selectSigil('tamsus')">Be delno</button></div>
       <img id="r-sigil-img" alt="Tavo delno žvaigždynas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:4px auto 12px;background:#050403">
       <div id="r-sigil-el" class="sg-el"></div>
       <div id="r-sigil-list" class="sg-list"></div>
@@ -3310,8 +3314,8 @@ function renderInsights(containerId, insights){
 
 // ═══ ASMENINIS ŽENKLAS: „Delno žvaigždynas“ ═══
 // 7 chiromantijos kalneliai — kiekviename simbolis, kurį serveris parenka pagal
-// analizę (result.zenklas); 2–3 ryškiausi išryškinami. Žvaigždynas piešiamas ant
-// vartotojo delno nuotraukos (jei ji dar atmintyje), kitaip — ant tamsaus fono.
+// analizę (result.zenklas); 2–3 ryškiausi išryškinami. Du variantai: ant app delno
+// paveikslėlio (simboliai ant kalnelių) ir be delno (tamsus fonas).
 // Senesniems rezultatams be šio lauko viskas parenkama pagal raktažodžius.
 // Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.js faile.
 const SIGIL_SYMBOLS = {
@@ -3426,40 +3430,54 @@ function sigilLoadImg(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 }
 
-// Galutinis paveikslėlis 1080×1350: žvaigždynas ant delno nuotraukos (arba tamsaus fono) + pavadinimas
-async function sigilCanvas() {
+// Kalnelių vietos app delno paveikslėlyje (img/delnas.jpg, 480×666 px)
+const SIGIL_PALM_POS = { jupiteris: [205, 350], saturnas: [258, 338], saule: [306, 348], merkurijus: [348, 374], marsas: [262, 430], venera: [203, 474], menulis: [318, 505] };
+
+// Žvaigždynas ant app delno: simboliai tiksliai ant kalnelių, sujungti plonomis linijomis.
+// Koordinatės — galutinio 1080×1350 paveikslėlio (delnas mastelis 2.25, pakeltas 150 px).
+function sigilPalmSvg(z, { color = '#d4a843' } = {}) {
+  const P = {}; for (const k in SIGIL_PALM_POS) P[k] = [SIGIL_PALM_POS[k][0] * 2.25, SIGIL_PALM_POS[k][1] * 2.25 - 150];
+  const g = [], sw = 2.6;
+  [['jupiteris', 'saturnas'], ['saturnas', 'saule'], ['saule', 'merkurijus'], ['jupiteris', 'marsas'], ['saturnas', 'marsas'], ['merkurijus', 'menulis'], ['marsas', 'menulis'], ['marsas', 'venera'], ['jupiteris', 'venera']]
+    .forEach(([a, b]) => g.push(`<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke-width="1.6" stroke-dasharray="2 7" opacity=".85"/>`));
+  // Žvaigždžių ovalas aplink delną
+  const h = sigilHash(SIGIL_MOUNTS.map(m => z.kalneliai[m.k]).join()), off = h % 6;
+  for (let i = 0; i < 56; i++) { const a = i / 56 * Math.PI * 2, cx = 590 + 470 * Math.cos(a), cy = 700 + 560 * Math.sin(a); if (cy > 1150 && Math.abs(cx - 540) < 300) continue; g.push(`<circle cx="${(590 + 470 * Math.cos(a)).toFixed(1)}" cy="${(700 + 560 * Math.sin(a)).toFixed(1)}" r="${(i + off) % 7 ? 2.2 : 4.4}" fill="${color}" stroke="none" opacity=".8"/>`); }
+  SIGIL_MOUNTS.forEach(m => {
+    const [x, y] = P[m.k], st = z.stipriausi.includes(m.k), r = st ? 50 : 40, sc = st ? 0.62 : 0.5;
+    g.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="#050403" fill-opacity=".88" stroke="none"/>`);
+    g.push(`<circle cx="${x}" cy="${y}" r="${r - 6}" stroke-width="${st ? 2.2 : 1.4}"${st ? '' : ' stroke-dasharray="2 6"'}/>`);
+    if (st) for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4; g.push(`<line x1="${(x + (r + 2) * Math.cos(a)).toFixed(1)}" y1="${(y + (r + 2) * Math.sin(a)).toFixed(1)}" x2="${(x + (r + 12) * Math.cos(a)).toFixed(1)}" y2="${(y + (r + 12) * Math.sin(a)).toFixed(1)}" stroke-width="2.2"/>`); }
+    g.push(`<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k]].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(sw / sc).toFixed(2)}"/>`);
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350"><g fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g></svg>`;
+}
+
+// Galutinis paveikslėlis 1080×1350. kind: 'delnas' — ant app delno paveikslėlio; 'tamsus' — be delno.
+async function sigilCanvas(kind) {
   const z = window._sigilData, name = window._sigilName || '';
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
   const W = 1080, H = 1350;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const ctx = c.getContext('2d');
-  // Dešinio delno nuotrauka tinka tiesiogiai; kairio — žvaigždynas atspindimas (nykštys kitoje pusėje)
-  const photo = (typeof photoRight !== 'undefined' && photoRight) || (typeof photoLeft !== 'undefined' && photoLeft) || null;
-  const mirror = !(typeof photoRight !== 'undefined' && photoRight) && !!photo;
-  let hasPhoto = false;
-  if (photo) {
-    try {
-      const ph = await sigilLoadImg(photo);
-      const s = Math.max(W / ph.width, H / ph.height);
-      ctx.drawImage(ph, (W - ph.width * s) / 2, (H - ph.height * s) / 2, ph.width * s, ph.height * s);
-      ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, 0, W, H);
-      const v = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.2, W / 2, H * 0.45, W * 0.9);
-      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)');
-      ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
-      hasPhoto = true;
-    } catch (e) { console.warn('[sigilCanvas] nuotraukos klaida:', e); }
-  }
-  if (!hasPhoto) {
+  const svgUrl = svg => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  if (kind === 'delnas') {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    const palm = await sigilLoadImg('/img/delnas.jpg');
+    ctx.drawImage(palm, 0, -150, 480 * 2.25, 666 * 2.25);
+    const v = ctx.createLinearGradient(0, 1080, 0, H); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.9)');
+    ctx.fillStyle = v; ctx.fillRect(0, 1080, W, H - 1080);
+    const star = await sigilLoadImg(svgUrl(sigilPalmSvg(z)));
+    ctx.save(); ctx.shadowColor = 'rgba(240,201,106,.85)'; ctx.shadowBlur = 16;
+    ctx.drawImage(star, 0, 0, W, H); ctx.restore();
+  } else {
     const g = ctx.createRadialGradient(W / 2, 560, 40, W / 2, 560, 1000);
     g.addColorStop(0, '#18130a'); g.addColorStop(1, '#000000');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const star = await sigilLoadImg(svgUrl(sigilSvg(z, name)));
+    ctx.save(); ctx.shadowColor = 'rgba(240,201,106,.9)'; ctx.shadowBlur = 10;
+    ctx.drawImage(star, (W - 900) / 2, 130, 900, 900 * 412 / 360); ctx.restore();
   }
-  const star = await sigilLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sigilSvg(z, name)));
-  ctx.save();
-  if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
-  ctx.shadowColor = 'rgba(240,201,106,.9)'; ctx.shadowBlur = hasPhoto ? 18 : 10;
-  ctx.drawImage(star, (W - 900) / 2, 130, 900, 900 * 412 / 360);
-  ctx.restore();
   ctx.textAlign = 'center';
   ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = 12;
   ctx.fillStyle = '#f0c96a';
@@ -3472,10 +3490,17 @@ async function sigilCanvas() {
   return c;
 }
 
+function selectSigil(kind) {
+  window._sigilKind = kind;
+  const img = document.getElementById('r-sigil-img');
+  if (window._sigilImgs && window._sigilImgs[kind]) img.src = window._sigilImgs[kind];
+  document.querySelectorAll('#r-sigil-wrap .sg-opt').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+}
+
 async function downloadSigil() {
   try {
     if (!window._sigilData) return;
-    const c = await sigilCanvas();
+    const c = await sigilCanvas(window._sigilKind || 'delnas');
     const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
     const file = new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -3504,15 +3529,12 @@ function renderSigil(r) {
     const s = z.kalneliai[m.k], st = z.stipriausi.includes(m.k);
     return `<div class="sg-it${st ? ' st' : ''}"><svg viewBox="-50 -50 100 100" width="22" height="22"><path d="${SIGIL_SYMBOLS[s].d}" fill="none" stroke="#d4a843" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>${SIGIL_SYMBOLS[s].lt}</b> <span class="sg-z">· ${m.lt}</span> — ${SIGIL_MEANING[s]}</div></div>`;
   }).join('');
-  const img = document.getElementById('r-sigil-img');
-  img.removeAttribute('src');
   wrap.style.display = '';
-  // Paveikslėlis ekranui ir PDF'ui
-  window._sigilImg = null;
-  window._sigilReady = sigilCanvas().then(c => {
-    window._sigilImg = c.toDataURL('image/jpeg', 0.88);
-    img.src = window._sigilImg;
-  }).catch(e => console.error('[renderSigil] klaida:', e));
+  // Du variantai (su delnu / be delno) — ekranui ir PDF'ui
+  window._sigilImgs = {};
+  window._sigilReady = Promise.all(['delnas', 'tamsus'].map(k => sigilCanvas(k).then(c => { window._sigilImgs[k] = c.toDataURL('image/jpeg', 0.88); })))
+    .then(() => selectSigil(window._sigilKind || 'delnas'))
+    .catch(e => console.error('[renderSigil] klaida:', e));
 }
 
 function displayResult(r){
@@ -3985,7 +4007,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   });
 
   // Asmeninis delno žvaigždynas — atskiras puslapis (jei paveikslėlis jau paruoštas)
-  if(window._sigilImg && window._sigilData){
+  if(window._sigilImgs && window._sigilImgs.delnas && window._sigilImgs.tamsus && window._sigilData){
     const z = window._sigilData;
     y = newPage() - 6;
     doc.setFont('NotoSans','bold');
@@ -3993,9 +4015,10 @@ function buildResultPdfDoc(r, name, orderNumber){
     doc.setTextColor(...GOLD);
     doc.text('TAVO DELNO ŽVAIGŽDYNAS', W/2, y, {align:'center'});
     y += 5;
-    const imgW = 104, imgH = imgW * 1350 / 1080;
-    doc.addImage(window._sigilImg, 'JPEG', W/2 - imgW/2, y, imgW, imgH);
-    y += imgH + 9;
+    const imgW = 82, imgH = imgW * 1350 / 1080, gap = 6;
+    doc.addImage(window._sigilImgs.delnas, 'JPEG', W/2 - imgW - gap/2, y, imgW, imgH);
+    doc.addImage(window._sigilImgs.tamsus, 'JPEG', W/2 + gap/2, y, imgW, imgH);
+    y += imgH + 10;
     const el = SIGIL_ELEMENTS[z.stichija];
     doc.setFont('NotoSans','normal');
     doc.setFontSize(12);
