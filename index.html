@@ -137,12 +137,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pora-pct span{font-size:11px;letter-spacing:.08em;color:var(--muted);margin-top:4px}
 .pora-traits{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 12px}
 .pora-traits span{border:1px solid rgba(212,168,67,.45);background:rgba(212,168,67,.08);color:#e8e2d4;border-radius:999px;padding:6px 12px;font-size:12.5px}
-.pora-hearts{position:relative;width:110px;height:70px}
-.pora-hearts span{position:absolute;top:5px;width:60px;height:60px;border-radius:50%;border:2px solid var(--gold);box-shadow:0 0 18px rgba(212,168,67,.35)}
-.pora-hearts span:first-child{left:0;animation:poraL 2.4s ease-in-out infinite}
-.pora-hearts span:last-child{right:0;animation:poraR 2.4s ease-in-out infinite}
-@keyframes poraL{50%{transform:translateX(14px)}}
-@keyframes poraR{50%{transform:translateX(-14px)}}
+.pora-orbs{position:relative;width:190px;height:120px;flex-shrink:0;margin:0 auto}
+.pora-orb{position:absolute;top:0;width:120px;height:120px;border-radius:50%;border:2px solid rgba(212,168,67,.6);overflow:hidden;box-shadow:0 0 24px rgba(212,168,67,.3),inset 0 0 20px rgba(212,168,67,.12)}
+.pora-orb:first-child{left:0;animation:poraL 3s ease-in-out infinite}
+.pora-orb:last-child{right:0;animation:poraR 3s ease-in-out infinite}
+.pora-orb i{position:absolute;inset:-6%;background:url(/img/delnas.jpg) center 40%/cover;filter:sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.05)}
+.pora-orb:last-child i{transform:scaleX(-1)}
+.pora-orbs.sm{width:118px;height:72px}
+.pora-orbs.sm .pora-orb{width:72px;height:72px;animation:none;box-shadow:0 0 16px rgba(212,168,67,.3),inset 0 0 12px rgba(212,168,67,.12)}
+.pora-orbs.xs{width:62px;height:38px;margin:0}
+.pora-orbs.xs .pora-orb{width:38px;height:38px;border-width:1.5px;animation:none;box-shadow:0 0 10px rgba(212,168,67,.3)}
+.pora-basis{font-size:12px;color:var(--muted);line-height:1.5;max-width:300px;margin:0 auto 12px}
+@keyframes poraL{50%{transform:translateX(12px)}}
+@keyframes poraR{50%{transform:translateX(-12px)}}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
 .rs-body{font-size:14.5px;color:rgba(255,255,255,.68);line-height:1.4;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
@@ -729,9 +736,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <!-- ═══ PORŲ SUDERINAMUMAS (?pora=SESSION_ID) — žr. pora* funkcijas ═══ -->
 <div class="screen" id="s-pora-next">
   <div style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center">
-    <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(212,168,67,.35);margin-bottom:18px">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <div style="position:relative;margin-bottom:18px">
+      <div class="pora-orbs sm"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
+      <div style="position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#000;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
     </div>
+    <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(212,168,67,.75);margin-bottom:10px">Porų suderinamumas pagal delnus</div>
     <div id="pora-next-done" style="font-size:14px;color:var(--muted);margin-bottom:6px"></div>
     <div id="pora-next-title" style="font-family:'Playfair Display',serif;font-size:28px;line-height:1.2;color:#e8e2d4;margin-bottom:10px"></div>
     <div style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:320px;margin-bottom:26px">Perduok telefoną partneriui — dabar reikia nufotografuoti jo arba jos kairįjį ir dešinįjį delną.</div>
@@ -740,25 +749,48 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <div class="screen" id="s-pora-wait">
-  <div style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center">
-    <div class="pora-hearts" style="margin-bottom:22px"><span></span><span></span></div>
-    <div id="pora-wait-title" style="font-family:'Playfair Display',serif;font-size:24px;line-height:1.3;color:#e8e2d4;margin-bottom:10px">Lyginame jūsų delnus…</div>
-    <div id="pora-wait-txt" style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:320px;min-height:42px">Tai užtrunka apie 1–2 minutes.</div>
-    <div id="pora-wait-err" style="display:none;margin-top:18px;max-width:340px;width:100%">
-      <div style="color:#ffb3a0;font-size:13px;line-height:1.5;margin-bottom:12px" id="pora-wait-err-txt"></div>
-      <button class="btn btn-gold" onclick="poraRetry()">Bandyti dar kartą</button>
+  <div class="load-wrap" style="padding:44px 16px 0;gap:0;justify-content:flex-start">
+    <div style="text-align:center;flex-shrink:0;margin-bottom:20px">
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.35;color:#e8e2d4;text-shadow:0 1px 8px rgba(212,168,67,.25)">Lyginami jūsų delnai</div>
+      <div id="pora-wait-names" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,.7)"></div>
+    </div>
+    <div class="pora-orbs">
+      <div class="pora-orb"><i></i></div>
+      <div class="pora-orb"><i></i></div>
+    </div>
+    <div class="pbar-wrap" style="flex-shrink:0;max-width:320px;width:100%;margin-top:20px;margin-bottom:20px">
+      <div class="pbar-track"><div class="pbar-fill" id="pora-pbar"></div></div>
+      <div class="pbar-labels"><span id="pora-ppct">0%</span><span id="pora-wait-txt" style="font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px">Tai užtrunka apie 1–2 minutes</span></div>
+    </div>
+    <div style="position:relative;width:100%;max-width:340px;flex:1;min-height:0;overflow:hidden">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none"></div>
+      <div class="load-steps" style="gap:4px;padding-bottom:20px">
+        <div class="ls" id="pls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Atrandama, kas jus traukia vienas prie kito.</div><div class="ls-status" id="pls1-status">·</div></div>
+        <div class="ls" id="pls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="ls-text">Analizuojama, kaip bendraujate ir sprendžiate nesutarimus.</div><div class="ls-status" id="pls2-status">·</div></div>
+        <div class="ls" id="pls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div><div class="ls-text">Ieškoma, kuo vienas kitą papildote.</div><div class="ls-status" id="pls3-status">·</div></div>
+        <div class="ls" id="pls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><div class="ls-text">Nustatoma, kur gali kilti trinties.</div><div class="ls-status" id="pls4-status">·</div></div>
+        <div class="ls" id="pls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></div><div class="ls-text">Lyginamas požiūris į pinigus, namus ir ateitį.</div><div class="ls-status" id="pls5-status">·</div></div>
+        <div class="ls" id="pls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"/></svg></div><div class="ls-text">Atskleidžiama jūsų poros stiprybė.</div><div class="ls-status" id="pls6-status">·</div></div>
+        <div class="ls" id="pls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></div><div class="ls-text">Ruošiami patarimai jums abiem.</div><div class="ls-status" id="pls7-status">·</div></div>
+      </div>
+      <div id="pora-wait-err" style="display:none;position:relative;z-index:3;margin-top:14px;text-align:center">
+        <div style="color:#ffb3a0;font-size:13px;line-height:1.5;margin-bottom:12px" id="pora-wait-err-txt"></div>
+        <button class="btn btn-gold" onclick="poraRetry()">Bandyti dar kartą</button>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="screen" id="s-pora-result" style="background:var(--bg)">
-  <div style="text-align:center;padding:56px 16px 18px">
-    <div class="result-subtitle" style="margin-bottom:8px">Porų suderinamumas</div>
+  <div style="text-align:center;padding:40px 16px 18px">
+    <div class="pora-orbs sm" style="margin-bottom:14px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
+    <div class="result-subtitle" style="margin-bottom:8px">Porų suderinamumas pagal delnus</div>
     <div class="result-name" id="pora-names"></div>
     <div class="pora-ring">
       <svg viewBox="0 0 120 120" width="150" height="150"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,168,67,.18)" stroke-width="8"/><circle id="pora-ring-arc" cx="60" cy="60" r="52" fill="none" stroke="url(#poraGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/><defs><linearGradient id="poraGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset=".5" stop-color="#e0a930"/><stop offset="1" stop-color="#8a5a0f"/></linearGradient></defs></svg>
-      <div class="pora-pct"><b id="pora-pct">0%</b><span>suderinamumas</span></div>
+      <div class="pora-pct"><b id="pora-pct">0%</b><span style="text-align:center;line-height:1.25">delnų<br>suderinamumas</span></div>
     </div>
+    <div class="pora-basis">Įvertinta palyginus abiejų jūsų delnų linijas, formą ir pirštus — kaip jūsų prigimtys dera tarpusavyje.</div>
     <div id="pora-traits" class="pora-traits"></div>
     <div class="result-divider"></div>
   </div>
@@ -5153,7 +5185,8 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       window._pora.active=true;
-      note.innerHTML='<div style="color:var(--gold2);font-size:14px;font-weight:600">💞 '+poraEsc(poraNames())+' — porų suderinamumas apmokėtas!</div>'+
+      note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
+        '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+' — porų suderinamumas pagal delnus apmokėtas!</div>'+
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuosite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
@@ -5185,6 +5218,7 @@ async function poraStart(){
   p.active=false;
   go('s-pora-wait');
   document.getElementById('pora-wait-err').style.display='none';
+  poraProgress(true);
   const photos=[...p.photos[0],...p.photos[1]].map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
   try{
     const r=await fetch('/pora/start',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:p.sid, photos }) });
@@ -5199,19 +5233,43 @@ function poraShowError(msg){
   document.getElementById('pora-wait-err').style.display='block';
 }
 
+// Laukimo ekranas: eigos juosta ir 7 skyrių žingsniai (kaip asmeninėje analizėje)
+function poraProgress(start){
+  clearInterval(window._poraProgTimer);
+  const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct');
+  document.getElementById('pora-wait-names').textContent=poraNames();
+  const setStep=(n)=>{ for(let i=1;i<=7;i++){ const el=document.getElementById('pls'+i), st=document.getElementById('pls'+i+'-status');
+    el.classList.toggle('done',i<n); el.classList.toggle('active',i===n);
+    st.innerHTML=i<n?'<span style="color:var(--gold2)">✓</span>':i===n?'<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);border-radius:50%;animation:spinStep .7s linear infinite"></span>':'·'; } };
+  if(start){ window._poraT0=Date.now(); setStep(1); }
+  window._poraProgTimer=setInterval(()=>{
+    const s=(Date.now()-window._poraT0)/1000, v=Math.min(94,Math.round(94*(1-Math.exp(-s/40))));
+    pbar.style.width=v+'%'; pct.textContent=v+'%';
+    setStep(Math.min(7,1+Math.floor(s/13)));
+  },500);
+  window._poraSetStep=setStep;
+}
+function poraFinishProgress(){
+  clearInterval(window._poraProgTimer);
+  document.getElementById('pora-pbar').style.width='100%'; document.getElementById('pora-ppct').textContent='100%';
+  if(window._poraSetStep) window._poraSetStep(8);
+  document.getElementById('pora-wait-txt').textContent='Analizė paruošta';
+}
+
 function poraPoll(){
-  const texts=['Lyginame jūsų delnų formas ir linijas…','Ieškome, kas jus sieja…','Aiškinamės, kuo vienas kitą papildote…','Ruošiame patarimus jums abiem…'];
+  const texts=['Tai užtrunka apie 1–2 minutes','Lyginamos delnų formos ir linijos','Ieškoma, kas jus sieja','Ruošiama jūsų analizė'];
   let i=0, t0=Date.now();
   const txt=document.getElementById('pora-wait-txt');
+  if(!window._poraProgTimer||!window._poraT0) poraProgress(true);
   clearInterval(window._poraTxtTimer);
-  window._poraTxtTimer=setInterval(()=>{ i=(i+1)%texts.length; if(txt) txt.textContent=texts[i]; },4000);
+  window._poraTxtTimer=setInterval(()=>{ i=(i+1)%texts.length; if(txt) txt.textContent=texts[i]; },5000);
   (async function tick(){
     try{
       const d=await (await fetch('/pora/status?session_id='+encodeURIComponent(window._pora.sid))).json();
-      if(d.status==='done' && d.result){ clearInterval(window._poraTxtTimer); renderPoraResult(d.result); return; }
-      if(d.status==='error'){ clearInterval(window._poraTxtTimer); poraShowError('Analizė nepavyko.'); return; }
+      if(d.status==='done' && d.result){ clearInterval(window._poraTxtTimer); poraFinishProgress(); setTimeout(()=>renderPoraResult(d.result),900); return; }
+      if(d.status==='error'){ clearInterval(window._poraTxtTimer); clearInterval(window._poraProgTimer); poraShowError('Analizė nepavyko.'); return; }
     }catch(e){}
-    if(Date.now()-t0>5*60*1000){ clearInterval(window._poraTxtTimer); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
+    if(Date.now()-t0>5*60*1000){ clearInterval(window._poraTxtTimer); clearInterval(window._poraProgTimer); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
     setTimeout(tick,3000);
   })();
 }
@@ -5242,11 +5300,12 @@ function buildPoraPdfDoc(){
   dark(); registerPdfFonts(doc);
   let y=40;
   doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED);
-  doc.text('PORŲ SUDERINAMUMAS', W/2, y, {align:'center'}); y+=14;
+  doc.text('PORŲ SUDERINAMUMAS PAGAL DELNUS', W/2, y, {align:'center'}); y+=14;
   doc.setFont('NotoSans','bold'); doc.setFontSize(26); doc.setTextColor(...GOLD2);
   doc.splitTextToSize(poraNames(), maxW).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=11; });
   y+=6; doc.setFontSize(46); doc.text((r.suderinamumas||0)+'%', W/2, y+10, {align:'center'}); y+=18;
-  doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('suderinamumas', W/2, y, {align:'center'}); y+=12;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('delnų suderinamumas', W/2, y, {align:'center'}); y+=7;
+  doc.setFontSize(10); doc.text('Įvertinta palyginus abiejų delnų linijas, formą ir pirštus', W/2, y, {align:'center'}); y+=10;
   if((r.poros_bruozai||[]).length){ doc.setTextColor(...GOLD); doc.setFontSize(13); doc.text(r.poros_bruozai.join('  ·  '), W/2, y, {align:'center', maxWidth:maxW}); y+=10; }
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.line(W/2-15, y, W/2+15, y); y+=16;
   PORA_SECTIONS.forEach(([k,title])=>{
@@ -5284,7 +5343,7 @@ async function poraCardBlob(){
   const g=x.createRadialGradient(W/2,520,40,W/2,520,1000); g.addColorStop(0,'#1c150a'); g.addColorStop(1,'#000'); x.fillStyle=g; x.fillRect(0,0,W,1350);
   x.strokeStyle='rgba(212,168,67,.55)'; x.lineWidth=2; x.strokeRect(40,40,W-80,1270);
   x.textAlign='center';
-  x.fillStyle='#d4a843'; x.font="600 28px 'DM Sans', sans-serif"; x.fillText('P O R Ų   S U D E R I N A M U M A S', W/2, 150);
+  x.fillStyle='#d4a843'; x.font="600 28px 'DM Sans', sans-serif"; x.fillText('PORŲ SUDERINAMUMAS PAGAL DELNUS', W/2, 150);
   x.fillStyle='#f0c96a'; x.font="italic 700 72px 'Playfair Display', serif";
   const nm=poraNames(); let fs=72; while(x.measureText(nm).width>900 && fs>40){ fs-=4; x.font="italic 700 "+fs+"px 'Playfair Display', serif"; }
   x.fillText(nm, W/2, 270);
@@ -5293,7 +5352,7 @@ async function poraCardBlob(){
   const gr=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R); gr.addColorStop(0,'#fff0c4'); gr.addColorStop(.5,'#e0a930'); gr.addColorStop(1,'#8a5a0f');
   x.strokeStyle=gr; x.lineCap='round'; x.beginPath(); x.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*pct/100); x.stroke();
   x.fillStyle='#f0c96a'; x.font="700 150px 'Playfair Display', serif"; x.fillText(pct+'%', cx, cy+50);
-  x.fillStyle='rgba(255,255,255,.6)'; x.font="400 32px 'DM Sans', sans-serif"; x.fillText('suderinamumas', cx, cy+110);
+  x.fillStyle='rgba(255,255,255,.6)'; x.font="400 27px 'DM Sans', sans-serif"; x.fillText('delnų suderinamumas', cx, cy+105);
   let y=935; x.font="600 36px 'DM Sans', sans-serif";
   (r.poros_bruozai||[]).slice(0,3).forEach(t=>{ const w=x.measureText(t).width+70; x.fillStyle='rgba(212,168,67,.1)'; x.strokeStyle='rgba(212,168,67,.55)'; x.lineWidth=2;
     x.beginPath(); x.roundRect(cx-w/2,y-48,w,70,35); x.fill(); x.stroke(); x.fillStyle='#e8e2d4'; x.fillText(t,cx,y); y+=96; });
