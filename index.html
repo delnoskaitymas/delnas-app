@@ -133,6 +133,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 /* Delno žvaigždynas */
 .sg-opts{display:inline-flex;gap:4px;padding:3px;border-radius:999px;border:.5px solid rgba(212,168,67,.4);margin:2px 0 10px}
 .sg-opt{background:none;border:none;border-radius:999px;padding:7px 13px;font:600 12.5px 'DM Sans',sans-serif;color:rgba(212,168,67,.75);cursor:pointer}
+.sg-what-h{font-size:12px;color:var(--muted);margin-bottom:6px}
 .sg-opt.on{background:linear-gradient(125deg,#f5d061,#c98a1f);color:#140f02}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
@@ -698,9 +699,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- Asmeninis delno žvaigždynas (žr. renderSigil) -->
     <div class="rs rs-std" id="r-sigil-wrap" style="display:none;text-align:center">
       <div class="rs-label" style="justify-content:center">Tavo delno žvaigždynas</div>
-      <div class="sg-opts"><button class="sg-opt on" data-k="delnas" onclick="selectSigil('delnas')">Su delnu</button><button class="sg-opt" data-k="tamsus" onclick="selectSigil('tamsus')">Be delno</button><button class="sg-opt" data-k="aprasas" onclick="selectSigil('aprasas')">Aprašas</button></div>
-      <img id="r-sigil-img" alt="Tavo delno žvaigždynas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:4px auto 12px;background:#050403">
-      <div style="display:flex;gap:8px;margin-top:14px">
+      <div class="sg-opts"><button class="sg-opt on" data-k="delnas" onclick="selectSigil('delnas')">Su delnu</button><button class="sg-opt" data-k="tamsus" onclick="selectSigil('tamsus')">Be delno</button></div>
+      <img id="r-sigil-img" alt="Tavo delno žvaigždynas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:4px auto 10px;background:#050403">
+      <img id="r-sigil-desc" alt="Tavo delno žvaigždyno aprašas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:0 auto 14px;background:#050403">
+      <div class="sg-what-h">Ką išsaugoti ar kuo pasidalinti?</div>
+      <div class="sg-opts sg-what"><button class="sg-opt on" data-w="zvaigzdynas" onclick="selectSigilWhat('zvaigzdynas')">Žvaigždyną</button><button class="sg-opt" data-w="aprasas" onclick="selectSigilWhat('aprasas')">Aprašą</button><button class="sg-opt" data-w="abu" onclick="selectSigilWhat('abu')">Abu kartu</button></div>
+      <div style="display:flex;gap:8px;margin-top:6px">
         <button onclick="shareSigil()" style="flex:1;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:10px;padding:13px 6px;color:#07040f;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">↗ Pasidalinti</button>
         <button onclick="downloadSigil()" style="flex:1;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px 6px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti</button>
       </div>
@@ -3523,13 +3527,27 @@ function selectSigil(kind) {
   window._sigilKind = kind;
   const img = document.getElementById('r-sigil-img');
   if (window._sigilImgs && window._sigilImgs[kind]) img.src = window._sigilImgs[kind];
-  document.querySelectorAll('#r-sigil-wrap .sg-opt').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+  document.querySelectorAll('#r-sigil-wrap .sg-opt[data-k]').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+}
+
+// Ką dalintis/atsisiųsti: 'zvaigzdynas' (pasirinktas variantas), 'aprasas' arba 'abu' (viename paveikslėlyje)
+function selectSigilWhat(what) {
+  window._sigilWhat = what;
+  document.querySelectorAll('#r-sigil-wrap .sg-opt[data-w]').forEach(b => b.classList.toggle('on', b.dataset.w === what));
 }
 
 async function sigilFile() {
-  const c = await sigilCanvas(window._sigilKind || 'delnas');
+  const what = window._sigilWhat || 'zvaigzdynas', kind = window._sigilKind || 'delnas';
+  let c, name;
+  if (what === 'aprasas') { c = await sigilCanvas('aprasas'); name = 'delno-zvaigzdyno-aprasas.jpg'; }
+  else if (what === 'abu') {
+    const [top, bottom] = await Promise.all([sigilCanvas(kind), sigilCanvas('aprasas')]);
+    c = document.createElement('canvas'); c.width = 1080; c.height = 2700;
+    const ctx = c.getContext('2d'); ctx.drawImage(top, 0, 0); ctx.drawImage(bottom, 0, 1350);
+    name = 'delno-zvaigzdynas-su-aprasu.jpg';
+  } else { c = await sigilCanvas(kind); name = 'delno-zvaigzdynas.jpg'; }
   const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
-  return new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
+  return new File([blob], name, { type: 'image/jpeg' });
 }
 
 async function downloadSigil() {
@@ -3577,7 +3595,7 @@ function renderSigil(r) {
   // Trys paveikslėliai (su delnu / be delno / aprašas) — ekranui ir laiškui
   window._sigilImgs = {};
   window._sigilReady = Promise.all(['delnas', 'tamsus', 'aprasas'].map(k => sigilCanvas(k).then(c => { window._sigilImgs[k] = c.toDataURL('image/jpeg', 0.88); })))
-    .then(() => selectSigil(window._sigilKind || 'delnas'))
+    .then(() => { selectSigil(window._sigilKind || 'delnas'); document.getElementById('r-sigil-desc').src = window._sigilImgs.aprasas; })
     .catch(e => console.error('[renderSigil] klaida:', e));
 }
 
