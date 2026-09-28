@@ -4110,57 +4110,6 @@ function buildResultPdfDoc(r, name, orderNumber){
   return doc;
 }
 
-// Atskiras PDF su delno žvaigždynu (siunčiamas kartu su analizės PDF, kaip antras priedas)
-function buildSigilPdfDoc(){
-  if(!(window._sigilImgs && window._sigilImgs.delnas && window._sigilImgs.tamsus && window._sigilData)) return null;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, H = 297, margin = 20, maxW = W - margin*2;
-  const GOLD = [212, 168, 67], GOLD2 = [240, 201, 106], BODY = [173, 173, 173], MUTED = [153, 153, 153], DIVIDER = [140, 112, 55];
-  doc.setFillColor(0,0,0); doc.rect(0,0,W,H,'F');
-  registerPdfFonts(doc);
-    const z = window._sigilData;
-    let y = 26;
-    doc.setFont('NotoSans','bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...GOLD);
-    doc.text('TAVO DELNO ŽVAIGŽDYNAS', W/2, y, {align:'center'});
-    y += 5;
-    const imgW = 82, imgH = imgW * 1350 / 1080, gap = 6;
-    doc.addImage(window._sigilImgs.delnas, 'JPEG', W/2 - imgW - gap/2, y, imgW, imgH);
-    doc.addImage(window._sigilImgs.tamsus, 'JPEG', W/2 + gap/2, y, imgW, imgH);
-    y += imgH + 10;
-    const el = SIGIL_ELEMENTS[z.stichija];
-    doc.setFont('NotoSans','normal');
-    doc.setFontSize(12);
-    doc.setTextColor(...GOLD);
-    doc.text(el.lt + ' stichija — ' + el.apie, W/2, y, {align:'center'});
-    y += 9;
-    SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k)).forEach(m => {
-      const s = z.kalneliai[m.k];
-      doc.setFont('NotoSans','bold');
-      doc.setFontSize(11.5);
-      doc.setTextColor(...GOLD2);
-      doc.text(SIGIL_SYMBOLS[s].lt, margin + 8, y);
-      doc.setFont('NotoSans','normal');
-      doc.setTextColor(...MUTED);
-      doc.text(m.lt, margin + 40, y);
-      doc.setTextColor(...BODY);
-      doc.text(SIGIL_MEANING[s], margin + 98, y);
-      y += 6.6;
-    });
-    doc.setFontSize(9.5);
-    doc.setTextColor(DIVIDER[0], DIVIDER[1], DIVIDER[2]);
-    doc.splitTextToSize('Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs; išryškinti — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.', maxW).forEach(ln => { y += 4.6; doc.text(ln, W/2, y, {align:'center'}); });
-  // Apačioje — nuoroda į svetainę
-  doc.setFont('NotoSans','bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...GOLD2);
-  doc.text('delnaskaitymas.lt', W/2, 284, {align:'center'});
-  doc.link(W/2 - 20, 279, 40, 8, { url: 'https://www.delnaskaitymas.lt' });
-  return doc;
-}
-
 function downloadPDF(){
   const r = window._palmResult;
   if(!r){ alert('Rezultatai nerasti.'); return; }
@@ -4188,11 +4137,12 @@ function sendResultPdfEmailNow(r){
     const doc = buildResultPdfDoc(r, name, window._orderNumber||'');
     const dataUri = doc.output('datauristring');
     const base64 = dataUri.split(',').pop();
-    let sigilBase64 = '';
-    try { const sd = buildSigilPdfDoc(); if(sd) sigilBase64 = sd.output('datauristring').split(',').pop(); }
-    catch(sigErr){ console.error('[sendResultPdfEmail] žvaigždyno PDF klaida:', sigErr); }
+    // Delno žvaigždynas — du JPG priedai (su delnu ir be delno) + duomenys aprašui laiške
+    const si = window._sigilImgs || {};
+    const sigil = (si.delnas && si.tamsus && window._sigilData)
+      ? { data: window._sigilData, delnas: si.delnas.split(',').pop(), tamsus: si.tamsus.split(',').pop() } : null;
     fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,sigilPdfBase64:sigilBase64,gift:!!window._isGiftOrder})})
+      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,sigil,gift:!!window._isGiftOrder})})
       .then(r=>r.json()).then(d=>{
         if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
         else console.log('[sendResultPdfEmail] serveris patvirtino išsiuntimą');
