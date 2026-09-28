@@ -18,9 +18,10 @@ body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50
 h1{font:400 34px/1.12 'Playfair Display',serif;text-align:center;margin:26px 0 10px}
 h1 em{font-style:italic;color:var(--gold)}
 .lead{text-align:center;font-size:14.5px;line-height:1.55;color:var(--muted)}
-.hero{position:relative;height:170px;margin:18px auto 8px;width:170px;border-radius:50%;overflow:hidden;border:2px solid rgba(212,168,67,.6);
-  box-shadow:0 0 30px rgba(212,168,67,.3),inset 0 0 24px rgba(212,168,67,.12)}
-.hero i{position:absolute;inset:-6%;background:url(/img/delnas.jpg) center 40%/cover;filter:sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.05)}
+.hero{position:relative;height:170px;margin:18px auto 8px;width:170px;border-radius:50%;background:#000;border:3px solid rgba(212,168,67,.7);
+  box-shadow:0 0 18px rgba(212,168,67,.35),inset 0 0 18px rgba(212,168,67,.1)}
+/* Delno ikona — tokia pat kaip programėlėje (auksinis žiedas, viduje delnas plonu žiedu) */
+.hero i{position:absolute;inset:8%;border-radius:50%;overflow:hidden;border:1.5px solid rgba(212,168,67,.4);background:url(/img/delnas.jpg) center 20%/cover no-repeat;filter:grayscale(.3) brightness(1.1) contrast(1.05)}
 .steps{display:flex;flex-direction:column;gap:8px;margin:12px 0 6px}
 .intro{display:flex;align-items:center;gap:16px;margin:18px 0 8px}
 .intro .hero{flex:none;width:84px;height:84px;margin:0}
@@ -160,7 +161,7 @@ a{color:var(--gold)}
 .note{background:rgba(212,168,67,.07);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--muted);margin-top:14px;text-align:center}
 
 .hero2{display:flex;justify-content:center;margin:0 0 6px}
-.hero2 .hero{width:78px;height:78px;margin:0 -10px;border-width:2px}
+.hero2 .hero{width:78px;height:78px;margin:0 -8px}
 .hero2 .hero:last-child i{transform:scaleX(-1)}
 </style>
 </head>
