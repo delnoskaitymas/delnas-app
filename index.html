@@ -3542,6 +3542,43 @@ function registerPdfFonts(doc){
 // image" stiliaus), kad PDF faile būtų lygiai tokia pati nuotrauka, kokią
 // vartotojas jau matė ekrane (nereikia jos dubliuoti atskirai kaip base64
 // literalo scenarijaus faile).
+// Delno ikona — lygiai tokia pati kaip programėlėje (.result-hero): juodas
+// fonas, viduje plonu auksiniu žiedu apvestas delnas, apkarpytas „cover“
+// ties 20 % aukščio, filtras grayscale(.3) brightness(1.1) contrast(1.05).
+// Filtras pritaikomas pikseliais (ctx.filter veikia ne visose naršyklėse).
+// Naudojama PDF ir dalinimosi kortelėse; išorinį storą žiedą piešia kvietėjas.
+function makeAppPalmIcon(src, N){
+  return new Promise((resolve)=>{
+    const im=new Image();
+    im.onload=()=>{
+      try{
+        const c=document.createElement('canvas'); c.width=c.height=N;
+        const x=c.getContext('2d');
+        x.fillStyle='#000'; x.fillRect(0,0,N,N);
+        const r=N/2*0.84, cx=N/2;
+        const w=im.naturalWidth, h=im.naturalHeight, s=Math.min(w,h);
+        const sx=(w-s)/2, sy=(h-s)*0.2;
+        x.save(); x.beginPath(); x.arc(cx,cx,r,0,Math.PI*2); x.clip();
+        x.drawImage(im,sx,sy,s,s,cx-r,cx-r,r*2,r*2);
+        x.restore();
+        const d=x.getImageData(0,0,N,N), a=d.data;
+        for(let i=0;i<a.length;i+=4){
+          const R=a[i],G=a[i+1],B=a[i+2], L=.2126*R+.7152*G+.0722*B;
+          for(let k=0;k<3;k++){ let v=[R,G,B][k]; v=v+(L-v)*0.3; v*=1.1; v=(v-127.5)*1.05+127.5; a[i+k]=v<0?0:v>255?255:v; }
+        }
+        x.putImageData(d,0,0);
+        x.strokeStyle='rgba(212,168,67,.4)'; x.lineWidth=Math.max(1,N*0.012);
+        x.beginPath(); x.arc(cx,cx,r,0,Math.PI*2); x.stroke();
+        resolve(c);
+      }catch(e){ resolve(null); }
+    };
+    im.onerror=()=>resolve(null);
+    im.src=src;
+  });
+}
+// PDF kūrimas sinchroninis — ikoną paruošiame iš anksto
+window.addEventListener('load',()=>{ const u=getHeroPhotoDataUrl(); if(u) makeAppPalmIcon(u,600).then(c=>{ if(c) window._appPalmIconJpg=c.toDataURL('image/jpeg',0.92); }); });
+
 function getHeroPhotoDataUrl(){
   try{
     const el = document.querySelector('#s-result .result-hero div[style*="background:url(data:image"]');
@@ -3621,14 +3658,14 @@ function buildResultPdfDoc(r, name, orderNumber){
       doc.circle(cx, cy, rad, null);
       doc.clip();
       doc.discardPath();
-      doc.addImage(heroPhoto, 'JPEG', cx-rad, cy-rad, rad*2, rad*2);
+      doc.addImage(window._appPalmIconJpg||heroPhoto, 'JPEG', cx-rad, cy-rad, rad*2, rad*2);
       doc.restoreGraphicsState();
       gstateSaved = false;
 
       // Du ploni auksiniai žiedai (vidinis ryškesnis, išorinis blankesnis)
       // vietoj vieno storo apvado — švelnesnis, elegantiškesnis kraštas.
       doc.setDrawColor(...GOLD);
-      doc.setLineWidth(0.5);
+      doc.setLineWidth(window._appPalmIconJpg ? 0.9 : 0.5);
       doc.circle(cx, cy, rad, 'S');
       try{
         doc.saveGraphicsState();
@@ -4101,17 +4138,9 @@ async function buildInviteCardBlob(name){
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.closePath();
       ctx.clip();
-      const srcAspect = img.naturalWidth / img.naturalHeight;
-      let sx, sy, sw, sh;
-      if(srcAspect > 1){ sh = img.naturalHeight; sw = sh; sy = 0; sx = (img.naturalWidth - sw)/2; }
-      else { sw = img.naturalWidth; sh = sw; sx = 0; sy = (img.naturalHeight - sh)/2; }
-      ctx.filter = 'brightness(1.15) contrast(1.5) saturate(1.4)';
-      ctx.drawImage(img, sx, sy, sw, sh, cx-rad, cy-rad, rad*2, rad*2);
-      ctx.filter = 'none';
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.fillStyle = 'rgba(212,168,67,.22)';
-      ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
-      ctx.globalCompositeOperation = 'source-over';
+      const icon = await makeAppPalmIcon(img.src, Math.round(rad*2));
+      if(icon) ctx.drawImage(icon, cx-rad, cy-rad, rad*2, rad*2);
+      else ctx.drawImage(img, 0, (img.naturalHeight-img.naturalWidth)*0.2, img.naturalWidth, img.naturalWidth, cx-rad, cy-rad, rad*2, rad*2);
       ctx.restore();
     }catch(e){
       const innerGlow = ctx.createRadialGradient(cx, cy, 10, cx, cy, rad);
@@ -4134,7 +4163,7 @@ async function buildInviteCardBlob(name){
     ctx.shadowBlur = 0; ctx.textBaseline = 'alphabetic';
   }
   ctx.strokeStyle = '#d4a843';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.arc(cx, cy, rad, 0, Math.PI*2);
   ctx.stroke();
@@ -4447,20 +4476,12 @@ async function buildStoryCardBlob(){
       // "Cover" tipo apkirpimas — paveikslėlio proporcijos IŠLAIKOMOS
       // (jis tik apkarpomas per centrą), o ne tempiamas/spraudžiamas į
       // kvadratą (kas anksčiau darė nuotrauką neryškią/iškreiptą).
-      const srcAspect = img.naturalWidth / img.naturalHeight;
-      let sx, sy, sw, sh;
-      if(srcAspect > 1){ sh = img.naturalHeight; sw = sh; sy = 0; sx = (img.naturalWidth - sw)/2; }
-      else { sw = img.naturalWidth; sh = sw; sx = 0; sy = (img.naturalHeight - sh)/2; }
-      ctx.filter = 'brightness(1.15) contrast(1.5) saturate(1.4)';
-      ctx.drawImage(img, sx, sy, sw, sh, cx-rad, cy-rad, rad*2, rad*2);
-      ctx.filter = 'none';
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.fillStyle = 'rgba(212,168,67,.22)';
-      ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
-      ctx.globalCompositeOperation = 'source-over';
+      const icon = await makeAppPalmIcon(img.src, Math.round(rad*2));
+      if(icon) ctx.drawImage(icon, cx-rad, cy-rad, rad*2, rad*2);
+      else ctx.drawImage(img, 0, (img.naturalHeight-img.naturalWidth)*0.2, img.naturalWidth, img.naturalWidth, cx-rad, cy-rad, rad*2, rad*2);
       ctx.restore();
       ctx.strokeStyle = '#d4a843';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.arc(cx, cy, rad, 0, Math.PI*2);
       ctx.stroke();
