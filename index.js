@@ -2610,6 +2610,272 @@ function cleanupGiftStore() {
 cleanupGiftStore();
 setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 
+// ═══════════════════════════════════════════════════════════════════
+// PORŲ SUDERINAMUMAS (/pora)
+// ═══════════════════════════════════════════════════════════════════
+// Eiga: /pora puslapyje įvedami abu vardai ir el. paštas → Stripe Checkout
+// (19,99 €) → grįžtama į /?pora=SESSION_ID → app porų režimu nufotografuoja
+// abiejų partnerių delnus (po 2) → /pora/start paleidžia analizę → rezultatas
+// saugomas SHARED_STORAGE_DIR/pora-orders.json (vienas užsakymas = viena
+// analizė; grįžus ta pačia nuoroda rodomas tas pats rezultatas).
+const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
+const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
+const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
+
+function loadPoraOrders() {
+  try {
+    if (fs.existsSync(PORA_ORDERS_FILE)) return JSON.parse(fs.readFileSync(PORA_ORDERS_FILE, 'utf8')) || {};
+  } catch (e) { console.error('[pora] nepavyko nuskaityti pora-orders.json:', e.message); }
+  return {};
+}
+function savePoraOrders(orders) {
+  const tmp = PORA_ORDERS_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(orders, null, 2));
+  fs.renameSync(tmp, PORA_ORDERS_FILE);
+}
+function updatePoraOrder(sessionId, patch) {
+  const orders = loadPoraOrders();
+  orders[sessionId] = { ...(orders[sessionId] || {}), ...patch };
+  savePoraOrders(orders);
+  return orders[sessionId];
+}
+// Pasenusių (>90 d.) užsakymų valymas paleidimo metu
+(function cleanupPoraOrders() {
+  try {
+    const orders = loadPoraOrders(), cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    let changed = false;
+    for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < cutoff) { delete orders[id]; changed = true; }
+    if (changed) savePoraOrders(orders);
+  } catch (e) {}
+})();
+
+function isValidCheckoutSessionId(id) {
+  return typeof id === 'string' && id.startsWith('cs_') && id.length <= 200;
+}
+
+// Patikrina Stripe sesiją ir grąžina užsakymo duomenis (arba null, jei neapmokėta / ne porų)
+async function getPaidPoraSession(sessionId) {
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  if (!session || !session.metadata || session.metadata.type !== 'pora') return null;
+  if (session.payment_status !== 'paid') return null;
+  return {
+    nameA: session.metadata.nameA || '',
+    nameB: session.metadata.nameB || '',
+    email: session.metadata.email || session.customer_email || '',
+    amount: session.amount_total || PORA_PRICE_CENTS
+  };
+}
+
+function clampScore(n) {
+  const v = Math.round(Number(n));
+  if (!Number.isFinite(v)) return 78;
+  return Math.max(55, Math.min(97, v));
+}
+
+async function runCoupleAnalysis(photos, nameA, nameB) {
+  const A = nameA || 'Pirmasis partneris', B = nameB || 'Antrasis partneris';
+  const img = p => ({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
+  const content = [
+    { type: 'text', text: `${A} — kairysis delnas:` }, img(photos[0]),
+    { type: 'text', text: `${A} — dešinysis delnas:` }, img(photos[1]),
+    { type: 'text', text: `${B} — kairysis delnas:` }, img(photos[2]),
+    { type: 'text', text: `${B} — dešinysis delnas:` }, img(photos[3]),
+    {
+      type: 'text',
+      text: `PIRMENYBĖ: šį tekstą skaitys du realūs žmonės, sumokėję pinigus, gimtąja lietuvių kalba. Taisyklinga, natūrali lietuvių kalba yra tiek pat svarbi kaip turinys.
+
+Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — dviejų žmonių, ${A} ir ${B}, abiejų delnų nuotraukos. Palygink jų delnus (formą, pirštų ilgį ir padėtį, linijų ryškumą ir eigą, kalnelius, kairio ir dešinio delno skirtumus) ir parašyk jų poros suderinamumo analizę.
+
+TAISYKLĖS:
+- Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku. Kai kalbi apie vieną iš jų — vadink vardu (${A} arba ${B}), vardą naudok tokį, koks parašytas, ir derink linksnį natūraliai.
+- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos (pvz. „pasiruošęs/-usi“); rink neutralias formas.
+- Kiekvienas sakinys — konkretus, šiai porai būdingas teiginys, pagrįstas tuo, ką matai jų delnuose; bet PATIEMS fiziniams požymiams (pirštų ilgiui, linijoms, kalneliams) tekste vietos neskirk — rašyk išvadas apie jų santykį.
+- Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
+- DRAUDŽIAMA: „gali būti“, „tikėtina“, „energija“, „vibracija“, metaforos ir palyginimai („kaip…“, „tarsi…“), knyginiai ar mokslinio stiliaus žodžiai, žodis „galva“.
+- JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
+- Kiekvienas skyrius: 6–8 sakiniai, sklandus tekstas (ne sąrašas); skyriai nesikartoja tarpusavyje.
+
+SKYRIAI:
+- traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
+- bendravimas (Kaip bendraujate ir sprendžiate nesutarimus): jūsų bendravimo stiliai, kaip jie dera, kaip geriausiai išspręsti nesutarimus
+- papildo (Kuo vienas kitą papildote): kur vieno stiprybė užpildo kito silpnesnę vietą
+- trintis (Kur gali kilti trinties): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
+- ateitis (Požiūris į pinigus, namus ir ateitį): kur jūsų požiūriai sutampa ir kur verta susitarti
+- stiprybe (Jūsų poros stiprybė): kas daro jūsų porą išskirtinę
+- patarimai (Patarimai jums abiem): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
+
+Taip pat:
+- suderinamumas: sveikas skaičius nuo 60 iki 96 — bendras suderinamumo įvertis pagal tai, kiek jūsų delnų bruožai dera tarpusavyje
+- poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
+
+PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus, be fizinių požymių ir be giminę turinčių formų? Jei ne — perrašyk.
+
+ATSAKYK TIKTAI JSON:
+{"suderinamumas":82,"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+    }
+  ];
+  let data;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+      }, 150000);
+      data = await r.json();
+    } catch (e) {
+      console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
+      data = null;
+    }
+    if (data && !data.error && data.content && data.content.length) break;
+    if (data && data.error && ['invalid_request_error', 'authentication_error', 'permission_error'].includes(data.error.type)) break;
+    if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
+  }
+  if (!data || data.error || !data.content) throw new Error(data && data.error ? `${data.error.type}: ${data.error.message || ''}` : 'Tuščias AI atsakymas');
+  if (data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
+  const text = '{' + data.content.map(b => b.text || '').join('');
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('JSON nerastas');
+  const raw = parseJsonLenient(m[0]);
+  const out = { suderinamumas: clampScore(raw.suderinamumas) };
+  for (const k of PORA_RESULT_KEYS) {
+    if (typeof raw[k] !== 'string' || !raw[k].trim()) throw new Error(`Trūksta skyriaus: ${k}`);
+    out[k] = applyTextFixes(raw[k].trim()).text;
+  }
+  out.poros_bruozai = (Array.isArray(raw.poros_bruozai) ? raw.poros_bruozai : [])
+    .filter(s => typeof s === 'string' && s.trim()).slice(0, 3).map(s => applyTextFixes(s.trim().slice(0, 60)).text);
+  return out;
+}
+
+app.get('/pora', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'pora.html'));
+});
+
+app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
+  try {
+    const { email, nameA, nameB } = req.body || {};
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (!nameA || !nameB || !isValidName(nameA) || !isValidName(nameB)) return res.status(400).json({ error: 'Įrašykite abu vardus' });
+    const base = appBaseUrl();
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card', 'revolut_pay'],
+      line_items: [{
+        price_data: { currency: 'eur', unit_amount: PORA_PRICE_CENTS, product_data: { name: 'DELNAS — Porų suderinamumas' } },
+        quantity: 1
+      }],
+      locale: 'lt',
+      customer_email: email,
+      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim() },
+      success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${base}/pora`
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('/pora/create-checkout klaida:', err);
+    res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandykite dar kartą.' });
+  }
+});
+
+// Ar užsakymas apmokėtas ir kokia jo būsena (app porų režimui)
+app.get('/pora/check', sensitiveLimiter, async (req, res) => {
+  try {
+    const sessionId = req.query.session_id;
+    if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ paid: false });
+    const order = loadPoraOrders()[sessionId];
+    if (order && order.status === 'done') return res.json({ paid: true, nameA: order.nameA, nameB: order.nameB, status: 'done', result: order.result });
+    const s = await getPaidPoraSession(sessionId);
+    if (!s) return res.json({ paid: false });
+    res.json({ paid: true, nameA: s.nameA, nameB: s.nameB, status: order ? order.status : 'new' });
+  } catch (err) {
+    console.error('/pora/check klaida:', err);
+    res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
+  }
+});
+
+app.post('/pora/start', sensitiveLimiter, async (req, res) => {
+  try {
+    const { sessionId, photos } = req.body || {};
+    if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
+    const existing = loadPoraOrders()[sessionId];
+    // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo
+    if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
+      return res.json({ started: true, status: existing.status });
+    }
+    const s = await getPaidPoraSession(sessionId);
+    if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
+    const isFirst = !existing;
+    updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now() });
+    res.json({ started: true, status: 'pending' });
+
+    if (isFirst) {
+      mailer.sendMail({
+        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+        to: ADMIN_EMAIL,
+        subject: `Nauja porų analizė — ${s.nameA} ir ${s.nameB}`,
+        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Nauja porų analizė</h2>
+          <p><strong>Pora:</strong> ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)}</p>
+          <p><strong>El. paštas:</strong> ${escapeHtml(s.email)}</p>
+          <p><strong>Suma:</strong> ${(s.amount / 100).toFixed(2).replace('.', ',')} €</p>
+          <p><strong>Stripe session:</strong> ${escapeHtml(sessionId)}</p></div>`
+      }).catch(e => console.error('[pora] admin laiško klaida:', e.message));
+    }
+
+    runCoupleAnalysis(photos, s.nameA, s.nameB)
+      .then(result => { updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); console.log(`[pora] analizė baigta ${sessionId}`); })
+      .catch(err => {
+        updatePoraOrder(sessionId, { status: 'error', error: err.message });
+        console.error(`[pora] analizės klaida ${sessionId}:`, err.message);
+        mailer.sendMail({
+          from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+          to: ADMIN_EMAIL,
+          subject: '[KLAIDA] Porų analizė nepavyko',
+          html: `<div style="font-family:Georgia,serif;padding:20px"><p>Pora: ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)} (${escapeHtml(s.email)})</p><p>Klaida: ${escapeHtml(err.message)}</p><p>Stripe session: ${escapeHtml(sessionId)}</p><p>Klientas gali bandyti dar kartą ta pačia nuoroda.</p></div>`
+        }).catch(() => {});
+      });
+  } catch (err) {
+    console.error('/pora/start klaida:', err);
+    res.status(500).json({ error: 'Nepavyko pradėti analizės' });
+  }
+});
+
+app.get('/pora/status', (req, res) => {
+  const sessionId = req.query.session_id;
+  if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ status: 'notfound' });
+  const o = loadPoraOrders()[sessionId];
+  if (!o) return res.json({ status: 'notfound' });
+  res.json({ status: o.status, result: o.status === 'done' ? o.result : undefined, error: o.status === 'error' ? 'Analizė nepavyko' : undefined });
+});
+
+// Rezultato PDF laiškas užsakovui (vieną kartą užsakymui)
+const poraEmailsInFlight = new Set();
+app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
+  try {
+    const { sessionId, pdfBase64 } = req.body || {};
+    if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    if (typeof pdfBase64 !== 'string' || !pdfBase64.length || pdfBase64.length > 15_000_000 || !/^[A-Za-z0-9+/=]+$/.test(pdfBase64)) return res.status(400).json({ error: 'Neteisingas PDF' });
+    const o = loadPoraOrders()[sessionId];
+    if (!o || o.status !== 'done' || !isValidEmail(o.email)) return res.status(400).json({ error: 'Rezultatas dar neparuoštas' });
+    if (o.emailSent || poraEmailsInFlight.has(sessionId)) return res.json({ ok: true, alreadySent: true });
+    poraEmailsInFlight.add(sessionId);
+    const names = `${escapeHtml(o.nameA)} ir ${escapeHtml(o.nameB)}`;
+    await mailer.sendMail({
+      from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
+      to: o.email,
+      subject: `${o.nameA} ir ${o.nameB} — jūsų porų suderinamumas paruoštas 💞`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Mokėjimas gautas, ačiū!</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų porų suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė →</a>${EMAIL_FOOTER_HTML}</div>`,
+      attachments: [{ filename: `${(o.nameA + '-ir-' + o.nameB).replace(/\s+/g, '-')}-poru-suderinamumas.pdf`, content: pdfBase64, encoding: 'base64' }]
+    }).finally(() => poraEmailsInFlight.delete(sessionId));
+    updatePoraOrder(sessionId, { emailSent: true });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('/pora/email-pdf klaida:', err);
+    res.status(500).json({ error: 'Nepavyko išsiųsti laiško' });
+  }
+});
+
 app.get('/dovana', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'dovana.html'));
