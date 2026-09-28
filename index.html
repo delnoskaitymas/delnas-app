@@ -3460,37 +3460,53 @@ function sigilPalmSvg(z, { color = '#d4a843' } = {}) {
 }
 
 // Galutinis paveikslėlis 1080×1350. kind: 'delnas' — ant app delno paveikslėlio; 'tamsus' — be delno.
-// Aprašo paveikslėlis tuo pačiu stiliumi: pavadinimas, stichija ir 7 kalneliai
+// Aprašo paveikslėlis — kaip tekstinis aprašas ekrane (be rėmelio): stichija ir 7 kalneliai
 async function sigilDescCanvas(c, ctx, z, svgUrl) {
   const W = 1080, H = 1350, gold = '#d4a843', gold2 = '#f0c96a';
   const g = ctx.createRadialGradient(W / 2, 500, 40, W / 2, 500, 1100);
   g.addColorStop(0, '#18130a'); g.addColorStop(1, '#000000');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = 'rgba(212,168,67,.55)'; ctx.lineWidth = 2; ctx.strokeRect(40, 40, W - 80, H - 80);
   const el = SIGIL_ELEMENTS[z.stichija];
   const rows = SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k));
-  // Simbolių ikonos ir stichijos ženklas — viena SVG
-  const top = 470, step = 104;
-  let icons = `<path d="${el.d}" transform="translate(${W / 2} 322) scale(0.9)" stroke-width="3.4"/>`;
-  rows.forEach((m, i) => { icons += `<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k]].d}" transform="translate(150 ${top + i * step + 18}) scale(0.5)" stroke-width="${z.stipriausi.includes(m.k) ? 6 : 4.6}" opacity="${z.stipriausi.includes(m.k) ? 1 : 0.75}"/>`; });
+  const fName = "700 36px 'DM Sans', sans-serif", fMount = "400 29px 'DM Sans', sans-serif", fMean = "400 34px 'DM Sans', sans-serif";
+  const X = 200, MAXW = W - X - 70;
+  // Pavadinimas ir stichijos eilutė (ženklas + tekstas centre)
+  ctx.textAlign = 'center'; ctx.fillStyle = gold2; ctx.font = "italic 700 76px 'Playfair Display', serif";
+  ctx.fillText(z.pavadinimas, W / 2, 250);
+  ctx.font = "400 34px 'DM Sans', sans-serif";
+  const elA = el.lt + ' stichija', elB = ' — ' + el.apie;
+  const wA = ctx.measureText(elA).width, wB = ctx.measureText(elB).width, x0 = W / 2 - (wA + wB + 46) / 2;
+  ctx.textAlign = 'left'; ctx.fillStyle = gold2; ctx.fillText(elA, x0 + 46, 350);
+  ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.fillText(elB, x0 + 46 + wA, 350);
+  // Eilutės: jei nesutelpa į vieną, reikšmė perkeliama į antrą eilutę
+  let y = 470; const lines = [];
+  rows.forEach(m => {
+    const s = z.kalneliai[m.k], st = z.stipriausi.includes(m.k);
+    ctx.font = fName; const wN = ctx.measureText(SIGIL_SYMBOLS[s].lt).width;
+    ctx.font = fMount; const wM = ctx.measureText(' · ' + m.lt).width;
+    ctx.font = fMean; const wR = ctx.measureText(' — ' + SIGIL_MEANING[s]).width;
+    const wrap = wN + wM + wR > MAXW;
+    lines.push({ s, st, m, y, wN, wM, wrap });
+    y += wrap ? 124 : 88;
+  });
+  let icons = `<path d="${el.d}" transform="translate(${x0 + 18} 338) scale(0.8)" stroke-width="3.6"/>`;
+  lines.forEach(L => { icons += `<path d="${SIGIL_SYMBOLS[L.s].d}" transform="translate(130 ${L.y - 12}) scale(0.44)" stroke-width="${L.st ? 6.4 : 5}" opacity="${L.st ? 1 : 0.7}"/>`; });
   const ic = await sigilLoadImg(svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><g fill="none" stroke="${gold}" stroke-linecap="round" stroke-linejoin="round">${icons}</g></svg>`));
   ctx.drawImage(ic, 0, 0, W, H);
-  const t = (txt, x, y, font, color, align = 'center', spacing) => { ctx.font = font; ctx.fillStyle = color; ctx.textAlign = align; if (spacing) txt = txt.split('').join(String.fromCharCode(8202)); ctx.fillText(txt, x, y); };
-  t('TAVO DELNO ŽVAIGŽDYNAS', W / 2, 160, "600 28px 'DM Sans', sans-serif", gold, 'center', true);
-  t(z.pavadinimas, W / 2, 262, "italic 700 80px 'Playfair Display', serif", gold2);
-  t(el.lt + ' stichija — ' + el.apie, W / 2, 402, "400 30px 'DM Sans', sans-serif", gold);
-  ctx.fillStyle = 'rgba(212,168,67,.35)'; ctx.fillRect(W / 2 - 80, 428, 160, 2);
-  rows.forEach((m, i) => {
-    const y = top + i * step, st = z.stipriausi.includes(m.k), s = z.kalneliai[m.k];
-    ctx.font = "700 34px 'DM Sans', sans-serif"; ctx.fillStyle = st ? gold2 : '#e8e2d4'; ctx.textAlign = 'left';
-    ctx.fillText(SIGIL_SYMBOLS[s].lt, 215, y + 12);
-    const nw = ctx.measureText(SIGIL_SYMBOLS[s].lt).width;
-    t('  ·  ' + m.lt, 215 + nw, y + 12, "400 26px 'DM Sans', sans-serif", 'rgba(212,168,67,.75)', 'left');
-    t(SIGIL_MEANING[s][0].toUpperCase() + SIGIL_MEANING[s].slice(1), 215, y + 52, "400 30px 'DM Sans', sans-serif", 'rgba(255,255,255,.72)', 'left');
+  lines.forEach(L => {
+    ctx.textAlign = 'left';
+    ctx.font = fName; ctx.fillStyle = L.st ? gold2 : '#e8e2d4'; ctx.fillText(SIGIL_SYMBOLS[L.s].lt, X, L.y);
+    ctx.font = fMount; ctx.fillStyle = 'rgba(212,168,67,.75)'; ctx.fillText(' · ' + L.m.lt, X + L.wN, L.y);
+    ctx.font = fMean; ctx.fillStyle = 'rgba(255,255,255,.72)';
+    if (L.wrap) ctx.fillText('— ' + SIGIL_MEANING[L.s], X, L.y + 44);
+    else ctx.fillText(' — ' + SIGIL_MEANING[L.s], X + L.wN + L.wM, L.y);
   });
-  t('Kiekvienas simbolis stovi toje delno vietoje, iš kurios jis kilęs;', W / 2, 1222, "400 23px 'DM Sans', sans-serif", 'rgba(212,168,67,.6)');
-  t('auksiniai — tavo ryškiausi kalneliai.', W / 2, 1254, "400 23px 'DM Sans', sans-serif", 'rgba(212,168,67,.6)');
-  t('delnaskaitymas.lt', W / 2, 1296, "400 22px 'DM Sans', sans-serif", 'rgba(255,255,255,.4)');
+  ctx.textAlign = 'center'; ctx.font = "400 25px 'DM Sans', sans-serif"; ctx.fillStyle = 'rgba(212,168,67,.6)';
+  const ny = Math.max(y + 30, 1170);
+  ctx.fillText('Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs;', W / 2, ny);
+  ctx.fillText('išryškinti — tavo ryškiausi kalneliai. Stichija — pagal delno formą ir pirštų ilgį.', W / 2, ny + 36);
+  ctx.font = "400 22px 'DM Sans', sans-serif"; ctx.fillStyle = 'rgba(255,255,255,.4)';
+  ctx.fillText('delnaskaitymas.lt', W / 2, 1305);
   return c;
 }
 
@@ -3550,8 +3566,9 @@ async function sigilFile() {
   if (what === 'aprasas') { c = await sigilCanvas('aprasas'); name = 'delno-zvaigzdyno-aprasas.jpg'; }
   else if (what === 'abu') {
     const [top, bottom] = await Promise.all([sigilCanvas(kind), sigilCanvas('aprasas')]);
-    c = document.createElement('canvas'); c.width = 1080; c.height = 2700;
-    const ctx = c.getContext('2d'); ctx.drawImage(top, 0, 0); ctx.drawImage(bottom, 0, 1350);
+    // Aprašas be pavadinimo (jis jau yra žvaigždyno paveikslėlyje) — nuo stichijos eilutės
+    c = document.createElement('canvas'); c.width = 1080; c.height = 1350 + 1350 - 280;
+    const ctx = c.getContext('2d'); ctx.drawImage(top, 0, 0); ctx.drawImage(bottom, 0, 280, 1080, 1070, 0, 1350, 1080, 1070);
     name = 'delno-zvaigzdynas-su-aprasu.jpg';
   } else { c = await sigilCanvas(kind); name = 'delno-zvaigzdynas.jpg'; }
   const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
