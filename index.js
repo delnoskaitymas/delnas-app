@@ -2342,7 +2342,8 @@ app.get('/price-info', async (req, res) => {
       promo: { amount: promo.unit_amount, currency: promo.currency },
       regular: { amount: regular.unit_amount, currency: regular.currency },
       active: { amount: activePrice.unit_amount, currency: activePrice.currency },
-      isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO
+      isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO,
+      pora: { amount: PORA_PRICE_CENTS, currency: 'eur' }
     };
     _priceInfoCacheAt = Date.now();
     res.json(_priceInfoCache);
@@ -2518,7 +2519,8 @@ function fmtLtDate(ts) {
 }
 
 function buildGiftEmailHtml(gift) {
-  const link = `${appBaseUrl()}/?dovana=${encodeURIComponent(gift.code)}`;
+  const link = giftRedeemLink(gift);
+  const pora = gift.kind === 'pora';
   const cardLink = `${appBaseUrl()}/dovana/kortele?kodas=${encodeURIComponent(gift.code)}`;
   const to = gift.recipientName ? escapeHtml(gift.recipientName) : 'Tau';
   return `<div style="background:#0a0a0a;padding:28px 12px;font-family:Georgia,serif">
@@ -2526,14 +2528,14 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:15px;letter-spacing:.32em;color:#d4a843;font-weight:bold">DELNAS</div>
     <div style="font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);margin-top:4px">DOVANŲ KUPONAS</div>
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
-    <div style="font-size:17px;color:rgba(255,255,255,.75)">Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus</div>
+    <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
     ${gift.fromName ? `<div style="margin-top:10px;font-size:14px;color:rgba(255,255,255,.6)">— nuo ${escapeHtml(gift.fromName)}</div>` : ''}
     <div style="margin:28px auto 6px;display:inline-block;border:1px dashed rgba(212,168,67,.7);border-radius:10px;padding:12px 22px;font-family:'Courier New',monospace;font-size:24px;letter-spacing:.18em;color:#f0d58a">${escapeHtml(gift.code)}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
-    <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atskleisti savo žemėlapį →</a></div>
+    <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">${pora ? 'Sužinoti, kaip derate poroje →' : 'Atskleisti savo žemėlapį →'}</a></div>
     <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">delnaskaitymas.lt/kodas&nbsp;↗</a>, tada nufotografuok abu delnus — mokėti nereikės.
+      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">delnaskaitymas.lt/kodas&nbsp;↗</a>, tada ${pora ? 'abu nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
       Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
@@ -2555,8 +2557,15 @@ function giftPublicInfo(gift) {
     recipientName: gift.recipientName || '',
     message: gift.message || '',
     expiresAt: gift.expiresAt,
+    kind: gift.kind === 'pora' ? 'pora' : 'asmenine',
     status: giftStatus(gift)
   };
+}
+// Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų), asmeninis — programėlėje
+function giftRedeemLink(gift) {
+  return gift.kind === 'pora'
+    ? `${appBaseUrl()}/pora?dovana=${encodeURIComponent(gift.code)}`
+    : `${appBaseUrl()}/?dovana=${encodeURIComponent(gift.code)}`;
 }
 
 // Sukuria kodą apmokėtai Checkout sesijai. Idempotentiška: tas pats
@@ -2575,6 +2584,7 @@ function issueGiftForSession(session) {
     fromName: md.fromName || '',
     recipientName: md.recipientName || '',
     message: md.message || '',
+    kind: md.kind === 'pora' ? 'pora' : 'asmenine',
     amount: session.amount_total,
     currency: session.currency,
     status: 'active',
@@ -2650,11 +2660,17 @@ function updatePoraOrder(sessionId, patch) {
 })();
 
 function isValidCheckoutSessionId(id) {
-  return typeof id === 'string' && id.startsWith('cs_') && id.length <= 200;
+  return typeof id === 'string' && ((id.startsWith('cs_') && id.length <= 200) || /^gp_[a-f0-9]{24}$/.test(id));
 }
 
-// Patikrina Stripe sesiją ir grąžina užsakymo duomenis (arba null, jei neapmokėta / ne porų)
+// Patikrina Stripe sesiją ir grąžina užsakymo duomenis (arba null, jei neapmokėta / ne porų).
+// gp_… — užsakymas, sukurtas panaudojus porų dovanų kuponą (apmokėtas kuponu).
 async function getPaidPoraSession(sessionId) {
+  if (sessionId.startsWith('gp_')) {
+    const o = loadPoraOrders()[sessionId];
+    if (!o || !o.gift) return null;
+    return { nameA: o.nameA || '', nameB: o.nameB || '', email: o.email || '', amount: 0, gift: o.gift };
+  }
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   if (!session || !session.metadata || session.metadata.type !== 'pora') return null;
   if (session.payment_status !== 'paid') return null;
@@ -2865,7 +2881,7 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: o.email,
       subject: `${o.nameA} ir ${o.nameB} — jūsų porų suderinamumas paruoštas 💞`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Mokėjimas gautas, ačiū!</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų porų suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė →</a>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų porų suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė →</a>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{ filename: `${(o.nameA + '-ir-' + o.nameB).replace(/\s+/g, '-')}-poru-suderinamumas.pdf`, content: pdfBase64, encoding: 'base64' }]
     }).finally(() => poraEmailsInFlight.delete(sessionId));
     updatePoraOrder(sessionId, { emailSent: true });
@@ -2873,6 +2889,58 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
   } catch (err) {
     console.error('/pora/email-pdf klaida:', err);
     res.status(500).json({ error: 'Nepavyko išsiųsti laiško' });
+  }
+});
+
+// Porų dovanų kupono panaudojimas: /pora?dovana=KODAS → įvedami abu vardai ir
+// el. paštas → sukuriamas „apmokėtas“ porų užsakymas gp_… → /?pora=gp_…
+app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
+  try {
+    const { code: rawCode, nameA, nameB, email } = req.body || {};
+    const code = normalizeGiftCode(rawCode);
+    if (!code) return res.status(400).json({ error: 'Neteisingas dovanos kodas' });
+    const store = loadGiftStore();
+    const gift = store.codes[code];
+    const status = giftStatus(gift);
+    if (status === 'not_found') return res.status(404).json({ status, error: 'Dovanos kodas nerastas' });
+    if (gift.kind !== 'pora') return res.status(409).json({ status, kind: 'asmenine', error: 'Tai asmeninės analizės kuponas' });
+    // Jau panaudotas — grąžiname tą patį užsakymą (pvz. uždarė langą prieš fotografuodami)
+    if (status === 'redeemed' && gift.poraOrderId) return res.json({ ok: true, id: gift.poraOrderId });
+    if (status === 'expired') return res.status(410).json({ status, error: 'Dovanos kodo galiojimas baigėsi' });
+    if (status !== 'active') return res.status(410).json({ status, error: 'Dovanos kodas nebegalioja' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (!nameA || !nameB || !isValidName(nameA) || !isValidName(nameB)) return res.status(400).json({ error: 'Įrašykite abu vardus' });
+    if (await isGiftRefunded(gift)) {
+      gift.status = 'void'; gift.voidReason = 'refunded'; gift.voidAt = Date.now(); saveGiftStore(store);
+      return res.status(410).json({ status: 'void', error: 'Dovanos kodas nebegalioja' });
+    }
+    // Po async patikrinimo — perskaitome iš naujo (vienkartiškumas)
+    const fresh = loadGiftStore();
+    const g = fresh.codes[code];
+    if (giftStatus(g) !== 'active') {
+      if (g && g.poraOrderId) return res.json({ ok: true, id: g.poraOrderId });
+      return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas' });
+    }
+    const id = 'gp_' + crypto.randomBytes(12).toString('hex');
+    const A = nameA.trim(), B = nameB.trim(), em = email.trim();
+    updatePoraOrder(id, { nameA: A, nameB: B, email: em, amount: 0, gift: code, status: 'new', createdAt: Date.now() });
+    g.status = 'redeemed'; g.redeemedAt = Date.now(); g.redeemedName = `${A} ir ${B}`; g.redeemedEmail = em; g.poraOrderId = id;
+    saveGiftStore(fresh);
+    console.log(`[gift] panaudotas porų kodas ${code} → ${id}`);
+    mailer.sendMail({
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `Panaudotas porų dovanų kuponas ${code} — ${A} ir ${B}`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Panaudotas porų dovanų kuponas</h2>
+        <p><strong>Kodas:</strong> ${escapeHtml(code)}</p>
+        <p><strong>Pora:</strong> ${escapeHtml(A)} ir ${escapeHtml(B)} (${escapeHtml(em)})</p>
+        <p><strong>Pirko:</strong> ${escapeHtml(g.buyerEmail || '—')}</p>
+        <p><strong>Užsakymas:</strong> ${escapeHtml(id)}</p></div>`
+    }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
+    res.json({ ok: true, id });
+  } catch (err) {
+    console.error('/pora/redeem-gift klaida:', err);
+    res.status(500).json({ error: 'Nepavyko panaudoti dovanos kodo' });
   }
 });
 
@@ -2894,10 +2962,12 @@ app.get('/dovana/kortele', (req, res) => {
 app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { buyerEmail, fromName, recipientName, message } = req.body || {};
+    const kind = (req.body && req.body.kind) === 'pora' ? 'pora' : 'asmenine';
     if (!isValidEmail(buyerEmail)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (!isValidGiftText(fromName, 60) || !isValidGiftText(recipientName, 60)) return res.status(400).json({ error: 'Vardas per ilgas' });
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
-    const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+    // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
+    const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : await stripe.prices.retrieve(ACTIVE_PRICE_ID);
     const base = appBaseUrl();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -2906,7 +2976,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         price_data: {
           currency: activePrice.currency,
           unit_amount: activePrice.unit_amount,
-          product_data: { name: 'DELNAS dovanų kuponas — Gyvenimo žemėlapis' }
+          product_data: { name: kind === 'pora' ? 'DELNAS dovanų kuponas — Porų suderinamumas' : 'DELNAS dovanų kuponas — Gyvenimo žemėlapis' }
         },
         quantity: 1
       }],
@@ -2914,13 +2984,14 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
       customer_email: buyerEmail,
       metadata: {
         type: 'gift',
+        kind,
         buyerEmail,
         fromName: (fromName || '').trim(),
         recipientName: (recipientName || '').trim(),
         message: (message || '').trim()
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/dovana`
+      cancel_url: `${base}/dovana${kind === 'pora' ? '?tipas=pora' : ''}`
     });
     res.json({ url: session.url });
   } catch (err) {
@@ -2955,9 +3026,10 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
       mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
-        subject: `Parduotas dovanų kuponas ${gift.code}`,
+        subject: `Parduotas ${gift.kind === 'pora' ? 'porų ' : ''}dovanų kuponas ${gift.code}`,
         html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Parduotas dovanų kuponas</h2>
           <p><strong>Kodas:</strong> ${escapeHtml(gift.code)}</p>
+          <p><strong>Tipas:</strong> ${gift.kind === 'pora' ? 'Porų suderinamumas' : 'Asmeninė analizė'}</p>
           <p><strong>Pirkėjas:</strong> ${escapeHtml(gift.buyerEmail)} (${escapeHtml(gift.fromName || '—')})</p>
           <p><strong>Gavėjas:</strong> ${escapeHtml(gift.recipientName || '—')}</p>
           <p><strong>Suma:</strong> ${((gift.amount || 0) / 100).toFixed(2).replace('.', ',')} €</p>
@@ -2965,7 +3037,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
           <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`
       }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
     }
-    res.json({ paid: true, ...giftPublicInfo(gift), link: `${appBaseUrl()}/?dovana=${encodeURIComponent(gift.code)}` });
+    res.json({ paid: true, ...giftPublicInfo(gift), link: giftRedeemLink(gift) });
   } catch (err) {
     console.error('/gift/confirm klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patvirtinti mokėjimo' });
@@ -3009,6 +3081,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
     const gift = store.codes[code];
     const status = giftStatus(gift);
     if (status === 'not_found') return res.status(404).json({ paid: false, status, error: 'Dovanos kodas nerastas' });
+    if (gift.kind === 'pora') return res.status(409).json({ paid: false, status, kind: 'pora', error: 'Tai porų suderinamumo kuponas — jį panaudokite adresu delnaskaitymas.lt/pora' });
     if (status === 'expired') return res.status(410).json({ paid: false, status, error: 'Dovanos kodo galiojimas baigėsi' });
     if (status === 'void') return res.status(410).json({ paid: false, status, error: 'Dovanos kodas nebegalioja' });
     if (status === 'redeemed') {

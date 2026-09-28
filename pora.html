@@ -161,6 +161,10 @@ a{color:var(--gold)}
 .note{background:rgba(212,168,67,.07);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--muted);margin-top:14px;text-align:center}
 
 .hero2{display:flex;justify-content:center;margin:0 0 6px}
+.gift-note{text-align:center;margin:0 0 12px;padding:10px 14px;border:1px solid rgba(212,168,67,.4);border-radius:14px;background:rgba(212,168,67,.07)}
+.gift-note b{display:block;font:400 17px 'Playfair Display',serif;color:var(--gold2)}
+.gift-note i{display:block;font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin-top:4px}
+.gift-note span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .hero2 .hero{width:78px;height:78px;margin:0 -8px}
 .hero2 .hero:last-child i{transform:scaleX(-1)}
 </style>
@@ -174,7 +178,8 @@ a{color:var(--gold)}
       <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
       <h1>Ką apie jūsų porą<br><em>pasakoja delnai?</em></h1>
     </div>
-    <p class="lead sm">Nufotografuokite abiejų delnus — ir gaukite porų suderinamumo analizę: kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.</p>
+    <div class="gift-note hidden" id="gift-note"></div>
+    <p class="lead sm" id="lead">Nufotografuokite abiejų delnus — ir gaukite porų suderinamumo analizę: kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.</p>
     <form class="card-form" id="pora-form" novalidate>
       <div class="row2">
         <div><label for="f-a">Tavo vardas</label>
@@ -190,6 +195,7 @@ a{color:var(--gold)}
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
     <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
+    <a class="how-link" id="gift-link" href="/dovana?tipas=pora" style="width:fit-content;margin-top:2px">🎁 Padovanoti porai</a>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
     <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
@@ -234,11 +240,48 @@ a{color:var(--gold)}
   ['f-a','f-b','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
 
+  // Porų dovanų kuponas: /pora?dovana=KODAS — mokėti nereikia
+  const giftCode = new URLSearchParams(location.search).get('dovana');
+  const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  async function redeemGift(body){
+    const r = await fetch('/pora/redeem-gift', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || !d.id) throw new Error(d.error || 'Nepavyko panaudoti dovanos kodo');
+    location.href = '/?pora=' + encodeURIComponent(d.id);
+  }
+  function giftError(msg){
+    $('gift-note').innerHTML = '<b>' + esc(msg) + '</b><span>Galite užsisakyti porų analizę žemiau arba parašyti info@delnaskaitymas.lt</span>';
+    $('gift-note').classList.remove('hidden');
+  }
+  if (giftCode) (async () => {
+    try {
+      const d = await (await fetch('/gift/check?code=' + encodeURIComponent(giftCode))).json();
+      if (d.status === 'not_found') return giftError('Dovanos kodas nerastas');
+      if (d.kind !== 'pora') { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
+      if (d.status === 'redeemed') { try { await redeemGift({ code: d.code }); } catch (e) { giftError('Šis dovanos kodas jau panaudotas'); } return; }
+      if (d.status !== 'active') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
+      window._giftCode = d.code; $('gift-link').classList.add('hidden');
+      document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
+      $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(d.fromName) + '</span>' : '') ;
+      $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
+      $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite abiejų delnus. Mokėti nereikia.';
+      $('pay-btn').innerHTML = 'Pradėti →';
+      document.querySelector('#pora-form .trust').textContent = '🎁 Apmokėta dovanų kuponu ' + d.code;
+    } catch (e) { giftError('Nepavyko patikrinti dovanos kodo'); }
+  })();
+
   $('pora-form').addEventListener('submit', async e => {
     e.preventDefault();
     if (!validForm()) return;
     const err = $('form-err'); err.style.display = 'none';
-    const btn = $('pay-btn'), label = btn.innerHTML; btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
+    const btn = $('pay-btn'), label = btn.innerHTML; btn.disabled = true;
+    if (window._giftCode) {
+      btn.textContent = 'Tikrinama…';
+      try { await redeemGift({ code: window._giftCode, email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim() }); }
+      catch (ex) { err.textContent = ex.message; err.style.display = 'block'; btn.disabled = false; btn.innerHTML = label; }
+      return;
+    }
+    btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim() }) });

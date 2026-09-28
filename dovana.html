@@ -201,6 +201,19 @@ body.card-view #v-card{margin:auto 0}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
+/* Dovanos tipo pasirinkimas: asmeninė / porų */
+.kind{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
+.kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:9px 6px 8px;cursor:pointer;
+  font:500 13px/1.25 'DM Sans',sans-serif;transition:all .2s}
+.kind button small{display:block;font-size:11.5px;color:var(--faint);margin-top:2px}
+.kind button.on{background:rgba(212,168,67,.13);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 14px rgba(212,168,67,.18)}
+.kind button.on small{color:var(--gold)}
+@media (max-height:700px){ .kind button{padding:6px 4px;font-size:12.5px} .kind button small{display:inline;margin:0 0 0 5px;font-size:11.5px} #v-form .kind{margin-bottom:0} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
+.hero2{display:flex;justify-content:center}
+.hero2 .hero{margin:0 -8px!important}
+.hero2 .hero:last-child i{transform:scaleX(-1)}
+body.kind-pora #v-form .intro > .hero{display:none}
+body:not(.kind-pora) #v-form .hero2{display:none}
 </style>
 </head>
 <body>
@@ -211,10 +224,15 @@ body.card-view #v-card{margin:auto 0}
   <section id="v-form" class="hidden">
     <div class="intro">
       <div class="hero"><i></i></div>
-      <h1>Padovanok<br><em>gyvenimo žemėlapį</em></h1>
+      <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
+      <h1 id="form-h1">Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
-    <p class="lead sm">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
+    <p class="lead sm" id="form-lead">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
+      <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
+        <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Asmeninė analizė<small id="k-asm-p">12,99 €</small></button>
+        <button type="button" id="k-pora" role="radio" aria-checked="false">💞 Porų analizė<small id="k-pora-p">19,99 €</small></button>
+      </div>
       <div class="row2">
         <div><label for="f-to">Kam dovanoji</label>
         <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off"></div>
@@ -253,8 +271,8 @@ body.card-view #v-card{margin:auto 0}
       <div class="slide">
         <div class="num">03</div>
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11.5V4a1.5 1.5 0 013 0v7.5M14 11.5V5.5a1.5 1.5 0 013 0V13M17 9.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-5-2.7L4.3 14a1.6 1.6 0 012.6-1.8L8 13.5"/></svg></div>
-        <h3>Dovana atskleidžia <em>asmeninį žemėlapį</em></h3>
-        <p>Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.</p>
+        <h3 id="s3-h">Dovana atskleidžia <em>asmeninį žemėlapį</em></h3>
+        <p id="s3-p">Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.</p>
       </div>
     </div>
     <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
@@ -276,14 +294,14 @@ body.card-view #v-card{margin:auto 0}
           <div class="b">DELNAS</div>
           <div class="k">DOVANŲ KUPONAS</div>
           <div class="to" id="c-to">🎁 Tau</div>
-          <div class="what">Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus</div>
+          <div class="what" id="c-what">Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus</div>
           <div class="msg" id="c-msg"></div>
           <div class="from" id="c-from"></div>
           <div class="qrrow">
             <div class="qr" id="c-qr"></div>
             <div>
               <div class="code" id="c-code">XXXX-XXXX</div>
-              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#f5d061;font-weight:700;text-decoration:underline;text-decoration-color:#f5d061;text-decoration-thickness:1.5px;text-underline-offset:3px;white-space:nowrap">delnaskaitymas.lt/kodas&nbsp;↗</a> — nufotografuok delnus, mokėti nereikės.</div>
+              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#f5d061;font-weight:700;text-decoration:underline;text-decoration-color:#f5d061;text-decoration-thickness:1.5px;text-underline-offset:3px;white-space:nowrap">delnaskaitymas.lt/kodas&nbsp;↗</a> — <span id="c-how">nufotografuok delnus, mokėti nereikės.</span></div>
               <div class="exp" id="c-exp"></div>
             </div>
           </div>
@@ -344,8 +362,33 @@ body.card-view #v-card{margin:auto 0}
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-msg').addEventListener('input', () => { $('msg-count').textContent = $('f-msg').value.length; });
 
+  // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
+  const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
+  const prices = { asmenine: '12,99 €', pora: '19,99 €' };
+  let kind = params.get('tipas') === 'pora' ? 'pora' : 'asmenine';
+  function setKind(k){
+    kind = k;
+    const pora = k === 'pora';
+    document.body.classList.toggle('kind-pora', pora);
+    $('k-asm').classList.toggle('on', !pora); $('k-asm').setAttribute('aria-checked', String(!pora));
+    $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
+    $('form-h1').innerHTML = pora ? 'Padovanok<br><em>porų suderinamumą</em>' : 'Padovanok<br><em>gyvenimo žemėlapį</em>';
+    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė pagal abiejų delnus — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
+    $('f-to').placeholder = pora ? 'Ievai ir Tomui' : 'pvz. Ievai';
+    $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
+    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja abiejų delnus ir per kelias minutes gauna suderinamumo įvertį bei 7 skyrių analizę su PDF. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.';
+    $('price').textContent = prices[k];
+    document.title = pora ? 'DELNAS — Porų suderinamumo dovana' : 'DELNAS — Dovanų kuponas';
+    try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '')); } catch (e) {}
+  }
+  $('k-asm').addEventListener('click', () => setKind('asmenine'));
+  $('k-pora').addEventListener('click', () => setKind('pora'));
+
   fetch('/price-info').then(r => r.json()).then(d => {
-    if (d && d.active && d.active.amount) $('price').textContent = (d.active.amount/100).toFixed(2).replace('.', ',') + ' €';
+    if (d && d.active && d.active.amount) prices.asmenine = eur(d.active.amount);
+    if (d && d.pora && d.pora.amount) prices.pora = eur(d.pora.amount);
+    $('k-asm-p').textContent = prices.asmenine; $('k-pora-p').textContent = prices.pora;
+    $('price').textContent = prices[kind];
   }).catch(() => {});
 
   $('gift-form').addEventListener('submit', async e => {
@@ -355,7 +398,7 @@ body.card-view #v-card{margin:auto 0}
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
@@ -368,7 +411,9 @@ body.card-view #v-card{margin:auto 0}
 
   // ---------- 2. Kortelė ----------
   function fmtDate(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
-  function redeemLink(code){ return location.origin + '/?dovana=' + encodeURIComponent(code); }
+  function redeemLink(code){
+    return location.origin + (current && current.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(code);
+  }
 
   // Kortelė sumažinama, kad kartu su mygtukais tilptų į ekraną
   // (atsisiunčiama kortelė visada pilno dydžio — žr. cardCanvas()).
@@ -398,6 +443,10 @@ body.card-view #v-card{margin:auto 0}
     $('c-from').textContent = g.fromName ? '— nuo ' + g.fromName : '';
     $('c-code').textContent = g.code;
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
+    const pora = g.kind === 'pora';
+    $('c-what').innerHTML = pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus';
+    $('c-how').textContent = pora ? 'abu nufotografuokite delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
+    $('again').href = pora ? '/dovana?tipas=pora' : '/dovana';
     const link = redeemLink(g.code);
     $('c-link').textContent = link; $('c-link').href = link;
     $('c-qr').innerHTML = '';
@@ -482,7 +531,8 @@ body.card-view #v-card{margin:auto 0}
   });
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
-    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : 'tau') + (current.fromName ? ' nuo ' + current.fromName : '') + ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus!\n\n👉 Atidaryk savo dovaną: ';
+    const what = current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus! 💞' : ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus!';
+    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + current.fromName : '') + what + '\n\n👉 Atidaryk dovaną: ';
     try {
       // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.
       if (navigator.canShare) {
@@ -560,7 +610,7 @@ body.card-view #v-card{margin:auto 0}
     btn.disabled = true; btn.textContent = 'Tikrinama…';
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
-      if (d.valid) { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
+      if (d.valid) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
       err.textContent = d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
     } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
     err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti →';
@@ -569,7 +619,7 @@ body.card-view #v-card{margin:auto 0}
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
   else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
-  else show('v-form');
+  else { show('v-form'); if (kind === 'pora') setKind('pora'); }
 })();
 </script>
 </body>

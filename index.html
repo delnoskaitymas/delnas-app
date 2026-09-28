@@ -807,6 +807,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn btn-gold" style="margin:0" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
         <button class="btn" style="margin:0;background:transparent;border:.5px solid rgba(212,168,67,.45);color:var(--gold2)" onclick="poraDownloadPdf()">⬇ Atsisiųsti PDF</button>
+        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)">🎁 Padovanoti kitai porai →</a>
       </div>
     </div>
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;text-align:center">
@@ -5189,7 +5190,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
 (function initPoraFromUrl(){
   let sid=null;
   try{ sid=new URLSearchParams(location.search).get('pora'); }catch(e){}
-  if(!sid || !/^cs_[A-Za-z0-9_]{4,190}$/.test(sid)) return;
+  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)) return;
   window._pora={ sid, nameA:'', nameB:'', stage:0, photos:[], active:false };
   const home=document.getElementById('s-home');
   const note=document.createElement('div');
@@ -5212,7 +5213,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       window._pora.active=true;
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
-        '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+' — porų suderinamumas pagal delnus apmokėtas!</div>'+
+        '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų porų suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuosite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
@@ -5427,6 +5428,8 @@ async function poraShareCard(){
   if(!code) return;
   window._giftCode=code;
   fetch('/gift/check?code='+encodeURIComponent(code)).then(r=>r.json()).then(d=>{
+    // Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų)
+    if(d.kind==='pora'){ try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){} location.href='/pora?dovana='+encodeURIComponent(d.code||code); return; }
     window._giftInfo=d;
     if(!d.valid){ try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){} }
     showGiftWelcome(d);
