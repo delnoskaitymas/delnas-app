@@ -130,6 +130,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 /* Informacijos ekranas žemuose telefonuose: klausimai be paantraščių, kad mokėjimo mygtukas tilptų be slinkimo */
 @media(max-height:660px){#info-qs>div>span:nth-child(2)>span{display:none!important}#info-qs>div{padding:3px 0!important}}
 @media(max-height:580px){#price-info-block>div{padding:4px 18px 6px!important}#price-promo{font-size:24px!important}}
+/* Delno žvaigždynas */
+.sg-el{font-size:13px;color:var(--gold2);margin-bottom:12px;line-height:1.5}
+.sg-list{display:flex;flex-direction:column;gap:7px;text-align:left}
+.sg-it{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.4;color:rgba(255,255,255,.68)}
+.sg-it svg{flex:none;opacity:.7}.sg-it.st svg{opacity:1}
+.sg-it b{color:#e8e2d4}.sg-it.st b{color:var(--gold2)}.sg-z{color:rgba(212,168,67,.7);font-size:11.5px}
+.sg-opts{display:inline-flex;gap:4px;padding:3px;border-radius:999px;border:.5px solid rgba(212,168,67,.4);margin:2px 0 10px}
+.sg-opt{background:none;border:none;border-radius:999px;padding:7px 16px;font:600 12.5px 'DM Sans',sans-serif;color:rgba(212,168,67,.75);cursor:pointer}
+.sg-opt.on{background:linear-gradient(125deg,#f5d061,#c98a1f);color:#140f02}
+.sg-how{text-align:center;margin-top:12px;font-size:11.5px;line-height:1.55;color:rgba(212,168,67,.6)}
 .rs-label::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
 .rs-icon{display:none}
 .rs-body{font-size:14.5px;color:rgba(255,255,255,.68);line-height:1.4;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:normal}
@@ -686,6 +696,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="rs-body" id="r-challenges"></div>
       <div id="insights-challenges" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kas žino savo kliūtis — tas gali jas įveikti.</div>
+    </div>
+    <!-- Asmeninis delno žvaigždynas (žr. renderSigil) -->
+    <div class="rs rs-std" id="r-sigil-wrap" style="display:none;text-align:center">
+      <div class="rs-label" style="justify-content:center">Tavo delno žvaigždynas</div>
+      <div class="sg-opts"><button class="sg-opt on" data-k="delnas" onclick="selectSigil('delnas')">Su delnu</button><button class="sg-opt" data-k="tamsus" onclick="selectSigil('tamsus')">Be delno</button></div>
+      <img id="r-sigil-img" alt="Tavo delno žvaigždynas" style="width:100%;max-width:340px;aspect-ratio:1080/1350;border-radius:12px;display:block;margin:4px auto 12px;background:#050403">
+      <div id="r-sigil-el" class="sg-el"></div>
+      <div id="r-sigil-list" class="sg-list"></div>
+      <div class="sg-how">Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs; išryškinti — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.</div>
+      <button onclick="downloadSigil()" style="width:100%;margin-top:14px;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti žvaigždyną</button>
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
@@ -3292,6 +3312,231 @@ function renderInsights(containerId, insights){
   // "vieną po kitos" efektą) tvarko IŠIMTINAI initScrollReveal().
 }
 
+// ═══ ASMENINIS ŽENKLAS: „Delno žvaigždynas“ ═══
+// 7 chiromantijos kalneliai — kiekviename simbolis, kurį serveris parenka pagal
+// analizę (result.zenklas); 2–3 ryškiausi išryškinami. Du variantai: ant app delno
+// paveikslėlio (simboliai ant kalnelių) ir be delno (tamsus fonas).
+// Senesniems rezultatams be šio lauko viskas parenkama pagal raktažodžius.
+// Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.js faile.
+const SIGIL_SYMBOLS = {
+  karuna: { lt: "Karūna", d: "M-40 26 L-40-14 L-20 6 L0-30 L20 6 L40-14 L40 26Z M-40 38 L40 38" },
+  kompasas: { lt: "Kompasas", d: "M0-40 A40 40 0 1 1 0 40 A40 40 0 1 1 0-40Z M0-30 L8 0 L0 30 L-8 0Z M-8 0 L8 0" },
+  rodykle: { lt: "Rodyklė", d: "M0 42 L0-40 M-16-24 L0-42 L16-24 M-12 10 L0-2 L12 10 M-12 30 L0 18 L12 30" },
+  kalnas: { lt: "Kalnas", d: "M-44 32 L-12-26 L4 0 L16-16 L44 32Z M-24-4 L-12 4 L-2-6" },
+  medis: { lt: "Medis", d: "M0 44 L0-8 M0 10 L-18-8 M0 2 L16-14 M0-8 L-10-24 M0-8 L10-26 M0-8 L0-40 M0 44 L-16 34 M0 44 L16 34 M-24 44 L24 44" },
+  akis: { lt: "Akis", d: "M-44 0 C-20-30 20-30 44 0 C20 30-20 30-44 0Z M0-12 A12 12 0 1 1 0 12 A12 12 0 1 1 0-12Z" },
+  saule: { lt: "Saulė", d: "M0-18 A18 18 0 1 1 0 18 A18 18 0 1 1 0-18Z M0-28 L0-44 M0 28 L0 44 M-28 0 L-44 0 M28 0 L44 0 M20-20 L31-31 M-20-20 L-31-31 M20 20 L31 31 M-20 20 L-31 31" },
+  zvaigzde: { lt: "Žvaigždė", d: "M0-44 C4-12 12-4 44 0 C12 4 4 12 0 44 C-4 12-12 4-44 0 C-12-4-4-12 0-44Z M0-16 L0 16 M-16 0 L16 0" },
+  spirale: { lt: "Spiralė", d: "M0 0 C0-6 8-6 8 0 C8 10-8 12-10 0 C-12-16 12-20 18-2 C24 18-4 30-20 18 C-36 4-28-28 0-32 C30-36 44-8 40 12" },
+  raktas: { lt: "Raktas", d: "M-26-14 A14 14 0 1 1-26 14 A14 14 0 1 1-26-14Z M-12 0 L42 0 M28 0 L28 14 M38 0 L38 10" },
+  plunksna: { lt: "Plunksna", d: "M-30 40 L30-40 M30-40 C10-40-18-14-22 24 C4 20 30-8 30-40Z M-8 12 L6-4 M-2 20 L14 2" },
+  begalybe: { lt: "Begalybė", d: "M0 0 C-10-18-40-18-40 0 C-40 18-10 18 0 0 C10-18 40-18 40 0 C40 18 10 18 0 0Z" },
+  trikampis: { lt: "Trikampis", d: "M0-40 L38 26 L-38 26Z M-22 0 L22 0" },
+  skydas: { lt: "Skydas", d: "M0-42 L36-28 C36 8 22 30 0 42 C-22 30-36 8-36-28Z M0-24 L0 24" },
+  liepsna: { lt: "Liepsna", d: "M0 42 C-26 42-32 18-18-2 C-12-12-6-24 0-44 C8-26 28-12 26 12 C24 32 14 42 0 42Z M0 34 C-10 34-12 20-4 10 C0 20 10 22 6 30" },
+  sirdis: { lt: "Širdis", d: "M0 38 C-30 16-42 2-42-14 C-42-32-20-40 0-22 C20-40 42-32 42-14 C42 2 30 16 0 38Z" },
+  roze: { lt: "Rožė", d: "M0-6 C-10-6-10-20 0-20 C12-20 14-2 0 2 C-16 6-20-18-4-28 C16-34 30-12 18 6 C8 18-14 18-22 4 M0 22 L0 44 M0 32 C-10 28-16 30-20 36 M0 38 C10 34 16 36 20 40" },
+  menulis: { lt: "Mėnulis", d: "M14-38 A40 40 0 1 0 14 38 A30 30 0 1 1 14-38Z" },
+  banga: { lt: "Banga", d: "M-42-12 C-28-28-14 4 0-12 C14-28 28 4 42-12 M-42 12 C-28-4-14 28 0 12 C14-4 28 28 42 12" },
+};
+const SIGIL_MOUNTS = [
+  { k: 'jupiteris', lt: 'Jupiterio kalnelis', vieta: 'po smiliumi', x: 130, y: 150, opts: ['karuna', 'kompasas', 'rodykle'] },
+  { k: 'saturnas', lt: 'Saturno kalnelis', vieta: 'po didžiuoju pirštu', x: 190, y: 118, opts: ['kalnas', 'medis', 'akis'] },
+  { k: 'saule', lt: 'Saulės kalnelis', vieta: 'po bevardžiu pirštu', x: 250, y: 132, opts: ['saule', 'zvaigzde', 'spirale'] },
+  { k: 'merkurijus', lt: 'Merkurijaus kalnelis', vieta: 'po mažuoju pirštu', x: 304, y: 176, opts: ['raktas', 'plunksna', 'begalybe'] },
+  { k: 'marsas', lt: 'Marso laukas', vieta: 'delno viduryje', x: 212, y: 250, opts: ['trikampis', 'skydas', 'liepsna'] },
+  { k: 'venera', lt: 'Veneros kalnelis', vieta: 'nykščio pagrinde', x: 120, y: 330, opts: ['sirdis', 'liepsna', 'roze'] },
+  { k: 'menulis', lt: 'Mėnulio kalnelis', vieta: 'delno apačioje', x: 290, y: 330, opts: ['menulis', 'banga', 'akis'] },
+];
+const SIGIL_MEANING = {
+  karuna: 'lyderystė', kompasas: 'aiški kryptis', rodykle: 'augimas', kalnas: 'ištvermė', medis: 'stabilumas ir šaknys',
+  akis: 'įžvalgumas', saule: 'šviesa ir pripažinimas', zvaigzde: 'intuicija ir viltis', spirale: 'kūryba ir pokyčiai',
+  raktas: 'finansinė sėkmė', plunksna: 'bendravimas ir žodis', begalybe: 'gilūs ryšiai', trikampis: 'valia',
+  skydas: 'drąsa ir apsauga', liepsna: 'aistra ir veržlumas', sirdis: 'meilė', roze: 'švelnumas',
+  menulis: 'jautrumas ir vidinis pasaulis', banga: 'empatija',
+};
+// Stichijos — alcheminiai ženklai (ugnis △, vanduo ▽, oras △ su brūkšniu, žemė ▽ su brūkšniu)
+const SIGIL_ELEMENTS = {
+  ugnis: { lt: 'Ugnies', apie: 'energija ir veržlumas', d: 'M0-20 L20 14 L-20 14Z' },
+  vanduo: { lt: 'Vandens', apie: 'jausmai ir intuicija', d: 'M0 20 L20-14 L-20-14Z' },
+  oras: { lt: 'Oro', apie: 'protas ir bendravimas', d: 'M0-20 L20 14 L-20 14Z M-13 2 L13 2' },
+  zeme: { lt: 'Žemės', apie: 'praktiškumas ir patikimumas', d: 'M0 20 L20-14 L-20-14Z M-13-2 L13-2' },
+};
+const SIGIL_KW = {
+  karuna: ['lyder', 'vadov'], kompasas: ['krypt', 'tiksl'], rodykle: ['aug', 'ambic', 'tobulė'],
+  kalnas: ['ištverm', 'atkakl', 'kantr'], medis: ['stabil', 'šeim', 'patikim'], akis: ['įžval', 'analit', 'pastab'],
+  saule: ['sėkm', 'pripaž'], zvaigzde: ['intuic', 'vilt', 'svaj'], spirale: ['kūryb', 'pokyt', 'pokyč'],
+  raktas: ['finans', 'pinig', 'uždarb'], plunksna: ['bendrav', 'žod', 'kalb'], begalybe: ['ryš', 'draug', 'lojal'],
+  trikampis: ['vali', 'sprend', 'ryžt'], skydas: ['drąs', 'apsaug', 'gin'], liepsna: ['veržl', 'aistr'],
+  sirdis: ['meil', 'šilt', 'partner'], roze: ['švelnu', 'rūpin'], menulis: ['jautr', 'jausm', 'vaizduot'], banga: ['empat', 'užjau'],
+};
+const SIGIL_EL_KW = { vanduo: ['jausm', 'jautr', 'intuic', 'empat'], ugnis: ['energ', 'veržl', 'aistr', 'lyder', 'drąs'], oras: ['protas', 'analit', 'bendrav', 'logik', 'smals'], zeme: ['stabil', 'praktišk', 'patikim', 'ištverm', 'kantr'] };
+
+function sigilHash(str) { let h = 2166136261; for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+
+function deriveSigil(r) {
+  const text = [...(r.stiprybes_sarasas || []), r.prigimtines_stiprybes || '', ...['prigimtines', 'gyvenimo', 'santykiai', 'finansai', 'galimybes', 'pokyciai', 'klutys'].flatMap(k => r[k + '_insights'] || [])].join(' ').toLowerCase();
+  const score = words => words.reduce((n, w) => n + (text.split(w).length - 1), 0);
+  const kalneliai = {}, mountScore = {};
+  SIGIL_MOUNTS.forEach(m => {
+    kalneliai[m.k] = m.opts.map((s, i) => ({ s, sc: score(SIGIL_KW[s]), i })).sort((a, b) => b.sc - a.sc || a.i - b.i)[0].s;
+    mountScore[m.k] = m.opts.reduce((n, s) => n + score(SIGIL_KW[s]), 0);
+  });
+  const stipriausi = SIGIL_MOUNTS.map((m, i) => ({ k: m.k, sc: mountScore[m.k], i })).sort((a, b) => b.sc - a.sc || a.i - b.i).slice(0, 2).map(x => x.k);
+  const stichija = Object.keys(SIGIL_EL_KW).map((k, i) => ({ k, sc: score(SIGIL_EL_KW[k]), i })).sort((a, b) => b.sc - a.sc || a.i - b.i)[0].k;
+  const titles = { menulis: 'Tylioji jėga', venera: 'Šilta širdis', jupiteris: 'Kelrodis', saturnas: 'Tvirtas kelias', saule: 'Vidinė šviesa', merkurijus: 'Atviros durys', marsas: 'Vidinė ugnis' };
+  return { pavadinimas: titles[stipriausi[0]], stichija, stipriausi, kalneliai };
+}
+
+function sigilValid(z) {
+  return z && z.kalneliai && SIGIL_ELEMENTS[z.stichija] && Array.isArray(z.stipriausi) && z.pavadinimas &&
+    SIGIL_MOUNTS.every(m => m.opts.includes(z.kalneliai[m.k]));
+}
+
+// Žvaigždyno SVG (be fono — piešiamas ant nuotraukos arba tamsaus fono)
+function sigilSvg(z, name, { color = '#d4a843', disc = '#050403' } = {}) {
+  const sw = 2.4, h = sigilHash(name + SIGIL_MOUNTS.map(m => z.kalneliai[m.k]).join());
+  const g = [];
+  // Kalnelių vietos — su nedideliu, kiekvienam žmogui skirtingu poslinkiu
+  const pos = {};
+  SIGIL_MOUNTS.forEach((m, i) => { pos[m.k] = [m.x + ((h >> (i * 3)) % 9) - 4, m.y + ((h >> (i * 3 + 1)) % 9) - 4]; });
+  const off = h % 6;
+  for (let i = 0; i < 48; i++) {
+    const a = i / 48 * Math.PI * 2;
+    g.push(`<circle cx="${(210 + 172 * Math.cos(a)).toFixed(1)}" cy="${(250 + 196 * Math.sin(a)).toFixed(1)}" r="${(i + off) % 6 ? 1.3 : 2.6}" fill="${color}" stroke="none"/>`);
+  }
+  // Delno linijos: širdies, proto, gyvenimo ir plona likimo
+  const P = k => pos[k];
+  g.push(`<path d="M292 196 C262 204 228 190 196 194 C168 198 146 190 136 174" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M104 206 C160 220 230 230 ${P('menulis')[0] + 10} ${P('menulis')[1] - 34}" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M106 200 C80 250 84 300 ${P('venera')[0] + 16} ${P('venera')[1] + 60}" stroke-width="${sw * 0.55}"/>`);
+  g.push(`<path d="M${P('saturnas')[0]} ${P('saturnas')[1] + 30} L${P('marsas')[0]} ${P('marsas')[1] - 30} M${P('marsas')[0]} ${P('marsas')[1] + 30} L206 410" stroke-width="${sw * 0.45}" stroke-dasharray="1 7"/>`);
+  // Simboliai kalneliuose (ryškiausi — su spinduliais)
+  SIGIL_MOUNTS.forEach(m => {
+    const [x, y] = pos[m.k], st = z.stipriausi.includes(m.k), sc = st ? 0.34 : 0.27;
+    g.push(`<circle cx="${x}" cy="${y}" r="${st ? 27 : 21}" fill="${disc}" stroke="none"/>`);
+    if (st) {
+      g.push(`<circle cx="${x}" cy="${y}" r="22" stroke-width="${sw * 0.5}"/>`);
+      for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4; g.push(`<line x1="${(x + 26 * Math.cos(a)).toFixed(1)}" y1="${(y + 26 * Math.sin(a)).toFixed(1)}" x2="${(x + 31 * Math.cos(a)).toFixed(1)}" y2="${(y + 31 * Math.sin(a)).toFixed(1)}" stroke-width="${sw * 0.5}"/>`); }
+    } else {
+      g.push(`<circle cx="${x}" cy="${y}" r="19" stroke-width="${sw * 0.4}" stroke-dasharray="1 4"/>`);
+    }
+    g.push(`<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k]].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(sw / sc * 0.8).toFixed(2)}"/>`);
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 44 360 412" width="720" height="824"><g fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g></svg>`;
+}
+
+function sigilLoadImg(src) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+}
+
+// Kalnelių vietos app delno paveikslėlyje (img/delnas.jpg, 480×666 px)
+const SIGIL_PALM_POS = { jupiteris: [205, 350], saturnas: [258, 338], saule: [306, 348], merkurijus: [348, 374], marsas: [262, 430], venera: [203, 474], menulis: [318, 505] };
+
+// Žvaigždynas ant app delno: simboliai tiksliai ant kalnelių, sujungti plonomis linijomis.
+// Koordinatės — galutinio 1080×1350 paveikslėlio (delnas mastelis 2.25, pakeltas 150 px).
+function sigilPalmSvg(z, { color = '#d4a843' } = {}) {
+  const P = {}; for (const k in SIGIL_PALM_POS) P[k] = [SIGIL_PALM_POS[k][0] * 2.25, SIGIL_PALM_POS[k][1] * 2.25 - 150];
+  const g = [], sw = 2.6;
+  [['jupiteris', 'saturnas'], ['saturnas', 'saule'], ['saule', 'merkurijus'], ['jupiteris', 'marsas'], ['saturnas', 'marsas'], ['merkurijus', 'menulis'], ['marsas', 'menulis'], ['marsas', 'venera'], ['jupiteris', 'venera']]
+    .forEach(([a, b]) => g.push(`<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke-width="1.6" stroke-dasharray="2 7" opacity=".85"/>`));
+  // Žvaigždžių ovalas aplink delną
+  const h = sigilHash(SIGIL_MOUNTS.map(m => z.kalneliai[m.k]).join()), off = h % 6;
+  for (let i = 0; i < 56; i++) { const a = i / 56 * Math.PI * 2, cx = 590 + 470 * Math.cos(a), cy = 700 + 560 * Math.sin(a); if (cy > 1150 && Math.abs(cx - 540) < 300) continue; g.push(`<circle cx="${(590 + 470 * Math.cos(a)).toFixed(1)}" cy="${(700 + 560 * Math.sin(a)).toFixed(1)}" r="${(i + off) % 7 ? 2.2 : 4.4}" fill="${color}" stroke="none" opacity=".8"/>`); }
+  SIGIL_MOUNTS.forEach(m => {
+    const [x, y] = P[m.k], st = z.stipriausi.includes(m.k), r = st ? 50 : 40, sc = st ? 0.62 : 0.5;
+    g.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="#050403" fill-opacity=".88" stroke="none"/>`);
+    g.push(`<circle cx="${x}" cy="${y}" r="${r - 6}" stroke-width="${st ? 2.2 : 1.4}"${st ? '' : ' stroke-dasharray="2 6"'}/>`);
+    if (st) for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4; g.push(`<line x1="${(x + (r + 2) * Math.cos(a)).toFixed(1)}" y1="${(y + (r + 2) * Math.sin(a)).toFixed(1)}" x2="${(x + (r + 12) * Math.cos(a)).toFixed(1)}" y2="${(y + (r + 12) * Math.sin(a)).toFixed(1)}" stroke-width="2.2"/>`); }
+    g.push(`<path d="${SIGIL_SYMBOLS[z.kalneliai[m.k]].d}" transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(sw / sc).toFixed(2)}"/>`);
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350"><g fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g></svg>`;
+}
+
+// Galutinis paveikslėlis 1080×1350. kind: 'delnas' — ant app delno paveikslėlio; 'tamsus' — be delno.
+async function sigilCanvas(kind) {
+  const z = window._sigilData, name = window._sigilName || '';
+  if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+  const W = 1080, H = 1350;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const svgUrl = svg => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  if (kind === 'delnas') {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    const palm = await sigilLoadImg('/img/delnas.jpg');
+    ctx.drawImage(palm, 0, -150, 480 * 2.25, 666 * 2.25);
+    const v = ctx.createLinearGradient(0, 1080, 0, H); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.9)');
+    ctx.fillStyle = v; ctx.fillRect(0, 1080, W, H - 1080);
+    const star = await sigilLoadImg(svgUrl(sigilPalmSvg(z)));
+    ctx.save(); ctx.shadowColor = 'rgba(240,201,106,.85)'; ctx.shadowBlur = 16;
+    ctx.drawImage(star, 0, 0, W, H); ctx.restore();
+  } else {
+    const g = ctx.createRadialGradient(W / 2, 560, 40, W / 2, 560, 1000);
+    g.addColorStop(0, '#18130a'); g.addColorStop(1, '#000000');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const star = await sigilLoadImg(svgUrl(sigilSvg(z, name)));
+    ctx.save(); ctx.shadowColor = 'rgba(240,201,106,.9)'; ctx.shadowBlur = 10;
+    ctx.drawImage(star, (W - 900) / 2, 130, 900, 900 * 412 / 360); ctx.restore();
+  }
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = 12;
+  ctx.fillStyle = '#f0c96a';
+  ctx.font = "italic 700 66px 'Playfair Display', serif";
+  ctx.fillText(z.pavadinimas, W / 2, 1250);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.font = "400 22px 'DM Sans', sans-serif";
+  ctx.fillText('delnaskaitymas.lt', W / 2, 1310);
+  return c;
+}
+
+function selectSigil(kind) {
+  window._sigilKind = kind;
+  const img = document.getElementById('r-sigil-img');
+  if (window._sigilImgs && window._sigilImgs[kind]) img.src = window._sigilImgs[kind];
+  document.querySelectorAll('#r-sigil-wrap .sg-opt').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+}
+
+async function downloadSigil() {
+  try {
+    if (!window._sigilData) return;
+    const c = await sigilCanvas(window._sigilKind || 'delnas');
+    const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
+    const file = new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'Mano delno žvaigždynas' }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'delno-zvaigzdynas.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (e) {
+    console.error('[downloadSigil] klaida:', e);
+    alert('Nepavyko paruošti paveikslėlio. Bandyk dar kartą.');
+  }
+}
+
+function renderSigil(r) {
+  const wrap = document.getElementById('r-sigil-wrap');
+  if (!wrap || !r) return;
+  const z = sigilValid(r.zenklas) ? r.zenklas : deriveSigil(r);
+  window._sigilData = z; window._sigilName = r.userName || window.userName || '';
+  const el = SIGIL_ELEMENTS[z.stichija];
+  document.getElementById('r-sigil-el').innerHTML = `<svg viewBox="-24 -24 48 48" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><path d="${el.d}" fill="none" stroke="#d4a843" stroke-width="3.5" stroke-linejoin="round"/></svg>${el.lt} stichija <span style="color:var(--muted)">— ${el.apie}</span>`;
+  const mounts = SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k));
+  document.getElementById('r-sigil-list').innerHTML = mounts.map(m => {
+    const s = z.kalneliai[m.k], st = z.stipriausi.includes(m.k);
+    return `<div class="sg-it${st ? ' st' : ''}"><svg viewBox="-50 -50 100 100" width="22" height="22"><path d="${SIGIL_SYMBOLS[s].d}" fill="none" stroke="#d4a843" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>${SIGIL_SYMBOLS[s].lt}</b> <span class="sg-z">· ${m.lt}</span> — ${SIGIL_MEANING[s]}</div></div>`;
+  }).join('');
+  wrap.style.display = '';
+  // Du variantai (su delnu / be delno) — ekranui ir PDF'ui
+  window._sigilImgs = {};
+  window._sigilReady = Promise.all(['delnas', 'tamsus'].map(k => sigilCanvas(k).then(c => { window._sigilImgs[k] = c.toDataURL('image/jpeg', 0.88); })))
+    .then(() => selectSigil(window._sigilKind || 'delnas'))
+    .catch(e => console.error('[renderSigil] klaida:', e));
+}
+
 function displayResult(r){
   console.log('displayResult called, r=',r?JSON.stringify(r).substring(0,200):'NULL');
   window._palmResult=r;window._shareUrl=null;
@@ -3352,6 +3597,7 @@ function displayResult(r){
     console.log('[displayResult] laiškų siuntimo blokas pasiektas. orderNumber=',window._orderNumber,'userEmail=',window._userEmail);
     // Pranešimas į info@delnaskaitymas.lt siunčiamas TIK VIENĄ KARTĄ,
     // tiksliai tuo momentu, kai atidaromas rezultato ekranas.
+    try{ renderSigil(r); }catch(sigErr){ console.error('[renderSigil] klaida:',sigErr); }
     if(window._orderNumber && !window._orderNotifySent){
       window._orderNotifySent=true;
       fetch('/notify-order-complete',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -3760,6 +4006,43 @@ function buildResultPdfDoc(r, name, orderNumber){
     if(PAGE_BOTTOM - y < 15){ y = newPage(); }
   });
 
+  // Asmeninis delno žvaigždynas — atskiras puslapis (jei paveikslėlis jau paruoštas)
+  if(window._sigilImgs && window._sigilImgs.delnas && window._sigilImgs.tamsus && window._sigilData){
+    const z = window._sigilData;
+    y = newPage() - 6;
+    doc.setFont('NotoSans','bold');
+    doc.setFontSize(14);
+    doc.setTextColor(...GOLD);
+    doc.text('TAVO DELNO ŽVAIGŽDYNAS', W/2, y, {align:'center'});
+    y += 5;
+    const imgW = 82, imgH = imgW * 1350 / 1080, gap = 6;
+    doc.addImage(window._sigilImgs.delnas, 'JPEG', W/2 - imgW - gap/2, y, imgW, imgH);
+    doc.addImage(window._sigilImgs.tamsus, 'JPEG', W/2 + gap/2, y, imgW, imgH);
+    y += imgH + 10;
+    const el = SIGIL_ELEMENTS[z.stichija];
+    doc.setFont('NotoSans','normal');
+    doc.setFontSize(12);
+    doc.setTextColor(...GOLD);
+    doc.text(el.lt + ' stichija — ' + el.apie, W/2, y, {align:'center'});
+    y += 9;
+    SIGIL_MOUNTS.slice().sort((a, b) => z.stipriausi.includes(b.k) - z.stipriausi.includes(a.k)).forEach(m => {
+      const s = z.kalneliai[m.k];
+      doc.setFont('NotoSans','bold');
+      doc.setFontSize(11.5);
+      doc.setTextColor(...GOLD2);
+      doc.text(SIGIL_SYMBOLS[s].lt, margin + 8, y);
+      doc.setFont('NotoSans','normal');
+      doc.setTextColor(...MUTED);
+      doc.text(m.lt, margin + 40, y);
+      doc.setTextColor(...BODY);
+      doc.text(SIGIL_MEANING[s], margin + 98, y);
+      y += 6.6;
+    });
+    doc.setFontSize(9.5);
+    doc.setTextColor(DIVIDER[0], DIVIDER[1], DIVIDER[2]);
+    doc.splitTextToSize('Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs; išryškinti — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.', maxW).forEach(ln => { y += 4.6; doc.text(ln, W/2, y, {align:'center'}); });
+  }
+
   // Apatinė dalis — trumpas padėkos tekstas + aktyvus MYGTUKAS į svetainę
   // (paspaudus jį PDF skaitytuvas atidaro programėlę, kad vartotojas
   // galėtų kartoti analizę iš naujo). BE ilgos skiriamosios linijos prieš
@@ -3853,6 +4136,10 @@ function downloadPDF(){
 // serverio (/email-result-pdf) išsiųsti jį kaip laiško priedą į vartotojo
 // el. paštą iš info@delnaskaitymas.lt. Apsaugota nuo dvigubo siuntimo.
 function sendResultPdfEmail(r){
+  const ready = window._sigilReady || Promise.resolve();
+  Promise.race([ready, new Promise(res => setTimeout(res, 3000))]).then(() => sendResultPdfEmailNow(r));
+}
+function sendResultPdfEmailNow(r){
   try{
     console.log('[sendResultPdfEmail] iškviesta. _pdfEmailSent=',window._pdfEmailSent,'_userEmail=',window._userEmail);
     if(window._pdfEmailSent) return;

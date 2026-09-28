@@ -1668,7 +1668,120 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   // nuo to, ar žingsnis 3 pavyko, ar ne (žr. KNOWN_GRAMMAR_FIXES aukščiau).
   applyKnownGrammarFixes(result);
 
+  // 3 žingsnis: asmeninis gyvenimo žemėlapio ženklas. Atskiras, trumpas
+  // kvietimas, kad nerizikuotume pagrindinės analizės kokybe; jam nepavykus
+  // rezultatas grąžinamas be ženklo (naršyklė jį tada sudaro pati).
+  try {
+    const zenklas = await generatePersonalSigil(bruozai, result, name);
+    if (zenklas) result.zenklas = zenklas;
+  } catch (e) {
+    console.warn('[zenklas] nepavyko sugeneruoti:', e.message);
+  }
+
   return result;
+}
+
+// --- Asmeninis ženklas („Delno žvaigždynas“) ---
+// 7 chiromantijos kalneliai; kiekvienam AI parenka vieną iš 3 simbolių,
+// pažymi 2–3 ryškiausius, nustato stichiją pagal delno formą ir pavadinimą.
+// Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.html faile.
+const SIGIL_SYMBOLS = {
+  karuna: 'Karūna', kompasas: 'Kompasas', rodykle: 'Rodyklė', kalnas: 'Kalnas', medis: 'Medis', akis: 'Akis',
+  saule: 'Saulė', zvaigzde: 'Žvaigždė', spirale: 'Spiralė', raktas: 'Raktas', plunksna: 'Plunksna', begalybe: 'Begalybė',
+  trikampis: 'Trikampis', skydas: 'Skydas', liepsna: 'Liepsna', sirdis: 'Širdis', roze: 'Rožė', menulis: 'Mėnulis', banga: 'Banga',
+};
+const SIGIL_MOUNTS = {
+  jupiteris:  { lt: 'Jupiterio kalnelis (po smiliumi)', tema: 'lyderystė, ambicijos, pasitikėjimas', opts: { karuna: 'lyderystė', kompasas: 'aiški kryptis', rodykle: 'augimas' } },
+  saturnas:   { lt: 'Saturno kalnelis (po didžiuoju pirštu)', tema: 'atsakomybė, stabilumas, išmintis', opts: { kalnas: 'ištvermė', medis: 'stabilumas ir šaknys', akis: 'įžvalgumas' } },
+  saule:      { lt: 'Saulės kalnelis (po bevardžiu pirštu)', tema: 'kūryba, sėkmė, pripažinimas', opts: { saule: 'šviesa ir pripažinimas', zvaigzde: 'intuicija ir viltis', spirale: 'kūryba ir pokyčiai' } },
+  merkurijus: { lt: 'Merkurijaus kalnelis (po mažuoju pirštu)', tema: 'bendravimas, finansai, verslumas', opts: { raktas: 'finansinė sėkmė', plunksna: 'bendravimas ir žodis', begalybe: 'gilūs ryšiai' } },
+  marsas:     { lt: 'Marso laukas (delno viduryje)', tema: 'drąsa, valia, ištvermė sunkumuose', opts: { trikampis: 'valia', skydas: 'drąsa ir apsauga', liepsna: 'veržlumas' } },
+  venera:     { lt: 'Veneros kalnelis (nykščio pagrinde)', tema: 'meilė, aistra, šiluma', opts: { sirdis: 'meilė', liepsna: 'aistra', roze: 'švelnumas' } },
+  menulis:    { lt: 'Mėnulio kalnelis (delno apačioje, išorinėje pusėje)', tema: 'intuicija, jausmai, vaizduotė', opts: { menulis: 'jautrumas ir vidinis pasaulis', banga: 'empatija', akis: 'įžvalgumas' } },
+};
+const SIGIL_ELEMENTS = {
+  zeme: 'Žemė — kvadratinis delnas, trumpesni pirštai: praktiškumas, patikimumas',
+  oras: 'Oras — kvadratinis delnas, ilgi pirštai: protas, bendravimas',
+  ugnis: 'Ugnis — pailgas delnas, trumpesni pirštai: energija, veržlumas',
+  vanduo: 'Vanduo — pailgas delnas, ilgi pirštai: jausmai, intuicija',
+};
+
+function validateSigil(z) {
+  if (!z || typeof z !== 'object' || !z.kalneliai || typeof z.kalneliai !== 'object') return null;
+  const kalneliai = {};
+  for (const [m, def] of Object.entries(SIGIL_MOUNTS)) {
+    const v = z.kalneliai[m];
+    const key = String(v && typeof v === 'object' ? v.s : v || '').trim().toLowerCase();
+    if (!def.opts[key]) return null;
+    kalneliai[m] = key;
+  }
+  const stipriausi = [...new Set((Array.isArray(z.stipriausi) ? z.stipriausi : []).map(x => String(x).trim().toLowerCase()))]
+    .filter(m => SIGIL_MOUNTS[m]).slice(0, 3);
+  const stichija = String(z.stichija || '').trim().toLowerCase().replace(/ž/g, 'z').replace(/ė/g, 'e');
+  const pavadinimas = String(z.pavadinimas || '').replace(/["„“]/g, '').replace(/\s+/g, ' ').trim().slice(0, 32);
+  if (stipriausi.length < 2 || !SIGIL_ELEMENTS[stichija] || !pavadinimas) return null;
+  return { pavadinimas, stichija, stipriausi, kalneliai };
+}
+
+async function generatePersonalSigil(bruozai, result, name) {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  const mounts = Object.entries(SIGIL_MOUNTS).map(([k, v]) =>
+    `- ${k}: ${v.lt} — ${v.tema}. Galimi simboliai: ${Object.entries(v.opts).map(([s, r]) => `${s} (${SIGIL_SYMBOLS[s]} — ${r})`).join(', ')}`).join('\n');
+  const elements = Object.entries(SIGIL_ELEMENTS).map(([k, v]) => `- ${k}: ${v}`).join('\n');
+  const summary = [
+    'Stiprybės: ' + (result.stiprybes_sarasas || []).join(', '),
+    'Charakteris: ' + (result.prigimtines_insights || []).join('; '),
+    'Santykiai: ' + (result.santykiai_insights || []).join('; '),
+    'Finansai: ' + (result.finansai_insights || []).join('; '),
+    'Sėkmės raktas: ' + (result.galimybes_insights || []).join('; '),
+    'Pokyčiai: ' + (result.pokyciai_insights || []).join('; '),
+    'Kliūtys: ' + (result.klutys_insights || []).join('; '),
+  ].join('\n');
+  const observations = (bruozai || []).map((b, i) => `${i + 1}. ${b}`).join('\n');
+
+  const prompt = `Sudaryk asmeninį delno žvaigždyną žmogui${name ? ' vardu ' + name : ''}. Jį sudaro 7 chiromantijos kalneliai — kiekvienam parenki VIENĄ simbolį iš jam leidžiamų:
+${mounts}
+
+Stichija (pagal delno formą ir pirštų ilgį):
+${elements}
+
+Delnų pastebėjimai:
+${observations || '(nėra)'}
+
+Analizės išvados:
+${summary}
+
+Užduotis:
+1. Kiekvienam iš 7 kalnelių parink simbolį (tik iš to kalnelio leidžiamų), geriausiai atitinkantį šį žmogų.
+2. Pažymėk 2 arba 3 ryškiausius šio žmogaus kalnelius (stipriausi).
+3. Nustatyk stichiją pagal delno formą ir pirštų ilgį iš pastebėjimų.
+4. Sugalvok žvaigždyno pavadinimą: 2–3 žodžiai taisyklinga lietuvių kalba, poetiškas, bet paprastas (pvz. Tylioji jėga, Kelrodis, Vidinė ugnis).
+
+Atsakyk TIK JSON:
+{"pavadinimas":"...","stichija":"vanduo","stipriausi":["menulis","venera"],"kalneliai":{"jupiteris":"...","saturnas":"...","saule":"...","merkurijus":"...","marsas":"...","venera":"...","menulis":"..."}}`;
+
+  const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 400,
+      temperature: 0.3,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  }, 40000);
+  const data = await r.json();
+  if (data?.error) throw new Error(`${data.error.type}: ${data.error.message || ''}`);
+  const text = (data.content || []).map(b => b.text || '').join('');
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('JSON nerastas');
+  const z = validateSigil(parseJsonLenient(m[0]));
+  if (!z) throw new Error('netinkamas ženklo formatas');
+  return z;
 }
 
 // --- ENDPOINT: Greita delno validacija ---
