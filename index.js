@@ -2662,7 +2662,7 @@ function buildGiftEmailHtml(gift) {
     </div>
   </div>
   <div style="max-width:520px;margin:18px auto 0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;text-align:center">
-    Šį laišką gavote, nes įsigijote DELNAS dovanų kuponą. Persiųskite jį dovanos gavėjui arba atsisiųskite kortelę.
+    Šį laišką gavote, nes įsigijote DELNAS dovanų kuponą. Persiųskite jį tam, kam dovanojate, arba atsisiųskite kortelę.
     Kodas vienkartinis. Pramoginio pobūdžio paslauga, 18+.
   </div>
   ${EMAIL_FOOTER_HTML}
