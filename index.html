@@ -315,16 +315,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="font-size:30px;margin-bottom:14px;color:#d4a843">✦</div>
     <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#f0c96a;margin-bottom:16px">Prieš pradedant</div>
     <div style="font-size:13px;color:rgba(255,255,255,.68);line-height:1.7;margin-bottom:18px;text-align:left">
-      <div style="margin-bottom:12px">✋ Paprašysime nufotografuoti abu tavo delnus — nuotraukos naudojamos tik tavo asmeninei AI analizei, o duomenys tvarkomi konfidencialiai pagal <a href="/privatumo-politika" target="_blank" style="color:#d4a843;text-decoration:underline">Privatumo politiką</a>.</div>
+      <div style="margin-bottom:12px" id="consent-intro">✋ Paprašysime nufotografuoti abu tavo delnus — nuotraukos naudojamos tik tavo asmeninei AI analizei, o duomenys tvarkomi konfidencialiai pagal <a href="/privatumo-politika" target="_blank" style="color:#d4a843;text-decoration:underline">Privatumo politiką</a>.</div>
       <div><span style="color:#d4a843">✦</span> Tai pramoginio pobūdžio patirtis, skirta pažvelgti į save — ne finansinė ar medicininė konsultacija.</div>
     </div>
     <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;cursor:pointer;text-align:left">
       <input type="checkbox" id="consent-age" onchange="checkConsentBtn()" style="margin-top:2px;width:17px;height:17px;flex-shrink:0;-webkit-appearance:none;appearance:none;cursor:pointer;border:none;border-radius:4px;position:relative">
-      <span style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Patvirtinu, kad man yra 18 metų, ir sutinku su <a href="/naudojimosi-salygos" target="_blank" style="color:#d4a843;text-decoration:underline">Naudojimosi sąlygomis</a>.</span>
+      <span id="consent-age-txt" style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Patvirtinu, kad man yra 18 metų, ir sutinku su <a href="/naudojimosi-salygos" target="_blank" style="color:#d4a843;text-decoration:underline">Naudojimosi sąlygomis</a>.</span>
     </label>
     <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:20px;cursor:pointer;text-align:left">
       <input type="checkbox" id="consent-withdrawal" onchange="checkConsentBtn()" style="margin-top:2px;width:17px;height:17px;flex-shrink:0;-webkit-appearance:none;appearance:none;cursor:pointer;border:none;border-radius:4px;position:relative">
-      <span style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandu 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#4" target="_blank" style="color:#d4a843;text-decoration:underline">4 skyrių</a>).</span>
+      <span id="consent-wd-txt" style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandu 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#4" target="_blank" style="color:#d4a843;text-decoration:underline">4 skyrių</a>).</span>
     </label>
     <button id="consent-btn" onclick="acceptConsentAndStart()" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.4);opacity:.4;transition:opacity .2s">Sutinku ir tęsiu ✦</button>
   </div>
@@ -1725,7 +1725,10 @@ function startApp(){
   // (nuotraukas), o ne vėliau, mokėjimo ekrane. Rodomas tik VIENĄ kartą
   // per sesiją (sessionStorage), kad nebūtų įkyrus pakartotinai
   // testuojant/naudojant.
-  if(sessionStorage.getItem('delnasConsentGiven')==='1'){ _startAppReal(); return; }
+  // Porų režime sutikimą (už abu) prašome visada, net jei asmeninės analizės sutikimas jau duotas
+  const poraMode=!!(window._pora&&window._pora.active);
+  if(poraMode) poraConsentTexts();
+  if(!poraMode && sessionStorage.getItem('delnasConsentGiven')==='1'){ _startAppReal(); return; }
   const m=document.getElementById('consent-modal');
   if(m){
     const cb=document.getElementById('consent-age');
@@ -5218,6 +5221,16 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
     }
   })(0);
 })();
+
+// Sutikimo langas porų režimui — daugiskaita, už abu partnerius
+function poraConsentTexts(){
+  const L='color:#d4a843;text-decoration:underline';
+  const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
+  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti abiejų jūsų kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir serveryje nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
+  set('consent-age-txt','Patvirtiname, kad mums abiem yra 18 metų, abu sutinkame su delnų analize ir su <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
+  set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
+  const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinkame ir tęsiame ✦';
+}
 
 // Kviečiama po to, kai partneris nufotografavo abu delnus (vietoj apmokėjimo ekrano)
 function poraAfterPartner(){
