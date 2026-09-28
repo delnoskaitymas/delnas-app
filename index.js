@@ -1668,120 +1668,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   // nuo to, ar žingsnis 3 pavyko, ar ne (žr. KNOWN_GRAMMAR_FIXES aukščiau).
   applyKnownGrammarFixes(result);
 
-  // 3 žingsnis: asmeninis gyvenimo žemėlapio ženklas. Atskiras, trumpas
-  // kvietimas, kad nerizikuotume pagrindinės analizės kokybe; jam nepavykus
-  // rezultatas grąžinamas be ženklo (naršyklė jį tada sudaro pati).
-  try {
-    const zenklas = await generatePersonalSigil(bruozai, result, name);
-    if (zenklas) result.zenklas = zenklas;
-  } catch (e) {
-    console.warn('[zenklas] nepavyko sugeneruoti:', e.message);
-  }
-
   return result;
-}
-
-// --- Asmeninis ženklas („Delno žvaigždynas“) ---
-// 7 chiromantijos kalneliai; kiekvienam AI parenka vieną iš 3 simbolių,
-// pažymi 2–3 ryškiausius, nustato stichiją pagal delno formą ir pavadinimą.
-// Raktai turi sutapti su SIGIL_SYMBOLS / SIGIL_MOUNTS index.html faile.
-const SIGIL_SYMBOLS = {
-  karuna: 'Karūna', kompasas: 'Kompasas', rodykle: 'Rodyklė', kalnas: 'Kalnas', medis: 'Medis', akis: 'Akis',
-  saule: 'Saulė', zvaigzde: 'Žvaigždė', spirale: 'Spiralė', raktas: 'Raktas', plunksna: 'Plunksna', begalybe: 'Begalybė',
-  trikampis: 'Trikampis', skydas: 'Skydas', liepsna: 'Liepsna', sirdis: 'Širdis', roze: 'Rožė', menulis: 'Mėnulis', banga: 'Banga',
-};
-const SIGIL_MOUNTS = {
-  jupiteris:  { lt: 'Jupiterio kalnelis (po smiliumi)', tema: 'lyderystė, ambicijos, pasitikėjimas', opts: { karuna: 'lyderystė', kompasas: 'aiški kryptis', rodykle: 'augimas' } },
-  saturnas:   { lt: 'Saturno kalnelis (po didžiuoju pirštu)', tema: 'atsakomybė, stabilumas, išmintis', opts: { kalnas: 'ištvermė', medis: 'stabilumas ir šaknys', akis: 'įžvalgumas' } },
-  saule:      { lt: 'Saulės kalnelis (po bevardžiu pirštu)', tema: 'kūryba, sėkmė, pripažinimas', opts: { saule: 'šviesa ir pripažinimas', zvaigzde: 'intuicija ir viltis', spirale: 'kūryba ir pokyčiai' } },
-  merkurijus: { lt: 'Merkurijaus kalnelis (po mažuoju pirštu)', tema: 'bendravimas, finansai, verslumas', opts: { raktas: 'finansinė sėkmė', plunksna: 'bendravimas ir žodis', begalybe: 'gilūs ryšiai' } },
-  marsas:     { lt: 'Marso laukas (delno viduryje)', tema: 'drąsa, valia, ištvermė sunkumuose', opts: { trikampis: 'valia', skydas: 'drąsa ir apsauga', liepsna: 'veržlumas' } },
-  venera:     { lt: 'Veneros kalnelis (nykščio pagrinde)', tema: 'meilė, aistra, šiluma', opts: { sirdis: 'meilė', liepsna: 'aistra', roze: 'švelnumas' } },
-  menulis:    { lt: 'Mėnulio kalnelis (delno apačioje, išorinėje pusėje)', tema: 'intuicija, jausmai, vaizduotė', opts: { menulis: 'jautrumas ir vidinis pasaulis', banga: 'empatija', akis: 'įžvalgumas' } },
-};
-const SIGIL_ELEMENTS = {
-  zeme: 'Žemė — kvadratinis delnas, trumpesni pirštai: praktiškumas, patikimumas',
-  oras: 'Oras — kvadratinis delnas, ilgi pirštai: protas, bendravimas',
-  ugnis: 'Ugnis — pailgas delnas, trumpesni pirštai: energija, veržlumas',
-  vanduo: 'Vanduo — pailgas delnas, ilgi pirštai: jausmai, intuicija',
-};
-
-function validateSigil(z) {
-  if (!z || typeof z !== 'object' || !z.kalneliai || typeof z.kalneliai !== 'object') return null;
-  const kalneliai = {};
-  for (const [m, def] of Object.entries(SIGIL_MOUNTS)) {
-    const v = z.kalneliai[m];
-    const key = String(v && typeof v === 'object' ? v.s : v || '').trim().toLowerCase();
-    if (!def.opts[key]) return null;
-    kalneliai[m] = key;
-  }
-  const stipriausi = [...new Set((Array.isArray(z.stipriausi) ? z.stipriausi : []).map(x => String(x).trim().toLowerCase()))]
-    .filter(m => SIGIL_MOUNTS[m]).slice(0, 3);
-  const stichija = String(z.stichija || '').trim().toLowerCase().replace(/ž/g, 'z').replace(/ė/g, 'e');
-  const pavadinimas = String(z.pavadinimas || '').replace(/["„“]/g, '').replace(/\s+/g, ' ').trim().slice(0, 32);
-  if (stipriausi.length < 2 || !SIGIL_ELEMENTS[stichija] || !pavadinimas) return null;
-  return { pavadinimas, stichija, stipriausi, kalneliai };
-}
-
-async function generatePersonalSigil(bruozai, result, name) {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-  const mounts = Object.entries(SIGIL_MOUNTS).map(([k, v]) =>
-    `- ${k}: ${v.lt} — ${v.tema}. Galimi simboliai: ${Object.entries(v.opts).map(([s, r]) => `${s} (${SIGIL_SYMBOLS[s]} — ${r})`).join(', ')}`).join('\n');
-  const elements = Object.entries(SIGIL_ELEMENTS).map(([k, v]) => `- ${k}: ${v}`).join('\n');
-  const summary = [
-    'Stiprybės: ' + (result.stiprybes_sarasas || []).join(', '),
-    'Charakteris: ' + (result.prigimtines_insights || []).join('; '),
-    'Santykiai: ' + (result.santykiai_insights || []).join('; '),
-    'Finansai: ' + (result.finansai_insights || []).join('; '),
-    'Sėkmės raktas: ' + (result.galimybes_insights || []).join('; '),
-    'Pokyčiai: ' + (result.pokyciai_insights || []).join('; '),
-    'Kliūtys: ' + (result.klutys_insights || []).join('; '),
-  ].join('\n');
-  const observations = (bruozai || []).map((b, i) => `${i + 1}. ${b}`).join('\n');
-
-  const prompt = `Sudaryk asmeninį delno žvaigždyną žmogui${name ? ' vardu ' + name : ''}. Jį sudaro 7 chiromantijos kalneliai — kiekvienam parenki VIENĄ simbolį iš jam leidžiamų:
-${mounts}
-
-Stichija (pagal delno formą ir pirštų ilgį):
-${elements}
-
-Delnų pastebėjimai:
-${observations || '(nėra)'}
-
-Analizės išvados:
-${summary}
-
-Užduotis:
-1. Kiekvienam iš 7 kalnelių parink simbolį (tik iš to kalnelio leidžiamų), geriausiai atitinkantį šį žmogų.
-2. Pažymėk 2 arba 3 ryškiausius šio žmogaus kalnelius (stipriausi).
-3. Nustatyk stichiją pagal delno formą ir pirštų ilgį iš pastebėjimų.
-4. Sugalvok žvaigždyno pavadinimą: 2–3 žodžiai taisyklinga lietuvių kalba, poetiškas, bet paprastas (pvz. Tylioji jėga, Kelrodis, Vidinė ugnis).
-
-Atsakyk TIK JSON:
-{"pavadinimas":"...","stichija":"vanduo","stipriausi":["menulis","venera"],"kalneliai":{"jupiteris":"...","saturnas":"...","saule":"...","merkurijus":"...","marsas":"...","venera":"...","menulis":"..."}}`;
-
-  const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 400,
-      temperature: 0.3,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  }, 40000);
-  const data = await r.json();
-  if (data?.error) throw new Error(`${data.error.type}: ${data.error.message || ''}`);
-  const text = (data.content || []).map(b => b.text || '').join('');
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error('JSON nerastas');
-  const z = validateSigil(parseJsonLenient(m[0]));
-  if (!z) throw new Error('netinkamas ženklo formatas');
-  return z;
 }
 
 // --- ENDPOINT: Greita delno validacija ---
@@ -2111,7 +1998,7 @@ app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => 
 // rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, orderNumber, pdfBase64, sigil, gift } = req.body;
+    const { email, name, orderNumber, pdfBase64, gift } = req.body;
     const isGift = gift === true;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
@@ -2119,10 +2006,6 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
       return res.status(400).json({ error: 'Neteisingas arba per didelis PDF turinys' });
     }
-    // Neprivalomas delno žvaigždynas: trys JPG priedai (su delnu, be delno, aprašas)
-    const jpgOk = b => typeof b === 'string' && b.length > 0 && b.length <= 4_000_000 && /^[A-Za-z0-9+/=]+$/.test(b);
-    const sigilData = sigil && validateSigil(sigil.data);
-    const hasSigil = !!(sigilData && jpgOk(sigil.delnas) && jpgOk(sigil.tamsus) && jpgOk(sigil.aprasas));
     // Papildoma apsauga: jei šis TIKSLUS užsakymo numeris jau kartą gavo
     // PDF laišką (pvz. dėl naršyklės atnaujinimo su tuo pačiu session_id
     // URL adrese), NEBEsiunčiame antro egzemplioriaus. Grąžiname "ok",
@@ -2138,16 +2021,12 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       subject: isGift
         ? `${name ? escapeHtml(name) + ' — ' : ''}tavo dovana: gyvenimo žemėlapis paruoštas 🎁`
         : `${name ? escapeHtml(name) + ' — ' : ''}Mokėjimas gautas, tavo gyvenimo žemėlapis paruoštas ✦`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">${hasSigil ? `Prieduose rasi pilną savo gyvenimo žemėlapį (PDF) ir asmeninį delno žvaigždyną „${escapeHtml(sigilData.pavadinimas)}“ — 3 paveikslėlius: su delnu, be delno ir jo aprašą.` : 'Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.'}</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
         encoding: 'base64'
-      }, ...(hasSigil ? [
-        { filename: 'delno-zvaigzdynas-su-delnu.jpg', content: sigil.delnas, encoding: 'base64' },
-        { filename: 'delno-zvaigzdynas-be-delno.jpg', content: sigil.tamsus, encoding: 'base64' },
-        { filename: 'delno-zvaigzdynas-aprasas.jpg', content: sigil.aprasas, encoding: 'base64' }
-      ] : [])]
+      }]
     });
     console.log(`[email-result-pdf] PDF (su užsakymo patvirtinimu) išsiųstas į ${email}`);
     res.json({ ok: true });
