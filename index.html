@@ -705,7 +705,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="r-sigil-el" class="sg-el"></div>
       <div id="r-sigil-list" class="sg-list"></div>
       <div class="sg-how">Kiekvienas simbolis stovi toje delno vietoje (kalnelyje), iš kurios jis kilęs; išryškinti — tavo ryškiausi kalneliai. Stichija nustatyta pagal delno formą ir pirštų ilgį.</div>
-      <button onclick="downloadSigil()" style="width:100%;margin-top:14px;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti žvaigždyną</button>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button onclick="shareSigil()" style="flex:1;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:10px;padding:13px 6px;color:#07040f;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">↗ Pasidalinti</button>
+        <button onclick="downloadSigil()" style="flex:1;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px 6px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti</button>
+      </div>
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
@@ -3497,23 +3500,45 @@ function selectSigil(kind) {
   document.querySelectorAll('#r-sigil-wrap .sg-opt').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
 }
 
+async function sigilFile() {
+  const c = await sigilCanvas(window._sigilKind || 'delnas');
+  const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
+  return new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
+}
+
 async function downloadSigil() {
   try {
     if (!window._sigilData) return;
-    const c = await sigilCanvas(window._sigilKind || 'delnas');
-    const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
-    const file = new File([blob], 'delno-zvaigzdynas.jpg', { type: 'image/jpeg' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: 'Mano delno žvaigždynas' }); return; }
-      catch (e) { if (e && e.name === 'AbortError') return; }
-    }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'delno-zvaigzdynas.jpg';
+    const file = await sigilFile();
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a'); a.href = url; a.download = file.name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   } catch (e) {
     console.error('[downloadSigil] klaida:', e);
     alert('Nepavyko paruošti paveikslėlio. Bandyk dar kartą.');
+  }
+}
+
+// Dalinimasis: paveikslėlis + nuoroda per telefono dalinimosi langą; jei failų dalinimasis
+// nepalaikomas — tik nuoroda; jei nėra ir to — nuoroda nukopijuojama.
+async function shareSigil() {
+  const url = 'https://www.delnaskaitymas.lt/?utm_source=share&utm_campaign=zvaigzdynas';
+  const text = 'Mano delno žvaigždynas ✦ Pažvelk, ką pasakoja tavo delnai';
+  try {
+    if (!window._sigilData) return;
+    if (navigator.share) {
+      const file = await sigilFile();
+      if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: 'Mano delno žvaigždynas', text, url });
+      else await navigator.share({ title: 'Mano delno žvaigždynas', text, url });
+      return;
+    }
+    if (navigator.clipboard) { await navigator.clipboard.writeText(text + ' ' + url); alert('Nuoroda nukopijuota — įklijuok ją, kur nori pasidalinti.'); return; }
+    downloadSigil();
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+    console.error('[shareSigil] klaida:', e);
+    alert('Nepavyko pasidalinti. Bandyk dar kartą.');
   }
 }
 
