@@ -698,10 +698,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="insights-challenges" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kas žino savo kliūtis — tas gali jas įveikti.</div>
     </div>
-    <div class="result-final">
-      <div class="result-final-stars">✦ ✦ ✦</div>
-      <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Jis jau atkeliavo į tavo el. paštą PDF formatu.<br>Tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
-    </div>
     <!-- Asmeninis delno žvaigždynas (žr. renderSigil) -->
     <div class="rs rs-std" id="r-sigil-wrap" style="display:none;text-align:center">
       <div class="rs-label" style="justify-content:center">Tavo delno žvaigždynas</div>
@@ -717,20 +713,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <button onclick="downloadSigil()" style="flex:1;background:transparent;border:.5px solid rgba(212,168,67,.55);border-radius:10px;padding:13px 6px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">⬇ Atsisiųsti</button>
       </div>
     </div>
-    <div style="background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.25);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden">
-      <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">Pasidalink ir pakviesk</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink artimuosius – dalinkis kortele su savo stiprybėmis arba pakviesk juos pažvelgti, ką pasakoja jų delnai.</div>
+    <div class="result-final">
+      <div class="result-final-stars">✦ ✦ ✦</div>
+      <div class="result-final-text">Šis gyvenimo žemėlapis ir tavo delno žvaigždynas priklauso tik tau. Abu jau atkeliavo į tavo el. paštą: žemėlapis — PDF formatu, žvaigždynas — paveikslėliais.<br>Tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
+    </div>
+    <!-- Pasidalink, pakviesk ar padovanok — vienas blokas -->
+    <div style="background:#000;border:1px solid rgba(212,168,67,.45);box-shadow:0 4px 16px rgba(0,0,0,.4);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">Pasidalink, pakviesk ar padovanok</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink artimuosius – dalinkis kortele su savo stiprybėmis, pakviesk juos pažvelgti, ką pasakoja jų delnai, arba padovanok asmeninę delnų analizę.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="shareStory()" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis kortele su stiprybėmis</button>
         <button onclick="inviteFriend()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugus išbandyti</button>
+        <a href="/dovana?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border:1px solid var(--gold);border-radius:10px;background:rgba(212,168,67,.1);box-shadow:0 0 14px rgba(212,168,67,.18);color:var(--gold2);font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;text-decoration:none">🎁 Padovanoti gyvenimo žemėlapį →</a>
       </div>
-    </div>
-    <!-- Dovanų kuponas: atskiras blokas -->
-    <div style="background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(255,255,255,.02));border:.5px solid rgba(212,168,67,.35);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:22px;line-height:1;margin-bottom:6px">🎁</div>
-      <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">Padovanok gyvenimo žemėlapį</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Nustebink artimą žmogų asmenine delnų analize. Dovanų kortelę su kodu gausi iškart į savo el. paštą.</div>
-      <a href="/dovana?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" style="display:block;padding:13px;border:1px solid var(--gold);border-radius:10px;background:rgba(212,168,67,.1);box-shadow:0 0 14px rgba(212,168,67,.18);color:var(--gold2);font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;text-decoration:none">Padovanoti →</a>
     </div>
     <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
       <div style="font-size:14px;font-weight:600;color:var(--gold2);font-family:'Playfair Display',serif;margin-bottom:10px">Po 3 mėnesių – naujas žvilgsnis į tavo žemėlapį</div>
