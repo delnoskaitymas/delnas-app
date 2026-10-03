@@ -5142,18 +5142,11 @@ async function buildStory916Blob(){
   const SAFE_TOP = 300, SAFE_BOT = 1560;
   const cw = sq.width, ch = sq.height, cx = Math.round((W - cw) / 2);
   ctx.textAlign = 'center';
-  // Antraštė (2 eil.) + tarpas + kortelė + tarpas + kvietimas — be citatos, kad būtų erdvu
-  const headH = 112, gap = 56, ctaGap = 74;
-  const groupH = headH + gap + ch + ctaGap;
+  // Kortelė + kvietimas (antraštės nėra — prierašas su nuoroda būna dalinimosi tekste)
+  const ctaGap = 80;
+  const groupH = ch + ctaGap;
   const y0 = SAFE_TOP + Math.max(0, Math.round((SAFE_BOT - SAFE_TOP - groupH) / 2));
-  // Viršus
-  ctx.font = '600 40px "DM Sans", sans-serif'; ctx.fillStyle = '#f5eed8';
-  ctx.fillText('Nufotografavau savo delnus —', W/2, y0 + 36);
-  ctx.font = 'italic 700 54px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#f0c96a';
-  ctx.shadowColor = 'rgba(240,201,106,.45)'; ctx.shadowBlur = 16;
-  ctx.fillText('štai ką jie pasakė ✦', W/2, y0 + 100);
-  ctx.shadowBlur = 0;
-  const top = y0 + headH + gap;
+  const top = y0;
   ctx.drawImage(sq, cx, top, cw, ch);
   URL.revokeObjectURL(sq.src);
   // Apačia: kvietimas
