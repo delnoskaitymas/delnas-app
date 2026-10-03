@@ -1545,6 +1545,8 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
+- potencialas: šešios sritys — santykiai, karjera, finansai, kuryba (kūrybiškumas), intuicija, stiprybe (vidinė stiprybė). Kiekvienai: balas (sveikas skaičius 55–98, pagal tai, kiek stiprus šios srities potencialas matomas ŠIUOSE delnuose; balai turi aiškiai skirtis tarpusavyje) ir fraze (3–6 žodžiai „tu/tavo“ forma, pvz. Tavo stiprybė — patikimi ryšiai)
+- planas: 4 savaičių planas ateinančioms 30 dienų, pagrįstas šia analize (stiprybėmis, kryptimi ir kliūtimis). Kiekvienai savaitei: tema (2–4 žodžiai) ir veiksmas (1–2 sakiniai, iki 170 simbolių, vienas labai konkretus, lengvai įgyvendinamas veiksmas „tu“ forma, pvz. Šią savaitę užsirašyk tris idėjas ir vieną iš jų išbandyk iki sekmadienio)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
@@ -1559,7 +1561,7 @@ Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink j�
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"]}`
+{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"potencialas":{"santykiai":{"balas":84,"fraze":"..."},"karjera":{"balas":78,"fraze":"..."},"finansai":{"balas":72,"fraze":"..."},"kuryba":{"balas":90,"fraze":"..."},"intuicija":{"balas":81,"fraze":"..."},"stiprybe":{"balas":87,"fraze":"..."}},"planas":[{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."}]}`
     }
   ];
 
@@ -1591,7 +1593,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-5',
-          max_tokens: 10000,
+          max_tokens: 12000,
           temperature: 0.2,
           messages: [
             { role: 'user', content: step2Content },
@@ -1658,6 +1660,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
     throw parseErr;
   }
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
+  sanitizeExtraResult(result);
 
   // ═══════════════════════════════════════════════════════════════════
   // 3 žingsnis (AI korektūra) PILNAI PAŠALINTAS (2026-09-24, vartotojo prašymu) —
@@ -1669,6 +1672,21 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   applyKnownGrammarFixes(result);
 
   return result;
+}
+
+// Papildomi rezultato blokai (potencialo žemėlapis ir 30 dienų planas) —
+// neprivalomi: jei AI juos pateikė netvarkingai, jie tiesiog nerodomi.
+function sanitizeExtraResult(result) {
+  const KEYS = ['santykiai', 'karjera', 'finansai', 'kuryba', 'intuicija', 'stiprybe'];
+  const p = result.potencialas;
+  if (p && typeof p === 'object' && KEYS.every(k => p[k] && Number.isFinite(Number(p[k].balas)))) {
+    const out = {};
+    for (const k of KEYS) out[k] = { balas: Math.max(55, Math.min(98, Math.round(Number(p[k].balas)))), fraze: typeof p[k].fraze === 'string' ? applyTextFixes(p[k].fraze.trim().slice(0, 70)).text : '' };
+    result.potencialas = out;
+  } else delete result.potencialas;
+  const pl = Array.isArray(result.planas) ? result.planas.filter(w => w && typeof w.tema === 'string' && typeof w.veiksmas === 'string' && w.tema.trim() && w.veiksmas.trim()) : [];
+  if (pl.length >= 3) result.planas = pl.slice(0, 4).map(w => ({ tema: applyTextFixes(w.tema.trim().slice(0, 50)).text, veiksmas: applyTextFixes(w.veiksmas.trim().slice(0, 220)).text }));
+  else delete result.planas;
 }
 
 // --- ENDPOINT: Greita delno validacija ---
@@ -2739,11 +2757,12 @@ SKYRIAI:
 
 Taip pat:
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
+- izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
 
 PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
 
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
-{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"...","aprasymas":"..."},"bendravimas":{"balas":76,"fraze":"...","aprasymas":"..."},"vertybes":{"balas":88,"fraze":"...","aprasymas":"..."},"kasdienybe":{"balas":71,"fraze":"...","aprasymas":"..."},"trauka":{"balas":90,"fraze":"...","aprasymas":"..."},"ateitis":{"balas":80,"fraze":"...","aprasymas":"..."}},"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"...","aprasymas":"..."},"bendravimas":{"balas":76,"fraze":"...","aprasymas":"..."},"vertybes":{"balas":88,"fraze":"...","aprasymas":"..."},"kasdienybe":{"balas":71,"fraze":"...","aprasymas":"..."},"trauka":{"balas":90,"fraze":"...","aprasymas":"..."},"ateitis":{"balas":80,"fraze":"...","aprasymas":"..."}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
@@ -2793,6 +2812,14 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
     }
   }
   if (Object.keys(pal).length) out.palyginimai = pal;
+  // Įžvalgų kortelės prie kiekvieno skyriaus (kaip asmeninėje analizėje)
+  const ri = raw.izvalgos && typeof raw.izvalgos === 'object' ? raw.izvalgos : {};
+  const izv = {};
+  for (const k of PORA_RESULT_KEYS) {
+    const arr = Array.isArray(ri[k]) ? ri[k].filter(x => typeof x === 'string' && x.trim()).slice(0, 3).map(x => fix(x, 90)) : [];
+    if (arr.length) izv[k] = arr;
+  }
+  if (Object.keys(izv).length) out.izvalgos = izv;
   for (const k of PORA_RESULT_KEYS) {
     if (typeof raw[k] !== 'string' || !raw[k].trim()) throw new Error(`Trūksta skyriaus: ${k}`);
     out[k] = applyTextFixes(raw[k].trim()).text;

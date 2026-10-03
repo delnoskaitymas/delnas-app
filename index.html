@@ -179,9 +179,34 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pr-cmp-ab div{background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:9px 10px;font-size:12.5px;line-height:1.45;color:rgba(255,255,255,.78)}
 .pr-cmp-ab small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
 .pr-cmp-is{margin-top:9px;padding:8px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.08);border-radius:0 8px 8px 0;font-size:13px;line-height:1.5;color:#f3e7c6}
-.pr-rv{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.pr-rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.25,.46,.45,.94),transform .8s cubic-bezier(.25,.46,.45,.94)}
 .pr-rv.pv{opacity:1;transform:none}
+#s-pora-result .insight-card{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+#s-pora-result .insight-card.pv{opacity:1;transform:none}
 .rs-label .pr-ic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1px solid rgba(212,168,67,.5);flex-shrink:0;background:rgba(212,168,67,.08)}
+/* Asmeninė analizė — potencialo žemėlapis ir 30 dienų kelias */
+.rs-reveal.visible .pr-radar .poly{transform:scale(1)}
+.rs-reveal .pr-fill{width:0}
+.rs-reveal.visible .pr-fill{width:var(--w)}
+.px-top{display:flex;align-items:center;gap:12px;margin:4px 0 6px;padding:12px 14px;border-radius:12px;background:linear-gradient(120deg,rgba(212,168,67,.16),rgba(212,168,67,.04));border:1px solid rgba(212,168,67,.45)}
+.px-top b{font-family:'Playfair Display',serif;font-size:30px;color:var(--gold2);line-height:1}
+.px-top div{font-size:12px;color:var(--muted);line-height:1.4}
+.px-top div strong{display:block;font-size:14.5px;color:#f3e7c6;font-weight:700}
+.px-plan{position:relative;margin-top:14px;padding-left:4px}
+.px-step{position:relative;display:flex;gap:12px;padding-bottom:16px}
+.px-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:2px;width:1.5px;background:linear-gradient(rgba(212,168,67,.55),rgba(212,168,67,.12))}
+.px-dot{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--gold);background:#000;color:var(--gold2);display:flex;align-items:center;justify-content:center;
+  font:700 13px 'DM Sans',sans-serif;cursor:pointer;transition:all .3s;box-shadow:0 0 12px rgba(212,168,67,.2);-webkit-tap-highlight-color:transparent}
+.px-step.done .px-dot{background:linear-gradient(125deg,#fff0c4,#e0a930 55%,#8a5a0f);color:#140f02;border-color:#f0c96a;box-shadow:0 0 16px rgba(240,201,106,.6)}
+.px-wk{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:1px}
+.px-tm{font-family:'Playfair Display',serif;font-size:16.5px;color:#f3e7c6;margin:2px 0 4px}
+.px-ac{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.72)}
+.px-step.done .px-tm{color:var(--gold2)}
+.px-prog{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:12px;color:var(--muted)}
+.px-prog .pr-track{flex:1}
+.px-prog .pr-fill{transition:width .6s ease}
+.px-done{display:none;margin-top:10px;text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--gold2)}
+.px-plan.all .px-done{display:block}
 /* Porų suderinamumas */
 .pora-ring{position:relative;width:150px;height:150px;margin:18px auto 14px}
 .pora-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -760,6 +785,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div id="insights-challenges" class="insight-cards"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Kas žino savo kliūtis — tas gali jas įveikti.</div>
     </div>
+    <div id="r-extra"></div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Jis jau atkeliavo į tavo el. paštą PDF formatu.<br>Tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
@@ -3516,6 +3542,7 @@ function displayResult(r){
   renderInsights('insights-challenges', r.klutys_insights);
   // PATAISYTA: saugus tikrinimas prieš naudojimą
   const rStr=document.getElementById('r-strengths');if(rStr) rStr.innerHTML='';
+  renderResultExtra(r);
   // Sklandi "iškilimo" animacija (fade-in + slide-up), su patikima
   // apsauga jei kas nors nepavyktų (žr. initScrollReveal() aukščiau)
   initScrollReveal();
@@ -3562,6 +3589,44 @@ function displayResult(r){
   // kviečia go('s-result') PRIEŠ displayResult(). Dvigubas kvietimas kėlė
   // konfliktuojančią/persidengiančią fuOut+fu animacijos laiko problemą,
   // kuri sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatų ekraną.
+}
+
+// ═══ „Vau“ blokas po visų skyrių: potencialo žemėlapis + 30 dienų kelias ═══
+const POT_DIMS=[['santykiai','Santykiai','Santykiai'],['karjera','Karjera','Karjera'],['finansai','Finansai','Finansai'],['kuryba','Kūrybiškumas','Kūryba'],['intuicija','Intuicija','Intuicija'],['stiprybe','Vidinė stiprybė','Stiprybė']];
+function _xEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderResultExtra(r){
+  const box=document.getElementById('r-extra'); if(!box) return;
+  let h='';
+  const p=r.potencialas;
+  if(p){
+    const top=POT_DIMS.map(([k,l])=>[l,(p[k]||{}).balas||0,(p[k]||{}).fraze||'']).sort((a,b)=>b[1]-a[1])[0];
+    const bars=POT_DIMS.map(([k,label])=>{ const d=p[k]||{}; return '<div class="pr-bar"><div class="pr-bar-top"><b>'+label+'</b><span>'+(d.balas||0)+'%</span></div>'+(d.fraze?'<div class="pr-bar-ph">'+_xEsc(d.fraze)+'</div>':'')+'<div class="pr-track"><div class="pr-fill" style="--w:'+(d.balas||0)+'%"></div></div></div>'; }).join('');
+    h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo potencialo žemėlapis</div>'+
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">Šešios gyvenimo sritys — kur tavo delnuose matomas ryškiausias potencialas.</div>'+
+      '<div class="px-top"><b>'+top[1]+'%</b><div><strong>Ryškiausia: '+_xEsc(top[0])+'</strong>'+_xEsc(top[2])+'</div></div>'+
+      radarSvg(POT_DIMS,p,'Tavo potencialo žemėlapis')+bars+
+      '<div style="margin-top:14px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas — tai, ką gali išauginti. Pradėk nuo stipriausios srities.</div></div>';
+  }
+  const pl=r.planas;
+  if(pl&&pl.length){
+    const key='delnasPlan:'+(window._orderNumber||(r.userName||'')+'|'+(pl[0].tema||''));
+    let done=[]; try{ done=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
+    const steps=pl.map((w,i)=>'<div class="px-step'+(done.includes(i)?' done':'')+'" data-i="'+i+'"><button type="button" class="px-dot" aria-label="Pažymėti '+(i+1)+' savaitę kaip atliktą">'+(done.includes(i)?'✓':(i+1))+'</button><div><div class="px-wk">'+(i+1)+' savaitė</div><div class="px-tm">'+_xEsc(w.tema)+'</div><div class="px-ac">'+_xEsc(w.veiksmas)+'</div></div></div>').join('');
+    h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo 30 dienų kelias</div>'+
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">Asmeninis planas, sudarytas pagal tavo delnų analizę. Kai atliksi savaitės žingsnį — paspausk jo numerį.</div>'+
+      '<div class="px-plan" data-key="'+_xEsc(key)+'">'+steps+'<div class="px-prog"><span class="px-cnt"></span><div class="pr-track"><div class="pr-fill px-pf"></div></div></div><div class="px-done">✦ Puiku — tavo pirmasis mėnuo įveiktas!</div></div>'+
+      '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Vienas mažas žingsnis per savaitę — ir po mėnesio būsi toliau, nei manai.</div></div>';
+  }
+  box.innerHTML=h;
+  const plan=box.querySelector('.px-plan');
+  if(plan){
+    const upd=()=>{ const all=plan.querySelectorAll('.px-step'), d=plan.querySelectorAll('.px-step.done').length;
+      plan.querySelector('.px-cnt').textContent=d+' iš '+all.length+' atlikta'; plan.querySelector('.px-pf').style.width=(d/all.length*100)+'%'; plan.classList.toggle('all',d===all.length); };
+    plan.addEventListener('click',e=>{ const b=e.target.closest('.px-dot'); if(!b) return; const st=b.closest('.px-step'), i=+st.dataset.i;
+      st.classList.toggle('done'); b.textContent=st.classList.contains('done')?'✓':(i+1);
+      const d=[...plan.querySelectorAll('.px-step.done')].map(x=>+x.dataset.i); try{ localStorage.setItem(plan.dataset.key,JSON.stringify(d)); }catch(err){} upd(); });
+    upd();
+  }
 }
 
 async function registerReminder(){
@@ -3977,6 +4042,39 @@ function buildResultPdfDoc(r, name, orderNumber){
     // karto pereinama į naują puslapį, kad sekanti tema pradėtų švariai.
     if(PAGE_BOTTOM - y < 15){ y = newPage(); }
   });
+
+  // Potencialo žemėlapis ir 30 dienų kelias (jei analizėje yra)
+  if(r.potencialas){
+    if(y > PAGE_BOTTOM - 110){ y = newPage(); }
+    doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO POTENCIALO ŽEMĖLAPIS', margin, y); y += 12;
+    POT_DIMS.forEach(([k,label])=>{
+      const d=r.potencialas[k]||{}, v=d.balas||0;
+      doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(232,226,212); doc.text(label, margin, y);
+      doc.setTextColor(...GOLD2); doc.text(v+'%', W-margin, y, {align:'right'});
+      if(d.fraze){ doc.setFont('NotoSans','normal'); doc.setFontSize(13); doc.setTextColor(...MUTED); doc.text(d.fraze, margin, y+6.5); }
+      const by=y+(d.fraze?10:4);
+      doc.setFillColor(45,36,15); doc.roundedRect(margin, by, maxW, 2.8, 1.4, 1.4, 'F');
+      doc.setFillColor(...GOLD); doc.roundedRect(margin, by, maxW*v/100, 2.8, 1.4, 1.4, 'F');
+      y = by + 13;
+    });
+    y += 6;
+  }
+  if(r.planas && r.planas.length){
+    if(y > PAGE_BOTTOM - 45){ y = newPage(); }
+    doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO 30 DIENŲ KELIAS', margin, y); y += 12;
+    r.planas.forEach((w,i)=>{
+      doc.setFont('NotoSans','normal'); doc.setFontSize(15);
+      const lines=doc.splitTextToSize(w.veiksmas, maxW-14);
+      if(y + 12 + lines.length*7.5 > PAGE_BOTTOM){ y = newPage(); }
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.circle(margin+4, y-1.5, 4, 'S');
+      doc.setFont('NotoSans','bold'); doc.setFontSize(12); doc.setTextColor(...GOLD2); doc.text(String(i+1), margin+4, y, {align:'center'});
+      doc.setFontSize(15); doc.text((i+1)+' savaitė · '+w.tema, margin+13, y);
+      y += 7.5; doc.setFont('NotoSans','normal'); doc.setFontSize(15); doc.setTextColor(...BODY);
+      lines.forEach(l=>{ doc.text(l, margin+13, y); y += 7.5; });
+      y += 5;
+    });
+    y += 4;
+  }
 
   // Apatinė dalis — trumpas padėkos tekstas + aktyvus MYGTUKAS į svetainę
   // (paspaudus jį PDF skaitytuvas atidaro programėlę, kad vartotojas
@@ -5403,6 +5501,7 @@ function poraPoll(){
 }
 
 // Šešios santykių sritys ir delnų palyginimai (nauji rezultatai; seni rodomi be jų)
+const PORA_FOOTERS={traukia:'Tai, kas jus traukia, verta priminti vienas kitam dažniau.',bendravimas:'Geras pokalbis prasideda nuo noro išgirsti.',papildo:'Jūsų skirtumai — bendra jūsų stiprybė.',trintis:'Kiekviena trintis — galimybė geriau pažinti vienas kitą.',ateitis:'Bendri planai suartina labiau nei bendri žodžiai.',stiprybe:'Ši stiprybė — jūsų poros pagrindas.',patarimai:'Maži kasdieniai žingsniai kuria didelius pokyčius.'};
 const PORA_DIMS=[['jausmai','Jausmai ir artumas','Jausmai'],['bendravimas','Bendravimas','Bendravimas'],['vertybes','Vertybės ir požiūris','Vertybės'],['kasdienybe','Kasdienybė ir ritmas','Kasdienybė'],['trauka','Trauka ir aistra','Trauka'],['ateitis','Ateities planai','Ateitis']];
 const PORA_CMP=[['sirdies','Širdies linijos · jausmai'],['galvos','Galvos linijos · mąstymas'],['gyvenimo','Gyvenimo linijos · tempas'],['forma','Delnų forma · charakteris']];
 const PORA_ICON_PATHS={
@@ -5421,7 +5520,9 @@ const PORA_ICON_PATHS={
 function poraIcon(k,sz){ return '<svg width="'+(sz||14)+'" height="'+(sz||14)+'" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(PORA_ICON_PATHS[k]||'')+'</svg>'; }
 function poraLevel(p){ return p>=90?'Išskirtinis ryšys':p>=82?'Labai stiprus ryšys':p>=72?'Stiprus ryšys':'Ryšys, kurį verta puoselėti'; }
 // Radaro diagrama (6 ašys). Balai 55–98 → spindulys nuo 30 iki 100, kad skirtumai būtų matomi
-function poraRadarSvg(sr){
+function poraRadarSvg(sr){ return radarSvg(PORA_DIMS, sr, 'Jūsų ryšio žemėlapis'); }
+function radarSvg(DIMS, sr, aria){
+  const PORA_DIMS=DIMS;
   const cx=165, cy=135, R=88, n=PORA_DIMS.length;
   const pt=(i,f)=>{ const a=-Math.PI/2+i*2*Math.PI/n; return [cx+Math.cos(a)*R*f, cy+Math.sin(a)*R*f]; };
   const ring=f=>PORA_DIMS.map((_,i)=>pt(i,f).map(v=>v.toFixed(1)).join(',')).join(' ');
@@ -5435,7 +5536,7 @@ function poraRadarSvg(sr){
   PORA_DIMS.forEach(([k,,short],i)=>{ const [x,y]=pt(i,1.2); const anc=Math.abs(x-cx)<8?'middle':(x>cx?'start':'end');
     lab+='<text x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="'+anc+'" font-family="DM Sans,sans-serif" font-size="11.5" font-weight="700" fill="#e8e2d4">'+short+'</text>'+
          '<text x="'+x.toFixed(1)+'" y="'+(y+18).toFixed(1)+'" text-anchor="'+anc+'" font-family="Playfair Display,serif" font-size="12.5" fill="#f0c96a">'+((sr[k]||{}).balas||'')+'%</text>'; });
-  return '<svg class="pr-radar" viewBox="0 0 330 280" role="img" aria-label="Jūsų ryšio žemėlapis"><defs><linearGradient id="prRadG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4" stop-opacity=".55"/><stop offset="1" stop-color="#c98a1f" stop-opacity=".35"/></linearGradient></defs>'+g+
+  return '<svg class="pr-radar" viewBox="0 0 330 280" role="img" aria-label="'+(aria||'')+'"><defs><linearGradient id="prRadG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4" stop-opacity=".55"/><stop offset="1" stop-color="#c98a1f" stop-opacity=".35"/></linearGradient></defs>'+g+
     '<g class="poly"><polygon points="'+pts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')+'" fill="url(#prRadG)" stroke="#f0c96a" stroke-width="2" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px rgba(240,201,106,.55))"/>'+dots+'</g>'+lab+'</svg>';
 }
 function poraMapHtml(r){
@@ -5453,7 +5554,7 @@ function poraCompareHtml(r){
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
 function poraReveal(){
-  const els=document.querySelectorAll('#s-pora-result .pr-rv');
+  const els=document.querySelectorAll('#s-pora-result .pr-rv, #s-pora-result .insight-card');
   const on=el=>{ el.classList.add('pv'); el.querySelectorAll('.pr-fill').forEach(f=>{ f.style.width=f.dataset.w+'%'; }); };
   if(!('IntersectionObserver' in window)){ els.forEach(on); return; }
   const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ on(e.target); io.unobserve(e.target); } }),{ threshold:.15 });
@@ -5469,8 +5570,13 @@ function renderPoraResult(r){
   document.getElementById('pora-map').innerHTML=poraMapHtml(r);
   document.getElementById('pora-compare').innerHTML=poraCompareHtml(r);
   const para=t=>String(t||'').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).map(s=>'<p>'+poraEsc(s.trim())+'</p>').join('');
-  document.getElementById('pora-sections').innerHTML=PORA_SECTIONS.map(([k,title])=>
-    '<div class="rs rs-std pr-rv"><div class="rs-label" style="white-space:normal;line-height:1.35"><span class="pr-ic">'+poraIcon(k)+'</span>'+title+'</div><div class="rs-body">'+para(r[k])+'</div></div>').join('');
+  // Skyriai — lygiai tokia pati struktūra kaip asmeninėje analizėje: antraštė, tekstas, auksinės įžvalgų kortelės, baigiamoji eilutė
+  const iz=r.izvalgos||{};
+  document.getElementById('pora-sections').innerHTML=PORA_SECTIONS.map(([k,title])=>{
+    const used=new Set();
+    const cards=(iz[k]||[]).map(t=>'<div class="insight-card"><div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+pillIconFor(t,used)+'</div><div class="insight-text">'+poraEsc(t)+'</div></div>').join('');
+    return '<div class="rs rs-std pr-rv"><div class="rs-label">'+title+'</div><div class="rs-body">'+para(r[k])+'</div>'+(cards?'<div class="insight-cards">'+cards+'</div>':'')+
+      '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ '+PORA_FOOTERS[k]+'</div></div>'; }).join('');
   go('s-pora-result');
   window.scrollTo(0,0);
   // Procentų žiedo animacija, tada ryšio lygio užrašas
@@ -5555,6 +5661,9 @@ function buildPoraPdfDoc(){
     doc.splitTextToSize(title.toUpperCase(), maxW).forEach(l=>{ doc.text(l, M, y); y+=8; });
     y+=2; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY);
     doc.splitTextToSize(String(r[k]||''), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
+    const iz=(r.izvalgos||{})[k]||[];
+    if(iz.length){ y+=2; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2);
+      iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
     y+=10;
   });
   if(y>262){ doc.addPage(); dark(); y=40; }
