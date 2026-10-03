@@ -3470,7 +3470,7 @@ function initScrollReveal(){
     const targets=[];
     sections.forEach((sec,secIdx)=>{
       targets.push({el:sec,secIdx,kind:'section'});
-      sec.querySelectorAll('.insight-card').forEach(c=>targets.push({el:c,secIdx,kind:'child'}));
+      sec.querySelectorAll('.insight-card, .rv-child').forEach(c=>targets.push({el:c,secIdx,kind:'child'}));
     });
     // Grupuota struktūra (pagal skyrių) — naudojama TIK manualCheck()
     // našumo optimizacijai (žr. komentarą prie manualCheck žemiau).
@@ -3496,6 +3496,12 @@ function initScrollReveal(){
     // (.rs-body p) NELIEČIAMI — jie lieka savo numatytoje CSS būsenoje
     // (visada opacity:1, jokios animacijos), kaip reikalauta.
     sections.forEach(el=>{
+      el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
+      el.style.opacity='0';
+      el.style.transform='translateY(26px)';
+    });
+    // Delnų lentelės eilutės (.rv-child) — kaip skyriai: išnyra po vieną, kai pačios patenka į ekraną
+    document.querySelectorAll('#s-result .rv-child').forEach(el=>{
       el.style.transition='opacity .8s cubic-bezier(.25,.46,.45,.94), transform .8s cubic-bezier(.25,.46,.45,.94)';
       el.style.opacity='0';
       el.style.transform='translateY(26px)';
@@ -3669,7 +3675,7 @@ function initScrollReveal(){
       window.removeEventListener("scroll",markLayoutStable);
       if(obs){obs.disconnect();obs=null;}
       if(forceVisible){
-        document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
+        document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card, #s-result .rv-child').forEach(el=>{
           el.style.transition='none';
           el.style.animation='none';
           el.style.opacity='1';
@@ -3718,7 +3724,7 @@ function initScrollReveal(){
     setTimeout(()=>teardown(true),1206000);
   }catch(e){
     console.error('initScrollReveal klaida, rodome viską iškart:',e);
-    document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card').forEach(el=>{
+    document.querySelectorAll('#s-result .rs-reveal, #s-result .rs-body p, #s-result .insight-card, #s-result .rv-child').forEach(el=>{
       el.style.transition='none';el.style.animation='none';el.style.opacity='1';el.style.transform='none';el.classList.add('visible');
     });
   }
@@ -3846,9 +3852,9 @@ const PALMS_CMP=[['sirdis','Širdies linija · jausmai','sirdies'],['protas','Ga
 // Bloko HTML (naudojamas ir rezultate, ir „👁 Pavyzdys“ lange); po jo — jungtis į I skyrių
 function palmsBlockHtml(dg, cls){
   const ic=k=>(typeof poraIcon==='function'?poraIcon(k,15):'');
-  const items=PALMS_CMP.filter(([k])=>dg[k]).map(([k,label,icon])=>'<div class="pr-cmp"><div class="pr-cmp-t">'+ic(icon)+label+'</div><div class="pr-cmp-ab"><div><small>Kairysis · prigimtis</small>'+_xEsc(dg[k].kairys)+'</div><div><small>Dešinysis · dabar</small>'+_xEsc(dg[k].desinys)+'</div></div></div>').join('');
+  const items=PALMS_CMP.filter(([k])=>dg[k]).map(([k,label,icon])=>'<div class="pr-cmp rv-child"><div class="pr-cmp-t">'+ic(icon)+label+'</div><div class="pr-cmp-ab"><div><small>Kairysis · prigimtis</small>'+_xEsc(dg[k].kairys)+'</div><div><small>Dešinysis · dabar</small>'+_xEsc(dg[k].desinys)+'</div></div></div>').join('');
   return '<div class="rs rs-std '+(cls||'')+' pl-greta"><div class="pr-h">Tavo delnai greta</div><div class="pr-sub">Kairysis delnas rodo, su kuo gimei, dešinysis — kuo tapai dabar</div>'+items+
-    (dg.isvada?'<div class="pl-is"><b>Ką per gyvenimą išsiugdei</b>'+_xEsc(dg.isvada)+'</div>':'')+'</div>'+
+    (dg.isvada?'<div class="pl-is rv-child"><b>Ką per gyvenimą išsiugdei</b>'+_xEsc(dg.isvada)+'</div>':'')+'</div>'+
     '<div class="pl-bridge" aria-hidden="true"><i></i><span>Ką tai reiškia tavo gyvenime</span><i class="dn"></i></div>';
 }
 function renderPalmsSideBySide(r){
@@ -5970,7 +5976,7 @@ function poraCompareHtml(r){
   const p=window._pora||{};
   const orb='<div class="pora-orb"><i></i></div>', orbM='<div class="pora-orb"><i style="transform:scaleX(-1)"></i></div>';
   const items=PORA_CMP.filter(([k])=>pc[k]).map(([k,label])=>{ const c=pc[k];
-    return '<div class="pr-cmp"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
+    return '<div class="pr-cmp pr-rv"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
   return '<div class="pr-card pr-rv"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė abiejų jūsų delnų palyginimas</div><div class="pr-names"><div>'+orb+poraEsc(p.nameA)+'</div><div>'+orbM+poraEsc(p.nameB)+'</div></div>'+items+'</div>';
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
