@@ -2631,6 +2631,10 @@ setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
 const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
+// Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
+const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
+// Delnų palyginimai: kiekvienam — abiejų partnerių bruožas ir ką jų derinys reiškia porai
+const PORA_COMPARE_KEYS = ['sirdies', 'galvos', 'gyvenimo', 'forma'];
 
 function loadPoraOrders() {
   try {
@@ -2700,16 +2704,29 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
       type: 'text',
       text: `PIRMENYBĖ: šį tekstą skaitys du realūs žmonės, sumokėję pinigus, gimtąja lietuvių kalba. Taisyklinga, natūrali lietuvių kalba yra tiek pat svarbi kaip turinys.
 
-Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — dviejų žmonių, ${A} ir ${B}, abiejų delnų nuotraukos. Palygink jų delnus (formą, pirštų ilgį ir padėtį, linijų ryškumą ir eigą, kalnelius, kairio ir dešinio delno skirtumus) ir parašyk jų poros suderinamumo analizę.
+Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — dviejų žmonių, ${A} ir ${B}, abiejų delnų nuotraukos (po kairįjį ir dešinįjį). Tavo užduotis — kuo tiksliau palyginti JŲ KONKREČIUS delnus ir parašyti poros suderinamumo analizę.
+
+KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
+1. Atidžiai išnagrinėk kiekvieną iš 4 nuotraukų atskirai: delno formą (kvadratinis / pailgas, platus / siauras), pirštų ilgį palyginus su delnu, nykščio padėtį, širdies, galvos, gyvenimo ir likimo linijų ilgį, gylį, lenkimą, pradžią ir pabaigą, šakeles, ryškiausius kalnelius, kairio ir dešinio delno skirtumus (kairysis — prigimtis, dešinysis — kaip žmogus gyvena dabar).
+2. Kiekvienai sričiai palygink abu žmones TARPUSAVYJE: kur bruožai panašūs (lengvas supratimas), kur priešingi, bet papildo, o kur priešingi ir kelia trintį.
+3. Tik tada rašyk išvadas. Kiekvienas teiginys turi kilti iš to, ką MATAI būtent šiuose delnuose — ne bendros frazės, tinkančios bet kuriai porai. Dvi skirtingos poros turi gauti aiškiai skirtingas analizes ir balus.
+4. Jei kurios nors linijos nuotraukoje neįžiūri — rašyk pagal tai, kas matoma aiškiausiai, ir nieko neišsigalvok.
 
 TAISYKLĖS:
 - Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku. Kai kalbi apie vieną iš jų — vadink vardu (${A} arba ${B}), vardą naudok tokį, koks parašytas, ir derink linksnį natūraliai.
 - Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos (pvz. „pasiruošęs/-usi“); rink neutralias formas.
-- Kiekvienas sakinys — konkretus, šiai porai būdingas teiginys, pagrįstas tuo, ką matai jų delnuose; bet PATIEMS fiziniams požymiams (pirštų ilgiui, linijoms, kalneliams) tekste vietos neskirk — rašyk išvadas apie jų santykį.
+- Skyrių tekstuose (traukia…patarimai) PATIEMS fiziniams požymiams vietos neskirk — rašyk išvadas apie jų santykį. Fiziniai požymiai aprašomi TIK lauke „palyginimai“.
 - Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
-- DRAUDŽIAMA: „gali būti“, „tikėtina“, „energija“, „vibracija“, metaforos ir palyginimai („kaip…“, „tarsi…“), knyginiai ar mokslinio stiliaus žodžiai, žodis „galva“.
+- DRAUDŽIAMA: „gali būti“, „tikėtina“, „energija“, „vibracija“, metaforos ir palyginimai („kaip…“, „tarsi…“), knyginiai ar mokslinio stiliaus žodžiai, žodis „galva“ (išskyrus pavadinimą „galvos linija“).
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Kiekvienas skyrius: 6–8 sakiniai, sklandus tekstas (ne sąrašas); skyriai nesikartoja tarpusavyje.
+
+PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delno forma ir pirštai: charakteris). Kiekvienai:
+- a: ką matai ${A} delnuose ir ką tai reiškia (iki 90 simbolių, pvz. Ilga, švelniai lenkta — jausmus reiškia atvirai ir šiltai)
+- b: tas pats apie ${B} (iki 90 simbolių)
+- isvada: ką šių dviejų bruožų derinys reiškia jūsų porai (1 sakinys, iki 140 simbolių)
+
+SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — balas (sveikas skaičius 55–98) ir frazė: 3–7 žodžių išvada (pvz. Atviri ir šilti vienas kitam).
 
 SKYRIAI:
 - traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
@@ -2721,13 +2738,12 @@ SKYRIAI:
 - patarimai (Patarimai jums abiem): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
 
 Taip pat:
-- suderinamumas: sveikas skaičius nuo 60 iki 96 — bendras suderinamumo įvertis pagal tai, kiek jūsų delnų bruožai dera tarpusavyje
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
 
-PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus, be fizinių požymių ir be giminę turinčių formų? Jei ne — perrašyk.
+PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
 
-ATSAKYK TIKTAI JSON:
-{"suderinamumas":82,"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
+{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"..."},"bendravimas":{"balas":76,"fraze":"..."},"vertybes":{"balas":88,"fraze":"..."},"kasdienybe":{"balas":71,"fraze":"..."},"trauka":{"balas":90,"fraze":"..."},"ateitis":{"balas":80,"fraze":"..."}},"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
@@ -2736,8 +2752,8 @@ ATSAKYK TIKTAI JSON:
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
-      }, 150000);
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 10000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+      }, 170000);
       data = await r.json();
     } catch (e) {
       console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
@@ -2753,7 +2769,30 @@ ATSAKYK TIKTAI JSON:
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('JSON nerastas');
   const raw = parseJsonLenient(m[0]);
-  const out = { suderinamumas: clampScore(raw.suderinamumas) };
+  const fix = (t, max) => applyTextFixes(String(t).trim().slice(0, max)).text;
+  // Sritys: balai 55–98; bendras suderinamumas — sričių vidurkis (nuoseklu su tuo, ką mato vartotojas)
+  const sritys = {};
+  const rs = raw.sritys && typeof raw.sritys === 'object' ? raw.sritys : {};
+  for (const k of PORA_DIMENSIONS) {
+    const d = rs[k] || {};
+    const v = Math.round(Number(d.balas));
+    if (Number.isFinite(v)) sritys[k] = { balas: Math.max(55, Math.min(98, v)), fraze: typeof d.fraze === 'string' ? fix(d.fraze, 60) : '' };
+  }
+  const allDims = PORA_DIMENSIONS.every(k => sritys[k]);
+  const avg = allDims ? PORA_DIMENSIONS.reduce((a, k) => a + sritys[k].balas, 0) / PORA_DIMENSIONS.length : raw.suderinamumas;
+  const out = { suderinamumas: clampScore(avg) };
+  if (allDims) out.sritys = sritys;
+  else console.log('[pora] AI nepateikė visų sričių balų — rodomas tik bendras įvertis');
+  // Delnų palyginimai (neprivalomi — jei AI jų nepateikė, rezultatas vis tiek rodomas)
+  const rp = raw.palyginimai && typeof raw.palyginimai === 'object' ? raw.palyginimai : {};
+  const pal = {};
+  for (const k of PORA_COMPARE_KEYS) {
+    const c = rp[k];
+    if (c && typeof c.a === 'string' && typeof c.b === 'string' && c.a.trim() && c.b.trim()) {
+      pal[k] = { a: fix(c.a, 110), b: fix(c.b, 110), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 170) : '' };
+    }
+  }
+  if (Object.keys(pal).length) out.palyginimai = pal;
   for (const k of PORA_RESULT_KEYS) {
     if (typeof raw[k] !== 'string' || !raw[k].trim()) throw new Error(`Trūksta skyriaus: ${k}`);
     out[k] = applyTextFixes(raw[k].trim()).text;
