@@ -6140,7 +6140,7 @@ async function poraCardBlob(){
   x.strokeStyle='rgba(212,168,67,.55)'; x.lineWidth=2; x.strokeRect(40,40,W-80,1270);
   x.textAlign='center';
   x.fillStyle='#d4a843'; x.font="600 27px 'DM Sans', sans-serif"; x.fillText('PORŲ SUDERINAMUMAS PAGAL DELNUS', cx, 120);
-  // Du delnai (programėlės ikona), persidengę, su švytėjimu tarp jų
+  // Du delnai (programėlės ikona), persidengę
   const src=getHeroPhotoDataUrl(), oR=78;
   if(src){
     const icon=await makeAppPalmIcon(src, oR*2);
@@ -6149,8 +6149,6 @@ async function poraCardBlob(){
       if(icon){ x.save(); x.beginPath(); x.arc(ox,235,oR,0,Math.PI*2); x.clip(); if(mirror){ x.translate(ox*2,0); x.scale(-1,1); } x.drawImage(icon,ox-oR,235-oR,oR*2,oR*2); x.restore(); }
       x.strokeStyle='#d4a843'; x.lineWidth=5; x.beginPath(); x.arc(ox,235,oR,0,Math.PI*2); x.stroke();
     });
-    const sg=x.createRadialGradient(cx,235,0,cx,235,30); sg.addColorStop(0,'rgba(255,243,207,1)'); sg.addColorStop(.35,'rgba(240,201,106,.85)'); sg.addColorStop(1,'rgba(212,168,67,0)');
-    x.fillStyle=sg; x.beginPath(); x.arc(cx,235,30,0,Math.PI*2); x.fill();
   }
   x.fillStyle='#f0c96a'; x.font="italic 700 66px 'Playfair Display', serif";
   const nm=poraNames(); let fs=66; while(x.measureText(nm).width>900 && fs>40){ fs-=4; x.font="italic 700 "+fs+"px 'Playfair Display', serif"; }
@@ -6188,7 +6186,7 @@ async function poraCardBlob(){
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
 }
 async function poraShareCard(){
-  const url='https://www.delnaskaitymas.lt/pora?utm_source=share&utm_campaign=pora';
+  const url='https://www.delnaskaitymas.lt/pora';
   const text='Mūsų porų suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
   try{
     const blob=await poraCardBlob(), file=new File([blob],'poru-suderinamumas.jpg',{type:'image/jpeg'});
