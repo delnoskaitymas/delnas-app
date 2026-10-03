@@ -21,12 +21,19 @@ h1{font:400 32px/1.15 'Playfair Display',serif;text-align:center;margin-bottom:8
 h1 em{font-style:italic;color:var(--gold)}
 .lead{text-align:center;font-size:14px;line-height:1.55;color:var(--muted);margin-bottom:18px}
 .left{text-align:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:4px 0 12px}
-.qa{background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px 16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
-.qa .q{font:italic 400 17px/1.4 'Playfair Display',serif;color:var(--gold2);margin-bottom:12px}
-.qa .q small{display:block;font:700 10.5px 'DM Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;font-style:normal;color:var(--gold);margin-bottom:5px}
-.qa .a p{font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.75);margin-bottom:12px}
+/* Atsakymo kortelė — tokia pat kaip rezultato ekrano skyriaus blokas (.rs.rs-std) */
+.qa{position:relative;background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:22px 16px 18px;margin-bottom:24px;
+  box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.02) inset}
+.qa::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5}
+.qa::after{content:'';position:absolute;left:12%;right:12%;bottom:-10px;height:16px;background:radial-gradient(ellipse at center,rgba(212,168,67,.4) 0%,rgba(212,168,67,.12) 45%,transparent 75%);filter:blur(6px);pointer-events:none;z-index:-1}
+.qa .lbl{font-size:12px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600;text-shadow:0 0 8px rgba(212,168,67,.4);white-space:nowrap}
+.qa .lbl::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,rgba(212,168,67,.3),transparent)}
+.qa .q{font:italic 400 17px/1.4 'Playfair Display',serif;color:var(--gold2);margin-bottom:14px}
+.qa .a p{font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.68);margin-bottom:16px}
 .qa .a p:last-child{margin-bottom:0}
 .qa.new{animation:rise .8s cubic-bezier(.25,.46,.45,.94)}
+.qa.wait{text-align:center}
+.qa.wait .q{margin-bottom:18px}
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .ask{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:16px}
 label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
@@ -41,7 +48,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
 .note{font-size:11px;color:var(--faint);text-align:center;margin-top:9px;line-height:1.5}
 .note a{color:var(--gold)}
 .err{display:none;color:#ff9b8a;font-size:13px;margin-top:10px;text-align:center}
-.think{display:none;text-align:center;padding:22px 0 8px;color:var(--muted);font-size:13.5px}
+.think{color:var(--muted);font-size:13.5px;line-height:1.5}
 .think .orb{width:54px;height:54px;margin:0 auto 12px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .status{text-align:center;color:var(--muted);font-size:14px;line-height:1.6;margin:30px 0}
@@ -76,12 +83,14 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
       <button type="submit" class="btn" id="go" disabled>Gauti atsakymą →</button>
       <div class="note" id="note">Užduodant pirmą klausimą paslauga suteikiama iš karto (žr. <a href="/naudojimosi-salygos#klausk" target="_blank">sąlygų 5c skyrių</a>).</div>
       <div class="err" id="err"></div>
-      <div class="think" id="think"><div class="orb"></div>Delnai atsako… tai užtrunka apie 20–40 sekundžių</div>
     </form>
   </div>
+  <!-- Kol laukiama atsakymo — vietoj klausimo laukelio -->
+  <div class="qa wait hidden" id="wait"><div class="lbl" id="wait-lbl"></div><div class="q" id="wait-q"></div>
+    <div class="think"><div class="orb"></div>Delnai atsako… tai užtrunka apie 20–40 sekundžių</div></div>
 
   <div id="all-done" class="hidden">
-    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir tavo el. paštu.</div>
+    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
   </div>
   <a class="link" href="/">← Grįžti į DELNAS</a>
   <p class="fine" id="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
@@ -99,7 +108,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
     n++;
     const d = document.createElement('div');
     d.className = 'qa' + (isNew ? ' new' : '');
-    d.innerHTML = '<div class="q"><small>' + n + ' klausimas</small>„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
+    d.innerHTML = '<div class="lbl">✦ ' + n + ' klausimas</div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
     $('list').appendChild(d);
     return d;
   }
@@ -140,7 +149,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
         $('qlabel').textContent = 'Jūsų klausimas';
         q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
-        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir jūsų el. paštu.';
+        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
         $('fine').innerHTML = 'Atsakymai remiasi jūsų porų suderinamumo analize. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
@@ -170,17 +179,23 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   $('ask').addEventListener('submit', async e => {
     e.preventDefault();
     const question = q.value.trim(); if (question.length < 5) return;
-    $('err').style.display = 'none'; $('go').disabled = true; q.disabled = true; $('think').style.display = 'block';
+    $('err').style.display = 'none'; $('go').disabled = true;
+    // Laukelis paslepiamas — jo vietoje sukasi ratukas su užduotu klausimu
+    $('wait-lbl').textContent = '✦ ' + (n + 1) + ' klausimas'; $('wait-q').textContent = '„' + question + '“';
+    $('ask-wrap').classList.add('hidden'); $('wait').classList.remove('hidden');
+    setTimeout(() => $('wait').scrollIntoView({ behavior:'smooth', block:'center' }), 60);
     try {
       const r = await fetch('/klausk/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ s: sid, question }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Nepavyko gauti atsakymo');
+      $('wait').classList.add('hidden');
       const el = card({ q: d.q, a: d.a }, true);
       left = d.left; q.value = ''; upd(); refresh();
       setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 80);
     } catch (ex) {
+      $('wait').classList.add('hidden'); $('ask-wrap').classList.remove('hidden');
       $('err').textContent = ex.message; $('err').style.display = 'block'; $('go').disabled = false;
-    } finally { q.disabled = false; $('think').style.display = 'none'; }
+    }
   });
 })();
 </script>

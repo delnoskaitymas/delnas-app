@@ -1029,7 +1029,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
       <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymą — 4,99 €</button>
       <div class="kl-err" id="pora-kl-err"></div>
-      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymas atsidarys naujame lange ir ateis el. paštu · Saugus mokėjimas per Stripe</div>
+      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div>
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
@@ -3883,7 +3883,7 @@ function renderResultExtra(r){
     '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
     '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymą — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
-    '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymas atsidarys naujame lange ir ateis el. paštu · Saugus mokėjimas per Stripe</div></div>';
+    '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
   h+=hPlan;
   box.innerHTML=h;
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
@@ -3898,7 +3898,7 @@ function renderResultExtra(r){
       const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||r})});
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
       const blk=document.querySelector('#r-extra .kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ Tavo 3 klausimai jau apmokėti.</b> Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange ir ateis el. paštu'; }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ Tavo 3 klausimai jau apmokėti.</b> Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
       document.getElementById('kl-btn').textContent='Gauti atsakymą →';
       return '/klausk?s='+dd.id;
