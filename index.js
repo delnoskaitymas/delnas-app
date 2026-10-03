@@ -2707,6 +2707,8 @@ function buildGiftEmailHtml(gift) {
   <div style="max-width:520px;margin:0 auto;background:#000;border:1px solid rgba(212,168,67,.45);border-radius:18px;padding:34px 26px;text-align:center;color:#fff">
     <div style="font-size:15px;letter-spacing:.32em;color:#d4a843;font-weight:bold">DELNAS</div>
     <div style="font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);margin-top:4px">DOVANŲ KUPONAS</div>
+    ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:12px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
+    ${gift.recipientEmail ? `<div style="margin:16px auto 0;max-width:420px;border:1px solid rgba(212,168,67,.45);border-radius:10px;padding:10px 14px;font-family:Arial,sans-serif;font-size:13px;color:#f0d58a">📅 Dovana bus išsiųsta gavėjui <b>${escapeHtml(gift.recipientEmail)}</b> ${gift.sendAt === ltDate(Date.now()) ? 'jau šiandien' : escapeHtml(gift.sendAt) + ' ryte'}.</div>` : ''}
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
@@ -2738,9 +2740,68 @@ function giftPublicInfo(gift) {
     message: gift.message || '',
     expiresAt: gift.expiresAt,
     kind: gift.kind === 'pora' ? 'pora' : 'asmenine',
+    season: gift.season || '',
     status: giftStatus(gift)
   };
 }
+// Data Vilniaus laiku (YYYY-MM-DD) ir valanda
+function ltDate(ts) { return new Date(ts).toLocaleDateString('sv-SE', { timeZone: 'Europe/Vilnius' }); }
+function ltHour(ts) { return parseInt(new Date(ts).toLocaleString('en-GB', { timeZone: 'Europe/Vilnius', hour: '2-digit', hour12: false }), 10); }
+const SEASON_LABELS = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
+
+// Laiškas dovanos GAVĖJUI (siunčiamas nurodytą dieną)
+function buildGiftRecipientEmailHtml(gift) {
+  const link = giftRedeemLink(gift), pora = gift.kind === 'pora';
+  const to = gift.recipientName ? escapeHtml(gift.recipientName) : (pora ? 'Jums' : 'Tau');
+  const from = gift.fromName ? escapeHtml(gift.fromName) : '';
+  return `<div style="background:#0a0a0a;padding:28px 12px;font-family:Georgia,serif">
+  <div style="max-width:520px;margin:0 auto;background:#000;border:1px solid rgba(212,168,67,.45);border-radius:18px;padding:34px 26px;text-align:center;color:#fff">
+    <div style="font-size:15px;letter-spacing:.32em;color:#d4a843;font-weight:bold">DELNAS</div>
+    ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:14px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
+    <div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>
+    <div style="font-size:17px;color:rgba(255,255,255,.8)">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
+    <div style="font-size:19px;color:#fff;margin-top:8px">${pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal abiejų delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus'}</div>
+    ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
+    <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">${pora ? 'Atidaryti dovaną →' : 'Atidaryti dovaną →'}</a></div>
+    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Abu nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
+  </div>
+  <div style="max-width:520px;margin:16px auto 0;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.6;color:#888;text-align:center">Šį laišką gavote, nes ${from || 'kažkas'} jums įsigijo DELNAS dovaną. Pramoginio pobūdžio paslauga, 18+.</div>
+  ${EMAIL_FOOTER_HTML}
+</div>`;
+}
+
+// Planuotas siuntimas gavėjams ir priminimas pirkėjams (tikrinama kas valandą)
+function processGiftSchedules() {
+  try {
+    const store = loadGiftStore(), now = Date.now(), today = ltDate(now);
+    let changed = false;
+    for (const g of Object.values(store.codes)) {
+      if (giftStatus(g) === 'void') continue;
+      // 1) Siuntimas gavėjui nurodytą dieną (nuo 8 val.; jei data šiandien — iškart)
+      if (g.recipientEmail && !g.recipientSentAt && g.sendAt && (g.sendAt < today || (g.sendAt === today && (ltHour(now) >= 8 || ltDate(g.createdAt) === today)))) {
+        g.recipientSentAt = now; changed = true;
+        mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.recipientEmail, subject: g.fromName ? `🎁 ${g.fromName} ${g.kind === 'pora' ? 'jums' : 'tau'} dovanoja DELNAS ${g.kind === 'pora' ? 'porų suderinamumą' : 'gyvenimo žemėlapį'}` : `🎁 ${g.kind === 'pora' ? 'Jums' : 'Tau'} — DELNAS dovana: ${g.kind === 'pora' ? 'porų suderinamumas' : 'gyvenimo žemėlapis'}`, html: buildGiftRecipientEmailHtml(g) })
+          .then(() => {
+            console.log(`[gift] dovana išsiųsta gavėjui ${g.code}`);
+            if (g.buyerEmail) mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.buyerEmail, subject: '✓ Jūsų dovana išsiųsta', html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:28px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:24px">🎁</div><p style="font-size:15px;line-height:1.7">Jūsų DELNAS dovana${g.recipientName ? ' (' + escapeHtml(g.recipientName) + ')' : ''} ką tik išsiųsta adresu <b>${escapeHtml(g.recipientEmail)}</b>.</p>${EMAIL_FOOTER_HTML}</div>` }).catch(() => {});
+          })
+          .catch(e => { console.error('[gift] gavėjo laiško klaida:', e.message); const st2 = loadGiftStore(); if (st2.codes[g.code]) { delete st2.codes[g.code].recipientSentAt; saveGiftStore(st2); } });
+      }
+      // 2) Priminimas pirkėjui: neatidaryta po 30 d. (skaičiuojant nuo išsiuntimo gavėjui, jei toks buvo)
+      const startTs = g.recipientSentAt || g.createdAt;
+      if (giftStatus(g) === 'active' && g.buyerEmail && !g.buyerReminderAt && startTs && now - startTs > 30 * 864e5 && (!g.sendAt || g.recipientSentAt)) {
+        g.buyerReminderAt = now; changed = true;
+        const card = `${appBaseUrl()}/dovana/kortele?kodas=${encodeURIComponent(g.code)}`;
+        mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.buyerEmail, subject: `🎁 ${g.recipientName || 'Jūsų dovanos gavėjas'} dar neatidarė dovanos`,
+          html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${g.recipientName ? escapeHtml(g.recipientName) + ' dar' : 'Dovanos gavėjas dar'} neatidarė jūsų DELNAS dovanos (kodas <b style="color:#f0d58a">${escapeHtml(g.code)}</b>, galioja iki ${fmtLtDate(g.expiresAt)}). Gal norite priminti? Kortelę galite persiųsti dar kartą.</p><a href="${card}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovanų kortelę →</a>${EMAIL_FOOTER_HTML}</div>` })
+          .catch(e => console.error('[gift] priminimo klaida:', e.message));
+      }
+    }
+    if (changed) saveGiftStore(store);
+  } catch (e) { console.error('[gift] planavimo klaida:', e.message); }
+}
+setTimeout(processGiftSchedules, 15000);
+setInterval(processGiftSchedules, 60 * 60 * 1000);
 // Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų), asmeninis — programėlėje
 function giftRedeemLink(gift) {
   return gift.kind === 'pora'
@@ -2765,6 +2826,9 @@ function issueGiftForSession(session) {
     recipientName: md.recipientName || '',
     message: md.message || '',
     kind: md.kind === 'pora' ? 'pora' : 'asmenine',
+    recipientEmail: md.recipientEmail || '',
+    sendAt: md.sendAt || '',
+    season: md.season || '',
     amount: session.amount_total,
     currency: session.currency,
     status: 'active',
@@ -3444,6 +3508,12 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { buyerEmail, fromName, recipientName, message } = req.body || {};
     const kind = (req.body && req.body.kind) === 'pora' ? 'pora' : 'asmenine';
+    // Neprivaloma: dovana gavėjui el. paštu nurodytą dieną (Vilniaus laiku, ryte)
+    const sendTo = (req.body && typeof req.body.recipientEmail === 'string') ? req.body.recipientEmail.trim() : '';
+    const sendAt = (req.body && typeof req.body.sendAt === 'string') ? req.body.sendAt.trim() : '';
+    if (sendTo && !isValidEmail(sendTo)) return res.status(400).json({ error: 'Neteisingas gavėjo el. paštas' });
+    if (sendAt && (!/^\d{4}-\d{2}-\d{2}$/.test(sendAt) || sendAt < ltDate(Date.now()) || sendAt > ltDate(Date.now() + 366 * 864e5))) return res.status(400).json({ error: 'Neteisinga siuntimo data' });
+    const season = ['valentinas', 'mama', 'kaledos'].includes(req.body && req.body.season) ? req.body.season : '';
     if (!isValidEmail(buyerEmail)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (!isValidGiftText(fromName, 60) || !isValidGiftText(recipientName, 60)) return res.status(400).json({ error: 'Vardas per ilgas' });
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
@@ -3466,6 +3536,9 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
       metadata: {
         type: 'gift',
         kind,
+        recipientEmail: sendTo,
+        sendAt: sendTo ? (sendAt || ltDate(Date.now())) : '',
+        season,
         buyerEmail,
         fromName: (fromName || '').trim(),
         recipientName: (recipientName || '').trim(),
@@ -3494,6 +3567,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
     const { gift, isNew } = issueGiftForSession(session);
     if (isNew) {
       statInc('gift_paid');
+      if (gift.recipientEmail) setTimeout(processGiftSchedules, 3000);
       // Pirkėjui — dovanų kortelė el. paštu
       if (gift.buyerEmail) {
         mailer.sendMail({
