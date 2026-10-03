@@ -19,10 +19,11 @@
   .brand{font:700 40px 'Playfair Display';letter-spacing:.32em;color:var(--gold)}
   .eyebrow{font:500 26px 'DM Sans';letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
   .fine{font:400 24px 'DM Sans';color:var(--faint)}
-  .medal{position:absolute;border-radius:50%;overflow:hidden;border:4px solid var(--gold2);background:#000;
-    box-shadow:0 24px 70px rgba(110,75,20,.35),0 0 0 16px rgba(201,162,74,.12)}
-  .medal i{position:absolute;inset:-6%;background:url(assets/delnas.jpg) center 45%/cover;
-    filter:sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.1) contrast(1.05)}
+  /* Toks pat delno medalionas kaip programėlėje (.pora-orb / .hero) */
+  .medal{position:absolute;border-radius:50%;border:8px solid rgba(212,168,67,.7);background:#000;
+    box-shadow:0 0 50px rgba(212,168,67,.35),inset 0 0 50px rgba(212,168,67,.1)}
+  .medal i{position:absolute;inset:8%;border-radius:50%;overflow:hidden;border:3px solid rgba(212,168,67,.4);
+    background:url(assets/delnas.jpg) center 20%/cover no-repeat;filter:grayscale(.3) brightness(1.1) contrast(1.05)}
   .tag{position:absolute;font:500 30px 'DM Sans';letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
   .step{display:flex;align-items:center;gap:32px;margin:0 110px;padding:32px 40px;border:1.5px solid rgba(168,120,31,.3);
     border-radius:26px;background:rgba(255,255,255,.6)}
