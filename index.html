@@ -5129,7 +5129,6 @@ async function buildStoryCardBlob(){
 // ~250 px palikti tušti (ten istorijose būna programėlės mygtukai); svarbiausia dalis telpa į 4:5 vidurį.
 async function buildStory916Blob(){
   const sqBlob = await buildStoryCardBlob(); if(!sqBlob) return null;
-  const r = window._palmResult || {};
   const sq = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(sqBlob); });
   const W = 1080, H = 1920;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -5141,22 +5140,11 @@ async function buildStory916Blob(){
   // Viskas sudedama į saugią zoną (y 300–1560): ji matosi ir story (viršuje profilio juosta,
   // apačioje „Siųsti žinutę“), ir Instagram/Facebook sraute, kur 9:16 apkerpama iki 4:5 (y 285–1635)
   const SAFE_TOP = 300, SAFE_BOT = 1560;
-  const S = 0.9, cw = Math.round(sq.width * S), ch = Math.round(sq.height * S), cx = Math.round((W - cw) / 2);
+  const cw = sq.width, ch = sq.height, cx = Math.round((W - cw) / 2);
   ctx.textAlign = 'center';
-  // Citata (iki 2 eilučių) — paruošiama iš anksto, kad būtų žinomas bendras aukštis
-  const quote = (r.delnai_greta && r.delnai_greta.isvada) || (r.prigimtines_insights || [])[0] || '';
-  let lines = [];
-  if(quote){
-    ctx.font = 'italic 400 34px "Playfair Display", Georgia, serif';
-    const wrap = t => { const out = []; let line = ''; ('„' + t.trim() + '“').split(/\s+/).forEach(w => { const x = line ? line + ' ' + w : w; if(ctx.measureText(x).width > 880 && line){ out.push(line); line = w; } else line = x; }); if(line) out.push(line); return out; };
-    lines = wrap(quote);
-    // Netelpa į 2 eilutes — imamas pirmas pilnas sakinys; tik jei ir jis per ilgas, trumpinama su „…“
-    if(lines.length > 2){ const first = (quote.trim().match(/^.+?[.!?](?=\s|$)/) || [''])[0]; const fl = first ? wrap(first) : []; if(fl.length && fl.length <= 2) lines = fl; }
-    if(lines.length > 2){ lines.length = 2; lines[1] = lines[1].replace(/[\s,.;:—-]*\S*$/, '') + '…“'; }
-  }
-  // Aukščiai: antraštė 2 eil. (~112) + tarpas 34 + kortelė + citata + kvietimas
-  const headH = 112, gap = 34, quoteH = lines.length ? 40 + lines.length * 48 : 0, ctaH = 62;
-  const groupH = headH + gap + ch + quoteH + ctaH;
+  // Antraštė (2 eil.) + tarpas + kortelė + tarpas + kvietimas — be citatos, kad būtų erdvu
+  const headH = 112, gap = 56, ctaGap = 74;
+  const groupH = headH + gap + ch + ctaGap;
   const y0 = SAFE_TOP + Math.max(0, Math.round((SAFE_BOT - SAFE_TOP - groupH) / 2));
   // Viršus
   ctx.font = '600 40px "DM Sans", sans-serif'; ctx.fillStyle = '#f5eed8';
@@ -5168,15 +5156,9 @@ async function buildStory916Blob(){
   const top = y0 + headH + gap;
   ctx.drawImage(sq, cx, top, cw, ch);
   URL.revokeObjectURL(sq.src);
-  // Apačia: viena įžvalga (jei yra) ir kvietimas
-  let y = top + ch;
-  if(lines.length){
-    ctx.font = 'italic 400 34px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#f3e7c6';
-    y += 40;
-    lines.forEach(l => { y += 48; ctx.fillText(l, W/2, y - 14); });
-  }
-  ctx.font = '600 32px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(212,168,67,.9)';
-  ctx.fillText('Pažiūrėk, ką pasakoja tavo delnai →', W/2, y + 50);
+  // Apačia: kvietimas
+  ctx.font = '600 34px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(212,168,67,.9)';
+  ctx.fillText('Pažiūrėk, ką pasakoja tavo delnai →', W/2, top + ch + ctaGap);
   return new Promise(resolve => c.toBlob(b => resolve(b), 'image/png'));
 }
 
