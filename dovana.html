@@ -236,7 +236,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       <div class="season-tag hidden" id="promo-tag"></div>
       <h1 id="form-h1">Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
-    <p class="lead sm" id="form-lead">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
+    <p class="lead sm" id="form-lead">Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Asmeninė analizė<small id="k-asm-p">12,99 €</small></button>
@@ -288,7 +288,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
         <div class="num">03</div>
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11.5V4a1.5 1.5 0 013 0v7.5M14 11.5V5.5a1.5 1.5 0 013 0V13M17 9.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-5-2.7L4.3 14a1.6 1.6 0 012.6-1.8L8 13.5"/></svg></div>
         <h3 id="s3-h">Dovana atskleidžia <em>asmeninį žemėlapį</em></h3>
-        <p id="s3-p">Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.</p>
+        <p id="s3-p">Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.</p>
       </div>
     </div>
     <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
@@ -412,8 +412,9 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
   const cents = { asmenine: 1299, pora: 1999 };
-  let promo = null; // −30 % pasiūlymas po analizės (?promo=KODAS, 24 val.)
-  const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100)) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k]) + '</s>' : eur(cents[k]);
+  let klauskC = 200; // dovanoje visada įskaičiuoti 3 klausimai (kaina pridedama prie analizės)
+  let promo = null; // −30 % pasiūlymas po analizės (?promo=KODAS, 24 val.) — taikomas analizės kainai
+  const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100) + klauskC) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k] + klauskC) + '</s>' : eur(cents[k] + klauskC);
   const prices = { get asmenine(){ return priceHtml('asmenine'); }, get pora(){ return priceHtml('pora'); } };
   let kind = params.get('tipas') === 'pora' ? 'pora' : (params.get('tipas') ? 'asmenine' : (season ? SEASONS[season].kind : 'asmenine'));
   function setKind(k){
@@ -423,10 +424,10 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     $('k-asm').classList.toggle('on', !pora); $('k-asm').setAttribute('aria-checked', String(!pora));
     $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
     $('form-h1').innerHTML = pora ? 'Padovanok<br><em>porų suderinamumą</em>' : 'Padovanok<br><em>gyvenimo žemėlapį</em>';
-    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė pagal abiejų delnus — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
+    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'Ievai ir Tomui' : 'pvz. Ievai';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
-    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja delnus ir per kelias minutes gauna suderinamumo įvertį bei 7 skyrių analizę su PDF. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.';
+    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja delnus ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
     $('price').innerHTML = prices[k];
     document.title = pora ? 'DELNAS — Porų suderinamumo dovana' : 'DELNAS — Dovanų kuponas';
     try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '') + (params.get('promo') ? (pora ? '&' : '?') + 'promo=' + encodeURIComponent(params.get('promo')) : '')); } catch (e) {}
@@ -437,6 +438,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   fetch('/price-info').then(r => r.json()).then(d => {
     if (d && d.active && d.active.amount) cents.asmenine = d.active.amount;
     if (d && d.pora && d.pora.amount) cents.pora = d.pora.amount;
+    if (d && typeof d.giftKlausk === 'number') klauskC = d.giftKlausk;
     showPrices();
   }).catch(() => {});
   function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = prices.pora; $('price').innerHTML = prices[kind]; }
