@@ -210,6 +210,7 @@ body.card-view #v-card{margin:auto 0}
 .dt span{color:var(--faint);text-align:center}
 .dt select{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 6px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
 .dt select#f-h{margin-left:6px}
+.dt-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.4}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
 .gcard .season{font:italic 400 19px 'Playfair Display',serif;color:var(--gold2);margin-top:10px;min-height:0}
@@ -261,6 +262,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
         <label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off">
         <label for="f-y">Kada išsiųsti <span class="opt">(Lietuvos laiku)</span></label>
         <div class="dt"><select id="f-y" aria-label="Metai"></select><span>–</span><select id="f-m" aria-label="Mėnuo"></select><span>–</span><select id="f-d" aria-label="Diena"></select><select id="f-h" aria-label="Valanda"></select></div>
+        <div class="dt-note">Dovana išsiunčiama pasirinktą valandą, gali vėluoti iki 5 min.</div>
         <input type="hidden" id="f-date">
       </div>
       <div id="buyer-wrap">
