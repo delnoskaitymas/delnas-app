@@ -1864,6 +1864,158 @@ app.get('/analysis-status', async (req, res) => {
 
 // --- ENDPOINT: Gauti analizės rezultatą ---
 // --- Checkout sesija Revolut/Klarna ---
+// ═══════════════════════════════════════════════════════════════════
+// PASIŪLYMAS PRIE MOKĖJIMO („Klausk savo delnų“ su nuolaida) IR
+// REKOMENDACIJŲ PROGRAMA (draugo nuoroda: −20 % draugui, 3 klausimai kvietėjui)
+// ═══════════════════════════════════════════════════════════════════
+// Suma VISADA skaičiuojama serveryje — klientas siunčia tik pasirinkimus.
+const KLAUSK_BUMP_CENTS = parseInt(process.env.KLAUSK_BUMP_CENTS || '299', 10);
+const REF_DISCOUNT_PCT = parseInt(process.env.REF_DISCOUNT_PCT || '20', 10);
+const REF_MAX_REWARDS = 5;
+const REFS_FILE = path.join(SHARED_STORAGE_DIR, 'refs.json');
+function loadRefs() {
+  try { if (fs.existsSync(REFS_FILE)) { const d = JSON.parse(fs.readFileSync(REFS_FILE, 'utf8')); return { codes: d.codes || {}, byPayment: d.byPayment || {} }; } }
+  catch (e) { console.error('[ref] nepavyko nuskaityti refs.json:', e.message); }
+  return { codes: {}, byPayment: {} };
+}
+function saveRefs(st) { const tmp = REFS_FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(st, null, 2)); fs.renameSync(tmp, REFS_FILE); }
+// Rekomendacijų įrašai (su analizės tekstu atlygiui) saugomi 12 mėn.
+(function cleanupRefs() {
+  try {
+    const st = loadRefs(), cutoff = Date.now() - 365 * 864e5; let ch = false;
+    for (const [c, r] of Object.entries(st.codes)) if ((r.createdAt || 0) < cutoff) { delete st.codes[c]; if (st.byPayment[r.paymentRef] === c) delete st.byPayment[r.paymentRef]; ch = true; }
+    if (ch) saveRefs(st);
+  } catch (e) {}
+})();
+function normalizeRefCode(c) { return typeof c === 'string' ? c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) : ''; }
+// Galiojantis kodas, kuris nepriklauso pačiam pirkėjui
+function validRef(code, email) {
+  const c = normalizeRefCode(code); if (c.length < 5) return null;
+  const r = loadRefs().codes[c]; if (!r) return null;
+  if (email && r.email && r.email.toLowerCase() === String(email).toLowerCase()) return null;
+  return c;
+}
+async function computeOrderAmount({ ref, addKlausk, email }) {
+  const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+  const base = activePrice.unit_amount, currency = activePrice.currency;
+  const refCode = validRef(ref, email);
+  const discount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
+  const bump = addKlausk ? KLAUSK_BUMP_CENTS : 0;
+  return { base, discount, bump, total: base - discount + bump, currency, refCode };
+}
+// Patikrina apmokėtą asmeninės analizės mokėjimą (PaymentIntent arba Checkout)
+async function getPaidAnalysisPayment(paymentRef) {
+  if (typeof paymentRef !== 'string' || paymentRef.length > 200) return null;
+  if (paymentRef.startsWith('pi_')) {
+    const pi = await stripe.paymentIntents.retrieve(paymentRef);
+    if (!pi || pi.status !== 'succeeded') return null;
+    return { metadata: pi.metadata || {}, email: (pi.metadata && pi.metadata.email) || pi.receipt_email || '' };
+  }
+  if (paymentRef.startsWith('cs_')) {
+    const s = await stripe.checkout.sessions.retrieve(paymentRef);
+    if (!s || s.payment_status !== 'paid' || (s.metadata && s.metadata.type)) return null;
+    return { metadata: s.metadata || {}, email: (s.metadata && s.metadata.email) || s.customer_email || '' };
+  }
+  return null;
+}
+// Apmokėtas užsakymas su draugo kodu → kvietėjui dovanojami 3 klausimai (vieną kartą už pirkimą)
+function rewardReferrer(refCode, paymentRef, buyerEmail) {
+  try {
+    const st = loadRefs(), r = st.codes[refCode];
+    if (!r || !paymentRef) return;
+    if ((r.uses || []).some(u => u.paymentRef === paymentRef)) return;
+    if (buyerEmail && r.email && r.email.toLowerCase() === String(buyerEmail).toLowerCase()) return;
+    r.uses = r.uses || [];
+    let rewardId = null;
+    if (r.uses.filter(u => u.rewardId).length < REF_MAX_REWARDS && r.result) {
+      rewardId = 'kp_' + crypto.randomBytes(12).toString('hex');
+      const orders = loadKlauskOrders();
+      orders[rewardId] = { email: r.email, name: r.name || '', result: r.result, qa: [], paid: true, paidAt: Date.now(), amount: 0, reward: refCode, createdAt: Date.now() };
+      saveKlauskOrders(orders);
+      mailer.sendMail({
+        from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+        to: r.email,
+        subject: '🎁 Tavo draugas pasinaudojo kvietimu — dovanojame 3 klausimus',
+        html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pakvietei draugą!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Tavo draugas atliko delnų analizę su tavo nuoroda. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai rems tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus →</a>${EMAIL_FOOTER_HTML}</div>`
+      }).catch(e => console.error('[ref] atlygio laiško klaida:', e.message));
+    }
+    r.uses.push({ paymentRef, at: Date.now(), rewardId });
+    saveRefs(st);
+    console.log(`[ref] kodas ${refCode} panaudotas (${paymentRef})${rewardId ? ' → atlygis ' + rewardId : ''}`);
+  } catch (e) { console.error('[ref] atlygio klaida:', e.message); }
+}
+function handlePaidAnalysis(paymentRef, metadata, email) {
+  if (metadata && metadata.ref) rewardReferrer(normalizeRefCode(metadata.ref), paymentRef, email);
+}
+
+// Kaina prieš mokėjimą (rodoma ekrane ir Apple/Google Pay lange — turi sutapti su nuskaitoma suma)
+app.post('/order-quote', sensitiveLimiter, async (req, res) => {
+  try {
+    const { ref, addKlausk, email } = req.body || {};
+    const q = await computeOrderAmount({ ref, addKlausk: !!addKlausk, email: isValidEmail(email) ? email : '' });
+    res.json({ ...q, bumpCents: KLAUSK_BUMP_CENTS, klauskCents: KLAUSK_PRICE_CENTS, refPct: REF_DISCOUNT_PCT });
+  } catch (err) {
+    console.error('/order-quote klaida:', err);
+    res.status(503).json({ error: 'Nepavyko gauti kainos' });
+  }
+});
+
+// Ar mokėjime buvo pridėtas „Klausk“ priedas ir ar jau sukurtas klausimų užsakymas
+app.get('/order-extras', sensitiveLimiter, async (req, res) => {
+  try {
+    const ref = req.query.ref;
+    const p = await getPaidAnalysisPayment(ref);
+    if (!p) return res.json({ addKlausk: false });
+    const existing = Object.entries(loadKlauskOrders()).find(([, o]) => o.paymentRef === ref);
+    res.json({ addKlausk: p.metadata.addKlausk === '1', klauskId: existing ? existing[0] : null });
+  } catch (err) { res.json({ addKlausk: false }); }
+});
+
+// Su analize apmokėti klausimai → klausimų užsakymas (kp_…), vieną kartą
+app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
+  try {
+    const { paymentRef, result } = req.body || {};
+    const p = await getPaidAnalysisPayment(paymentRef);
+    if (!p || p.metadata.addKlausk !== '1') return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
+    const orders = loadKlauskOrders();
+    const existing = Object.entries(orders).find(([, o]) => o.paymentRef === paymentRef);
+    if (existing) return res.json({ id: existing[0] });
+    const picked = pickKlauskResult(result);
+    if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
+    const id = 'kp_' + crypto.randomBytes(12).toString('hex');
+    orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: KLAUSK_BUMP_CENTS, paymentRef, createdAt: Date.now() };
+    saveKlauskOrders(orders);
+    res.json({ id });
+  } catch (err) {
+    console.error('/klausk/claim klaida:', err);
+    res.status(500).json({ error: 'Nepavyko atidaryti klausimų' });
+  }
+});
+
+// Asmeninė draugo nuoroda (sukuriama apmokėjusiam klientui, vieną kartą mokėjimui)
+app.post('/ref/create', sensitiveLimiter, async (req, res) => {
+  try {
+    const { paymentRef, result } = req.body || {};
+    const st = loadRefs();
+    if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) {
+      const c = st.byPayment[paymentRef];
+      return res.json({ code: c, link: `${appBaseUrl()}/?ref=${c}`, pct: REF_DISCOUNT_PCT });
+    }
+    const p = await getPaidAnalysisPayment(paymentRef);
+    if (!p || !isValidEmail(p.email)) return res.status(403).json({ error: 'Nuoroda galima tik apmokėjusiems klientams' });
+    let code;
+    for (let i = 0; i < 20; i++) { let c = ''; for (let j = 0; j < 6; j++) c += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; if (!st.codes[c]) { code = c; break; } }
+    if (!code) throw new Error('Nepavyko sugeneruoti kodo');
+    st.codes[code] = { email: p.email, name: p.metadata.name || '', paymentRef, result: pickKlauskResult(result), uses: [], createdAt: Date.now() };
+    st.byPayment[paymentRef] = code;
+    saveRefs(st);
+    res.json({ code, link: `${appBaseUrl()}/?ref=${code}`, pct: REF_DISCOUNT_PCT });
+  } catch (err) {
+    console.error('/ref/create klaida:', err);
+    res.status(500).json({ error: 'Nepavyko sukurti nuorodos' });
+  }
+});
+
 app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { email, name, bgSessionId, orderNumber } = req.body;
@@ -1872,12 +2024,15 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     if (bgSessionId && (typeof bgSessionId !== 'string' || bgSessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas bgSessionId' });
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
 
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email });
+    // Be nuolaidos ir priedo — kaip anksčiau (Stripe kaina); kitu atveju — apskaičiuotos eilutės
+    const lineItems = (!q.discount && !q.bump) ? [{ price: ACTIVE_PRICE_ID, quantity: 1 }] : [
+      { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (draugo nuolaida −${REF_DISCOUNT_PCT} %)` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
+      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'Klausk savo delnų — 3 klausimai' } }, quantity: 1 }] : [])
+    ];
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
-      line_items: [{
-        price: ACTIVE_PRICE_ID,
-        quantity: 1
-      }],
+      line_items: lineItems,
       mode: 'payment',
       locale: 'lt',
       customer_email: email,
@@ -1887,7 +2042,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // duomenis (ypač iOS Safari, dėl griežtos tarpsvetaininės apsaugos).
       // Stripe metadata yra PATIKIMAS, serverio pusės šaltinis, nepriklausantis
       // nuo naršyklės saugyklos elgsenos.
-      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '' },
+      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '' },
       success_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/`
     });
@@ -2240,11 +2395,11 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     // Suma imama TIESIOGIAI iš Stripe Price objekto (ne kietai įrašyta), kad
     // kaina visada sutaptų su Product catalog įrašu (ACTIVE_PRICE_ID).
-    const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email });
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: activePrice.unit_amount,
-      currency: activePrice.currency,
-      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID },
+      amount: q.total,
+      currency: q.currency,
+      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '' },
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
     });
@@ -2272,6 +2427,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       // iškvietimo (žr. komentarą prie funkcijos aukščiau).
       const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
       sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
+      handlePaidAnalysis(paymentIntentId, pi.metadata, finalEmail);
       res.json({ paid: true, token, name: finalName, email: finalEmail });
     } else {
       res.json({ paid: false, status: pi.status });
@@ -2297,6 +2453,7 @@ app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
       // patikima reikšmė tam pačiam checkout session'ui.
       const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
       sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
+      handlePaidAnalysis(session.id, session.metadata, finalEmail);
       res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber });
     } else {
       res.json({ paid: false });
@@ -2681,6 +2838,9 @@ function updatePoraOrder(sessionId, patch) {
   } catch (e) {}
 })();
 
+function isValidKlauskId(id) {
+  return typeof id === 'string' && ((id.startsWith('cs_') && id.length <= 200) || /^kp_[a-f0-9]{24}$/.test(id));
+}
 function isValidCheckoutSessionId(id) {
   return typeof id === 'string' && ((id.startsWith('cs_') && id.length <= 200) || /^gp_[a-f0-9]{24}$/.test(id));
 }
@@ -3206,7 +3366,7 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
 app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
   try {
     const id = req.query.s;
-    if (!isValidCheckoutSessionId(id) || !id.startsWith('cs_')) return res.status(400).json({ paid: false });
+    if (!isValidKlauskId(id)) return res.status(400).json({ paid: false });
     const orders = loadKlauskOrders(), o = orders[id];
     if (!o) return res.json({ paid: false, notfound: true });
     if (!o.paid) {
@@ -3230,7 +3390,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
 const klauskInFlight = new Set();
 app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
   const { s: id, question } = req.body || {};
-  if (!isValidCheckoutSessionId(id) || !id.startsWith('cs_')) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+  if (!isValidKlauskId(id)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
   const q = typeof question === 'string' ? question.trim() : '';
   if (q.length < 5) return res.status(400).json({ error: 'Parašykite klausimą (bent kelis žodžius).' });
   if (q.length > 400) return res.status(400).json({ error: 'Klausimas per ilgas (iki 400 simbolių).' });
