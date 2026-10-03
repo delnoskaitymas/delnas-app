@@ -109,6 +109,16 @@ PORT = 3000
 - Nepanaudotas kuponas po 30 d. — vienas priminimas pirkėjui.
 - Sezoninės temos įsijungia pačios: Valentino diena (vasario 1–14, pažymėtas porų kuponas), Motinos diena (balandžio 20 – pirmas gegužės sekmadienis), Kalėdos (gruodžio 1–24). Peržiūra: `/dovana?sezonas=valentinas|mama|kaledos`.
 
+## Daugiau pajamų ir patogumo
+
+- **Nebaigtas mokėjimas:** užsakymo formoje (ir /pora) — neprivaloma varnelė „atsiųskite priminimą su −15 %“. Jei per ~1 val. neapmokėta, išsiunčiamas vienas laiškas su kodu (galioja 24 val., ne dažniau kaip kartą per 30 d.). Laiko tarpą galima keisti kintamuoju `ABANDON_DELAY_MIN` (numatyta 60), nuolaidą — `BACK_DISCOUNT_PCT` (15).
+- **Rinkinys „Asmeninė + porų“:** mokėjimo ekrane — „Pridėti porų suderinamumą“ už `PORA_BUNDLE_CENTS` (numatyta 1299 = 12,99 €). Apmokėjus — porų kuponas el. paštu ir rezultato ekrane. Tą pačią kainą asmeninės analizės pirkėjas mato ir rezultato ekrane („Jums dviem“).
+- **Pasiūlymas po analizės:** rezultato ekrane „🎁 Padovanok“ — −30 % (`ONCE_DISCOUNT_PCT`) 24 val. su laikmačiu.
+- **Mano analizės (/mano):** „Išsaugoti ir priminti“ rezultato ekrane išsaugo analizę (be nuotraukų, 12 mėn.). Nuoroda į visas analizes siunčiama el. paštu (7 d.), analizę galima ištrinti.
+- **Kas pasikeitė per 3 mėn.:** išsaugojusiems priminimo laiške — nuoroda su −30 % (`REPEAT_DISCOUNT_PCT`, 30 d.); naujame rezultate — blokas „Kas pasikeitė“ (palyginimas su ankstesne analize).
+- **Kameros užuominos:** fotografuojant rodoma „Per tamsu“, „Per šviesu“, „Laikyk telefoną ramiai“, „Įkelk visą delną“, „Ištiesk pirštus“ (skaičiuojama telefone).
+- **Apple Pay / Google Pay:** jau įdiegti. Stripe → Settings → Payment methods įjunk Apple Pay ir Google Pay; Settings → Payment method domains pridėk `www.delnaskaitymas.lt` ir `delnaskaitymas.lt`.
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 

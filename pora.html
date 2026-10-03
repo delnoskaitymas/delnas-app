@@ -50,6 +50,8 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:13px 14px;font-size:16px}
 #v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
 #v-form .chk{margin-top:18px;font-size:12.5px;line-height:1.5;letter-spacing:0;text-transform:none}
+#v-form .chk2{margin-top:8px;font-size:11.5px;color:var(--muted)}
+#v-form .chk2 .opt{display:inline;color:var(--faint)}
 #v-form .btn{margin-top:16px;padding:16px;font-size:17px}
 #v-form .trust{margin-top:12px;font-size:11.5px}
 .how-link{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
@@ -82,6 +84,7 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
   #v-form .card-form{padding:10px 12px 10px}
   #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:8px 12px}
   #v-form .chk{margin-top:7px;font-size:11px}
+  #v-form .chk2{margin-top:5px;font-size:10.5px}
   #v-form .btn{margin-top:8px;padding:12px}
   #v-form .trust{margin-top:5px}
 }
@@ -205,6 +208,7 @@ a{color:var(--gold)}
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Mums abiem yra 18+ ir abu sutinkame, kad būtų analizuojamos mūsų delnų nuotraukos. Sutinkame su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>.</span></label>
+      <label class="chk chk2" for="f-remind" id="remind-row"><input type="checkbox" id="f-remind"><span>Jei nebaigsime užsakymo — atsiųskite vieną priminimą su −15 % nuolaida <span class="opt">(neprivaloma)</span></span></label>
       <button type="submit" class="btn" id="pay-btn" disabled>Užsakyti — <span id="price">19,99 €</span> →</button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
@@ -260,6 +264,26 @@ a{color:var(--gold)}
   ['f-a','f-b','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
 
+  // Nuolaidos kodas: /pora?grizk=KODAS (laiškas apie nebaigtą užsakymą) arba /pora?promo=KODAS (rinkinio kaina po asmeninės analizės)
+  const eur = c => (c / 100).toFixed(2).replace('.', ',') + ' €';
+  (async () => {
+    const sp = new URLSearchParams(location.search), raw = sp.get('grizk') || sp.get('promo');
+    if (!raw || sp.get('dovana')) return;
+    try {
+      const d = await (await fetch('/promo/check?code=' + encodeURIComponent(raw))).json();
+      if (!d.valid || d.product !== 'pora') return;
+      const price = d.price ? Math.min(d.price, d.poraPrice) : Math.round(d.poraPrice * (100 - d.pct) / 100);
+      window._promoCode = d.code;
+      $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(d.poraPrice) + '</s>';
+      const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
+      $('gift-note').innerHTML = d.kind === 'bundle'
+        ? '<b>💞 Jums — rinkinio kaina ' + eur(price) + '</b><span>Kaip asmeninės analizės pirkėjui (vietoj ' + eur(d.poraPrice) + ')</span>'
+        : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
+      $('gift-note').classList.remove('hidden');
+      $('remind-row').classList.add('hidden');
+    } catch (e) {}
+  })();
+
   // Porų dovanų kuponas: /pora?dovana=KODAS — mokėti nereikia
   const giftCode = new URLSearchParams(location.search).get('dovana');
   const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -280,7 +304,7 @@ a{color:var(--gold)}
       if (d.kind !== 'pora') { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
       if (d.status === 'redeemed') { try { await redeemGift({ code: d.code }); } catch (e) { giftError('Šis dovanos kodas jau panaudotas'); } return; }
       if (d.status !== 'active') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
-      window._giftCode = d.code; $('gift-link').classList.add('hidden');
+      window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(d.fromName) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
@@ -304,7 +328,7 @@ a{color:var(--gold)}
     btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim() }) });
+        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', remind: $('f-remind').checked }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       location.href = d.url;

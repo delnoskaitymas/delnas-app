@@ -104,7 +104,7 @@ app.use(helmet({
 // endpoint'ų. Neveikia paprasto puslapio naršymo ar statinių failų.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min.
-  max: 60,                  // iki 60 užklausų per 15 min. iš vieno IP
+  max: parseInt(process.env.SENSITIVE_LIMIT || '60', 10), // iki 60 užklausų per 15 min. iš vieno IP
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Per daug užklausų. Bandykite dar kartą po kelių minučių.' }
@@ -246,6 +246,24 @@ function isReminderBlacklisted(email) {
 }
 
 
+// Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −30 %.
+function buildReminderMail(r) {
+  const site = `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}`;
+  const saved = r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null;
+  let link = site, btn = 'Nauja delnų analizė →', subtitle = 'Praėjo 3 mėnesiai nuo tavo delnų analizės';
+  let body = 'Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.';
+  if (saved) {
+    const p = createPromo({ kind: 'repeat', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat:' + r.savedId, meta: { savedId: r.savedId } });
+    link = `${site}/?kartoti=${p.code}`;
+    btn = `Pažiūrėti, kas pasikeitė — −${p.pct} % →`;
+    body = `Delnų linijos keičiasi kartu su tavimi. Nufotografuok delnus iš naujo — parodysime, <b style="color:#f0d58a">kas pasikeitė</b> nuo ankstesnės analizės: jausmuose, mąstyme ir kasdienybėje. Pakartotinei analizei — <b style="color:#f0d58a">−${p.pct} %</b> (galioja 30 dienų).`;
+  }
+  return {
+    subject: `${r.name ? escapeHtml(r.name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
+    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">${subtitle}</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">${body}</div><div style="text-align:center;margin-bottom:20px"><a href="${link}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">${btn}</a></div>${saved ? `<div style="text-align:center;margin-bottom:18px;font-size:12px"><a href="${site}/mano" style="color:#d4a843">Mano analizės</a></div>` : ''}<div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div></div>`
+  };
+}
+
 setInterval(async () => {
   const reminders = loadReminders();
   const now = Date.now();
@@ -260,8 +278,7 @@ setInterval(async () => {
         await mailer.sendMail({
           from: `"Delno Skaitymas" <${CLIENT_EMAIL_FROM}>`,
           to: r.email,
-          subject: `${r.name ? escapeHtml(r.name) + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-          html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(r.name) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Nauja delnų analizė →</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div></div>`
+          ...buildReminderMail(r)
         });
         console.log(`Priminimas išsiųstas: ${r.email}`);
       } catch(e) {
@@ -857,7 +874,8 @@ const ANALYSIS_JSON_SCHEMA = [
   ['pokyciai', 'string'], ['pokyciai_insights', 'array'],
   ['galimybes', 'string'], ['galimybes_insights', 'array'],
   ['stiprybes_sarasas', 'array'],
-  ['klutys', 'string'], ['klutys_insights', 'array']
+  ['klutys', 'string'], ['klutys_insights', 'array'],
+  ['delnai_greta', 'object']
 ];
 
 function _escapeAllQuotesInside(str) {
@@ -902,6 +920,14 @@ function repairJsonBySchema(text) {
           fixedValue = '[]';
         }
       }
+    } else if (typeByKey[cur.key] === 'object') {
+      // Objektas (pvz. delnai_greta) — jei jis paskutinis, segmente lieka ir
+      // viso JSON uždaromasis „}“, todėl bandome ir be jo.
+      const cands = [raw, raw.replace(/\}\s*$/, '')];
+      let val = null;
+      for (const c of cands) { if (val) break; try { val = JSON.parse(c); } catch (e) {} }
+      for (const c of cands) { if (val) break; try { val = JSON.parse(repairJsonString(c)); } catch (e) {} }
+      fixedValue = val && typeof val === 'object' && !Array.isArray(val) ? JSON.stringify(val) : 'null';
     } else {
       // String laukas — PIRMA ir PASKUTINĖ kabutė šiame segmente yra
       // TIKROS ribos (nes segmentas apibrėžtas pagal ŽINOMĄ kito rakto
@@ -1901,13 +1927,19 @@ function validRef(code, email) {
   if (email && r.email && r.email.toLowerCase() === String(email).toLowerCase()) return null;
   return c;
 }
-async function computeOrderAmount({ ref, addKlausk, email }) {
+async function computeOrderAmount({ ref, addKlausk, email, promo, bundle }) {
   const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
   const base = activePrice.unit_amount, currency = activePrice.currency;
-  const refCode = validRef(ref, email);
-  const discount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
+  let refCode = validRef(ref, email);
+  const refDiscount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
+  // Nuolaidos nesumuojamos — taikoma didesnė (draugo arba asmeninis kodas)
+  const pr = getValidPromo(promo, 'asmenine');
+  const promoDiscount = pr ? base - promoAmount(pr, base) : 0;
+  let discount = refDiscount, promoCode = null, discountLabel = refCode ? `🎁 Draugo dovana −${REF_DISCOUNT_PCT} %` : '';
+  if (promoDiscount > 0 && promoDiscount >= refDiscount) { discount = promoDiscount; promoCode = pr.code; refCode = null; discountLabel = promoTag(pr); }
   const bump = addKlausk ? KLAUSK_BUMP_CENTS : 0;
-  return { base, discount, bump, total: base - discount + bump, currency, refCode };
+  const bundleCents = bundle ? PORA_BUNDLE_CENTS : 0;
+  return { base, discount, bump, bundle: bundleCents, total: base - discount + bump + bundleCents, currency, refCode, promoCode, promoKind: pr && promoCode ? pr.kind : null, discountLabel };
 }
 // Patikrina apmokėtą asmeninės analizės mokėjimą (PaymentIntent arba Checkout)
 async function getPaidAnalysisPayment(paymentRef) {
@@ -1958,14 +1990,17 @@ function handlePaidAnalysis(paymentRef, metadata, email) {
     if (metadata && metadata.ref) statInc('ref_paid');
   }
   if (metadata && metadata.ref) rewardReferrer(normalizeRefCode(metadata.ref), paymentRef, email);
+  if (metadata && metadata.promo) markPromoUsed(metadata.promo, paymentRef);
+  if (metadata && metadata.bundle === '1') issueBundleGift(paymentRef, isValidEmail(email) ? email : '', metadata.name || '');
+  markEmailPaid(email);
 }
 
 // Kaina prieš mokėjimą (rodoma ekrane ir Apple/Google Pay lange — turi sutapti su nuskaitoma suma)
 app.post('/order-quote', sensitiveLimiter, async (req, res) => {
   try {
-    const { ref, addKlausk, email } = req.body || {};
-    const q = await computeOrderAmount({ ref, addKlausk: !!addKlausk, email: isValidEmail(email) ? email : '' });
-    res.json({ ...q, bumpCents: KLAUSK_BUMP_CENTS, klauskCents: KLAUSK_PRICE_CENTS, refPct: REF_DISCOUNT_PCT });
+    const { ref, addKlausk, email, promo, bundle } = req.body || {};
+    const q = await computeOrderAmount({ ref, addKlausk: !!addKlausk, email: isValidEmail(email) ? email : '', promo, bundle: !!bundle });
+    res.json({ ...q, bumpCents: KLAUSK_BUMP_CENTS, klauskCents: KLAUSK_PRICE_CENTS, refPct: REF_DISCOUNT_PCT, bundleCents: PORA_BUNDLE_CENTS, poraCents: PORA_PRICE_CENTS });
   } catch (err) {
     console.error('/order-quote klaida:', err);
     res.status(503).json({ error: 'Nepavyko gauti kainos' });
@@ -2036,11 +2071,12 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     if (bgSessionId && (typeof bgSessionId !== 'string' || bgSessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas bgSessionId' });
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
 
-    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email });
-    // Be nuolaidos ir priedo — kaip anksčiau (Stripe kaina); kitu atveju — apskaičiuotos eilutės
-    const lineItems = (!q.discount && !q.bump) ? [{ price: ACTIVE_PRICE_ID, quantity: 1 }] : [
-      { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (draugo nuolaida −${REF_DISCOUNT_PCT} %)` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
-      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'Klausk savo delnų — 3 klausimai' } }, quantity: 1 }] : [])
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, bundle: !!req.body.bundle });
+    // Be nuolaidos ir priedų — kaip anksčiau (Stripe kaina); kitu atveju — apskaičiuotos eilutės
+    const lineItems = (!q.discount && !q.bump && !q.bundle) ? [{ price: ACTIVE_PRICE_ID, quantity: 1 }] : [
+      { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (${q.promoCode ? 'nuolaida' : `draugo nuolaida −${REF_DISCOUNT_PCT} %`})` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
+      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'Klausk savo delnų — 3 klausimai' } }, quantity: 1 }] : []),
+      ...(q.bundle ? [{ price_data: { currency: q.currency, unit_amount: q.bundle, product_data: { name: 'Porų suderinamumas (rinkinio kaina)' } }, quantity: 1 }] : [])
     ];
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
@@ -2054,7 +2090,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // duomenis (ypač iOS Safari, dėl griežtos tarpsvetaininės apsaugos).
       // Stripe metadata yra PATIKIMAS, serverio pusės šaltinis, nepriklausantis
       // nuo naršyklės saugyklos elgsenos.
-      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '' },
+      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
       success_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/`
     });
@@ -2097,6 +2133,8 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
     const orderNumber = generateOrderNumber();
     pendingOrders.set(orderNumber, { name, email, createdAt: Date.now(), notified: false });
     savePendingOrdersToDisk(pendingOrders);
+    // Pažymėtas sutikimas gauti vieną priminimą, jei mokėjimas nebus baigtas
+    if (req.body.remind === true) noteAbandonCandidate({ kind: 'asmenine', email, name, orderNumber });
     console.log(`[register-order] sukurtas ${orderNumber} (${name}, ${email})`);
     res.json({ orderNumber });
   } catch (err) {
@@ -2351,6 +2389,15 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     tokenEntry.used = true;
     markPaymentTokenUsedPersistently(token);
     if (userName) result.userName = userName;
+    // Pažymime analizę kaip apmokėtą — tik tada ją galima išsaugoti „Mano analizėse“ ar palyginti
+    if (sessionId) {
+      let ce = analysisCache.get(sessionId);
+      if (!ce) { ce = { status: 'done', result, error: null, photos: [], name: userName, createdAt: Date.now() }; analysisCache.set(sessionId, ce); }
+      if (ce.status === 'done') {
+        ce.paid = true; ce.paidEmail = email || tokenEntry.email || ''; ce.paidName = userName;
+        saveAnalysisSessionToDisk(sessionId, ce);
+      }
+    }
 
     // Priminimas užregistruojamas tik kai vartotojas pats paspaudžia mygtuką (/schedule-reminder)
     // PASTABA: pilnas rezultatų el. laiškas klientui ČIA NEBESIUNČIAMAS —
@@ -2407,11 +2454,11 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     // Suma imama TIESIOGIAI iš Stripe Price objekto (ne kietai įrašyta), kad
     // kaina visada sutaptų su Product catalog įrašu (ACTIVE_PRICE_ID).
-    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email });
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, bundle: !!req.body.bundle });
     const paymentIntent = await stripe.paymentIntents.create({
       amount: q.total,
       currency: q.currency,
-      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '' },
+      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
     });
@@ -2550,6 +2597,27 @@ app.get('/price-info', async (req, res) => {
   }
 });
 
+// Priminimas po 90 d. (vienas laiškas). savedId — išsaugota analizė, su kuria bus palyginta nauja.
+function scheduleReminderFor(rawEmail, name, savedId) {
+  const email = String(rawEmail || '').trim().toLowerCase();
+  const blacklist = loadReminderBlacklist();
+  const blIdx = blacklist.indexOf(email);
+  if (blIdx !== -1) {
+    blacklist.splice(blIdx, 1);
+    saveReminderBlacklist(blacklist);
+  }
+
+  // Priminimas užregistruojamas TIK į tikrą 90 dienų eilę — laiškas
+  // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
+  // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
+  const reminders = loadReminders();
+  const ex = reminders.find(r => (r.email || '').toLowerCase() === email);
+  if (ex) { if (savedId && ex.savedId !== savedId) { ex.savedId = savedId; saveReminders(reminders); } return 'exists'; }
+  reminders.push({ email, name: name || '', ...(savedId ? { savedId } : {}), sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
+  saveReminders(reminders);
+  return 'ok';
+}
+
 app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
   try {
     const { name } = req.body;
@@ -2570,20 +2638,8 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // PAŠALINAME jį iš "nebenoriu gauti" sąrašo, o ne tyliai ignoruojame
     // jo prašymą — priešingu atveju UI pažadas ("jei persigalvosi, tiesiog
     // vėl paspausk") būtų neteisingas/neveikiantis.
-    const blacklist = loadReminderBlacklist();
-    const blIdx = blacklist.indexOf(email);
-    if (blIdx !== -1) {
-      blacklist.splice(blIdx, 1);
-      saveReminderBlacklist(blacklist);
-    }
-
-    // Priminimas užregistruojamas TIK į tikrą 90 dienų eilę — laiškas
-    // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
-    // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
-    const reminders = loadReminders();
-    if (reminders.find(r => (r.email || '').toLowerCase() === email)) return res.json({ ok: true, message: 'Jau užregistruota' });
-    reminders.push({ email, name: name || '', sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
-    saveReminders(reminders);
+    const r = scheduleReminderFor(email, name || '');
+    if (r === 'exists') return res.json({ ok: true, message: 'Jau užregistruota' });
     res.json({ ok: true });
   } catch(e) {
     res.status(500).json({ error: e.message });
@@ -2881,6 +2937,8 @@ setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 // analizė; grįžus ta pačia nuoroda rodomas tas pats rezultatas).
 const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
 const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
+// Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
+const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1299', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
 // Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
 const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
@@ -2932,6 +2990,8 @@ async function getPaidPoraSession(sessionId) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   if (!session || !session.metadata || session.metadata.type !== 'pora') return null;
   if (session.payment_status !== 'paid') return null;
+  if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
+  markEmailPaid(session.metadata.email || session.customer_email || '');
   return {
     nameA: session.metadata.nameA || '',
     nameB: session.metadata.nameB || '',
@@ -3076,19 +3136,23 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (!nameA || !nameB || !isValidName(nameA) || !isValidName(nameB)) return res.status(400).json({ error: 'Įrašykite abu vardus' });
     const base = appBaseUrl();
+    // Nuolaidos kodas: grįžimas po nebaigto mokėjimo (−15 %) arba rinkinio kaina po asmeninės analizės
+    const pr = getValidPromo(req.body.promo, 'pora');
+    const amount = pr ? promoAmount(pr, PORA_PRICE_CENTS) : PORA_PRICE_CENTS;
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card', 'revolut_pay'],
       line_items: [{
-        price_data: { currency: 'eur', unit_amount: PORA_PRICE_CENTS, product_data: { name: 'DELNAS — Porų suderinamumas' } },
+        price_data: { currency: 'eur', unit_amount: amount, product_data: { name: pr ? `DELNAS — Porų suderinamumas (${pr.kind === 'bundle' ? 'rinkinio kaina' : 'nuolaida'})` : 'DELNAS — Porų suderinamumas' } },
         quantity: 1
       }],
       locale: 'lt',
       customer_email: email,
-      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim() },
+      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/pora`
+      cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`
     });
+    if (req.body.remind === true) noteAbandonCandidate({ kind: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), ref: session.id });
     res.json({ url: session.url });
   } catch (err) {
     console.error('/pora/create-checkout klaida:', err);
@@ -3579,6 +3643,9 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
     const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+    // −30 % pasiūlymas po analizės (24 val.)
+    const pr = getValidPromo(req.body && req.body.promo, 'dovana');
+    const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const base = appBaseUrl();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -3586,8 +3653,8 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
       line_items: [{
         price_data: {
           currency: activePrice.currency,
-          unit_amount: activePrice.unit_amount,
-          product_data: { name: kind === 'pora' ? 'DELNAS dovanų kuponas — Porų suderinamumas' : 'DELNAS dovanų kuponas — Gyvenimo žemėlapis' }
+          unit_amount: giftAmount,
+          product_data: { name: (kind === 'pora' ? 'DELNAS dovanų kuponas — Porų suderinamumas' : 'DELNAS dovanų kuponas — Gyvenimo žemėlapis') + (pr ? ` (−${pr.pct} %)` : '') }
         },
         quantity: 1
       }],
@@ -3602,7 +3669,8 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         buyerEmail,
         fromName: (fromName || '').trim(),
         recipientName: (recipientName || '').trim(),
-        message: (message || '').trim()
+        message: (message || '').trim(),
+        promo: pr ? pr.code : ''
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/dovana${kind === 'pora' ? '?tipas=pora' : ''}`
@@ -3627,6 +3695,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
     const { gift, isNew } = issueGiftForSession(session);
     if (isNew) {
       statInc('gift_paid');
+      if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
       if (gift.recipientEmail) setTimeout(processGiftSchedules, 3000);
       // Pirkėjui — dovanų kortelė el. paštu
       if (gift.buyerEmail) {
@@ -3674,6 +3743,13 @@ app.get('/gift/check', sensitiveLimiter, (req, res) => {
 // laikinai nepasiekiamas — leidžiame (kuponas buvo apmokėtas), bet užrašome.
 async function isGiftRefunded(gift) {
   try {
+    // Rinkinio kuponas: tikrinamas asmeninės analizės mokėjimas (PaymentIntent arba Checkout)
+    if (String(gift.sessionId).startsWith('bundle:')) {
+      const ref = gift.sessionId.slice(7);
+      const pi = ref.startsWith('cs_') ? (await stripe.checkout.sessions.retrieve(ref, { expand: ['payment_intent.latest_charge'] })).payment_intent : await stripe.paymentIntents.retrieve(ref, { expand: ['latest_charge'] });
+      const ch = pi && pi.latest_charge;
+      return !!(ch && (ch.refunded || ch.amount_refunded > 0));
+    }
     const session = await stripe.checkout.sessions.retrieve(gift.sessionId, { expand: ['payment_intent.latest_charge'] });
     const charge = session.payment_intent && session.payment_intent.latest_charge;
     return !!(charge && (charge.refunded || charge.amount_refunded > 0));
@@ -3727,6 +3803,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
     freshGift.redeemedEmail = email || '';
     freshGift.redeemedOrderNumber = orderNumber || '';
     saveGiftStore(fresh);
+    markEmailPaid(email);
     const token = getOrCreateTokenForPayment('gift:' + code, name || '', email || '');
     console.log(`[gift] panaudotas kodas ${code} (order=${orderNumber || '-'})`);
     mailer.sendMail({
@@ -3800,7 +3877,7 @@ app.get('/testimonials', (req, res) => {
 });
 
 // Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
-const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback'];
+const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano'];
 let _statsBuf = null, _statsTimer = null;
 function statInc(ev) {
   if (!STAT_EVENTS.includes(ev)) return;
@@ -3821,7 +3898,7 @@ app.get('/admin/stats', (req, res) => {
   const days = Object.keys(st.days).sort().reverse().slice(0, 60);
   const fb = readJson(FEEDBACK_FILE, { items: [] }).items;
   const avg = fb.length ? (fb.reduce((a, x) => a + x.stars, 0) / fb.length).toFixed(2) : '—';
-  const cols = [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo'], ['bump', '+klausimai'], ['ref_paid', 'Per draugą'], ['klausk_paid', 'Klausk'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']];
+  const cols = [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo'], ['bump', '+klausimai'], ['ref_paid', 'Per draugą'], ['klausk_paid', 'Klausk'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai'], ['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo su −15 %'], ['bundle', 'Rinkinys'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės']];
   const sum = {}; days.forEach(d => cols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
   const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
   const row = (label, v) => `<tr><td>${label}</td>${cols.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}<td>${pct(v.paid || 0, v.pay_view || 0)}</td></tr>`;
@@ -3835,6 +3912,383 @@ ${days.map(d => row(d, st.days[d])).join('')}</table>
 <h1 style="margin-top:24px">Paskutiniai įvertinimai</h1><table><tr><th>Data</th><th>★</th><th>Vardas</th><th style="text-align:left">Atsiliepimas</th><th>Viešai</th></tr>
 ${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString().slice(0, 10)}</td><td>${x.stars}</td><td>${escapeHtml(x.name || '')}</td><td style="text-align:left;white-space:normal">${escapeHtml(x.text || '')}</td><td>${x.approved ? '✓ rodomas' : x.allowPublic ? `<a style="color:#d4a843" href="/feedback/approve?id=${x.id}&t=${feedbackToken(x.id)}">rodyti</a>` : 'ne'}</td></tr>`).join('')}</table>
 </body></html>`);
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// NUOLAIDŲ KODAI, NEBAIGTI MOKĖJIMAI, „MANO ANALIZĖS“ IR PALYGINIMAS
+// ─ back:   −15 % 24 val. — laiške apie nebaigtą mokėjimą (tik su sutikimu)
+// ─ once:   −30 % dovanai artimam žmogui, 24 val. po apmokėtos analizės
+// ─ bundle: porų analizė už rinkinio kainą tam, kas jau pirko asmeninę
+// ─ repeat: −30 % pakartotinei analizei su palyginimu (priminimo laiške po 3 mėn.)
+// Suma visada skaičiuojama serveryje; kodas vienkartinis.
+// ═══════════════════════════════════════════════════════════════════
+const PROMOS_FILE = path.join(SHARED_STORAGE_DIR, 'promos.json');
+const ABANDONED_FILE = path.join(SHARED_STORAGE_DIR, 'abandoned.json');
+const SAVED_FILE = path.join(SHARED_STORAGE_DIR, 'saved-analyses.json');
+const BACK_PCT = parseInt(process.env.BACK_DISCOUNT_PCT || '15', 10);
+const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '30', 10);
+const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '30', 10);
+const ABANDON_DELAY_MS = parseInt(process.env.ABANDON_DELAY_MIN || '60', 10) * 60 * 1000;
+const SAVED_DAYS = 365;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function loadPromos() { return readJson(PROMOS_FILE, { codes: {}, byKey: {} }); }
+function savePromos(s) { writeJson(PROMOS_FILE, s); }
+function normalizePromoCode(c) { return typeof c === 'string' ? c.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) : ''; }
+// key — kad tas pats mokėjimas / laiškas visada gautų TĄ PATĮ kodą (ir laikmatis neprasidėtų iš naujo)
+function createPromo({ kind, product, pct, price, ttlMs, email, key, meta }) {
+  const s = loadPromos();
+  if (key && s.byKey[key] && s.codes[s.byKey[key]]) return s.codes[s.byKey[key]];
+  let code = '';
+  for (let i = 0; i < 30 && (!code || s.codes[code]); i++) { code = ''; for (let j = 0; j < 8; j++) code += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; }
+  const now = Date.now();
+  const p = { code, kind, product, pct: pct || 0, price: price || 0, email: (email || '').toLowerCase(), createdAt: now, expiresAt: now + ttlMs, usedBy: null };
+  if (meta) p.meta = meta;
+  s.codes[code] = p;
+  if (key) s.byKey[key] = code;
+  savePromos(s);
+  return p;
+}
+// Galiojantis kodas konkrečiam produktui (asmenine | pora | dovana)
+function getValidPromo(code, product) {
+  code = normalizePromoCode(code);
+  if (!code) return null;
+  const p = loadPromos().codes[code];
+  if (!p || p.product !== product || p.usedBy || Date.now() > p.expiresAt) return null;
+  return p;
+}
+function markPromoUsed(code, ref) {
+  code = normalizePromoCode(code);
+  if (!code || !ref) return;
+  const s = loadPromos(), p = s.codes[code];
+  if (p && !p.usedBy) { p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind); }
+}
+function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
+const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė' };
+function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
+function promoTag(p) { return p.kind === 'repeat' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`; }
+function cleanupPromos() {
+  try {
+    const s = loadPromos(), cut = Date.now() - 30 * DAY_MS; let changed = false;
+    for (const [c, p] of Object.entries(s.codes)) if (p.expiresAt < cut) { delete s.codes[c]; changed = true; }
+    for (const [k, c] of Object.entries(s.byKey)) if (!s.codes[c]) { delete s.byKey[k]; changed = true; }
+    if (changed) savePromos(s);
+  } catch (e) {}
+}
+
+// Be užklausų ribos: tik skaito, o 8 ženklų kodų atspėti praktiškai neįmanoma
+app.get('/promo/check', (req, res) => {
+  const code = normalizePromoCode(req.query.code);
+  const p = code && loadPromos().codes[code];
+  if (!p) return res.json({ valid: false });
+  const valid = !p.usedBy && Date.now() <= p.expiresAt;
+  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS });
+});
+
+// Pasiūlymai rezultato ekrane apmokėjusiam klientui: −30 % dovana (24 val.) ir porų analizė rinkinio kaina
+app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
+  try {
+    const { paymentRef } = req.body || {};
+    const p = await getPaidAnalysisPayment(paymentRef);
+    if (!p) return res.json({});
+    const email = isValidEmail(p.email) ? p.email : '';
+    const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + paymentRef });
+    let bundleGift = null, bundle = null;
+    if (p.metadata.bundle === '1') {
+      const g = issueBundleGift(paymentRef, email, p.metadata.name || '');
+      bundleGift = { code: g.code, link: giftRedeemLink(g), status: giftStatus(g) };
+    } else {
+      bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
+    }
+    res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle && !bundle.usedBy ? promoPublic(bundle) : null, bundleGift, poraPrice: PORA_PRICE_CENTS });
+  } catch (err) {
+    console.error('/promo/offers klaida:', err);
+    res.json({});
+  }
+});
+
+// Rinkinys „Asmeninė + porų“: apmokėjus išduodamas porų kuponas pirkėjui (vieną kartą mokėjimui)
+function issueBundleGift(paymentRef, email, name) {
+  const store = loadGiftStore();
+  const key = 'bundle:' + paymentRef;
+  if (store.bySession[key] && store.codes[store.bySession[key]]) return store.codes[store.bySession[key]];
+  const code = generateGiftCode(store.codes), now = Date.now();
+  const gift = { code, sessionId: key, buyerEmail: email || '', fromName: name || '', recipientName: '', message: '', kind: 'pora', bundle: true, recipientEmail: '', sendAt: '', season: '', amount: PORA_BUNDLE_CENTS, currency: 'eur', status: 'active', createdAt: now, expiresAt: now + GIFT_VALID_DAYS * DAY_MS };
+  store.codes[code] = gift;
+  store.bySession[key] = code;
+  saveGiftStore(store);
+  statInc('bundle');
+  console.log(`[bundle] išduotas porų kuponas ${code} (${paymentRef})`);
+  if (gift.buyerEmail) {
+    mailer.sendMail({
+      from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+      to: gift.buyerEmail,
+      subject: '💞 Jūsų porų suderinamumas jau apmokėtas',
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Porų suderinamumas — jau apmokėtas</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Kartu su asmenine analize įsigijote porų suderinamumą. Kai būsite kartu, atidarykite nuorodą ir nufotografuokite abiejų delnus — mokėti nebereikės.</p><a href="${giftRedeemLink(gift)}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Pradėti porų analizę →</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Kodas: <b style="letter-spacing:.08em;color:#f0d58a">${escapeHtml(code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}</p>${EMAIL_FOOTER_HTML}</div>`
+    }).catch(e => console.error('[bundle] laiško klaida:', e.message));
+  }
+  return gift;
+}
+
+// ── Nebaigti mokėjimai: vienas priminimas su −15 % (tik pažymėjus sutikimą) ──
+function loadAbandoned() { return readJson(ABANDONED_FILE, { items: [], paid: {} }); }
+function saveAbandoned(s) { writeJson(ABANDONED_FILE, s); }
+function noteAbandonCandidate(item) {
+  try {
+    if (!isValidEmail(item.email)) return;
+    const s = loadAbandoned(), email = item.email.toLowerCase();
+    s.items = s.items.filter(x => !(x.email === email && x.kind === item.kind && !x.sentAt && !x.skip));
+    s.items.push({ ...item, id: crypto.randomBytes(6).toString('hex'), email, createdAt: Date.now(), sentAt: null });
+    saveAbandoned(s);
+  } catch (e) { console.error('[abandon] klaida:', e.message); }
+}
+const _paidEmailsNoted = new Set();
+function markEmailPaid(email) {
+  if (!isValidEmail(email)) return;
+  const e = email.toLowerCase(), k = e + ':' + Math.floor(Date.now() / 600000);
+  if (_paidEmailsNoted.has(k)) return;
+  _paidEmailsNoted.add(k);
+  try { const s = loadAbandoned(); s.paid[e] = Date.now(); saveAbandoned(s); } catch (err) {}
+}
+function buildAbandonEmailHtml(it, p) {
+  const base = appBaseUrl();
+  const pora = it.kind === 'pora';
+  const link = pora ? `${base}/pora?grizk=${p.code}` : `${base}/?grizk=${p.code}`;
+  const hi = pora ? 'Jūsų porų suderinamumas laukia' : `${it.name ? escapeHtml(it.name) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
+  const txt = pora
+    ? `Pastebėjome, kad nebaigėte užsakymo${it.nameA && it.nameB ? ` (${escapeHtml(it.nameA)} ir ${escapeHtml(it.nameB)})` : ''}. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`
+    : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct} % →</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį vienkartinį laišką gavote, nes užsakymo metu pažymėjote, kad norite priminimo.' : 'Šį vienkartinį laišką gavai, nes užsakymo metu pažymėjai, kad nori priminimo.'} Daugiau tokių laiškų nesiųsime.</p>${EMAIL_FOOTER_HTML}</div>`;
+}
+let _abandonRunning = false;
+async function processAbandoned() {
+  if (_abandonRunning) return;
+  _abandonRunning = true;
+  try {
+    const s = loadAbandoned(), now = Date.now(), done = {};
+    for (const it of s.items) {
+      if (it.sentAt || it.skip || now - it.createdAt < ABANDON_DELAY_MS) continue;
+      const paidAt = s.paid[it.email];
+      let skip = null;
+      if (paidAt && paidAt >= it.createdAt - 5 * 60 * 1000) skip = 'paid';
+      else if (now - it.createdAt > DAY_MS) skip = 'old';
+      else if (isReminderBlacklisted(it.email)) skip = 'unsub';
+      else if (s.items.some(x => x !== it && x.email === it.email && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
+      else if (it.kind === 'pora' && it.ref) {
+        try { const cs = await stripe.checkout.sessions.retrieve(it.ref); if (cs && cs.payment_status === 'paid') skip = 'paid'; } catch (e) {}
+      }
+      if (skip) { done[it.id] = { skip }; continue; }
+      const p = createPromo({ kind: 'back', product: it.kind === 'pora' ? 'pora' : 'asmenine', pct: BACK_PCT, ttlMs: DAY_MS, email: it.email, key: 'back:' + it.id });
+      try {
+        await mailer.sendMail({
+          from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+          to: it.email,
+          subject: it.kind === 'pora' ? `Jūsų porų suderinamumas laukia — −${p.pct} % 24 valandoms` : `Tavo gyvenimo žemėlapis laukia — −${p.pct} % 24 valandoms`,
+          html: buildAbandonEmailHtml(it, p)
+        });
+        done[it.id] = { sentAt: Date.now(), code: p.code };
+        statInc('abandon_sent');
+        console.log(`[abandon] priminimas išsiųstas ${it.email} (${it.kind})`);
+      } catch (e) { console.error('[abandon] laiško klaida:', e.message); }
+    }
+    // Įrašome iš naujo nuskaitytą saugyklą (kol laukėme Stripe/laiškų, galėjo atsirasti naujų įrašų)
+    const fresh = loadAbandoned();
+    for (const it of fresh.items) if (done[it.id]) Object.assign(it, done[it.id]);
+    fresh.items = fresh.items.filter(x => x.createdAt > now - 35 * DAY_MS);
+    for (const [e, t] of Object.entries(fresh.paid)) if (t < now - 3 * DAY_MS) delete fresh.paid[e];
+    saveAbandoned(fresh);
+  } catch (e) { console.error('[abandon] klaida:', e.message); }
+  _abandonRunning = false;
+}
+setInterval(processAbandoned, 10 * 60 * 1000);
+setTimeout(processAbandoned, 20 * 1000);
+
+// ── „Mano analizės“: išsaugotos (su sutikimu) asmeninės analizės, be nuotraukų ──
+function loadSaved() { return readJson(SAVED_FILE, { items: {}, bySession: {}, tokens: {}, lastLink: {} }); }
+function saveSavedStore(s) { writeJson(SAVED_FILE, s); }
+function upsertSavedAnalysis(sessionId, email, name, result, extra) {
+  const s = loadSaved();
+  let id = s.bySession[sessionId];
+  const now = Date.now();
+  if (!id || !s.items[id]) { id = 'sa_' + crypto.randomBytes(9).toString('hex'); s.bySession[sessionId] = id; statInc('saved'); }
+  const prev = s.items[id] || {};
+  s.items[id] = { ...prev, ...(extra || {}), id, email: email.toLowerCase(), name: name || prev.name || '', result, createdAt: prev.createdAt || now, expiresAt: now + SAVED_DAYS * DAY_MS };
+  saveSavedStore(s);
+  return id;
+}
+function cleanupSaved() {
+  try {
+    const s = loadSaved(), now = Date.now(); let changed = false;
+    for (const [id, it] of Object.entries(s.items)) if (it.expiresAt < now) { delete s.items[id]; changed = true; }
+    for (const [sid, id] of Object.entries(s.bySession)) if (!s.items[id]) { delete s.bySession[sid]; changed = true; }
+    for (const [t, v] of Object.entries(s.tokens)) if (v.exp < now) { delete s.tokens[t]; changed = true; }
+    for (const [e, t] of Object.entries(s.lastLink)) if (t < now - DAY_MS) { delete s.lastLink[e]; changed = true; }
+    if (changed) saveSavedStore(s);
+  } catch (e) {}
+}
+setInterval(() => { cleanupSaved(); cleanupPromos(); }, 6 * 60 * 60 * 1000);
+setTimeout(() => { cleanupSaved(); cleanupPromos(); }, 30 * 1000);
+
+// Išsaugoti apmokėtą analizę (serveris ima rezultatą iš savo laikinos saugyklos — klientas jo nesiunčia)
+app.post('/save-analysis', sensitiveLimiter, async (req, res) => {
+  try {
+    const { sessionId } = req.body || {};
+    if (typeof sessionId !== 'string' || !sessionId || sessionId.length > 200) return res.status(400).json({ error: 'Neteisinga užklausa' });
+    const e = analysisCache.get(sessionId);
+    if (!e || e.status !== 'done' || !e.result || !e.paid) return res.status(404).json({ error: 'Analizės išsaugoti nebepavyksta — tai galima padaryti per 3 valandas po užsakymo.' });
+    const email = isValidEmail(e.paidEmail) ? e.paidEmail : (isValidEmail(req.body.email) ? req.body.email : '');
+    if (!email) return res.status(400).json({ error: 'Nerastas el. paštas' });
+    const name = e.paidName || e.name || '';
+    const id = upsertSavedAnalysis(sessionId, email, name, e.compare ? { ...e.result, palyginimas: e.compare } : e.result);
+    scheduleReminderFor(email, name, id);
+    res.json({ ok: true, id });
+  } catch (err) {
+    console.error('/save-analysis klaida:', err);
+    res.status(500).json({ error: 'Nepavyko išsaugoti' });
+  }
+});
+
+// ── Palyginimas su ankstesne analize (pakartotinė analizė per priminimo laišką) ──
+async function runCompareAnalysis(prev, cur, name) {
+  const brief = r => {
+    let t = '';
+    const dg = r.delnai_greta;
+    if (dg && dg.sirdis) t += `Delnai: jausmai — ${dg.sirdis.desinys}; mąstymas — ${dg.protas && dg.protas.desinys}; gyvenimo tempas — ${dg.gyvenimas && dg.gyvenimas.desinys}. ${dg.isvada || ''}\n`;
+    for (const k of KLAUSK_RESULT_FIELDS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 700)}\n`;
+    if (Array.isArray(r.stiprybes_sarasas)) t += `Stiprybės: ${r.stiprybes_sarasas.join(', ')}\n`;
+    return t;
+  };
+  const prompt = `Tu esi patyręs chiromantas. ${name ? name + ' ' : 'Žmogus '}prieš kelis mėnesius pasidarė delnų analizę, o dabar — naują. Palygink jas ir parašyk, KAS PASIKEITĖ.
+
+ANKSTESNĖ ANALIZĖ:
+${brief(prev)}
+NAUJA ANALIZĖ:
+${brief(cur)}
+Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Mąstymas, Santykiai, Darbas ir pinigai, Pasitikėjimas savimi, Gyvenimo tempas). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur žmogus pajudėjo ir kam verta skirti dėmesio toliau. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
+Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę turinčių dalyvių. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
+ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"isvada":"..."}`;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+      }, 60000);
+      const d = await r.json();
+      const txt = (d.content || []).map(b => b.text || '').join('');
+      const m = txt.match(/\{[\s\S]*\}/);
+      const j = m ? parseJsonLenient(m[0]) : null;
+      const fx = (t, n) => applyTextFixes(String(t).trim().replace(/"/g, '').slice(0, n)).text;
+      const sr = j && Array.isArray(j.sritys) ? j.sritys.filter(x => x && typeof x.tema === 'string' && typeof x.anksciau === 'string' && typeof x.dabar === 'string').slice(0, 4) : [];
+      if (sr.length >= 2 && typeof j.isvada === 'string') return { sritys: sr.map(x => ({ tema: fx(x.tema, 40), anksciau: fx(x.anksciau, 160), dabar: fx(x.dabar, 160) })), isvada: fx(j.isvada, 500) };
+    } catch (e) { console.error('[compare] klaida:', e.message); }
+  }
+  throw new Error('Nepavyko palyginti analizių');
+}
+const _comparePending = new Map();
+app.post('/compare', sensitiveLimiter, async (req, res) => {
+  try {
+    const { sessionId, code } = req.body || {};
+    if (typeof sessionId !== 'string' || !sessionId || sessionId.length > 200) return res.status(400).json({ error: 'Neteisinga užklausa' });
+    const ps = loadPromos(), p = ps.codes[normalizePromoCode(code)];
+    if (!p || p.kind !== 'repeat' || !p.meta || !p.meta.savedId) return res.status(404).json({ error: 'Palyginimo kodas nerastas' });
+    if (p.meta.compareSession && p.meta.compareSession !== sessionId) return res.status(409).json({ error: 'Šis palyginimas jau panaudotas' });
+    const e = analysisCache.get(sessionId);
+    if (!e || e.status !== 'done' || !e.result || !e.paid) return res.status(404).json({ error: 'Analizė nerasta' });
+    const prev = loadSaved().items[p.meta.savedId];
+    if (!prev) return res.status(404).json({ error: 'Ankstesnė analizė nebeišsaugota' });
+    if (e.compare) return res.json({ palyginimas: e.compare, prevDate: prev.createdAt });
+    if (!p.meta.compareSession) { p.meta.compareSession = sessionId; savePromos(ps); }
+    if (!_comparePending.has(sessionId)) {
+      _comparePending.set(sessionId, runCompareAnalysis(prev.result, e.result, e.paidName || prev.name || '').finally(() => _comparePending.delete(sessionId)));
+    }
+    const cmp = await _comparePending.get(sessionId);
+    e.compare = cmp;
+    saveAnalysisSessionToDisk(sessionId, e);
+    // Nauja analizė su palyginimu išsaugoma tame pačiame „Mano analizės“ sąraše (sutikimas duotas anksčiau)
+    upsertSavedAnalysis(sessionId, prev.email, e.paidName || prev.name || '', { ...e.result, palyginimas: cmp }, { prevId: prev.id });
+    res.json({ palyginimas: cmp, prevDate: prev.createdAt });
+  } catch (err) {
+    console.error('/compare klaida:', err);
+    res.status(500).json({ error: 'Nepavyko palyginti analizių' });
+  }
+});
+
+// ── „Mano analizės“ puslapis: nuoroda el. paštu (be slaptažodžio) ──
+app.get('/mano', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'mano.html'));
+});
+function manoItems(email) {
+  const e = email.toLowerCase();
+  const analizes = Object.values(loadSaved().items).filter(x => x.email === e)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .map(x => ({ id: x.id, name: x.name || '', createdAt: x.createdAt, expiresAt: x.expiresAt, compare: !!(x.result && x.result.palyginimas) }));
+  const poros = Object.entries(loadPoraOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.status === 'done')
+    .map(([id, o]) => ({ id, nameA: o.nameA || '', nameB: o.nameB || '', createdAt: o.finishedAt || o.createdAt || 0 }))
+    .sort((a, b) => b.createdAt - a.createdAt);
+  const klausimai = Object.entries(loadKlauskOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.paid)
+    .map(([id, o]) => ({ id, kind: o.kind || 'asmenine', name: o.name || '', count: (o.qa || []).length, createdAt: o.paidAt || o.createdAt || 0 }))
+    .sort((a, b) => b.createdAt - a.createdAt);
+  return { analizes, poros, klausimai };
+}
+function manoEmailFromToken(t) {
+  if (typeof t !== 'string' || !/^mt_[a-f0-9]{32}$/.test(t)) return null;
+  const v = loadSaved().tokens[t];
+  return v && v.exp > Date.now() ? v.email : null;
+}
+app.post('/mano/link', sensitiveLimiter, async (req, res) => {
+  try {
+    const email = String((req.body && req.body.email) || '').trim().toLowerCase();
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto adresas' });
+    // Atsakymas visada tas pats — kad nebūtų galima tikrinti, ar adresas yra mūsų sąraše
+    res.json({ ok: true });
+    const items = manoItems(email);
+    if (!items.analizes.length && !items.poros.length && !items.klausimai.length) return;
+    const s = loadSaved();
+    if (s.lastLink[email] && Date.now() - s.lastLink[email] < 2 * 60 * 1000) return;
+    const t = 'mt_' + crypto.randomBytes(16).toString('hex');
+    s.tokens[t] = { email, exp: Date.now() + 7 * DAY_MS };
+    s.lastLink[email] = Date.now();
+    saveSavedStore(s);
+    statInc('mano');
+    await mailer.sendMail({
+      from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+      to: email,
+      subject: '✦ Jūsų DELNAS analizės',
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Jūsų analizės</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Paspauskite mygtuką — atsidarys visos šiuo el. paštu išsaugotos jūsų analizės.</p><a href="${appBaseUrl()}/mano?t=${t}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti mano analizes →</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Nuoroda galioja 7 dienas. Jei jos neprašėte — tiesiog ignoruokite šį laišką.</p>${EMAIL_FOOTER_HTML}</div>`
+    }).catch(e => console.error('[mano] laiško klaida:', e.message));
+  } catch (err) {
+    console.error('/mano/link klaida:', err);
+    if (!res.headersSent) res.status(500).json({ error: 'Nepavyko išsiųsti nuorodos' });
+  }
+});
+app.get('/mano/list', sensitiveLimiter, (req, res) => {
+  const email = manoEmailFromToken(req.query.t);
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  res.json({ email, ...manoItems(email) });
+});
+app.get('/mano/item', sensitiveLimiter, (req, res) => {
+  const email = manoEmailFromToken(req.query.t);
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  const it = loadSaved().items[String(req.query.id || '')];
+  if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result });
+});
+app.post('/mano/delete', sensitiveLimiter, (req, res) => {
+  const { t, id } = req.body || {};
+  const email = manoEmailFromToken(t);
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  const s = loadSaved(), it = s.items[String(id || '')];
+  if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
+  delete s.items[it.id];
+  for (const [sid, v] of Object.entries(s.bySession)) if (v === it.id) delete s.bySession[sid];
+  saveSavedStore(s);
+  const rem = loadReminders(); let ch = false;
+  for (const r of rem) if (r.savedId === it.id) { delete r.savedId; ch = true; }
+  if (ch) saveReminders(rem);
+  console.log(`[mano] ištrinta analizė ${it.id}`);
+  res.json({ ok: true });
 });
 
 app.get('/privatumo-politika', (req, res) => {
