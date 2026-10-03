@@ -210,6 +210,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-row div{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.7);margin-top:2px}
 .px-row.top b{color:var(--gold2)}
 .px-plan{position:relative;margin-top:14px;padding-left:4px}
+.px-rem{margin-top:14px;padding-top:14px;border-top:.5px solid rgba(212,168,67,.25);text-align:center}
+.rs > .px-rem:first-child{margin-top:0;padding-top:0;border-top:none}
+.px-rem-t{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold2);margin-bottom:6px}
+.px-rem-d{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:12px}
+.px-rem-b{width:100%;background:transparent;border:.5px solid rgba(212,168,67,.45);border-radius:10px;padding:12px;color:var(--gold2);font:800 14px 'DM Sans',sans-serif;cursor:pointer;letter-spacing:.03em}
 .px-step{position:relative;display:flex;gap:12px;padding-bottom:16px}
 .px-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:2px;width:1.5px;background:linear-gradient(rgba(212,168,67,.55),rgba(212,168,67,.12))}
 .px-dot{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--gold);background:#000;color:var(--gold2);display:flex;align-items:center;justify-content:center;
@@ -452,15 +457,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 55% 30% at 52% 85%,rgba(212,168,67,.18) 0%,rgba(212,168,67,.06) 50%,transparent 100%);opacity:0;animation:palmPulse 4s ease-in-out infinite;filter:blur(22px)"></div>
       <div style="position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent 78%,rgba(7,4,15,.6) 88%,rgba(7,4,15,.95) 95%,#000000 100%)"></div>
       <div style="position:relative;z-index:3;padding:48px 24px 0;text-align:center">
-        <div style="font-size:13px;letter-spacing:.2em;color:rgba(212,168,67,.65);text-transform:uppercase;margin-bottom:13px;font-family:'DM Sans',sans-serif">Skaitmeninė chiromantijos analizė</div>
-        <h1 class="serif" style="font-size:31px;font-weight:700;line-height:1.2;margin-bottom:0;color:#e8e2d4">
+        <div style="font-size:13px;letter-spacing:.2em;color:rgba(212,168,67,.65);text-transform:uppercase;margin-bottom:13px;font-family:'DM Sans',sans-serif" id="home-kicker">Skaitmeninė chiromantijos analizė</div>
+        <h1 class="serif" id="home-h1" style="font-size:31px;font-weight:700;line-height:1.2;margin-bottom:0;color:#e8e2d4">
           Tavo gyvenimo<br><em class="gold">žemėlapis</em>
         </h1>
       </div>
     </div>
     
   <div class="wrap center" style="padding-top:0px;padding-bottom:4px;position:relative;z-index:3;margin-top:-60px;flex-shrink:0">
-    <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
+    <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em" id="home-lead">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:15px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
     <div style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:0;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
   </div>
@@ -846,14 +851,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
       <div class="rb-sec">💞 Jums dviem</div>
       <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami abiejų partnerių delnai: kas jus traukia, kaip bendraujate, kuo papildote vienas kitą — su suderinamumo įverčiu procentais.</small></a>
-    </div>
-    <div style="background:rgba(255,255,255,.02);border:.5px solid rgba(212,168,67,.15);border-radius:14px;padding:16px;text-align:center">
-      <div style="font-size:14px;font-weight:600;color:var(--gold2);font-family:'Playfair Display',serif;margin-bottom:10px">Po 3 mėnesių – naujas žvilgsnis į tavo žemėlapį</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px">Gyvenimas nuolat kinta. Kiekviena analizė atskleidžia vis naujus tavo kelio atsakymus.</div>
-      <div id="reminder-wrap">
-        <button onclick="registerReminder()" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em">✦ Primink man</button>
-      </div>
-      <div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:10px 0">✦ Laukiame tavęs po 3 mėnesių.</div>
     </div>
     <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
@@ -3687,6 +3684,8 @@ function _xEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
+  let hPlan='';
+  { let h='';
   const pl=r.planas;
   if(pl&&pl.length){
     const key='delnasPlan:'+(window._orderNumber||(r.userName||'')+'|'+(pl[0].tema||''));
@@ -3695,8 +3694,16 @@ function renderResultExtra(r){
     h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo 30 dienų kelias</div>'+
       '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">Asmeninis planas, sudarytas pagal tavo delnų analizę. Kai atliksi savaitės žingsnį — paspausk jo numerį.</div>'+
       '<div class="px-plan" data-key="'+_xEsc(key)+'">'+steps+'<div class="px-prog"><span class="px-cnt"></span><div class="pr-track"><div class="pr-fill px-pf"></div></div></div><div class="px-done">✦ Puiku — tavo pirmasis mėnuo įveiktas!</div></div>'+
-      '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Vienas mažas žingsnis per savaitę — ir po mėnesio būsi toliau, nei manai.</div></div>';
+      '<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių — kitas žingsnis</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Priminsime pasidaryti naują analizę ir pažiūrėti, kas pasikeitė.</div>'+
+      '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Primink man po 3 mėnesių</button></div>'+
+      '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Laukiame tavęs po 3 mėnesių.</div></div>'+'</div>';
+  } else {
+    // Senesni rezultatai be plano — priminimas atskira kortele
+    h+='<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių — kitas žingsnis</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Priminsime pasidaryti naują analizę ir pažiūrėti, kas pasikeitė.</div>'+
+      '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Primink man po 3 mėnesių</button></div>'+
+      '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Laukiame tavęs po 3 mėnesių.</div></div>'+'</div>';
   }
+  hPlan=h; }
   // „Klausk savo delnų“ — mokamas priedas (mokėjimas naujame skirtuke, kad rezultatas liktų)
   const em=window._userEmail||window.userEmail||'';
   h+='<div class="rs rs-std rs-reveal kl"><div class="rs-label">✦ Klausk savo delnų</div>'+
@@ -3706,6 +3713,7 @@ function renderResultExtra(r){
     '<button type="button" class="kl-btn" id="kl-btn">Užduoti klausimus — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
     '<div class="kl-fine">Atsakymai ekrane ir el. paštu · Saugus mokėjimas per Stripe</div></div>';
+  h+=hPlan;
   box.innerHTML=h;
   // Jei klausimai buvo pridėti prie mokėjimo — rodome „jau apmokėta“
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
@@ -5498,6 +5506,11 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       window._pora.active=true;
+      // Pradžios ekranas porų režimu — antraštė ir tekstas apie porą, ne apie asmeninį žemėlapį
+      const hk=document.getElementById('home-kicker'), hh=document.getElementById('home-h1'), hl=document.getElementById('home-lead');
+      if(hk) hk.textContent='Porų suderinamumas pagal delnus';
+      if(hh) hh.innerHTML='Jūsų porų<br><em class="gold">suderinamumas</em>';
+      if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.';
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
         '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų porų suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuosite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
