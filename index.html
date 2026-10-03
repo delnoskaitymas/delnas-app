@@ -165,6 +165,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pr-bar-top b{font-size:13.5px;color:#e8e2d4;font-weight:700}
 .pr-bar-top span{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold2)}
 .pr-bar-ph{font-size:12px;color:var(--muted);margin:1px 0 6px;line-height:1.4}
+.pr-bar-desc{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.66);margin-top:8px}
+.pr-bar{padding-bottom:4px}
 .pr-track{height:6px;border-radius:3px;background:rgba(212,168,67,.14);overflow:hidden}
 .pr-fill{height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#8a5a0f,#e0a930 55%,#fff0c4);box-shadow:0 0 10px rgba(240,201,106,.5);transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
 .pr-names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px}
@@ -852,7 +854,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="pora-pct"><b id="pora-pct">0%</b><span style="text-align:center;line-height:1.25">delnų<br>suderinamumas</span></div>
     </div>
     <div class="pr-level" id="pora-level"></div>
-    <div class="pora-basis">Įvertinta palyginus abiejų jūsų delnus: formą, linijas, kalnelius, pirštus ir kairiojo bei dešiniojo delno skirtumus — kaip dera jūsų charakteriai, jausmai, bendravimas ir požiūris į ateitį.</div>
+    <div class="pora-basis">Įvertinta palyginus abiejų jūsų delnus: formą, linijas, kalnelius, pirštus ir kairiųjų bei dešiniųjų delnų skirtumus — kaip dera jūsų charakteriai, jausmai, bendravimas ir požiūris į ateitį.</div>
     <div id="pora-traits" class="pora-traits"></div>
     <div class="result-divider"></div>
   </div>
@@ -1921,7 +1923,11 @@ function updateCameraUI(){
     title.textContent='Nufotografuok dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='Užfiksuoti dešinįjį delną';
   }
-  if(window._pora&&window._pora.active) title.textContent=poraCurrentName()+' — '+(camHand==='left'?'kairysis':'dešinysis')+' delnas';
+  if(window._pora&&window._pora.active){
+    title.textContent=poraCamTitle(camHand==='left');
+    if(shutterTxt) shutterTxt.textContent=camHand==='left'?'Užfiksuoti kairę ranką':'Užfiksuoti dešinę ranką';
+    const sub=document.getElementById('cam-sub'); if(sub) sub.textContent='Laikyk ranką tiesiai prieš kamerą, pirštus laikyk išskėstus.';
+  }
   if(hint){hint.textContent='';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
   // Resetinti būseną perjungiant tarp delno
   handVisible=false;
@@ -2425,7 +2431,8 @@ function capturePhoto(){
           'back_hand':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
           'no_hand':['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.']
         };
-        const [title,msg]=msgs[v.reason]||['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.'];
+        let [title,msg]=msgs[v.reason]||['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.'];
+        if(window._pora&&window._pora.active){ title=poraPlural(title); msg=poraPlural(msg); }
         const encourage='<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko – bandyk dar kartą ✨</div>';
         // Rodyti klaidos laukelį frozen apačioje
         hideMsgBar();
@@ -2448,7 +2455,7 @@ function capturePhoto(){
             video.style.transition='';
             // Grąžinti antraštę
             const titleEl=document.getElementById('cam-title');
-            if(titleEl){titleEl.textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';}
+            if(titleEl){titleEl.textContent=poraCamTitle(isLeftHand)||(isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną');}
             if(camSub) camSub.style.visibility='';
             const vpWrap1=document.getElementById('cam-vp-wrap');
             if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
@@ -2544,7 +2551,7 @@ function capturePhoto(){
       if(camSub) camSub.style.visibility='';
       const vpWrap3=document.getElementById('cam-vp-wrap');
       if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
-      document.getElementById('cam-title').textContent=isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną';
+      document.getElementById('cam-title').textContent=poraCamTitle(isLeftHand)||(isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną');
       _shutterUnlock(shutter);
       shutter.style.opacity='1';
       shutter.style.pointerEvents='auto';
@@ -5247,6 +5254,9 @@ const PORA_SECTIONS = [
 ];
 function poraEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.nameB : ''; }
+// Porų režime kameroje apie delnus rašoma daugiskaita (kiekvienas fotografuoja abu delnus)
+function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? poraCurrentName()+' — delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
+function poraPlural(t){ return String(t).replace('ranką toliau, kad visas delnas tilptų','ranką toliau, kad ji visa tilptų').replace('Pasuk delną į save','Pasuk ranką vidine puse į save').replace('laikyk delną','laikyk ranką'); }
 function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.nameA : p.nameB) : ''; }
 
 (function initPoraFromUrl(){
@@ -5369,7 +5379,7 @@ function poraPoll(){
     'Lyginamas jūsų gyvenimo tempas',
     'Ieškoma likimo linijų sąsajų',
     'Lyginami ryškiausi delnų kalneliai',
-    'Lyginamas kairysis ir dešinysis delnas',
+    'Lyginami kairieji ir dešinieji delnai',
     'Ieškoma, kur jūsų bruožai sutampa',
     'Ieškoma, kur vienas kitą papildote',
     'Vertinamos šešios santykių sritys',
@@ -5394,7 +5404,7 @@ function poraPoll(){
 
 // Šešios santykių sritys ir delnų palyginimai (nauji rezultatai; seni rodomi be jų)
 const PORA_DIMS=[['jausmai','Jausmai ir artumas','Jausmai'],['bendravimas','Bendravimas','Bendravimas'],['vertybes','Vertybės ir požiūris','Vertybės'],['kasdienybe','Kasdienybė ir ritmas','Kasdienybė'],['trauka','Trauka ir aistra','Trauka'],['ateitis','Ateities planai','Ateitis']];
-const PORA_CMP=[['sirdies','Širdies linija · jausmai'],['galvos','Galvos linija · mąstymas'],['gyvenimo','Gyvenimo linija · tempas'],['forma','Delno forma · charakteris']];
+const PORA_CMP=[['sirdies','Širdies linijos · jausmai'],['galvos','Galvos linijos · mąstymas'],['gyvenimo','Gyvenimo linijos · tempas'],['forma','Delnų forma · charakteris']];
 const PORA_ICON_PATHS={
   traukia:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
   bendravimas:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
@@ -5430,7 +5440,7 @@ function poraRadarSvg(sr){
 }
 function poraMapHtml(r){
   const sr=r.sritys; if(!sr) return '';
-  const bars=PORA_DIMS.map(([k,label])=>{ const d=sr[k]||{}; return '<div class="pr-bar"><div class="pr-bar-top"><b>'+label+'</b><span>'+(d.balas||0)+'%</span></div>'+(d.fraze?'<div class="pr-bar-ph">'+poraEsc(d.fraze)+'</div>':'')+'<div class="pr-track"><div class="pr-fill" data-w="'+(d.balas||0)+'"></div></div></div>'; }).join('');
+  const bars=PORA_DIMS.map(([k,label])=>{ const d=sr[k]||{}; return '<div class="pr-bar"><div class="pr-bar-top"><b>'+label+'</b><span>'+(d.balas||0)+'%</span></div>'+(d.fraze?'<div class="pr-bar-ph">'+poraEsc(d.fraze)+'</div>':'')+'<div class="pr-track"><div class="pr-fill" data-w="'+(d.balas||0)+'"></div></div>'+(d.aprasymas?'<div class="pr-bar-desc">'+poraEsc(d.aprasymas)+'</div>':'')+'</div>'; }).join('');
   return '<div class="pr-card pr-rv"><div class="pr-h">Jūsų ryšio žemėlapis</div><div class="pr-sub">Šešios santykių sritys, įvertintos palyginus abiejų jūsų delnus</div>'+poraRadarSvg(sr)+bars+'</div>';
 }
 function poraCompareHtml(r){
@@ -5487,7 +5497,7 @@ function buildPoraPdfDoc(){
   doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('delnų suderinamumas', W/2, y, {align:'center'}); y+=7;
   doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(poraLevel(r.suderinamumas||0), W/2, y+1, {align:'center'}); y+=9;
   doc.setFont('NotoSans','normal'); doc.setTextColor(...MUTED);
-  doc.setFontSize(10); doc.splitTextToSize('Įvertinta palyginus abiejų delnus: formą, linijas, kalnelius, pirštus ir kairiojo bei dešiniojo delno skirtumus', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5; }); y+=5;
+  doc.setFontSize(10); doc.splitTextToSize('Įvertinta palyginus abiejų delnus: formą, linijas, kalnelius, pirštus ir kairiųjų bei dešiniųjų delnų skirtumus', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5; }); y+=5;
   if((r.poros_bruozai||[]).length){ doc.setTextColor(...GOLD); doc.setFontSize(13); doc.text(r.poros_bruozai.join('  ·  '), W/2, y, {align:'center', maxWidth:maxW}); y+=10; }
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.line(W/2-15, y, W/2+15, y); y+=16;
   const pdfHead=t=>{ doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD); doc.text(t, M, y); y+=9; };
@@ -5497,6 +5507,9 @@ function buildPoraPdfDoc(){
     pdfHead('JŪSŲ RYŠIO ŽEMĖLAPIS');
     PORA_DIMS.forEach(([k,label])=>{
       const d=r.sritys[k]||{}, v=d.balas||0;
+      doc.setFont('NotoSans','normal'); doc.setFontSize(11);
+      const need=(d.fraze?18.5:13.5)+(d.aprasymas?doc.splitTextToSize(d.aprasymas, maxW).length*5.4+5:0);
+      if(y+need>284){ doc.addPage(); dark(); y=30; }
       doc.setFont('NotoSans','bold'); doc.setFontSize(12); doc.setTextColor(232,226,212); doc.text(label, M, y);
       doc.setTextColor(...GOLD2); doc.text(v+'%', W-M, y, {align:'right'});
       if(d.fraze){ doc.setFont('NotoSans','normal'); doc.setFontSize(10.5); doc.setTextColor(...MUTED); doc.text(d.fraze, M, y+5.5); }
@@ -5504,6 +5517,12 @@ function buildPoraPdfDoc(){
       doc.setFillColor(45,36,15); doc.roundedRect(M, by, maxW, 2.4, 1.2, 1.2, 'F');
       doc.setFillColor(...GOLD); doc.roundedRect(M, by, maxW*v/100, 2.4, 1.2, 1.2, 'F');
       y=by+10;
+      if(d.aprasymas){
+        doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...BODY);
+        doc.splitTextToSize(d.aprasymas, maxW).forEach(l=>{ if(y>280){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...BODY); } doc.text(l, M, y-1.5); y+=5.4; });
+        y+=5;
+      }
+      if(y>262){ doc.addPage(); dark(); y=30; }
     });
     y+=6;
   }

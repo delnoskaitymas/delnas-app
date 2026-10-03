@@ -2719,14 +2719,14 @@ TAISYKLĖS:
 - Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
 - DRAUDŽIAMA: „gali būti“, „tikėtina“, „energija“, „vibracija“, metaforos ir palyginimai („kaip…“, „tarsi…“), knyginiai ar mokslinio stiliaus žodžiai, žodis „galva“ (išskyrus pavadinimą „galvos linija“).
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
-- Kiekvienas skyrius: 6–8 sakiniai, sklandus tekstas (ne sąrašas); skyriai nesikartoja tarpusavyje.
+- Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
-PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delno forma ir pirštai: charakteris). Kiekvienai:
-- a: ką matai ${A} delnuose ir ką tai reiškia (iki 90 simbolių, pvz. Ilga, švelniai lenkta — jausmus reiškia atvirai ir šiltai)
-- b: tas pats apie ${B} (iki 90 simbolių)
-- isvada: ką šių dviejų bruožų derinys reiškia jūsų porai (1 sakinys, iki 140 simbolių)
+PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
+- a: ką matai ${A} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
+- b: tas pats apie ${B} (iki 120 simbolių)
+- isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių)
 
-SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — balas (sveikas skaičius 55–98) ir frazė: 3–7 žodžių išvada (pvz. Atviri ir šilti vienas kitam).
+SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — balas (sveikas skaičius 55–98), frazė: 3–7 žodžių išvada (pvz. Atviri ir šilti vienas kitam) ir aprasymas: 2 sakiniai (iki 240 simbolių), kodėl toks balas ir kaip tai pasireiškia jūsų santykiuose.
 
 SKYRIAI:
 - traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
@@ -2743,7 +2743,7 @@ Taip pat:
 PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
 
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
-{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"..."},"bendravimas":{"balas":76,"fraze":"..."},"vertybes":{"balas":88,"fraze":"..."},"kasdienybe":{"balas":71,"fraze":"..."},"trauka":{"balas":90,"fraze":"..."},"ateitis":{"balas":80,"fraze":"..."}},"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"...","aprasymas":"..."},"bendravimas":{"balas":76,"fraze":"...","aprasymas":"..."},"vertybes":{"balas":88,"fraze":"...","aprasymas":"..."},"kasdienybe":{"balas":71,"fraze":"...","aprasymas":"..."},"trauka":{"balas":90,"fraze":"...","aprasymas":"..."},"ateitis":{"balas":80,"fraze":"...","aprasymas":"..."}},"poros_bruozai":["...","...","..."],"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
@@ -2752,8 +2752,8 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 10000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
-      }, 170000);
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+      }, 220000);
       data = await r.json();
     } catch (e) {
       console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
@@ -2776,7 +2776,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   for (const k of PORA_DIMENSIONS) {
     const d = rs[k] || {};
     const v = Math.round(Number(d.balas));
-    if (Number.isFinite(v)) sritys[k] = { balas: Math.max(55, Math.min(98, v)), fraze: typeof d.fraze === 'string' ? fix(d.fraze, 60) : '' };
+    if (Number.isFinite(v)) sritys[k] = { balas: Math.max(55, Math.min(98, v)), fraze: typeof d.fraze === 'string' ? fix(d.fraze, 70) : '', aprasymas: typeof d.aprasymas === 'string' ? fix(d.aprasymas, 300) : '' };
   }
   const allDims = PORA_DIMENSIONS.every(k => sritys[k]);
   const avg = allDims ? PORA_DIMENSIONS.reduce((a, k) => a + sritys[k].balas, 0) / PORA_DIMENSIONS.length : raw.suderinamumas;
@@ -2789,7 +2789,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   for (const k of PORA_COMPARE_KEYS) {
     const c = rp[k];
     if (c && typeof c.a === 'string' && typeof c.b === 'string' && c.a.trim() && c.b.trim()) {
-      pal[k] = { a: fix(c.a, 110), b: fix(c.b, 110), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 170) : '' };
+      pal[k] = { a: fix(c.a, 150), b: fix(c.b, 150), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 320) : '' };
     }
   }
   if (Object.keys(pal).length) out.palyginimai = pal;
