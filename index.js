@@ -4076,6 +4076,16 @@ async function processAbandoned() {
       else if (s.items.some(x => x !== it && x.email === it.email && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
       else if (it.kind === 'pora' && it.ref) {
         try { const cs = await stripe.checkout.sessions.retrieve(it.ref); if (cs && cs.payment_status === 'paid') skip = 'paid'; } catch (e) {}
+      } else if (it.kind === 'asmenine') {
+        // Galėjo sumokėti, bet uždaryti langą negrįžęs į programą — patikriname Stripe
+        try {
+          const r = await stripe.paymentIntents.search({ query: `metadata['email']:'${it.email.replace(/'/g, '')}' AND status:'succeeded'`, limit: 10 });
+          if ((r.data || []).some(x => x.created * 1000 >= it.createdAt - 5 * 60 * 1000)) skip = 'paid';
+        } catch (e) {}
+        if (!skip) try {
+          const r = await stripe.checkout.sessions.list({ customer_details: { email: it.email }, limit: 10 });
+          if ((r.data || []).some(x => x.payment_status === 'paid' && x.created * 1000 >= it.createdAt - 5 * 60 * 1000)) skip = 'paid';
+        } catch (e) {}
       }
       if (skip) { done[it.id] = { skip }; continue; }
       const p = createPromo({ kind: 'back', product: it.kind === 'pora' ? 'pora' : 'asmenine', pct: BACK_PCT, ttlMs: DAY_MS, email: it.email, key: 'back:' + it.id });

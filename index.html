@@ -128,7 +128,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rs-label{font-size:12px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600;font-family:'DM Sans',sans-serif;text-shadow:0 0 8px rgba(212,168,67,.4);white-space:nowrap}
 @media(max-width:359px){.rs-label{white-space:normal;letter-spacing:.05em;line-height:1.35}}
 /* Informacijos ekranas žemuose telefonuose: klausimai be paantraščių, kad mokėjimo mygtukas tilptų be slinkimo */
-@media(max-height:700px){#info-qs>div>span:nth-child(2)>span{display:none!important}#info-qs>div{padding:3px 0!important}}
+@media(max-height:660px){#info-qs>div>span:nth-child(2)>span{display:none!important}#info-qs>div{padding:3px 0!important}}
 @media(max-height:580px){#price-info-block>div{padding:4px 18px 6px!important}#price-promo{font-size:24px!important}}
 .rb-sec{display:flex;align-items:center;gap:10px;margin:18px 0 10px;font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:'DM Sans',sans-serif}
 .rb-sec::before,.rb-sec::after{content:'';flex:1;height:.5px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.45),transparent)}
@@ -185,7 +185,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #s-pora-result .insight-card.pv{opacity:1;transform:none}
 .rs-label .pr-ic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1px solid rgba(212,168,67,.5);flex-shrink:0;background:rgba(212,168,67,.08)}
 /* Asmeninė analizė — delnai greta ir priminimas */
-.pl-greta .pr-names div{font-size:12px}
+.pl-bridge{display:flex;flex-direction:column;align-items:center;margin:-24px auto 0;max-width:600px}
+.pl-bridge i{display:block;width:1.5px;height:22px;background:linear-gradient(to bottom,rgba(212,168,67,.1),rgba(212,168,67,.8))}
+.pl-bridge i.dn{height:20px;background:linear-gradient(to bottom,rgba(212,168,67,.8),rgba(212,168,67,.25))}
+.pl-bridge span{font:700 10.5px 'DM Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold2);padding:7px 15px;border:1px solid rgba(212,168,67,.55);border-radius:999px;background:#000;box-shadow:0 0 16px rgba(212,168,67,.2)}
 .pl-greta .pr-cmp-ab small{font-size:10px}
 .pl-is{margin-top:14px;padding:11px 13px;border-left:2px solid var(--gold);background:rgba(212,168,67,.08);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.55;color:#f3e7c6}
 .pl-is b{display:block;font-family:'Playfair Display',serif;font-size:15px;font-weight:400;color:var(--gold2);margin-bottom:4px}
@@ -201,8 +204,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .kl{background:linear-gradient(160deg,rgba(212,168,67,.12),rgba(0,0,0,0) 55%),#000;border-color:rgba(212,168,67,.7)}
 .kl-txt{font-size:14px;line-height:1.6;color:rgba(255,255,255,.75)}
 .kl-txt b{color:var(--gold2)}
-.kl-ex{display:flex;flex-direction:column;gap:7px;margin:14px 0}
-.kl-ex span{font-family:'Playfair Display',serif;font-style:italic;font-size:14.5px;color:#f3e7c6;padding:9px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.07);border-radius:0 8px 8px 0}
+.kl-ex{display:flex;flex-direction:column;gap:7px;margin:8px 0 14px}
+.kl-ex button{text-align:left;cursor:pointer;width:100%;border:0;font-family:'Playfair Display',serif;font-style:italic;font-size:14.5px;color:#f3e7c6;padding:9px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.07);border-radius:0 8px 8px 0}
+.kl-q{width:100%;min-height:76px;resize:vertical;margin:12px 0 2px;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.45);border-radius:10px;padding:12px 13px;color:#fff;font:400 16px/1.45 'DM Sans',sans-serif;outline:none}
+.kl-q:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .kl-email{width:100%;margin-bottom:10px;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 13px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none}
 .kl-email.hidden{display:none}
 .kl-btn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 15px 'DM Sans',sans-serif;box-shadow:0 0 22px rgba(212,168,67,.3)}
@@ -219,14 +224,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-rem-d{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:12px}
 .px-rem-b{width:100%;background:transparent;border:.5px solid rgba(212,168,67,.45);border-radius:10px;padding:12px;color:var(--gold2);font:800 14px 'DM Sans',sans-serif;cursor:pointer;letter-spacing:.03em}
 /* Pasiūlymas prie mokėjimo ir draugo nuolaida */
-#kl-bump,#pora-bump{display:flex;gap:9px;align-items:center;margin:-2px 0 -2px;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
+#kl-bump,#pora-bump{display:flex;gap:9px;align-items:center;margin:0;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
 #kl-bump input,#pora-bump input{margin:0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
 #kl-bump span,#pora-bump span{font-size:11.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
 #kl-bump b,#pora-bump b{color:var(--gold2)}
 #kl-bump s,#pora-bump s{color:rgba(255,255,255,.4);font-size:11px}
 #kl-bump.on,#pora-bump.on{border-style:solid;background:rgba(212,168,67,.12)}
 .gift-hide#kl-bump,.gift-hide#pora-bump{display:none!important}
-#pora-bump{margin-top:-6px}
 .home-mano{display:block;text-align:center;margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.45);text-decoration:none;font-family:'DM Sans',sans-serif}
 .home-mano b{color:rgba(212,168,67,.85);font-weight:600}
 .promo-welcome{margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.45);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;line-height:1.45;color:#f3e7c6}
@@ -248,7 +252,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .o-remind span{font-size:12px;line-height:1.45;color:rgba(255,255,255,.55)}
 .o-remind b{color:var(--gold2);font-weight:700}
 @media(max-width:374px){#kl-bump s,#pora-bump s{display:none}#kl-bump span,#pora-bump span{font-size:11px}}
-@media(max-height:700px){#kl-bump,#pora-bump{padding:5px 10px}#pora-bump{margin-top:-9px}}
 @media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump,#pora-bump{padding:5px 10px}}
 .price-old{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.4);text-decoration:line-through;margin-left:8px;vertical-align:middle}
 .price-tag{display:block;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:2px 9px;margin:6px auto 0;width:fit-content}
@@ -265,11 +268,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sample-note{font-size:12.5px;line-height:1.55;color:var(--muted);text-align:center;margin-bottom:12px}
 .sample-note b{color:var(--gold2)}
 .sample-btn{width:100%;border:none;border-radius:12px;padding:13px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 14px 'DM Sans',sans-serif}
-.pay-testi{text-align:center;font-size:11.5px;line-height:1.4;color:rgba(255,255,255,.7);margin:-2px 8px 0;min-height:16px;transition:opacity .4s}
+.pay-testi{text-align:center;font-size:11.5px;line-height:1.4;color:rgba(255,255,255,.7);margin:-2px 8px 0;height:32px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transition:opacity .4s}
 .pay-testi .st{color:var(--gold2);letter-spacing:1px;margin-right:4px}
 .pay-testi i{font-family:'Playfair Display',serif}
 .pay-testi .nm{color:var(--muted)}
 @media(max-height:700px){.pay-testi{display:none!important}}
+/* Mokėjimo ekranas nesislenka — jei turinys netelpa (mažas telefonas), suspaudžiama tik tiek, kiek reikia (žr. fitPayScreen) */
+#s-info.pay-t1 #info-qs>div>span:nth-child(2)>span{display:none!important}
+#s-info.pay-t1 #info-qs>div{padding:3px 0!important}
+#s-info.pay-t1 .pay-testi{display:none!important}
+#s-info.pay-t2 #kl-bump,#s-info.pay-t2 #pora-bump{padding:5px 10px}
+#s-info.pay-t2 #info-qs>div{padding:1px 0!important}
+#s-info.pay-t2 #pay-section{gap:7px!important}
 .rate{text-align:center}
 .rate-stars{display:flex;justify-content:center;gap:6px;margin:10px 0 4px}
 .rate-stars button{background:none;border:none;font-size:32px;line-height:1;color:rgba(212,168,67,.3);cursor:pointer;padding:2px;transition:transform .15s,color .15s}
@@ -469,7 +479,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="sample-card" role="dialog" aria-label="Rezultato pavyzdys">
     <button type="button" class="sample-x" onclick="closeSample()" aria-label="Uždaryti">✕</button>
     <div class="sample-kicker">Rezultato pavyzdys</div>
-    <div class="sample-h">Taip atrodo vienas iš 7 skyrių</div>
+    <div class="sample-h">Taip atrodo tavo analizė</div>
+    <div id="sample-palms"></div>
     <div class="rs rs-std" style="margin:0 0 12px">
       <div class="rs-label" style="white-space:normal">I · Prigimtinės stiprybės ir charakteris</div>
       <div class="rs-body"><p>Tu greitai pajauti žmonių nuotaiką ir dažnai supranti daugiau, nei jie pasako žodžiais.</p><p>Sprendimus priimi apgalvotai, bet kai apsisprendi — eini iki galo.</p><p>Tavo stiprybė — gebėjimas išlikti ramiam, kai aplinkui chaosas.</p><p>Tau svarbu, kad darbas turėtų prasmę, o ne vien atneštų naudos.</p></div>
@@ -1015,10 +1026,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="rs rs-std kl pr-rv" id="pora-kl">
       <div class="rs-label">✦ Klauskite savo delnų</div>
       <div class="kl-txt">Turite klausimą apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų porų analize: tuo, kas jus sieja, kuo papildote vienas kitą ir kur kyla trintis.</div>
-      <div class="kl-ex"><span>„Kaip mums rečiau ginčytis?“</span><span>„Kaip suderinti požiūrį į pinigus?“</span><span>„Kaip išlaikyti artumą kasdienybėje?“</span></div>
-      <button type="button" class="kl-btn" onclick="poraKlausk(this)">Užduoti klausimus — 4,99 €</button>
+      <textarea class="kl-q" id="pora-kl-q" maxlength="400" rows="3" placeholder="Įrašykite savo klausimą…"></textarea>
+      <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
+      <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymą — 4,99 €</button>
       <div class="kl-err" id="pora-kl-err"></div>
-      <div class="kl-fine">Atsakymai ekrane ir el. paštu · Saugus mokėjimas per Stripe</div>
+      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymas atsidarys naujame lange ir ateis el. paštu · Saugus mokėjimas per Stripe</div>
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
@@ -1495,7 +1507,8 @@ function track(e){
 (function(){ try{ const q=new URLSearchParams(location.search); if(!q.get('pora')&&!q.get('session_id')&&!q.get('dovana')&&!q.get('s')&&!q.get('id')) track('home'); }catch(e){} })();
 
 // ═══ Rezultato pavyzdys prieš mokėjimą ═══
-function openSample(){ const m=document.getElementById('sample-modal'); if(m){ m.classList.add('open'); m.setAttribute('aria-hidden','false'); } }
+const SAMPLE_PALMS={sirdis:{kairys:'Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai ir šiltai',desinys:'Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau'},protas:{kairys:'Lenkta žemyn — iš prigimties mąstai vaizdžiai ir intuityviai',desinys:'Ilga ir tiesi — dabar sprendimus priimi nuosekliai'},gyvenimas:{kairys:'Plačiu lanku — daug jėgų ir smalsumo',desinys:'Beveik tokia pati — savo energiją išlaikei'},isvada:'Per gyvenimą išmokai jautrumą derinti su praktišku protu. Jausmus rodai rečiau, bet sprendimus priimi tvirčiau.'};
+function openSample(){ const m=document.getElementById('sample-modal'); if(m){ const sp=document.getElementById('sample-palms'); if(sp&&!sp.innerHTML) sp.innerHTML=palmsBlockHtml(SAMPLE_PALMS,''); m.classList.add('open'); m.setAttribute('aria-hidden','false'); m.scrollTop=0; } }
 function closeSample(){ const m=document.getElementById('sample-modal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
 
 // ═══ Tikri, patvirtinti atsiliepimai mokėjimo ekrane ═══
@@ -1507,7 +1520,7 @@ function loadTestimonials(){
     let i=0; const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const show=()=>{ const x=items[i%items.length]; i++; const t=x.text.length>90?x.text.slice(0,88)+'…':x.text;
       el.style.opacity='0'; setTimeout(()=>{ el.innerHTML='<span class="st">'+'★'.repeat(x.stars)+'</span><i>„'+esc(t)+'“</i>'+(x.name?' <span class="nm">— '+esc(x.name)+'</span>':''); el.style.opacity='1'; },300); };
-    el.style.display='block'; show(); clearInterval(_testiTimer); if(items.length>1) _testiTimer=setInterval(show,6000);
+    el.style.display='-webkit-box'; show(); setTimeout(fitPayScreen,400); clearInterval(_testiTimer); if(items.length>1) _testiTimer=setInterval(show,6000);
   }).catch(()=>{});
 }
 
@@ -3831,15 +3844,19 @@ const POT_DIMS=[['santykiai','Santykiai','Santykiai'],['karjera','Karjera','Karj
 function _xEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 // Kairysis (prigimtis) ir dešinysis (dabar) delnas greta — toks pat vaizdas kaip porų „Jūsų delnai greta“
 const PALMS_CMP=[['sirdis','Širdies linija · jausmai','sirdies'],['protas','Galvos linija · mąstymas','galvos'],['gyvenimas','Gyvenimo linija · tempas','gyvenimo']];
+// Bloko HTML (naudojamas ir rezultate, ir „👁 Pavyzdys“ lange); po jo — jungtis į I skyrių
+function palmsBlockHtml(dg, cls){
+  const ic=k=>(typeof poraIcon==='function'?poraIcon(k,15):'');
+  const items=PALMS_CMP.filter(([k])=>dg[k]).map(([k,label,icon])=>'<div class="pr-cmp"><div class="pr-cmp-t">'+ic(icon)+label+'</div><div class="pr-cmp-ab"><div><small>Kairysis · prigimtis</small>'+_xEsc(dg[k].kairys)+'</div><div><small>Dešinysis · dabar</small>'+_xEsc(dg[k].desinys)+'</div></div></div>').join('');
+  return '<div class="rs rs-std '+(cls||'')+' pl-greta"><div class="pr-h">Tavo delnai greta</div><div class="pr-sub">Kairysis delnas rodo, su kuo gimei, dešinysis — kuo tapai dabar</div>'+items+
+    (dg.isvada?'<div class="pl-is"><b>Ką per gyvenimą išsiugdei</b>'+_xEsc(dg.isvada)+'</div>':'')+'</div>'+
+    '<div class="pl-bridge" aria-hidden="true"><i></i><span>Ką tai reiškia tavo gyvenime</span><i class="dn"></i></div>';
+}
 function renderPalmsSideBySide(r){
   const box=document.getElementById('r-palms'); if(!box) return;
   const dg=r&&r.delnai_greta;
   if(!dg||!dg.sirdis){ box.innerHTML=''; return; }
-  const ic=k=>(typeof poraIcon==='function'?poraIcon(k,15):'');
-  const items=PALMS_CMP.filter(([k])=>dg[k]).map(([k,label,icon])=>'<div class="pr-cmp"><div class="pr-cmp-t">'+ic(icon)+label+'</div><div class="pr-cmp-ab"><div><small>Kairysis</small>'+_xEsc(dg[k].kairys)+'</div><div><small>Dešinysis</small>'+_xEsc(dg[k].desinys)+'</div></div></div>').join('');
-  box.innerHTML='<div class="rs rs-std rs-reveal pl-greta"><div class="pr-h">Tavo delnai greta</div><div class="pr-sub">Kairysis delnas rodo, su kuo gimei, dešinysis — kuo tapai dabar</div>'+
-    '<div class="pr-names"><div><div class="pora-orb"><i style="transform:scaleX(-1)"></i></div>Kairysis · prigimtis</div><div><div class="pora-orb"><i style="transform:none"></i></div>Dešinysis · dabar</div></div>'+items+
-    (dg.isvada?'<div class="pl-is"><b>Ką per gyvenimą išsiugdei</b>'+_xEsc(dg.isvada)+'</div>':'')+'</div>';
+  box.innerHTML=palmsBlockHtml(dg,'rs-reveal');
 }
 function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
@@ -3856,46 +3873,75 @@ function renderResultExtra(r){
   const em=window._userEmail||window.userEmail||'';
   h+='<div class="rs rs-std rs-reveal kl"><div class="rs-label">✦ Klausk savo delnų</div>'+
     '<div class="kl-txt">Turi klausimą, kuris neduoda ramybės? Užduok iki <b>3 asmeninių klausimų</b> — atsakymai remsis būtent tavo delnų analize: stiprybėmis, kryptimi ir kliūtimis.</div>'+
-    '<div class="kl-ex"><span>„Ar man verta keisti darbą?“</span><span>„Kodėl kartojasi tos pačios santykių problemos?“</span><span>„Kaip man geriau tvarkytis su pinigais?“</span></div>'+
+    '<textarea class="kl-q" id="kl-q" maxlength="400" rows="3" placeholder="Įrašyk savo klausimą…"></textarea>'+
+    '<div class="kl-ex" id="kl-ex"><button type="button">Ar man verta keisti darbą?</button><button type="button">Kodėl kartojasi tos pačios santykių problemos?</button><button type="button">Kaip man geriau tvarkytis su pinigais?</button></div>'+
     '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
-    '<button type="button" class="kl-btn" id="kl-btn">Užduoti klausimus — 4,99 €</button>'+
+    '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymą — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
-    '<div class="kl-fine">Atsakymai ekrane ir el. paštu · Saugus mokėjimas per Stripe</div></div>';
+    '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymas atsidarys naujame lange ir ateis el. paštu · Saugus mokėjimas per Stripe</div></div>';
   h+=hPlan;
   box.innerHTML=h;
-  // Jei klausimai buvo pridėti prie mokėjimo — rodome „jau apmokėta“
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
-  if(payRef) fetch('/order-extras?ref='+encodeURIComponent(payRef)).then(x=>x.json()).then(d=>{
-    if(!d||!d.addKlausk) return;
-    const blk=document.querySelector('#r-extra .kl'); if(!blk) return;
-    blk.querySelector('.kl-txt').innerHTML='<b>✓ Tavo 3 klausimai jau apmokėti.</b> Užduok juos bet kada — atsakymai rems tavo delnų analize.';
-    const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
-    const b=document.getElementById('kl-btn'); b.textContent='Užduoti klausimus →';
-    const nb=b.cloneNode(true); b.replaceWith(nb);
-    nb.addEventListener('click',async()=>{
-      const w=window.open('','_blank');
-      try{ const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||r})});
-        const dd=await res.json(); if(!res.ok||!dd.id) throw new Error(dd.error||'Klaida');
-        const url='/klausk?s='+dd.id; if(w) w.location.href=url; else location.href=url;
-      }catch(err){ if(w) w.close(); const er=document.getElementById('kl-err'); er.textContent=err.message; er.style.display='block'; }
-    });
-    blk.querySelector('.kl-fine').textContent='Atsakymai ekrane ir el. paštu';
-  }).catch(()=>{});
   const rn=document.getElementById('ref-note'); if(rn) rn.style.display=payRef?'block':'none';
-  const kb=document.getElementById('kl-btn');
-  if(kb) kb.addEventListener('click',async()=>{
-    const err=document.getElementById('kl-err'); err.style.display='none';
-    const email=(document.getElementById('kl-email').value||'').trim();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ const i=document.getElementById('kl-email'); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
-    const w=window.open('','_blank');
-    kb.disabled=true; const t=kb.textContent; kb.textContent='Jungiamasi prie Stripe…';
+  setupKlauskBlock({
+    q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
+    body:email=>({email,name:window.userName||'',result:window._palmResult||r}),
+    // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
+    prepaid:payRef&&!window._manoView?(async()=>{
+      const d=await (await fetch('/order-extras?ref='+encodeURIComponent(payRef))).json();
+      if(!d||!d.addKlausk) return null;
+      const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||r})});
+      const dd=await res.json(); if(!res.ok||!dd.id) return null;
+      const blk=document.querySelector('#r-extra .kl');
+      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ Tavo 3 klausimai jau apmokėti.</b> Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange ir ateis el. paštu'; }
+      const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
+      document.getElementById('kl-btn').textContent='Gauti atsakymą →';
+      return '/klausk?s='+dd.id;
+    })():null
+  });
+}
+
+// ═══ „Klausk savo delnų“ blokas (asmeninis ir porų): klausimo laukelis + mokėjimas naujame lange ═══
+// Mokėjimo nuoroda paruošiama IŠ ANKSTO, kad paspaudus langas atsidarytų iš karto
+// (kai kurios naršyklės blokuoja langus, atidaromus po užklausos). Įrašytas klausimas
+// perduodamas klausimų puslapiui ir ten užduodamas automatiškai.
+function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
+function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
+function setupKlauskBlock(o){
+  const $=id=>document.getElementById(id);
+  const btn=$(o.btn), qEl=$(o.q), err=$(o.err); if(!btn||!qEl) return;
+  const st={url:null,email:null,prepaid:false};
+  const ex=$(o.ex); if(ex) ex.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; qEl.value=b.textContent; err.style.display='none'; qEl.focus(); });
+  qEl.addEventListener('input',()=>{ err.style.display='none'; });
+  const emailOf=()=>o.emailEl?(($(o.emailEl)||{}).value||'').trim():'';
+  const valid=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  async function prefetch(){
     try{
-      const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||'',result:window._palmResult||r})});
+      if(o.prepaid){ const u=await o.prepaid; if(u){ st.url=u; st.prepaid=true; return; } }
+      const email=emailOf(); if(o.emailEl&&!valid(email)) return;
+      const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o.body(email))});
+      const d=await res.json(); if(res.ok&&d.url){ st.url=d.url; st.email=email; }
+    }catch(e){}
+  }
+  prefetch();
+  btn.addEventListener('click',async()=>{
+    err.style.display='none';
+    const q=qEl.value.trim();
+    if(q.length<5){ err.textContent='Įrašyk savo klausimą — bent kelis žodžius.'; err.style.display='block'; qEl.focus(); return; }
+    const email=emailOf();
+    if(o.emailEl&&!st.prepaid&&!valid(email)){ const i=$(o.emailEl); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
+    klDraftSave(q);
+    if(st.url&&(st.prepaid||!o.emailEl||st.email===email)){ klOpen(st.url); return; }
+    // Nuoroda dar neparuošta (arba pakeistas el. paštas) — atidarome langą iš karto ir nukreipiame, kai gausime nuorodą
+    const w=window.open('','_blank');
+    btn.disabled=true; const t=btn.textContent; btn.textContent='Jungiamasi prie Stripe…';
+    try{
+      const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o.body(email))});
       const d=await res.json();
       if(!res.ok||!d.url) throw new Error(d.error||'Nepavyko pradėti mokėjimo');
-      if(w) w.location.href=d.url; else location.href=d.url;
+      st.url=d.url; st.email=email; klOpen(d.url,w);
     }catch(e){ if(w) w.close(); err.textContent=e.message; err.style.display='block'; }
-    kb.disabled=false; kb.textContent=t;
+    btn.disabled=false; btn.textContent=t;
   });
 }
 
@@ -5895,21 +5941,15 @@ function poraReveal(){
   els.forEach(el=>io.observe(el));
 }
 
-async function poraKlausk(btn){
-  const err=document.getElementById('pora-kl-err'); err.style.display='none';
-  const w=window.open('','_blank');
-  btn.disabled=true; const t=btn.textContent; btn.textContent='Jungiamasi prie Stripe…';
-  try{
-    const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'pora',poraSid:(window._pora||{}).sid})});
-    const d=await res.json();
-    if(!res.ok||!d.url) throw new Error(d.error||'Nepavyko pradėti mokėjimo');
-    if(w) w.location.href=d.url; else location.href=d.url;
-  }catch(e){ if(w) w.close(); err.textContent=e.message; err.style.display='block'; }
-  btn.disabled=false; btn.textContent=t;
+// Porų „Klauskite“ blokas inicijuojamas vieną kartą, kai parodomas porų rezultatas
+function setupPoraKlausk(){
+  const btn=document.getElementById('pora-kl-btn'); if(!btn||btn.dataset.ready) return; btn.dataset.ready='1';
+  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', body:()=>({kind:'pora',poraSid:(window._pora||{}).sid}) });
 }
 
 function renderPoraResult(r){
   window._poraResult=r;
+  setTimeout(setupPoraKlausk,0);
   const p=window._pora;
   document.getElementById('pora-names').textContent=poraNames();
   const traits=(r.poros_bruozai||[]).map(t=>'<span>'+poraEsc(t)+'</span>').join('');
@@ -6382,6 +6422,25 @@ async function loadCompare(){
   }
   setInterval(check,600);
   window._camHintCheck=check;
+})();
+</script>
+<script>
+// Mokėjimo ekranas: dideliuose telefonuose — erdvus, mažuose — suspaudžiamas pakopomis,
+// kol mygtukas ir apsaugos eilutė telpa; jei vis tiek netelpa — leidžiama slinkti.
+function fitPayScreen(){
+  const si=document.getElementById('s-info'), tr=document.getElementById('pay-trust-row');
+  if(!si||!tr||!si.classList.contains('active')) return;
+  si.classList.remove('pay-t1','pay-t2'); document.body.style.overflowY='';
+  const bottom=()=>{ let y=0,e=tr; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y+tr.offsetHeight; };
+  const over=()=>bottom()>window.innerHeight-6;
+  if(over()) si.classList.add('pay-t1');
+  if(over()) si.classList.add('pay-t2');
+  if(over()) document.body.style.overflowY='auto';
+}
+(function(){
+  const _go=window.go;
+  window.go=function(id){ const r=_go.apply(this,arguments); if(id!=='s-info') document.body.style.overflowY=''; else { [60,700,1600].forEach(t=>setTimeout(fitPayScreen,t)); } return r; };
+  window.addEventListener('resize',()=>setTimeout(fitPayScreen,100));
 })();
 </script>
 </body></html>

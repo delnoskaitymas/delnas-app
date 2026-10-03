@@ -116,7 +116,8 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
     status('Šį langą gali uždaryti — tavo rezultatas liko ankstesniame lange.');
     return;
   }
-  if (!sid || !/^cs_[A-Za-z0-9_]{4,190}$/.test(sid)) {
+  // cs_… — apmokėta atskirai; kp_… — apmokėta kartu su analize arba dovanota už draugą
+  if (!sid || !/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(sid)) {
     $('lead').textContent = 'Klausimus galima užduoti po asmeninės delnų analizės.';
     status('Atlik asmeninę delnų analizę, o rezultato ekrane rasi bloką „Klausk savo delnų“.');
     return;
@@ -148,6 +149,13 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
       }
       (d.qa || []).forEach(x => card(x, false));
       left = d.left; refresh();
+      // Klausimas, įrašytas rezultato ekrane prieš mokėjimą, užduodamas automatiškai (vieną kartą)
+      let draft = null;
+      try { draft = JSON.parse(localStorage.getItem('delnasKlDraft') || 'null'); localStorage.removeItem('delnasKlDraft'); } catch (e) {}
+      if (draft && draft.q && left > 0 && Date.now() - draft.at < 3 * 3600e3 && !(d.qa || []).some(x => x.q === draft.q)) {
+        q.value = String(draft.q).slice(0, 400); upd();
+        if (q.value.trim().length >= 5) { const f = $('ask'); if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event('submit', { cancelable: true })); }
+      }
     } catch (e) {
       if (attempt < 6) { setTimeout(() => check(attempt + 1), 2000); return; }
       $('lead').textContent = 'Nepavyko patikrinti užsakymo. Atnaujink puslapį.';
