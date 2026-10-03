@@ -103,6 +103,12 @@ PORT = 3000
 - Statistika be slapukų: `/admin/stats?key=ADMIN_KEY` — kiek kartų per dieną atidaryta, pradėta, pasiektas mokėjimo ekranas, apmokėta, porų/dovanų/klausimų pirkimai, įvertinimai. **Railway nustatyk kintamąjį `ADMIN_KEY`** (bet koks slaptas žodis); tikslią nuorodą rasi ir įvertinimo laiškuose.
 - Mokėjimo ekrane — „👁 Pavyzdys“: vieno skyriaus pavyzdys prieš mokėjimą.
 
+## Dovanų siuntimas ir sezonai
+
+- /dovana: „📅 Išsiųsti gavėjui el. paštu nurodytą dieną“ — gavėjo el. paštas ir data; serveris kas valandą tikrina ir siunčia nuo 8 val. Lietuvos laiku (jei data šiandien — iškart). Pirkėjas gauna „✓ Jūsų dovana išsiųsta“.
+- Nepanaudotas kuponas po 30 d. — vienas priminimas pirkėjui.
+- Sezoninės temos įsijungia pačios: Valentino diena (vasario 1–14, pažymėtas porų kuponas), Motinos diena (balandžio 20 – pirmas gegužės sekmadienis), Kalėdos (gruodžio 1–24). Peržiūra: `/dovana?sezonas=valentinas|mama|kaledos`.
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 

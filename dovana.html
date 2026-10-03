@@ -201,6 +201,13 @@ body.card-view #v-card{margin:auto 0}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
+.sched-chk{margin-top:12px!important;color:var(--gold2)!important}
+@media (max-height:700px){ .sched-chk{margin-top:6px!important;font-size:11.5px!important} #v-form textarea{height:40px;min-height:40px} #v-form .trust{display:none} }
+.sched{margin-top:4px}
+input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
+.season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
+.gcard .season{font:italic 400 19px 'Playfair Display',serif;color:var(--gold2);margin-top:10px;min-height:0}
+.gcard .season:empty{display:none}
 /* Dovanos tipo pasirinkimas: asmeninė / porų */
 .kind{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
 .kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:9px 6px 8px;cursor:pointer;
@@ -225,6 +232,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     <div class="intro">
       <div class="hero"><i></i></div>
       <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
+      <div class="season-tag hidden" id="season-tag"></div>
       <h1 id="form-h1">Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
     <p class="lead sm" id="form-lead">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
@@ -241,6 +249,13 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       </div>
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
+      <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui el. paštu nurodytą dieną</span></label>
+      <div class="sched hidden" id="sched">
+        <div class="row2">
+          <div><label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off"></div>
+          <div><label for="f-date">Kada išsiųsti</label><input type="date" id="f-date"></div>
+        </div>
+      </div>
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
@@ -293,6 +308,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
         <div class="in">
           <div class="b">DELNAS</div>
           <div class="k">DOVANŲ KUPONAS</div>
+          <div class="season" id="c-season"></div>
           <div class="to" id="c-to">🎁 Tau</div>
           <div class="what" id="c-what">Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus</div>
           <div class="msg" id="c-msg"></div>
@@ -355,17 +371,47 @@ body:not(.kind-pora) #v-form .hero2{display:none}
 
   // ---------- 1. Forma ----------
   function validForm(){
-    return $('f-ok').checked && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('f-email').value.trim());
+    const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    if ($('f-sched') && $('f-sched').checked && (!em($('f-to-email').value.trim()) || !$('f-date').value)) return false;
+    return $('f-ok').checked && em($('f-email').value.trim());
   }
   function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
   ['f-ok','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-msg').addEventListener('input', () => { $('msg-count').textContent = $('f-msg').value.length; });
 
+  // Sezoninės temos — įsijungia automatiškai pagal datą (peržiūrai: ?sezonas=valentinas|mama|kaledos)
+  const SEASONS = {
+    valentinas: { tag: '💞 Valentino dienos dovana', kind: 'pora', label: 'Su Valentino diena 💞', msg: 'Su Valentino diena! 💞' },
+    mama: { tag: '🌷 Dovana Motinos dienai', kind: 'asmenine', label: 'Su Motinos diena 🌷', msg: 'Su Motinos diena, mamyte! 🌷' },
+    kaledos: { tag: '🎄 Kalėdinė dovana', kind: 'asmenine', label: 'Linksmų Kalėdų 🎄', msg: 'Linksmų Kalėdų! ✨' }
+  };
+  function currentSeason(){
+    const o = params.get('sezonas'); if (SEASONS[o]) return o;
+    const d = new Date(), m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
+    if (m === 2 && day <= 14) return 'valentinas';
+    if (m === 12 && day <= 24) return 'kaledos';
+    // Motinos diena Lietuvoje — pirmasis gegužės sekmadienis; tema nuo balandžio 20 d.
+    const may1 = new Date(y, 4, 1), mday = 1 + ((7 - may1.getDay()) % 7);
+    if ((m === 4 && day >= 20) || (m === 5 && day <= mday)) return 'mama';
+    return '';
+  }
+  const season = currentSeason();
+  if (season) {
+    $('season-tag').textContent = SEASONS[season].tag; $('season-tag').classList.remove('hidden');
+    $('f-msg').placeholder = SEASONS[season].msg;
+  }
+  // Planuotas siuntimas gavėjui
+  const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
+  $('f-date').min = todayStr; $('f-date').value = todayStr;
+  { const mx = new Date(); mx.setFullYear(mx.getFullYear() + 1); $('f-date').max = mx.toISOString().slice(0, 10); }
+  $('f-sched').addEventListener('change', () => { $('sched').classList.toggle('hidden', !$('f-sched').checked); refreshBtn(); });
+  $('f-to-email').addEventListener('input', refreshBtn); $('f-date').addEventListener('input', refreshBtn);
+
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
   const prices = { asmenine: '12,99 €', pora: '19,99 €' };
-  let kind = params.get('tipas') === 'pora' ? 'pora' : 'asmenine';
+  let kind = params.get('tipas') === 'pora' ? 'pora' : (params.get('tipas') ? 'asmenine' : (season ? SEASONS[season].kind : 'asmenine'));
   function setKind(k){
     kind = k;
     const pora = k === 'pora';
@@ -398,7 +444,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ kind, buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, season, recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
@@ -444,6 +490,8 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     $('c-code').textContent = g.code;
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
     const pora = g.kind === 'pora';
+    const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
+    $('c-season').textContent = SL[g.season] || '';
     $('c-what').innerHTML = pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus';
     $('c-how').textContent = pora ? 'abu nufotografuokite delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
     $('again').href = pora ? '/dovana?tipas=pora' : '/dovana';
