@@ -1545,7 +1545,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
-- planas: 4 savaičių planas ateinančioms 30 dienų, pagrįstas šia analize (stiprybėmis, kryptimi ir kliūtimis). Kiekvienai savaitei: tema (2–4 žodžiai) ir veiksmas (1–2 sakiniai, iki 170 simbolių, vienas labai konkretus, lengvai įgyvendinamas veiksmas „tu“ forma, pvz. Šią savaitę užsirašyk tris idėjas ir vieną iš jų išbandyk iki sekmadienio)
+- delnai_greta (Kairysis ir dešinysis delnas): ŠIS BLOKAS — VIENINTELĖ IŠIMTIS iš draudimo minėti linijas ir delno anatomiją: čia PRIVALAI trumpai įvardyti, KĄ matai. Chiromantijoje kairysis delnas rodo prigimtį (su kuo žmogus gimė), dešinysis — kokiu žmogus tapo dabar. Palygink TIKRUS skirtumus tarp ŠIŲ dviejų nuotraukų trijose srityse: sirdis (širdies linija — jausmai), protas (galvos linija — mąstymas), gyvenimas (gyvenimo linija — gyvenimo tempas ir jėgos). Kiekvienai sričiai: kairys ir desinys — po vieną frazę (iki 80 simbolių) formatu „trumpas, ką matai — ką tai reiškia“, „tu“ forma, pvz. kairys: „Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai“, desinys: „Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau“. Jei kurioje srityje delnai beveik vienodi — taip ir parašyk (pvz. „Beveik tokia pati — šią savybę išlaikei nepakitusią“). Žodžio „galva“ nenaudok — rašyk „mąstymas“ ar „protas“. isvada: 2 sakiniai — ką žmogus per gyvenimą išsiugdė ar pakeitė, palyginus su prigimtimi (konkretu, šilta, be giminę turinčių dalyvių)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
@@ -1554,13 +1554,13 @@ Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį
 1. Ar šis sakinys yra TIKSLUS, TIESIOGINIS FAKTAS apie ŠĮ konkretų žmogų (ne bendra tiesa, ne nuomonė, ne hipotezė, ne "gali būti")?
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
-4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą.
+4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą. (Vienintelė išimtis — delnai_greta kairys/desinys frazės, kur trumpai įvardyti, ką matai, PRIVALOMA.)
 5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
 Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. JEI PERRAŠEI BENT VIENĄ SAKINĮ PATAISYDAMAS KLAIDĄ — prieš atiduodamas galutinį atsakymą, PERSKAITYK TĄ PATAISYTĄ SAKINĮ DAR KARTĄ NUO PRADŽIOS per visus 5 klausimus (pataisymas pats gali įnešti naują klaidą). Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus/taisyklingas faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"planas":[{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."},{"tema":"...","veiksmas":"..."}]}`
+{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
     }
   ];
 
@@ -1673,7 +1673,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   return result;
 }
 
-// Papildomi rezultato blokai (potencialo žemėlapis ir 30 dienų planas) —
+// Papildomi rezultato blokai (kairysis ir dešinysis delnas greta) —
 // neprivalomi: jei AI juos pateikė netvarkingai, jie tiesiog nerodomi.
 function sanitizeExtraResult(result) {
   const KEYS = ['santykiai', 'karjera', 'finansai', 'kuryba', 'intuicija', 'stiprybe'];
@@ -1683,9 +1683,16 @@ function sanitizeExtraResult(result) {
     for (const k of KEYS) out[k] = { balas: Math.max(55, Math.min(98, Math.round(Number(p[k].balas)))), fraze: typeof p[k].fraze === 'string' ? applyTextFixes(p[k].fraze.trim().slice(0, 160)).text : '' };
     result.potencialas = out;
   } else delete result.potencialas;
-  const pl = Array.isArray(result.planas) ? result.planas.filter(w => w && typeof w.tema === 'string' && typeof w.veiksmas === 'string' && w.tema.trim() && w.veiksmas.trim()) : [];
-  if (pl.length >= 3) result.planas = pl.slice(0, 4).map(w => ({ tema: applyTextFixes(w.tema.trim().slice(0, 50)).text, veiksmas: applyTextFixes(w.veiksmas.trim().slice(0, 220)).text }));
-  else delete result.planas;
+  delete result.planas;
+  const dg = result.delnai_greta;
+  const dgOk = v => typeof v === 'string' && v.trim().length > 3;
+  if (dg && typeof dg === 'object' && ['sirdis', 'protas', 'gyvenimas'].every(k => dg[k] && dgOk(dg[k].kairys) && dgOk(dg[k].desinys))) {
+    const fx = (t, n = 140) => applyTextFixes(t.trim().replace(/"/g, '').slice(0, n)).text;
+    const out = {};
+    for (const k of ['sirdis', 'protas', 'gyvenimas']) out[k] = { kairys: fx(dg[k].kairys), desinys: fx(dg[k].desinys) };
+    if (dgOk(dg.isvada)) out.isvada = fx(dg.isvada, 400);
+    result.delnai_greta = out;
+  } else delete result.delnai_greta;
 }
 
 // --- ENDPOINT: Greita delno validacija ---
@@ -3331,6 +3338,13 @@ function pickKlauskResult(r) {
     out.potencialas = {};
     for (const [k, v] of Object.entries(r.potencialas).slice(0, 6)) if (v && typeof v.fraze === 'string') out.potencialas[k] = v.fraze.slice(0, 200);
   }
+  const dg = r.delnai_greta;
+  if (dg && typeof dg === 'object') {
+    const t = [];
+    for (const [k, l] of [['sirdis', 'Jausmai'], ['protas', 'Mąstymas'], ['gyvenimas', 'Gyvenimo tempas']]) if (dg[k] && typeof dg[k].kairys === 'string' && typeof dg[k].desinys === 'string') t.push(`${l}: prigimtis — ${dg[k].kairys.slice(0, 160)}; dabar — ${dg[k].desinys.slice(0, 160)}`);
+    if (typeof dg.isvada === 'string') t.push(dg.isvada.slice(0, 400));
+    if (t.length) out.delnai_greta = t.join('\n');
+  }
   return Object.keys(out).length >= 4 ? out : null;
 }
 
@@ -3347,6 +3361,7 @@ function klauskContextText(res) {
   const INS = { prigimtines_stiprybes: 'prigimtines_insights', gyvenimo_tikslas: 'gyvenimo_insights', santykiai: 'santykiai_insights', finansai: 'finansai_insights', galimybes: 'galimybes_insights', pokyciai: 'pokyciai_insights', klutys: 'klutys_insights' };
   for (const k of KLAUSK_RESULT_FIELDS) if (res[k]) t += `## ${L[k]}\n${res[k]}\n${(res[INS[k]] || []).join('; ')}\n\n`;
   if (res.stiprybes_sarasas) t += `## Stiprybės\n${res.stiprybes_sarasas.join(', ')}\n\n`;
+  if (typeof res.delnai_greta === 'string') t += `## Kairysis (prigimtis) ir dešinysis (dabar) delnas\n${res.delnai_greta}\n\n`;
   if (res.potencialas) t += `## Potencialas\n${Object.entries(res.potencialas).map(([k, v]) => `${k}: ${v}`).join('\n')}\n`;
   return t;
 }
