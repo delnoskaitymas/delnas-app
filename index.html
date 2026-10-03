@@ -32,6 +32,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .screen.active{display:block;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 #s-home.active{display:flex;flex-direction:column;position:relative;overflow:hidden}
 .s-home-top{display:flex;flex-direction:column;flex:1;min-height:0}
+/* Porų režimas su pranešimu viršuje — viskas turi tilpti į vieną ekraną be slinkimo */
+#s-home.has-note .s-home-top>div:first-child{min-height:170px!important}
+#s-home.has-note #home-kicker{margin-bottom:8px!important}
+#s-home.has-note .s-home-top>div:first-child>div[style*="padding:48px"]{padding-top:22px!important}
+#s-home.has-note #home-lead{margin-bottom:16px!important}
 @media(max-height:540px){.s-home-top>div:first-child{min-height:300px!important}}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.04);opacity:.4}}
 @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.6}50%{transform:translateY(-8px) scale(1.4);opacity:1}}
@@ -539,8 +544,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em" id="home-lead">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <a id="season-line" class="season-line" href="#" style="display:none"></a>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:15px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
-    <div style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:0;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
-    <a href="/mano" class="home-mano">Jau darei analizę? <b>Mano analizės →</b></a>
+    <div id="home-time" style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:0;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
+    <a href="/mano" class="home-mano" id="home-mano">Jau darei analizę? <b>Mano analizės →</b></a>
   </div>
   </div>
 
@@ -5721,7 +5726,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   note.id='pora-welcome';
   note.style.cssText="margin:14px 16px 0;padding:12px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5";
   note.innerHTML='<div style="color:var(--muted);font-size:12px">Tikrinamas užsakymas…</div>';
-  if(home) home.prepend(note);
+  if(home){ home.prepend(note); home.classList.add('has-note'); }
   // Stripe kartais pažymi mokėjimą „paid“ po kelių sekundžių — bandome kelis kartus
   (async function check(attempt){
     try{
@@ -5744,6 +5749,10 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(hk) hk.textContent='Porų suderinamumas pagal delnus';
       if(hh) hh.innerHTML='Jūsų porų<br><em class="gold">suderinamumas</em>';
       if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.';
+      // Porų režime — daugiskaita
+      const ht=document.getElementById('home-time'), hm=document.getElementById('home-mano');
+      if(ht) ht.textContent='⏱ Užtruksite tik kelias minutes';
+      if(hm) hm.innerHTML='Jau darėte analizę? <b>Mano analizės →</b>';
       if(window._pora.remoteB){
         note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
           '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
@@ -5753,7 +5762,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       }
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
         '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų porų suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
-        '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuosite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
+        '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuokite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
     }catch(e){
