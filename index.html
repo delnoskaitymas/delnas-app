@@ -270,6 +270,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rate-more label input{margin-top:2px;accent-color:#d4a843}
 .rate-send{width:100%;margin-top:10px;border:none;border-radius:10px;padding:12px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 14px 'DM Sans',sans-serif;cursor:pointer}
 .rate-thx{display:none;font-family:'Playfair Display',serif;font-style:italic;color:var(--gold2);font-size:15px;margin-top:6px}
+/* Porų nuotolinis režimas */
+.pora-remote-link{display:block;margin:14px auto 0;background:none;border:none;color:var(--gold2);font:500 13.5px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.45);cursor:pointer}
 /* Porų suderinamumas */
 .pora-ring{position:relative;width:150px;height:150px;margin:18px auto 14px}
 .pora-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -914,6 +916,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="pora-next-title" style="font-family:'Playfair Display',serif;font-size:28px;line-height:1.2;color:#e8e2d4;margin-bottom:10px"></div>
     <div style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:320px;margin-bottom:26px">Perduok telefoną partneriui — dabar reikia nufotografuoti jo arba jos delnus.</div>
     <button class="btn btn-gold" id="pora-next-btn" onclick="poraNextPartner()" style="max-width:340px"></button>
+    <button type="button" class="pora-remote-link" id="pora-remote-btn" onclick="poraRemote()"></button>
+    <div class="kl-err" id="pora-remote-err" style="max-width:340px"></div>
+  </div>
+</div>
+
+<div class="screen" id="s-pora-remote">
+  <div style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center">
+    <div class="pora-orbs sm" style="margin-bottom:18px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
+    <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(212,168,67,.75);margin-bottom:10px">Porų suderinamumas pagal delnus</div>
+    <div id="pr-remote-title" style="font-family:'Playfair Display',serif;font-size:26px;line-height:1.25;color:#e8e2d4;margin-bottom:10px"></div>
+    <div id="pr-remote-txt" style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:330px;margin-bottom:20px"></div>
+    <button class="btn btn-gold" id="pr-remote-share" onclick="poraShareRemote()" style="max-width:340px">Siųsti nuorodą →</button>
+    <button type="button" class="pora-remote-link" onclick="poraCopyRemote(this)">Kopijuoti nuorodą</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:26px;font-size:12.5px;color:var(--muted)"><span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);border-radius:50%;animation:spinStep .9s linear infinite"></span><span id="pr-remote-wait"></span></div>
   </div>
 </div>
 
@@ -5606,12 +5622,22 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       Object.assign(window._pora,{ nameA:d.nameA||'Pirmasis', nameB:d.nameB||'Antrasis' });
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
+      let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; }catch(e){}
+      if(d.status==='waiting_partner' && !isPartner){ note.remove(); poraShowRemote(location.origin+'/?pora='+encodeURIComponent(sid)+'&partneris=1'); return; }
+      if(d.status==='waiting_partner' && isPartner){ window._pora.stage=1; window._pora.remoteB=true; }
       window._pora.active=true;
       // Pradžios ekranas porų režimu — antraštė ir tekstas apie porą, ne apie asmeninį žemėlapį
       const hk=document.getElementById('home-kicker'), hh=document.getElementById('home-h1'), hl=document.getElementById('home-lead');
       if(hk) hk.textContent='Porų suderinamumas pagal delnus';
       if(hh) hh.innerHTML='Jūsų porų<br><em class="gold">suderinamumas</em>';
       if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.';
+      if(window._pora.remoteB){
+        note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
+          '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
+          '<div style="color:var(--muted);font-size:12px;margin-top:3px">Dabar tavo eilė, <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b> — nufotografuok kairįjį ir dešinįjį delną, ir pamatysite savo porų suderinamumą.</div>';
+        const cta=document.getElementById('main-cta-btn'); if(cta) cta.textContent='Fotografuoti mano delnus';
+        return;
+      }
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
         '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų porų suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuosite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
@@ -5628,7 +5654,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
 function poraConsentTexts(){
   const L='color:#d4a843;text-decoration:underline';
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
-  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti abiejų jūsų kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir serveryje nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
+  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti abiejų jūsų kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
   set('consent-age-txt','Patvirtiname, kad mums abiem yra 18 metų, abu sutinkame su delnų analize ir su <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
   set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
   const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinkame ir tęsiame ✦';
@@ -5643,6 +5669,7 @@ function poraAfterPartner(){
     document.getElementById('pora-next-done').textContent=p.nameA+' — abu delnai nufotografuoti';
     document.getElementById('pora-next-title').textContent='Dabar — '+p.nameB;
     document.getElementById('pora-next-btn').textContent='Tęsti — '+p.nameB;
+    document.getElementById('pora-remote-btn').textContent=p.nameB+' ne šalia? Nusiųsti nuorodą →';
     go('s-pora-next');
   } else {
     poraStart();
@@ -5650,13 +5677,50 @@ function poraAfterPartner(){
 }
 function poraNextPartner(){ _startAppReal(); }
 
+// Nuotolinis režimas: pirmojo partnerio nuotraukos išsaugomos, antrajam siunčiama nuoroda
+async function poraRemote(){
+  const p=window._pora, btn=document.getElementById('pora-remote-btn'), err=document.getElementById('pora-remote-err');
+  err.style.display='none'; btn.disabled=true; const t=btn.textContent; btn.textContent='Ruošiama nuoroda…';
+  try{
+    const photos=p.photos[0].map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
+    const r=await fetch('/pora/save-first',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid,photos})});
+    const d=await r.json(); if(!r.ok||!d.link) throw new Error(d.error||'Nepavyko paruošti nuorodos');
+    p.active=false; poraShowRemote(d.link);
+  }catch(e){ err.textContent=e.message; err.style.display='block'; }
+  btn.disabled=false; btn.textContent=t;
+}
+function poraShowRemote(link){
+  const p=window._pora; p.remoteLink=link;
+  document.getElementById('pr-remote-title').textContent='Nuoroda — '+p.nameB;
+  document.getElementById('pr-remote-txt').textContent=p.nameA+' delnai jau nufotografuoti. Nusiųskite nuorodą '+p.nameB+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
+  document.getElementById('pr-remote-wait').textContent='Laukiame, kol '+p.nameB+' nufotografuos delnus…';
+  go('s-pora-remote');
+  clearInterval(window._poraRemoteTimer);
+  window._poraRemoteTimer=setInterval(async()=>{
+    try{ const d=await (await fetch('/pora/status?session_id='+encodeURIComponent(p.sid))).json();
+      if(d.status==='pending'){ clearInterval(window._poraRemoteTimer); go('s-pora-wait'); poraProgress(true); poraPoll(); }
+      else if(d.status==='done'&&d.result){ clearInterval(window._poraRemoteTimer); renderPoraResult(d.result); }
+    }catch(e){}
+  },5000);
+}
+async function poraShareRemote(){
+  const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus — sužinosime mūsų porų suderinamumą:';
+  try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url:p.remoteLink }); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  poraCopyRemote(document.querySelector('#s-pora-remote .pora-remote-link'));
+}
+async function poraCopyRemote(btn){
+  const link=window._pora.remoteLink;
+  try{ await navigator.clipboard.writeText(link); if(btn){ btn.textContent='Nukopijuota ✓'; setTimeout(()=>{ btn.textContent='Kopijuoti nuorodą'; },2000); } }
+  catch(e){ prompt('Nukopijuokite nuorodą:',link); }
+}
+
 async function poraStart(){
   const p=window._pora;
   p.active=false;
   go('s-pora-wait');
   document.getElementById('pora-wait-err').style.display='none';
   poraProgress(true);
-  const photos=[...p.photos[0],...p.photos[1]].map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
+  const photos=(p.remoteB?[...p.photos[1]]:[...p.photos[0],...p.photos[1]]).map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
   try{
     const r=await fetch('/pora/start',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:p.sid, photos }) });
     const d=await r.json();

@@ -3107,18 +3107,26 @@ app.get('/pora/check', sensitiveLimiter, async (req, res) => {
 
 app.post('/pora/start', sensitiveLimiter, async (req, res) => {
   try {
-    const { sessionId, photos } = req.body || {};
+    const { sessionId } = req.body || {};
+    let { photos } = req.body || {};
     if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
-    if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
     const existing = loadPoraOrders()[sessionId];
+    // Nuotolinis režimas: pirmojo partnerio nuotraukos jau išsaugotos, antrasis atsiunčia savo 2
+    if (existing && existing.status === 'waiting_partner' && Array.isArray(photos) && photos.length === 2) {
+      const first = loadPoraFirstPhotos(sessionId);
+      if (!first) return res.status(410).json({ error: 'Pirmojo partnerio nuotraukos nebegalioja — nufotografuokite abu iš naujo' });
+      photos = [...first, ...photos];
+    }
+    if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
     // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo
     if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
       return res.json({ started: true, status: existing.status });
     }
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
-    const isFirst = !existing;
+    const isFirst = !existing || (existing.status === 'waiting_partner' && !existing.gift);
     if (isFirst && !sessionId.startsWith('gp_')) statInc('pora_paid');
+    deletePoraFirstPhotos(sessionId);
     updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now() });
     res.json({ started: true, status: 'pending' });
 
@@ -3150,6 +3158,43 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
   } catch (err) {
     console.error('/pora/start klaida:', err);
     res.status(500).json({ error: 'Nepavyko pradėti analizės' });
+  }
+});
+
+// ── Nuotolinis režimas: pirmojo partnerio nuotraukos laikinai (iki 48 val.) ──
+const PORA_PHOTOS_DIR = path.join(SHARED_STORAGE_DIR, 'pora-photos');
+function poraPhotosFile(id) { return path.join(PORA_PHOTOS_DIR, id.replace(/[^A-Za-z0-9_]/g, '') + '.json'); }
+function loadPoraFirstPhotos(id) {
+  try { const f = poraPhotosFile(id); if (!fs.existsSync(f)) return null; const d = JSON.parse(fs.readFileSync(f, 'utf8')); return Array.isArray(d.photos) && d.photos.length === 2 ? d.photos : null; } catch (e) { return null; }
+}
+function deletePoraFirstPhotos(id) { try { fs.unlinkSync(poraPhotosFile(id)); } catch (e) {} }
+function cleanupPoraPhotos() {
+  try {
+    if (!fs.existsSync(PORA_PHOTOS_DIR)) return;
+    const cutoff = Date.now() - 48 * 3600e3;
+    for (const f of fs.readdirSync(PORA_PHOTOS_DIR)) { const fp = path.join(PORA_PHOTOS_DIR, f); try { if (fs.statSync(fp).mtimeMs < cutoff) fs.unlinkSync(fp); } catch (e) {} }
+  } catch (e) {}
+}
+cleanupPoraPhotos();
+setInterval(cleanupPoraPhotos, 3 * 3600e3);
+
+app.post('/pora/save-first', sensitiveLimiter, async (req, res) => {
+  try {
+    const { sessionId, photos } = req.body || {};
+    if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    if (!isValidPhotosArray(photos) || photos.length !== 2) return res.status(400).json({ error: 'Reikia 2 delnų nuotraukų' });
+    const existing = loadPoraOrders()[sessionId];
+    if (existing && ['done', 'pending'].includes(existing.status)) return res.status(409).json({ error: 'Analizė jau vykdoma arba baigta' });
+    const s = await getPaidPoraSession(sessionId);
+    if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
+    fs.mkdirSync(PORA_PHOTOS_DIR, { recursive: true });
+    const f = poraPhotosFile(sessionId), tmp = f + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify({ photos, at: Date.now() })); fs.renameSync(tmp, f);
+    updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'waiting_partner', firstSavedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now(), ...(s.gift ? { gift: s.gift } : {}) });
+    res.json({ ok: true, link: `${appBaseUrl()}/?pora=${encodeURIComponent(sessionId)}&partneris=1` });
+  } catch (err) {
+    console.error('/pora/save-first klaida:', err);
+    res.status(500).json({ error: 'Nepavyko išsaugoti nuotraukų' });
   }
 });
 
