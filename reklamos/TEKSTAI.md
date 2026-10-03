@@ -158,8 +158,8 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 
 **H — su drauge (14, 15)**
 > Merginų vakarui — kažkas naujo ✨
-> Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius: kuri iš jūsų gimusi lyderė, o kurios laukia didesni pokyčiai? 👭
-> 👉 delnaskaitymas.lt
+> Kiekviena gaunate savo asmeninę analizę — palyginkit, kuri iš jūsų lyderė, o kuri svajotoja 👭
+> 👉 https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems
 
 **I — ruduo (16)**
 > Ruduo — laikas naujiems sprendimams 🍂
@@ -169,10 +169,12 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - Tavo ateitis — tavo rankose
 - Linijos nemeluoja
 - Kas tau lemta?
-- Palyginkit savo žemėlapius su drauge
+- Kiekviena — savo analizė. Palyginkit!
 - Ruduo — laikas pokyčiams
 
 > Pastaba (atnaujinta): dovanų kuponai jau yra (delnaskaitymas.lt/dovana) — dovanų reklamas vesk į /dovana. „Draugių“ reklamose (14, 15) kiekviena draugė vis tiek fotografuoja ir moka pati, nebent kuponą nuperka kita.
+>
+> **Draugių reklamos (14, 15, 32–36, video „draugėms“):** atskiros „draugių palyginimo“ analizės nėra — kiekviena draugė užsisako savo asmeninę analizę, o palygina pačios. Todėl tekstuose visada aiškiai: „Kiekviena gaunate savo analizę“. Nuorodoje naudok `utm_campaign=draugems` — admin statistikoje „Iš kur atėjo“ matysi, kiek pirkimų atnešė būtent šios reklamos. Jei atneš daug — verta kurti atskirą „Draugių“ režimą.
 
 ---
 
@@ -249,10 +251,10 @@ Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
 | Sek. | Scena |
 |---|---|
 | 0–3 | „Kuri iš jūsų — gimusi lyderė?“ — du delnai atskrenda iš šonų („Tu“ / „Ji“) |
-| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai |
+| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai: kiekviena nufotografuoja savo delnus → kiekviena gauna savo analizę → palyginat |
 | 6,6–10,4 | „Du delnai — du skirtingi keliai“ — du telefonai su žemėlapiais |
 | 10,4–12,6 | „Kas jus sieja? Kuo jūs skiriatės? Kurios laukia didesni pokyčiai?“ |
-| 12,6–15 | „Nustebink draugę“ + „Išbandyti kartu“ + delnaskaitymas.lt |
+| 12,6–15 | „Nustebink draugę“ + „Kiekvienai — sava analizė“ + „Išbandyti kartu“ + delnaskaitymas.lt |
 
 **Tekstas prie video:**
 > Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. delnaskaitymas.lt
@@ -343,7 +345,8 @@ Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai ·
 
 **V — vakarėliui (32–36)**
 > Gimtadieniui, mergvakariui, staigmenai ar tiesiog vakarui su draugėmis 🥂
-> Nufotografuokit delnus ir skaitykit savo gyvenimo žemėlapius kartu. Juoko ir nuostabos netrūks ✨
+> Kiekvienas gaunate savo asmeninę analizę — skaitykit ir palyginkit kartu. Juoko ir nuostabos netrūks ✨
+> 👉 https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems
 
 **X — dviese (37, 38)**
 > Valentino dienai, sukakčiai ar tiesiog vakarui dviese ♥
@@ -422,6 +425,7 @@ Naudok du laukus — **šaltinis** ir **kampanija** (lentelėje jie rodomi kaip 
 | Kalėdos | `kaledos` | `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=kaledos` |
 | Naujieji metai | `metai` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=metai` |
 | Valentino diena | `valentinas` | `https://www.delnaskaitymas.lt/pora?utm_source=instagram&utm_campaign=valentinas` |
+| Draugės / vakarėliai (14, 15, 32–36, video „draugėms“) | `draugems` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems` |
 
 Pakeisk `facebook` į `instagram`, `tiktok` ar `bio` pagal tai, kur dedi nuorodą. Meta Ads Manager'yje tą patį gali įrašyti laukelyje **„URL parameters“**: `utm_source=facebook&utm_campaign=kaledos`.
 
@@ -468,6 +472,8 @@ Aprašymas: *Porų suderinamumas pagal delnus 💞 Kiek gavot jūs? #poros #sant
 | 2–10 | Paeiliui fotografuojasi | „Kiekviena — savo“ |
 | 10–20 | Skaitote viena kitai stiprybes, juokiatės | „Tu — gimusi lyderė, aš — intuicija…“ |
 | 20–25 | Tekstas | „Kurią žymėtum? 👇“ |
+
+Aprašymas: *Kiekviena gavom savo analizę ir palyginom 😂 Kuri jūsų kompanijoje lyderė? #draugės #mergvakaris #delnųskaitymas #fyp* — nuoroda: `/?utm_source=tiktok&utm_campaign=draugems`
 
 **5. „Dovana mamai — be pakavimo“ (Kalėdos, nuo lapkr. 15)**
 | Sek. | Vaizdas | Tekstas |
