@@ -224,13 +224,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-rem-d{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:12px}
 .px-rem-b{width:100%;background:transparent;border:.5px solid rgba(212,168,67,.45);border-radius:10px;padding:12px;color:var(--gold2);font:800 14px 'DM Sans',sans-serif;cursor:pointer;letter-spacing:.03em}
 /* Pasiūlymas prie mokėjimo ir draugo nuolaida */
-#kl-bump,#pora-bump{display:flex;gap:9px;align-items:center;margin:0;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
-#kl-bump input,#pora-bump input{margin:0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
-#kl-bump span,#pora-bump span{font-size:11.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
-#kl-bump b,#pora-bump b{color:var(--gold2)}
-#kl-bump s,#pora-bump s{color:rgba(255,255,255,.4);font-size:11px}
-#kl-bump.on,#pora-bump.on{border-style:solid;background:rgba(212,168,67,.12)}
-.gift-hide#kl-bump,.gift-hide#pora-bump{display:none!important}
+#kl-bump{display:flex;gap:9px;align-items:center;margin:0;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
+#kl-bump input{margin:0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
+#kl-bump span{font-size:11.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
+#kl-bump b{color:var(--gold2)}
+#kl-bump s{color:rgba(255,255,255,.4);font-size:11px}
+#kl-bump.on{border-style:solid;background:rgba(212,168,67,.12)}
+.gift-hide#kl-bump{display:none!important}
 .home-mano{display:block;text-align:center;margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.45);text-decoration:none;font-family:'DM Sans',sans-serif}
 .home-mano b{color:rgba(212,168,67,.85);font-weight:600}
 .promo-welcome{margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.45);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;line-height:1.45;color:#f3e7c6}
@@ -251,8 +251,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .o-remind span{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.45)}
 .o-remind button{background:none;border:none;padding:0;color:rgba(212,168,67,.75);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .o-remind b{color:var(--gold2);font-weight:700}
-@media(max-width:374px){#kl-bump s,#pora-bump s{display:none}#kl-bump span,#pora-bump span{font-size:11px}}
-@media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump,#pora-bump{padding:5px 10px}}
+@media(max-width:374px){#kl-bump s{display:none}#kl-bump span{font-size:11px}}
+@media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump{padding:5px 10px}}
 .price-old{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.4);text-decoration:line-through;margin-left:8px;vertical-align:middle}
 .price-tag{display:block;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:2px 9px;margin:6px auto 0;width:fit-content}
 .ref-note{font-size:11.5px;line-height:1.45;color:var(--muted);text-align:center;margin-top:-2px}
@@ -277,7 +277,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #s-info.pay-t1 #info-qs>div>span:nth-child(2)>span{display:none!important}
 #s-info.pay-t1 #info-qs>div{padding:3px 0!important}
 #s-info.pay-t1 .pay-testi{display:none!important}
-#s-info.pay-t2 #kl-bump,#s-info.pay-t2 #pora-bump{padding:5px 10px}
+#s-info.pay-t2 #kl-bump{padding:5px 10px}
 #s-info.pay-t2 #info-qs>div{padding:1px 0!important}
 #s-info.pay-t2 #pay-section{gap:7px!important}
 .rate{text-align:center}
@@ -734,11 +734,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <label id="kl-bump" class="pay-anim-item" for="kl-bump-cb">
       <input type="checkbox" id="kl-bump-cb" onchange="toggleKlauskBump(this.checked)">
       <span>Pridėti <b>3 asmeninius klausimus</b> — <b id="kl-bump-price">2,99 €</b> <s id="kl-bump-old">4,99 €</s></span>
-    </label>
-    <!-- Rinkinys: porų suderinamumas už mažesnę kainą (apmokėjus — kuponas el. paštu ir rezultato ekrane) -->
-    <label id="pora-bump" class="pay-anim-item" for="pora-bump-cb">
-      <input type="checkbox" id="pora-bump-cb" onchange="togglePoraBump(this.checked)">
-      <span>Pridėti <b>porų suderinamumą</b> — <b id="pora-bump-price">12,99 €</b> <s id="pora-bump-old">19,99 €</s></span>
     </label>
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
@@ -1465,7 +1460,7 @@ function getRefCode(){
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
 async function refreshPayQuote(){
   try{
-    const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk,email:window._userEmail||''})})).json();
+    const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk,email:window._userEmail||''})})).json();
     if(!q||!q.total) return null;
     window._quote=q;
     const el=document.getElementById('price-promo');
@@ -1473,15 +1468,8 @@ async function refreshPayQuote(){
       (q.discount?'<span class="price-old">'+_eur(q.base+q.bump+(q.bundle||0))+' €</span><span class="price-tag">'+(q.discountLabel||('🎁 Draugo dovana −'+q.refPct+' %'))+'</span>':'');
     const bp=document.getElementById('kl-bump-price'), bo=document.getElementById('kl-bump-old');
     if(bp) bp.textContent=_eur(q.bumpCents)+' €'; if(bo) bo.textContent=_eur(q.klauskCents)+' €';
-    const pp=document.getElementById('pora-bump-price'), po=document.getElementById('pora-bump-old');
-    if(pp&&q.bundleCents) pp.textContent=_eur(q.bundleCents)+' €'; if(po&&q.poraCents) po.textContent=_eur(q.poraCents)+' €';
     return q;
   }catch(e){ return null; }
-}
-async function togglePoraBump(on){
-  window._addBundle=!!on;
-  const l=document.getElementById('pora-bump'); if(l) l.classList.toggle('on',!!on);
-  return toggleKlauskBump(!!window._addKlausk);
 }
 async function toggleKlauskBump(on){
   window._addKlausk=!!on;
@@ -1579,7 +1567,7 @@ async function initiatePayment(){
       // Suma NESIUNČIAMA — serveris (/create-checkout) visada naudoja
       // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
+        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
       const data=await res.json();
       if(data.url){_savePhotos();window.location.href=data.url;}
       else throw new Error(data.error||'Klaida');
@@ -1591,7 +1579,7 @@ async function initiatePayment(){
     // savo ACTIVE_PRICE_ID (activePrice.unit_amount), kliento siunčiamas
     // amount būtų ignoruojamas.
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({name,email,ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
@@ -5496,7 +5484,7 @@ function initPayment(){
       window._googlePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
@@ -5543,7 +5531,7 @@ function initPayment(){
       window._applePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
@@ -5597,7 +5585,7 @@ async function quickPay(method){
     // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
     const res=await fetch('/create-checkout',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
@@ -6235,7 +6223,7 @@ function applyGiftMode(){
   const g=window._giftInfo;
   const on=!!(g&&g.valid&&window._giftCode&&!window._giftFailed);
   blk.style.display=on?'block':'none';
-  ['price-info-block','pm-group','pay-btn','pay-trust-row','kl-bump','pora-bump'].forEach(id=>{
+  ['price-info-block','pm-group','pay-btn','pay-trust-row','kl-bump'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.classList.toggle('gift-hide',on);
   });
   if(on){
@@ -6288,6 +6276,8 @@ function _promoStored(){ try{ const d=JSON.parse(localStorage.getItem('delnasPro
 function _promoSave(d){ try{ if(d) localStorage.setItem('delnasPromo',JSON.stringify(d)); else localStorage.removeItem('delnasPromo'); }catch(e){} }
 function getPromoCode(){ const d=_promoStored(); return d&&!d.used&&(!d.exp||Date.now()<d.exp)?d.c:''; }
 function _ltTime(ts){ try{ return new Date(ts).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
+// „šiandien 18:30“ arba „rytojaus 14:30“ — be tiksinčio laikmačio
+function _untilText(ts){ const day=t=>{ try{ return new Date(t).toLocaleDateString('lt-LT',{timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }; return (day(ts)===day(Date.now())?'šiandien ':'rytojaus ')+_ltTime(ts); }
 function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
 // Kodo patikra ir pasveikinimas pradžios ekrane
 (async function promoWelcome(){
@@ -6317,13 +6307,9 @@ async function loadResultOffers(){
   const gifts=document.querySelector('#s-result .rb-gifts');
   if(d.once&&gifts&&!document.getElementById('rb-once')){
     const b=document.createElement('div'); b.id='rb-once'; b.className='rb-once';
-    b.innerHTML='<b>⏳ Tik 24 val.: −'+d.once.pct+' %</b> dovanai artimam žmogui<span>Liko <i id="rb-once-left"></i></span>';
+    b.innerHTML='<b>−'+d.once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(d.once.expiresAt)+'</span>';
     gifts.parentNode.insertBefore(b,gifts);
     gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' % →'; });
-    const left=document.getElementById('rb-once-left');
-    const tick=()=>{ const ms=d.once.expiresAt-Date.now(); if(ms<=0){ b.remove(); gifts.querySelectorAll('a.rb-gift em').forEach(em=>em.textContent='Padovanoti →'); gifts.querySelectorAll('a.rb-gift').forEach(a=>a.href=a.getAttribute('href').split('&promo=')[0]); clearInterval(window._onceTimer); return; }
-      const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3); left.textContent=h+' val. '+String(m).padStart(2,'0')+' min. '+String(s).padStart(2,'0')+' s'; };
-    clearInterval(window._onceTimer); tick(); window._onceTimer=setInterval(tick,1000);
   }
   const pora=document.querySelector('#s-result .rb-pora');
   if(pora){

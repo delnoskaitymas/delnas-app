@@ -446,9 +446,11 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       if (!d.valid || d.product !== 'dovana') return;
       promo = d; showPrices();
       const tag = $('promo-tag');
-      const tick = () => { const ms = d.expiresAt - Date.now(); if (ms <= 0) { promo = null; showPrices(); tag.classList.add('hidden'); clearInterval(tm); return; }
-        tag.innerHTML = '⏳ −' + d.pct + ' % dovanai · liko ' + Math.floor(ms / 36e5) + ' val. ' + String(Math.floor(ms % 36e5 / 6e4)).padStart(2, '0') + ' min.'; };
-      const tm = setInterval(tick, 30000); tick(); tag.classList.remove('hidden');
+      // Ramus tekstas be tiksinčio laikmačio: „galioja iki rytojaus 14:30“
+      const day = t => new Date(t).toLocaleDateString('lt-LT', { timeZone: 'Europe/Vilnius' });
+      const hm = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
+      tag.textContent = '−' + d.pct + ' % dovanai · galioja iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm;
+      tag.classList.remove('hidden');
     } catch (e) {}
   })();
 
