@@ -4412,7 +4412,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   // keliauja į naują (švarų, taip pat juodą) puslapį.
   const footerLine1 = 'Dėkojame, kad patikėjai mums savo delnų analizę.';
   const footerLine2 = 'Daugiau įžvalgų ir naujų atradimų rasi:';
-  const footerBtnLabel = 'delnaskaitymas.lt';
+  const footerBtnLabel = 'www.delnaskaitymas.lt';
   const footerUrl = 'https://www.delnaskaitymas.lt';
   // Šilta, bet aiški pastaba apie paslaugos pobūdį — pagal taisykles
   // reikalinga (nes PDF yra SAVARANKIŠKAS dokumentas, kuris keliauja
@@ -4437,7 +4437,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   doc.text(footerLine1, W/2, footerY, {align:'center'});
   doc.text(footerLine2, W/2, footerY + 9, {align:'center'});
 
-  // Trumpas aktyvus mygtukas su užrašu "delnaskaitymas.lt" — paspaudus
+  // Trumpas aktyvus mygtukas su užrašu "www.delnaskaitymas.lt" — paspaudus
   // nukelia į PILNĄ adresą (https://www.delnaskaitymas.lt), kad
   // vartotojas galėtų iš naujo įeiti į programėlę ir kartoti analizę.
   doc.setFont('NotoSans','bold');
@@ -4546,8 +4546,8 @@ async function sharePdfToFriend(){
     const blob = doc.output('blob');
     const file = new File([blob], fileName, {type:'application/pdf'});
     const shareText = name
-      ? `${name} gyvenimo žemėlapis 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: delnaskaitymas.lt`
-      : `Atlikau delnų analizę 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: delnaskaitymas.lt`;
+      ? `${name} gyvenimo žemėlapis 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: www.delnaskaitymas.lt`
+      : `Atlikau delnų analizę 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: www.delnaskaitymas.lt`;
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText});
       return;
@@ -6116,7 +6116,7 @@ function buildPoraPdfDoc(){
   doc.setFontSize(10); doc.setTextColor(140,112,55);
   doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5.5; });
   doc.setFont('NotoSans','bold'); doc.setFontSize(12); doc.setTextColor(...GOLD2);
-  doc.text('delnaskaitymas.lt', W/2, y+8, {align:'center'}); doc.link(W/2-20, y+2, 40, 9, { url:'https://www.delnaskaitymas.lt' });
+  doc.text('www.delnaskaitymas.lt', W/2, y+8, {align:'center'}); doc.link(W/2-25, y+2, 50, 9, { url:'https://www.delnaskaitymas.lt' });
   return doc;
 }
 function poraPdfName(){ return (poraNames().replace(/\s+/g,'-')||'pora')+'-poru-suderinamumas.pdf'; }
@@ -6182,7 +6182,7 @@ async function poraCardBlob(){
   }
   x.textAlign='center';
   x.fillStyle='rgba(255,255,255,.55)'; x.font="400 30px 'DM Sans', sans-serif"; x.fillText('Ką apie jūsų porą pasakoja delnai?', cx, 1235);
-  x.fillStyle='#d4a843'; x.font="700 32px 'DM Sans', sans-serif"; x.fillText('delnaskaitymas.lt/pora', cx, 1282);
+  x.fillStyle='#d4a843'; x.font="700 32px 'DM Sans', sans-serif"; x.fillText('www.delnaskaitymas.lt/pora', cx, 1282);
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
 }
 async function poraShareCard(){

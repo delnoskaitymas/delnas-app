@@ -53,7 +53,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 > Nufotografuok abu delnus telefonu — ir per kelias minutes gauk asmeninį gyvenimo žemėlapį: stiprybės, kryptis, santykiai, finansai ir artėjantys pokyčiai.
 > ✦ 7 skyrių analizė ekrane ir PDF el. paštu
 > ✦ 14 dienų pinigų grąžinimo garantija
-> 👉 delnaskaitymas.lt
+> 👉 www.delnaskaitymas.lt
 
 **B — klausimai**
 > Kas tavyje slypi tokio, ko dar neatradai?
@@ -116,7 +116,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 | 2–5 | Telefonu fotografuojamas delnas (app ekranas) | „Nufotografavau savo delnus…“ |
 | 5–9 | Generavimo ekranas (0 → 99 %) | „…ir AI perskaitė mano linijas“ |
 | 9–14 | Slenkamas rezultatas: I–VII skyriai | „Stiprybės, santykiai, finansai… Net šiurpas nuėjo 😳“ |
-| 14–18 | Užrašas + mygtukas | „Tavo delnai jau žino ✦ delnaskaitymas.lt“ |
+| 14–18 | Užrašas + mygtukas | „Tavo delnai jau žino ✦ www.delnaskaitymas.lt“ |
 
 Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno kadro, ne nuo logotipo.
 
@@ -127,7 +127,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - **Šalis:** Lietuva, kalba — lietuvių. Amžius **18+** (privaloma — app skirtas tik pilnamečiams), geriausiai veikia 22–45.
 - **Pomėgiai:** astrologija, horoskopai, taro, numerologija, dvasingumas, savęs pažinimas, psichologija, meditacija.
 - **Biudžetas testui:** 10–15 €/d., 3–4 skirtingi vizualai viename ad set'e, po 4–5 d. išjungti prasčiausius.
-- **Tikslas (Objective):** „Traffic“ (srautas į delnaskaitymas.lt). Meta Pixel svetainėje nenaudojamas, todėl „Sales“ tikslas ir retargetingas pagal svetainės lankytojus neveiks.
+- **Tikslas (Objective):** „Traffic“ (srautas į www.delnaskaitymas.lt). Meta Pixel svetainėje nenaudojamas, todėl „Sales“ tikslas ir retargetingas pagal svetainės lankytojus neveiks.
 - **Rezultatų matavimas:** kiekvienai reklamai naudok atskirą nuorodą su UTM žyma (žr. žemiau) ir lygink su pirkimais Stripe skydelyje.
 
 ---
@@ -172,7 +172,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - Kiekviena — savo analizė. Palyginkit!
 - Ruduo — laikas pokyčiams
 
-> Pastaba (atnaujinta): dovanų kuponai jau yra (delnaskaitymas.lt/dovana) — dovanų reklamas vesk į /dovana. „Draugių“ reklamose (14, 15) kiekviena draugė vis tiek fotografuoja ir moka pati, nebent kuponą nuperka kita.
+> Pastaba (atnaujinta): dovanų kuponai jau yra (www.delnaskaitymas.lt/dovana) — dovanų reklamas vesk į /dovana. „Draugių“ reklamose (14, 15) kiekviena draugė vis tiek fotografuoja ir moka pati, nebent kuponą nuperka kita.
 >
 > **Draugių reklamos (14, 15, 32–36, video „draugėms“):** atskiros „draugių palyginimo“ analizės nėra — kiekviena draugė užsisako savo asmeninę analizę, o palygina pačios. Todėl tekstuose visada aiškiai: „Kiekviena gaunate savo analizę“. Nuorodoje naudok `utm_campaign=draugems` — admin statistikoje „Iš kur atėjo“ matysi, kiek pirkimų atnešė būtent šios reklamos. Jei atneš daug — verta kurti atskirą „Draugių“ režimą.
 
@@ -195,7 +195,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 ## UTM nuorodos (kad matytum, kuri reklama atnešė lankytoją)
 
 Reklamos nuorodoje naudok, pvz.:
-`https://delnaskaitymas.lt/?utm_source=facebook&utm_medium=paid&utm_campaign=banga2&utm_content=11-sviesus-hero`
+`https://www.delnaskaitymas.lt/?utm_source=facebook&utm_medium=paid&utm_campaign=banga2&utm_content=11-sviesus-hero`
 
 Pakeisk `utm_content` pagal paveikslėlio pavadinimą. Meta Ads Manager tą patį galima įrašyti laukelyje **„URL parameters“**.
 
@@ -235,12 +235,12 @@ Failas: `video/delnas-reels-1080x1920.mp4` — 15 s, 9:16, 1080×1920, H.264, be
 | 2,8–6,2 | Delno linijos nusipiešia po vieną: gyvenimo, širdies, galvos, likimo |
 | 6,2–9,2 | „Tereikia telefono“ — 3 žingsniai ir procentai 0 → 99 % |
 | 9,2–12,4 | Telefonas su 7 žemėlapio skyriais |
-| 12,4–15 | „Tavo delnai jau žino“ + mygtukas + delnaskaitymas.lt |
+| 12,4–15 | „Tavo delnai jau žino“ + mygtukas + www.delnaskaitymas.lt |
 
 **Muzika:** pridėk pačioje Instagram / TikTok programėlėje iš jų licencijuotos bibliotekos (paslaptingas / „ambient“ / „mystical“ stilius). Svetimos muzikos į failą nedėk — reklamą gali užblokuoti dėl autorių teisių.
 
 **Tekstas prie video:**
-> Ką slepia tavo delnai? ✋✨ Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį. Nuoroda — delnaskaitymas.lt
+> Ką slepia tavo delnai? ✋✨ Nufotografuok juos ir per kelias minutes gauk asmeninį gyvenimo žemėlapį. Nuoroda — www.delnaskaitymas.lt
 
 Norint pakeisti tekstą ar laiką — redaguok `video.html` ir paleisk `node reklamos/video-render.js` (reikia ffmpeg su libx264, pvz. `pip install imageio-ffmpeg`, kelias per `FFMPEG` kintamąjį).
 
@@ -254,10 +254,10 @@ Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
 | 3–6,6 | „Išbandykit kartu“ — 3 žingsniai: kiekviena nufotografuoja savo delnus → kiekviena gauna savo analizę → palyginat |
 | 6,6–10,4 | „Du delnai — du skirtingi keliai“ — du telefonai su žemėlapiais |
 | 10,4–12,6 | „Kas jus sieja? Kuo jūs skiriatės? Kurios laukia didesni pokyčiai?“ |
-| 12,6–15 | „Nustebink draugę“ + „Kiekvienai — sava analizė“ + „Išbandyti kartu“ + delnaskaitymas.lt |
+| 12,6–15 | „Nustebink draugę“ + „Kiekvienai — sava analizė“ + „Išbandyti kartu“ + www.delnaskaitymas.lt |
 
 **Tekstas prie video:**
-> Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. delnaskaitymas.lt
+> Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. www.delnaskaitymas.lt
 
 **A/B testas:** abu video (1-as tamsus ir 2-as šviesus) dėk į **atskirus** ad set'us su tuo pačiu biudžetu ir auditorija. Po 4–5 dienų palik tą, kurio paspaudimo kaina (CPC) mažesnė ir daugiau žmonių žiūri iki galo („ThruPlay“).
 
@@ -352,13 +352,13 @@ Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai ·
 > Valentino dienai, sukakčiai ar tiesiog vakarui dviese ♥
 > Nufotografuokit delnus ir palyginkit, ką apie jus pasakoja jūsų linijos.
 
-> Atnaujinta: porų suderinamumas (su įverčiu procentais) jau yra — porų reklamas (37, 38, 45, 46) vesk į **delnaskaitymas.lt/pora**. 31–36 tinka asmeninei analizei („kiekviena išbando pati“).
+> Atnaujinta: porų suderinamumas (su įverčiu procentais) jau yra — porų reklamas (37, 38, 45, 46) vesk į **www.delnaskaitymas.lt/pora**. 31–36 tinka asmeninei analizei („kiekviena išbando pati“).
 
 ---
 
-## 🎁 Dovanų kuponų banga → delnaskaitymas.lt/dovana
+## 🎁 Dovanų kuponų banga → www.delnaskaitymas.lt/dovana
 
-Visos šios reklamos veda į **delnaskaitymas.lt/dovana** (ne į pagrindinį adresą).
+Visos šios reklamos veda į **www.delnaskaitymas.lt/dovana** (ne į pagrindinį adresą).
 
 | Failas | Formatas | Antraštė |
 |---|---|---|
@@ -510,7 +510,7 @@ Nuoroda: `/dovana?utm_source=tiktok&utm_campaign=kaledos`
 | 12–20 | Perskaitai vieną sakinį | — |
 | 20–25 | Tu | „Pasitikrinkit ir jūs — nuoroda bio 🥂“ |
 
-**Pasidalink ir rezultato kortele:** rezultato ekrane mygtukas „Dalintis kortele su stiprybėmis“ dabar sukuria **9:16 Stories kortelę** („Nufotografavau savo delnus — štai ką jie pasakė“ + tavo stiprybės + delnaskaitymas.lt) — ją galima tiesiai dėti į Instagram / TikTok / Facebook istorijas.
+**Pasidalink ir rezultato kortele:** rezultato ekrane mygtukas „Dalintis kortele su stiprybėmis“ dabar sukuria **9:16 Stories kortelę** („Nufotografavau savo delnus — štai ką jie pasakė“ + tavo stiprybės + www.delnaskaitymas.lt) — ją galima tiesiai dėti į Instagram / TikTok / Facebook istorijas.
 
 ---
 
