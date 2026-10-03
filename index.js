@@ -3898,19 +3898,28 @@ app.get('/admin/stats', (req, res) => {
   const days = Object.keys(st.days).sort().reverse().slice(0, 60);
   const fb = readJson(FEEDBACK_FILE, { items: [] }).items;
   const avg = fb.length ? (fb.reduce((a, x) => a + x.stars, 0) / fb.length).toFixed(2) : '—';
-  const cols = [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo'], ['bump', '+klausimai'], ['ref_paid', 'Per draugą'], ['klausk_paid', 'Klausk'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai'], ['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo su −15 %'], ['bundle', 'Rinkinys'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės']];
-  const sum = {}; days.forEach(d => cols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
+  // Trys siauresnės lentelės — kad viskas matytųsi be slinkimo į šoną
+  const groups = [
+    ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
+    ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
+    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys']]]
+  ];
+  const allCols = groups.flatMap(g => g[1]);
+  const sum = {}; days.forEach(d => allCols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
   const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
-  const row = (label, v) => `<tr><td>${label}</td>${cols.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}<td>${pct(v.paid || 0, v.pay_view || 0)}</td></tr>`;
+  const table = ([title, cols, conv]) => {
+    const row = (label, v, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td>${label}</td>${cols.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}${conv ? `<td>${pct(v.paid || 0, v.pay_view || 0)}</td>` : ''}</tr>`;
+    return `<h2>${title}</h2><div class="tw"><table><tr><th>Diena</th>${cols.map(([, l]) => `<th>${l}</th>`).join('')}${conv ? '<th>Mokėjimas %</th>' : ''}</tr>
+${row('Iš viso (60 d.)', sum, 'sum')}
+${days.map(d => row(d, st.days[d])).join('')}</table></div>`;
+  };
   res.setHeader('Cache-Control', 'no-store');
   res.send(`<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DELNAS statistika</title>
-<style>body{font-family:system-ui,sans-serif;background:#0b0b0b;color:#eee;padding:16px}h1{color:#d4a843;font-size:20px}table{border-collapse:collapse;font-size:13px;width:100%;overflow:auto;display:block}td,th{border:1px solid #333;padding:6px 8px;text-align:right;white-space:nowrap}th{background:#1a1a1a;color:#d4a843}td:first-child,th:first-child{text-align:left}tr.sum td{background:#1d1708;font-weight:700}.k{color:#aaa;font-size:13px;margin:6px 0 14px}</style></head><body>
+<style>body{font-family:system-ui,sans-serif;background:#0b0b0b;color:#eee;padding:16px;max-width:1100px}h1{color:#d4a843;font-size:20px}h2{color:#d4a843;font-size:15px;margin:22px 0 8px}.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid #333;padding:6px 8px;text-align:right;white-space:nowrap}th{background:#1a1a1a;color:#d4a843;white-space:normal;max-width:110px;vertical-align:bottom}td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:#0b0b0b}th:first-child{background:#1a1a1a}tr.sum td{background:#1d1708;font-weight:700}.k{color:#aaa;font-size:13px}</style></head><body>
 <h1>DELNAS — statistika</h1><div class="k">Įvertinimų vidurkis: <b>${avg}</b> (${fb.length}) · „Mokėjimas %“ = apmokėjo / pasiekė mokėjimo ekraną</div>
-<table><tr><th>Diena</th>${cols.map(([, l]) => `<th>${l}</th>`).join('')}<th>Mokėjimas %</th></tr>
-<tr class="sum">${row('Iš viso (60 d.)', sum).slice(4)}
-${days.map(d => row(d, st.days[d])).join('')}</table>
-<h1 style="margin-top:24px">Paskutiniai įvertinimai</h1><table><tr><th>Data</th><th>★</th><th>Vardas</th><th style="text-align:left">Atsiliepimas</th><th>Viešai</th></tr>
-${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString().slice(0, 10)}</td><td>${x.stars}</td><td>${escapeHtml(x.name || '')}</td><td style="text-align:left;white-space:normal">${escapeHtml(x.text || '')}</td><td>${x.approved ? '✓ rodomas' : x.allowPublic ? `<a style="color:#d4a843" href="/feedback/approve?id=${x.id}&t=${feedbackToken(x.id)}">rodyti</a>` : 'ne'}</td></tr>`).join('')}</table>
+${groups.map(table).join('')}
+<h2>Paskutiniai įvertinimai</h2><div class="tw"><table><tr><th>Data</th><th>★</th><th>Vardas</th><th style="text-align:left">Atsiliepimas</th><th>Viešai</th></tr>
+${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString().slice(0, 10)}</td><td>${x.stars}</td><td>${escapeHtml(x.name || '')}</td><td style="text-align:left;white-space:normal">${escapeHtml(x.text || '')}</td><td>${x.approved ? '✓ rodomas' : x.allowPublic ? `<a style="color:#d4a843" href="/feedback/approve?id=${x.id}&t=${feedbackToken(x.id)}">rodyti</a>` : 'ne'}</td></tr>`).join('')}</table></div>
 </body></html>`);
 });
 
