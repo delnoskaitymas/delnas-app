@@ -3010,6 +3010,203 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// „KLAUSK SAVO DELNŲ“ (/klausk) — mokamas priedas po asmeninės analizės
+// ═══════════════════════════════════════════════════════════════════
+// Eiga: rezultato ekrane → /klausk/create-checkout (išsaugoma analizės
+// santrauka) → Stripe (naujame skirtuke) → /klausk?s=SESSION_ID → iki 3
+// klausimų, atsakymai remiasi asmenine analize; kiekvienas atsakymas ir el. paštu.
+const KLAUSK_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'klausk-orders.json');
+const KLAUSK_PRICE_CENTS = parseInt(process.env.KLAUSK_PRICE_CENTS || '499', 10);
+const KLAUSK_MAX_QUESTIONS = 3;
+const KLAUSK_RESULT_FIELDS = ['prigimtines_stiprybes', 'gyvenimo_tikslas', 'santykiai', 'finansai', 'galimybes', 'pokyciai', 'klutys'];
+const KLAUSK_LIST_FIELDS = ['stiprybes_sarasas', 'prigimtines_insights', 'gyvenimo_insights', 'santykiai_insights', 'finansai_insights', 'galimybes_insights', 'pokyciai_insights', 'klutys_insights'];
+
+function loadKlauskOrders() {
+  try { if (fs.existsSync(KLAUSK_ORDERS_FILE)) return JSON.parse(fs.readFileSync(KLAUSK_ORDERS_FILE, 'utf8')) || {}; }
+  catch (e) { console.error('[klausk] nepavyko nuskaityti klausk-orders.json:', e.message); }
+  return {};
+}
+function saveKlauskOrders(o) {
+  const tmp = KLAUSK_ORDERS_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(o, null, 2));
+  fs.renameSync(tmp, KLAUSK_ORDERS_FILE);
+}
+// Neapmokėti įrašai — 1 d., apmokėti — 90 d.
+function cleanupKlauskOrders() {
+  try {
+    const o = loadKlauskOrders(), now = Date.now(); let changed = false;
+    for (const [id, r] of Object.entries(o)) {
+      const ttl = r.paid ? 90 * 864e5 : 864e5;
+      if ((r.createdAt || 0) < now - ttl) { delete o[id]; changed = true; }
+    }
+    if (changed) saveKlauskOrders(o);
+  } catch (e) {}
+}
+cleanupKlauskOrders();
+setInterval(cleanupKlauskOrders, 6 * 60 * 60 * 1000);
+
+// Iš kliento atsiųsto rezultato paimame tik žinomus tekstinius laukus (su ribomis)
+function pickKlauskResult(r) {
+  if (!r || typeof r !== 'object') return null;
+  const out = {};
+  for (const k of KLAUSK_RESULT_FIELDS) if (typeof r[k] === 'string' && r[k].trim()) out[k] = r[k].trim().slice(0, 3000);
+  for (const k of KLAUSK_LIST_FIELDS) if (Array.isArray(r[k])) out[k] = r[k].filter(x => typeof x === 'string').slice(0, 6).map(x => x.slice(0, 200));
+  if (r.potencialas && typeof r.potencialas === 'object') {
+    out.potencialas = {};
+    for (const [k, v] of Object.entries(r.potencialas).slice(0, 6)) if (v && typeof v.fraze === 'string') out.potencialas[k] = v.fraze.slice(0, 200);
+  }
+  return Object.keys(out).length >= 4 ? out : null;
+}
+
+async function getPaidKlausk(sessionId) {
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  if (!session || !session.metadata || session.metadata.type !== 'klausk') return null;
+  if (session.payment_status !== 'paid') return null;
+  return session;
+}
+
+function klauskContextText(res) {
+  const L = { prigimtines_stiprybes: 'Prigimtinės stiprybės ir charakteris', gyvenimo_tikslas: 'Gyvenimo kryptis ir tikslai', santykiai: 'Bendravimas ir santykiai', finansai: 'Finansinis potencialas', galimybes: 'Unikalus sėkmės raktas', pokyciai: 'Artėjantys pokyčiai', klutys: 'Pažangą stabdančios kliūtys' };
+  let t = '';
+  const INS = { prigimtines_stiprybes: 'prigimtines_insights', gyvenimo_tikslas: 'gyvenimo_insights', santykiai: 'santykiai_insights', finansai: 'finansai_insights', galimybes: 'galimybes_insights', pokyciai: 'pokyciai_insights', klutys: 'klutys_insights' };
+  for (const k of KLAUSK_RESULT_FIELDS) if (res[k]) t += `## ${L[k]}\n${res[k]}\n${(res[INS[k]] || []).join('; ')}\n\n`;
+  if (res.stiprybes_sarasas) t += `## Stiprybės\n${res.stiprybes_sarasas.join(', ')}\n\n`;
+  if (res.potencialas) t += `## Potencialas\n${Object.entries(res.potencialas).map(([k, v]) => `${k}: ${v}`).join('\n')}\n`;
+  return t;
+}
+
+async function answerKlausk(order, question) {
+  const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
+  const name = order.name || '';
+  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
+
+ASMENINĖ DELNŲ ANALIZĖ:
+${klauskContextText(order.result)}
+${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
+KLAUSIMAS: ${question}
+
+KAIP ATSAKYTI:
+- 7–10 sakinių, sklandus tekstas „tu“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės (be „Puikus klausimas“).
+- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (pvz. kokia jo stiprybė čia padės, kokia kliūtis trukdo) — kad žmogus jaustų, jog atsakymas skirtas būtent jam.
+- Pabaigoje — 2–3 aiškūs, praktiški žingsniai, ką daryti dabar (sklandžiu tekstu, ne sąrašu).
+- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie skaitytoją (pvz. „pasiruošęs/-usi“); rink neutralias formas.
+- Nesakyk „gali būti“, „tikėtina“; nenaudok metaforų, „energijos“, „vibracijų“; nemini fizinių delno požymių.
+- Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk mirties, ligų, nelaimių, išsiskyrimo ar konkrečių datų. Neduok medicininių, teisinių ar konkrečių investavimo patarimų — tokiu atveju švelniai pasakyk, kad dėl to verta pasitarti su specialistu, ir atsakyk tik apie tai, ką analizė sako apie žmogaus savybes ir sprendimų būdą.
+- Jei klausimas rodo, kad žmogui labai sunku arba kyla minčių apie savęs žalojimą — atsakyk itin švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: Vilties linija 116 123 (visą parą), Jaunimo linija 8 800 28888, skubiai — 112.
+- Jei klausimas visai nesusijęs su žmogaus gyvenimu (pvz. matematika, kodas) — trumpai ir maloniai paaiškink, kad atsakai tik į klausimus apie jo paties gyvenimą, ir pasiūlyk, ko galėtų paklausti.
+- Taisyklinga, natūrali lietuvių kalba. Tekste nenaudok dvigubų kabučių.
+
+ATSAKYK TIK ATSAKYMO TEKSTU.`;
+  let data;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+      }, 90000);
+      data = await r.json();
+    } catch (e) { data = null; console.log(`[klausk] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`); }
+    if (data && !data.error && data.content && data.content.length) break;
+    if (data && data.error && ['invalid_request_error', 'authentication_error', 'permission_error'].includes(data.error.type)) break;
+    if (attempt < 3) await new Promise(res => setTimeout(res, 2500 * attempt));
+  }
+  if (!data || data.error || !data.content) throw new Error(data && data.error ? `${data.error.type}: ${data.error.message || ''}` : 'Tuščias AI atsakymas');
+  const text = data.content.map(b => b.text || '').join('').trim();
+  if (!text) throw new Error('Tuščias atsakymas');
+  return applyTextFixes(text.slice(0, 4000)).text;
+}
+
+app.get('/klausk', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'klausk.html'));
+});
+
+app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
+  try {
+    const { email, name, result } = req.body || {};
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
+    const picked = pickKlauskResult(result);
+    if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
+    const base = appBaseUrl();
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card', 'revolut_pay'],
+      line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
+      locale: 'lt',
+      customer_email: email,
+      metadata: { type: 'klausk', email, name: (name || '').trim() },
+      success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${base}/klausk?atsaukta=1`
+    });
+    const orders = loadKlauskOrders();
+    orders[session.id] = { email, name: (name || '').trim(), result: picked, qa: [], paid: false, createdAt: Date.now() };
+    saveKlauskOrders(orders);
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('/klausk/create-checkout klaida:', err);
+    res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandykite dar kartą.' });
+  }
+});
+
+app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
+  try {
+    const id = req.query.s;
+    if (!isValidCheckoutSessionId(id) || !id.startsWith('cs_')) return res.status(400).json({ paid: false });
+    const orders = loadKlauskOrders(), o = orders[id];
+    if (!o) return res.json({ paid: false, notfound: true });
+    if (!o.paid) {
+      const s = await getPaidKlausk(id);
+      if (!s) return res.json({ paid: false });
+      o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders);
+      mailer.sendMail({
+        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+        to: ADMIN_EMAIL,
+        subject: `Naujas „Klausk savo delnų“ užsakymas — ${o.name || o.email}`,
+        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
+      }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
+    }
+    res.json({ paid: true, name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length });
+  } catch (err) {
+    console.error('/klausk/check klaida:', err);
+    res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
+  }
+});
+
+const klauskInFlight = new Set();
+app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
+  const { s: id, question } = req.body || {};
+  if (!isValidCheckoutSessionId(id) || !id.startsWith('cs_')) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+  const q = typeof question === 'string' ? question.trim() : '';
+  if (q.length < 5) return res.status(400).json({ error: 'Parašykite klausimą (bent kelis žodžius).' });
+  if (q.length > 400) return res.status(400).json({ error: 'Klausimas per ilgas (iki 400 simbolių).' });
+  if (klauskInFlight.has(id)) return res.status(429).json({ error: 'Palaukite — ruošiamas ankstesnis atsakymas.' });
+  klauskInFlight.add(id);
+  try {
+    const o = loadKlauskOrders()[id];
+    if (!o || !o.paid) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
+    if ((o.qa || []).length >= KLAUSK_MAX_QUESTIONS) return res.status(409).json({ error: 'Visi 3 klausimai jau užduoti.' });
+    const a = await answerKlausk(o, q);
+    const orders = loadKlauskOrders(), cur = orders[id];
+    cur.qa = [...(cur.qa || []), { q, a, at: Date.now() }];
+    saveKlauskOrders(orders);
+    // Atsakymas ir el. paštu (kad liktų)
+    const para = t => escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join('');
+    mailer.sendMail({
+      from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+      to: cur.email,
+      subject: `✋ Tavo delnų atsakymas: „${q.slice(0, 60)}${q.length > 60 ? '…' : ''}“`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:18px">KLAUSK SAVO DELNŲ</div><div style="font-size:13px;color:#d4a843;margin-bottom:6px">Tavo klausimas</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:18px">„${escapeHtml(q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(a)}</div><div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${cur.qa.length < KLAUSK_MAX_QUESTIONS ? `Užduoti kitą klausimą (liko ${KLAUSK_MAX_QUESTIONS - cur.qa.length}) →` : 'Peržiūrėti visus atsakymus →'}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
+    }).catch(e => console.error('[klausk] laiško klaida:', e.message));
+    res.json({ ok: true, q, a, left: KLAUSK_MAX_QUESTIONS - cur.qa.length });
+  } catch (err) {
+    console.error('/klausk/ask klaida:', err);
+    res.status(500).json({ error: 'Nepavyko gauti atsakymo. Pabandykite dar kartą — klausimas nebuvo įskaičiuotas.' });
+  } finally { klauskInFlight.delete(id); }
+});
+
 app.get('/dovana', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'dovana.html'));
