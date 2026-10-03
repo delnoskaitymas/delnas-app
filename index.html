@@ -192,6 +192,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-top b{font-family:'Playfair Display',serif;font-size:30px;color:var(--gold2);line-height:1}
 .px-top div{font-size:12px;color:var(--muted);line-height:1.4}
 .px-top div strong{display:block;font-size:14.5px;color:#f3e7c6;font-weight:700}
+.px-row{padding:11px 0;border-bottom:.5px solid rgba(212,168,67,.14)}
+.px-rows .px-row:last-child{border-bottom:none}
+.px-row b{display:flex;align-items:center;gap:8px;font-size:14px;color:#f3e7c6;font-weight:700}
+.px-row b span{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:2px 8px}
+.px-row div{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.7);margin-top:2px}
+.px-row.top b{color:var(--gold2)}
 .px-plan{position:relative;margin-top:14px;padding-left:4px}
 .px-step{position:relative;display:flex;gap:12px;padding-bottom:16px}
 .px-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:2px;width:1.5px;background:linear-gradient(rgba(212,168,67,.55),rgba(212,168,67,.12))}
@@ -3599,13 +3605,12 @@ function renderResultExtra(r){
   let h='';
   const p=r.potencialas;
   if(p){
-    const top=POT_DIMS.map(([k,l])=>[l,(p[k]||{}).balas||0,(p[k]||{}).fraze||'']).sort((a,b)=>b[1]-a[1])[0];
-    const bars=POT_DIMS.map(([k,label])=>{ const d=p[k]||{}; return '<div class="pr-bar"><div class="pr-bar-top"><b>'+label+'</b><span>'+(d.balas||0)+'%</span></div>'+(d.fraze?'<div class="pr-bar-ph">'+_xEsc(d.fraze)+'</div>':'')+'<div class="pr-track"><div class="pr-fill" style="--w:'+(d.balas||0)+'%"></div></div></div>'; }).join('');
-    h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo potencialo žemėlapis</div>'+
-      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">Šešios gyvenimo sritys — kur tavo delnuose matomas ryškiausias potencialas.</div>'+
-      '<div class="px-top"><b>'+top[1]+'%</b><div><strong>Ryškiausia: '+_xEsc(top[0])+'</strong>'+_xEsc(top[2])+'</div></div>'+
-      radarSvg(POT_DIMS,p,'Tavo potencialo žemėlapis')+bars+
-      '<div style="margin-top:14px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas — tai, ką gali išauginti. Pradėk nuo stipriausios srities.</div></div>';
+    // Paprastas sąrašas: sritis ir trumpa išvada, ryškiausia pažymėta — be skaičių ir juostų
+    const topK=POT_DIMS.map(([k])=>[k,(p[k]||{}).balas||0]).sort((a,b)=>b[1]-a[1])[0][0];
+    const rows=POT_DIMS.filter(([k])=>(p[k]||{}).fraze).map(([k,label])=>'<div class="px-row'+(k===topK?' top':'')+'"><b>'+label+(k===topK?' <span>Ryškiausia</span>':'')+'</b><div>'+_xEsc(p[k].fraze)+'</div></div>').join('');
+    if(rows) h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo potencialo žemėlapis</div>'+
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Kur tavo delnuose matomas ryškiausias potencialas.</div><div class="px-rows">'+rows+'</div>'+
+      '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas — tai, ką gali išauginti. Pradėk nuo ryškiausios srities.</div></div>';
   }
   const pl=r.planas;
   if(pl&&pl.length){
@@ -4045,17 +4050,15 @@ function buildResultPdfDoc(r, name, orderNumber){
 
   // Potencialo žemėlapis ir 30 dienų kelias (jei analizėje yra)
   if(r.potencialas){
-    if(y > PAGE_BOTTOM - 110){ y = newPage(); }
+    if(y > PAGE_BOTTOM - 80){ y = newPage(); }
     doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO POTENCIALO ŽEMĖLAPIS', margin, y); y += 12;
     POT_DIMS.forEach(([k,label])=>{
-      const d=r.potencialas[k]||{}, v=d.balas||0;
-      doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(232,226,212); doc.text(label, margin, y);
-      doc.setTextColor(...GOLD2); doc.text(v+'%', W-margin, y, {align:'right'});
-      if(d.fraze){ doc.setFont('NotoSans','normal'); doc.setFontSize(13); doc.setTextColor(...MUTED); doc.text(d.fraze, margin, y+6.5); }
-      const by=y+(d.fraze?10:4);
-      doc.setFillColor(45,36,15); doc.roundedRect(margin, by, maxW, 2.8, 1.4, 1.4, 'F');
-      doc.setFillColor(...GOLD); doc.roundedRect(margin, by, maxW*v/100, 2.8, 1.4, 1.4, 'F');
-      y = by + 13;
+      const d=r.potencialas[k]||{}; if(!d.fraze) return;
+      if(y > PAGE_BOTTOM - 16){ y = newPage(); }
+      doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(label, margin, y); y += 7;
+      doc.setFont('NotoSans','normal'); doc.setFontSize(15); doc.setTextColor(...BODY);
+      doc.splitTextToSize(d.fraze, maxW).forEach(l=>{ doc.text(l, margin, y); y += 7.2; });
+      y += 4;
     });
     y += 6;
   }
@@ -5567,7 +5570,7 @@ function renderPoraResult(r){
   document.getElementById('pora-names').textContent=poraNames();
   const traits=(r.poros_bruozai||[]).map(t=>'<span>'+poraEsc(t)+'</span>').join('');
   document.getElementById('pora-traits').innerHTML=traits;
-  document.getElementById('pora-map').innerHTML=poraMapHtml(r);
+  document.getElementById('pora-map').innerHTML='';
   document.getElementById('pora-compare').innerHTML=poraCompareHtml(r);
   const para=t=>String(t||'').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).map(s=>'<p>'+poraEsc(s.trim())+'</p>').join('');
   // Skyriai — lygiai tokia pati struktūra kaip asmeninėje analizėje: antraštė, tekstas, auksinės įžvalgų kortelės, baigiamoji eilutė
@@ -5607,8 +5610,8 @@ function buildPoraPdfDoc(){
   if((r.poros_bruozai||[]).length){ doc.setTextColor(...GOLD); doc.setFontSize(13); doc.text(r.poros_bruozai.join('  ·  '), W/2, y, {align:'center', maxWidth:maxW}); y+=10; }
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.line(W/2-15, y, W/2+15, y); y+=16;
   const pdfHead=t=>{ doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD); doc.text(t, M, y); y+=9; };
-  // Ryšio žemėlapis — šešios sritys auksinėmis juostomis
-  if(r.sritys){
+  // Ryšio žemėlapis nerodomas (bendras įvertis skaičiuojamas iš sričių serveryje)
+  if(false){
     if(y>200){ doc.addPage(); dark(); y=30; }
     pdfHead('JŪSŲ RYŠIO ŽEMĖLAPIS');
     PORA_DIMS.forEach(([k,label])=>{
@@ -5718,8 +5721,8 @@ async function poraCardBlob(){
   x.fillStyle='rgba(255,255,255,.6)'; x.font="400 24px 'DM Sans', sans-serif"; x.fillText('delnų', cx, cy+66); x.fillText('suderinamumas', cx, cy+96);
   x.fillStyle='#f0c96a'; x.font="italic 400 46px 'Playfair Display', serif"; x.fillText(poraLevel(pct), cx, 835);
   let y=900;
-  if(r.sritys){
-    // Trys stipriausios sritys — auksinės juostos
+  if(false){
+    // (sričių juostos nebenaudojamos)
     const top=PORA_DIMS.map(([k,label])=>[label,(r.sritys[k]||{}).balas||0]).sort((a,b)=>b[1]-a[1]).slice(0,3);
     const L=230, BW=620;
     top.forEach(([label,v])=>{
