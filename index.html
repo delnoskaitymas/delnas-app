@@ -218,17 +218,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-rem-t{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold2);margin-bottom:6px}
 .px-rem-d{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:12px}
 .px-rem-b{width:100%;background:transparent;border:.5px solid rgba(212,168,67,.45);border-radius:10px;padding:12px;color:var(--gold2);font:800 14px 'DM Sans',sans-serif;cursor:pointer;letter-spacing:.03em}
-  font:700 13px 'DM Sans',sans-serif;cursor:pointer;transition:all .3s;box-shadow:0 0 12px rgba(212,168,67,.2);-webkit-tap-highlight-color:transparent}
 /* Pasiūlymas prie mokėjimo ir draugo nuolaida */
-#kl-bump{display:flex;gap:9px;align-items:center;margin:-2px 0 -2px;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
-#kl-bump input{margin:0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
-#kl-bump span{font-size:11.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
-#kl-bump b{color:var(--gold2)}
-#kl-bump s{color:rgba(255,255,255,.4);font-size:11px}
-#kl-bump.on{border-style:solid;background:rgba(212,168,67,.12)}
-.gift-hide#kl-bump{display:none!important}
-@media(max-width:374px){#kl-bump s{display:none}#kl-bump span{font-size:11px}}
-@media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump{padding:5px 10px}}
+#kl-bump,#pora-bump{display:flex;gap:9px;align-items:center;margin:-2px 0 -2px;padding:7px 11px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
+#kl-bump input,#pora-bump input{margin:0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
+#kl-bump span,#pora-bump span{font-size:11.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
+#kl-bump b,#pora-bump b{color:var(--gold2)}
+#kl-bump s,#pora-bump s{color:rgba(255,255,255,.4);font-size:11px}
+#kl-bump.on,#pora-bump.on{border-style:solid;background:rgba(212,168,67,.12)}
+.gift-hide#kl-bump,.gift-hide#pora-bump{display:none!important}
+#pora-bump{margin-top:-6px}
+.home-mano{display:block;text-align:center;margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.45);text-decoration:none;font-family:'DM Sans',sans-serif}
+.home-mano b{color:rgba(212,168,67,.85);font-weight:600}
+.promo-welcome{margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.45);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;line-height:1.45;color:#f3e7c6}
+.promo-welcome b{color:var(--gold2)}
+.rb-once{margin:0 0 8px;padding:9px 12px;border-radius:10px;background:linear-gradient(120deg,rgba(212,168,67,.2),rgba(212,168,67,.06));border:1px solid rgba(212,168,67,.55);font-size:12.5px;line-height:1.4;color:#f3e7c6}
+.rb-once b{color:var(--gold2)}
+.rb-once span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.rb-once i{font-style:normal;color:var(--gold2);font-variant-numeric:tabular-nums}
+.rb-deal{display:block;margin:-2px 0 6px;font-size:13px;color:#f3e7c6}
+.rb-deal b{display:inline;font-size:15px;color:var(--gold2)}
+.rb-deal s{color:rgba(255,255,255,.4);font-size:12px;margin-left:4px}
+.px-rem-f{font-size:11px;color:var(--muted);margin-top:8px}
+.px-rem-f a{color:var(--gold)}
+.cmp-box .pr-cmp-ab .now{border-color:rgba(212,168,67,.6);background:rgba(212,168,67,.12)}
+.cmp-wait{text-align:center}
+.cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
+.o-remind{display:flex;gap:9px;align-items:flex-start;margin:4px 2px 14px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
+.o-remind input{margin:2px 0 0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
+.o-remind span{font-size:12px;line-height:1.45;color:rgba(255,255,255,.55)}
+.o-remind b{color:var(--gold2);font-weight:700}
+@media(max-width:374px){#kl-bump s,#pora-bump s{display:none}#kl-bump span,#pora-bump span{font-size:11px}}
+@media(max-height:700px){#kl-bump,#pora-bump{padding:5px 10px}#pora-bump{margin-top:-9px}}
+@media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump,#pora-bump{padding:5px 10px}}
 .price-old{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.4);text-decoration:line-through;margin-left:8px;vertical-align:middle}
 .price-tag{display:block;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:2px 9px;margin:6px auto 0;width:fit-content}
 .ref-note{font-size:11.5px;line-height:1.45;color:var(--muted);text-align:center;margin-top:-2px}
@@ -346,6 +367,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
+.cam-live-hint{position:absolute;left:50%;top:10px;transform:translate(-50%,-6px);z-index:4;max-width:calc(100% - 20px);padding:7px 13px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(212,168,67,.55);color:#f3e7c6;font:600 12.5px/1.3 'DM Sans',sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s ease,transform .3s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cam-live-hint.on{opacity:1;transform:translate(-50%,0)}
+.cam-live-hint.good{border-color:rgba(140,210,140,.7);color:#d9f2d0}
 .cam-frozen{position:absolute;inset:0;z-index:5;background-size:cover;background-position:center;display:none}
 .cam-frozen.active{display:block}
 .cam-rescan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.5) 20%,var(--gold) 50%,rgba(212,168,67,.5) 80%,transparent 100%);box-shadow:0 0 10px 2px rgba(212,168,67,.5);z-index:6;pointer-events:none;display:none;top:4%}
@@ -504,6 +528,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <p style="font-size:15px;font-weight:400;color:rgba(232,226,212,.8);line-height:1.55;text-align:center;margin-top:10px;margin-bottom:24px;padding:0 24px;letter-spacing:.01em" id="home-lead">Delnai slepia atsakymus — apie finansus, karjerą, santykius ir dar daugiau.</p>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:15px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
     <div style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:0;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
+    <a href="/mano" class="home-mano">Jau darei analizę? <b>Mano analizės →</b></a>
   </div>
   </div>
 
@@ -524,6 +549,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
+    <div id="cam-live-hint" class="cam-live-hint" aria-live="polite"></div>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
@@ -698,6 +724,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <input type="checkbox" id="kl-bump-cb" onchange="toggleKlauskBump(this.checked)">
       <span>Pridėti <b>3 asmeninius klausimus</b> — <b id="kl-bump-price">2,99 €</b> <s id="kl-bump-old">4,99 €</s></span>
     </label>
+    <!-- Rinkinys: porų suderinamumas už mažesnę kainą (apmokėjus — kuponas el. paštu ir rezultato ekrane) -->
+    <label id="pora-bump" class="pay-anim-item" for="pora-bump-cb">
+      <input type="checkbox" id="pora-bump-cb" onchange="togglePoraBump(this.checked)">
+      <span>Pridėti <b>porų suderinamumą</b> — <b id="pora-bump-price">12,99 €</b> <s id="pora-bump-old">19,99 €</s></span>
+    </label>
     <div id="stripe-card-errors" style="color:#ff6b6b;font-size:11px;margin-bottom:4px;display:none"></div>
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
     <div id="pay-trust-row" style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
@@ -738,6 +769,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <input type="text" id="o-name" placeholder="Vardas" aria-label="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
       <input type="email" id="o-email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
+    <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
+    <label class="o-remind" for="o-remind"><input type="checkbox" id="o-remind"><span>Jei nebaigsiu užsakymo — atsiųskite man vieną priminimą su <b>−15 %</b> nuolaida</span></label>
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
     <!-- Mygtukas -->
@@ -820,6 +853,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="result-divider"></div>
   </div>
   <div style="padding:6px 16px 40px">
+    <div id="r-compare"></div>
     <div id="r-palms"></div>
     <div class="rs rs-std rs-reveal">
       <div class="rs-label">I · Prigimtinės stiprybės ir charakteris</div>
@@ -1418,16 +1452,23 @@ function getRefCode(){
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
 async function refreshPayQuote(){
   try{
-    const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:getRefCode(),addKlausk:!!window._addKlausk,email:window._userEmail||''})})).json();
+    const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk,email:window._userEmail||''})})).json();
     if(!q||!q.total) return null;
     window._quote=q;
     const el=document.getElementById('price-promo');
     if(el) el.innerHTML=_eur(q.total)+'<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span>'+
-      (q.discount?'<span class="price-old">'+_eur(q.base+q.bump)+' €</span><span class="price-tag">🎁 Draugo dovana −'+q.refPct+' %</span>':'');
+      (q.discount?'<span class="price-old">'+_eur(q.base+q.bump+(q.bundle||0))+' €</span><span class="price-tag">'+(q.discountLabel||('🎁 Draugo dovana −'+q.refPct+' %'))+'</span>':'');
     const bp=document.getElementById('kl-bump-price'), bo=document.getElementById('kl-bump-old');
     if(bp) bp.textContent=_eur(q.bumpCents)+' €'; if(bo) bo.textContent=_eur(q.klauskCents)+' €';
+    const pp=document.getElementById('pora-bump-price'), po=document.getElementById('pora-bump-old');
+    if(pp&&q.bundleCents) pp.textContent=_eur(q.bundleCents)+' €'; if(po&&q.poraCents) po.textContent=_eur(q.poraCents)+' €';
     return q;
   }catch(e){ return null; }
+}
+async function togglePoraBump(on){
+  window._addBundle=!!on;
+  const l=document.getElementById('pora-bump'); if(l) l.classList.toggle('on',!!on);
+  return toggleKlauskBump(!!window._addKlausk);
 }
 async function toggleKlauskBump(on){
   window._addKlausk=!!on;
@@ -1524,7 +1565,7 @@ async function initiatePayment(){
       // Suma NESIUNČIAMA — serveris (/create-checkout) visada naudoja
       // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),addKlausk:!!window._addKlausk})});
+        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
       const data=await res.json();
       if(data.url){_savePhotos();window.location.href=data.url;}
       else throw new Error(data.error||'Klaida');
@@ -1536,7 +1577,7 @@ async function initiatePayment(){
     // savo ACTIVE_PRICE_ID (activePrice.unit_amount), kliento siunčiamas
     // amount būtų ignoruojamas.
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,ref:getRefCode(),addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({name,email,ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
@@ -3804,10 +3845,13 @@ function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
   // Priminimas po 3 mėnesių — atskira kortelė po „Klausk“
-  const hPlan='<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių — kitas žingsnis</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Priminsime pasidaryti naują analizę ir pažiūrėti, kas pasikeitė.</div>'+
-    '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Primink man po 3 mėnesių</button></div>'+
-    '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Laukiame tavęs po 3 mėnesių.</div></div>'+'</div>';
+  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Išsaugok analizę — po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Išsaugosime šią analizę „Mano analizėse“ (be nuotraukų), o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−30 %</b>.</div>'+
+    '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
+    '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
+    '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
   renderPalmsSideBySide(r);
+  if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; loadCompare(); }
+  loadResultOffers();
   // „Klausk savo delnų“ — mokamas priedas (mokėjimas naujame skirtuke, kad rezultatas liktų)
   const em=window._userEmail||window.userEmail||'';
   h+='<div class="rs rs-std rs-reveal kl"><div class="rs-label">✦ Klausk savo delnų</div>'+
@@ -3863,8 +3907,14 @@ async function registerReminder(){
     return;
   }
   try{
+    // Pirmiausia — išsaugoti analizę (serveris ima rezultatą iš savo laikinos saugyklos) ir užregistruoti priminimą su palyginimu
+    if(window.bgSessionId){
+      const sv=await fetch('/save-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:window.bgSessionId,email})});
+      if(sv.ok){ document.getElementById('reminder-wrap').style.display='none'; document.getElementById('reminder-done').style.display='block'; return; }
+    }
     const resp = await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name})});
     const data = await resp.json();
+    const dn=document.getElementById('reminder-done'); if(dn) dn.textContent='✦ Laukiame tavęs po 3 mėnesių.';
     if(data.ok){
       document.getElementById('reminder-wrap').style.display='none';
       document.getElementById('reminder-done').style.display='block';
@@ -5399,7 +5449,7 @@ function initPayment(){
       window._googlePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
@@ -5446,7 +5496,7 @@ function initPayment(){
       window._applePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
@@ -5500,7 +5550,7 @@ async function quickPay(method){
     // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
     const res=await fetch('/create-checkout',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),bundle:!!window._addBundle,addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
@@ -5548,7 +5598,7 @@ function proceedToPayment(){
   // ir el. paštas (dar prieš mokėjimą) — jis bus parodytas rezultato
   // ekrane ir naudojamas pranešimui į info@delnaskaitymas.lt.
   fetch('/register-order',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name,email})}).then(r=>r.json()).then(d=>{
+    body:JSON.stringify({name,email,remind:!!(document.getElementById('o-remind')||{}).checked})}).then(r=>r.json()).then(d=>{
       if(d&&d.orderNumber) window._orderNumber=d.orderNumber;
     }).catch(e=>console.error('[register-order] klaida:',e));
   // Atnaujinti bgSessionId su vardu (analizė jau vyksta fone)
@@ -6144,7 +6194,7 @@ function applyGiftMode(){
   const g=window._giftInfo;
   const on=!!(g&&g.valid&&window._giftCode&&!window._giftFailed);
   blk.style.display=on?'block':'none';
-  ['price-info-block','pm-group','pay-btn','pay-trust-row','kl-bump'].forEach(id=>{
+  ['price-info-block','pm-group','pay-btn','pay-trust-row','kl-bump','pora-bump'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.classList.toggle('gift-hide',on);
   });
   if(on){
@@ -6178,5 +6228,160 @@ async function redeemGiftAndProceed(){
   // Toliau — tas pats kelias kaip po įprasto apmokėjimo (analizė, rezultatas, PDF laiškas).
   await fetchResultsAndNavigate('gift:'+window._giftCode,null);
 }
+</script>
+<script>
+// ═══ Nuolaidos kodai (?grizk= / ?kartoti= / ?promo=), pasiūlymai po analizės, palyginimas, „Mano analizės“ ═══
+(function capturePromo(){
+  try{
+    const p=new URLSearchParams(location.search);
+    const raw=p.get('grizk')||p.get('kartoti')||p.get('promo');
+    if(raw){
+      const c=raw.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+      if(c.length>=6) localStorage.setItem('delnasPromo',JSON.stringify({c,at:Date.now()}));
+      ['grizk','kartoti','promo'].forEach(k=>p.delete(k)); const qs=p.toString();
+      history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
+    }
+  }catch(e){}
+})();
+function _promoStored(){ try{ const d=JSON.parse(localStorage.getItem('delnasPromo')||'null'); if(d&&d.c&&Date.now()-d.at<31*864e5) return d; }catch(e){} return null; }
+function _promoSave(d){ try{ if(d) localStorage.setItem('delnasPromo',JSON.stringify(d)); else localStorage.removeItem('delnasPromo'); }catch(e){} }
+function getPromoCode(){ const d=_promoStored(); return d&&!d.used&&(!d.exp||Date.now()<d.exp)?d.c:''; }
+function _ltTime(ts){ try{ return new Date(ts).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
+function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
+// Kodo patikra ir pasveikinimas pradžios ekrane
+(async function promoWelcome(){
+  const d=_promoStored(); if(!d) return;
+  try{
+    const q=await (await fetch('/promo/check?code='+encodeURIComponent(d.c))).json();
+    if(!q||q.product!=='asmenine'){ if(!q||!q.code) _promoSave(null); return; }
+    if(q.kind==='repeat'&&q.used){ _promoSave({...d,kind:'repeat',used:true}); return; }
+    if(!q.valid){ _promoSave(null); return; }
+    _promoSave({...d,kind:q.kind,pct:q.pct,exp:q.expiresAt});
+    const home=document.getElementById('s-home'); if(!home||document.getElementById('promo-welcome')) return;
+    const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
+    n.innerHTML=q.kind==='repeat'
+      ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
+      : '⏳ Tavo <b>−'+q.pct+' %</b> nuolaida galioja iki '+_ltTime(q.expiresAt);
+    const rw=document.getElementById('ref-welcome'); if(rw) rw.remove();
+    home.prepend(n);
+  }catch(e){}
+})();
+
+// Rezultato ekrane: −30 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
+async function loadResultOffers(){
+  const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
+  if(!payRef||window._manoView) return;
+  let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef})})).json(); }catch(e){ return; }
+  if(!d) return;
+  const gifts=document.querySelector('#s-result .rb-gifts');
+  if(d.once&&gifts&&!document.getElementById('rb-once')){
+    const b=document.createElement('div'); b.id='rb-once'; b.className='rb-once';
+    b.innerHTML='<b>⏳ Tik 24 val.: −'+d.once.pct+' %</b> dovanai artimam žmogui<span>Liko <i id="rb-once-left"></i></span>';
+    gifts.parentNode.insertBefore(b,gifts);
+    gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' % →'; });
+    const left=document.getElementById('rb-once-left');
+    const tick=()=>{ const ms=d.once.expiresAt-Date.now(); if(ms<=0){ b.remove(); gifts.querySelectorAll('a.rb-gift em').forEach(em=>em.textContent='Padovanoti →'); gifts.querySelectorAll('a.rb-gift').forEach(a=>a.href=a.getAttribute('href').split('&promo=')[0]); clearInterval(window._onceTimer); return; }
+      const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3); left.textContent=h+' val. '+String(m).padStart(2,'0')+' min. '+String(s).padStart(2,'0')+' s'; };
+    clearInterval(window._onceTimer); tick(); window._onceTimer=setInterval(tick,1000);
+  }
+  const pora=document.querySelector('#s-result .rb-pora');
+  if(pora){
+    if(d.bundleGift&&d.bundleGift.status==='active'){
+      pora.href=d.bundleGift.link;
+      pora.querySelector('b').textContent='Jūsų porų analizė jau apmokėta — pradėti →';
+      pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite abiejų delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
+    } else if(d.bundle&&!pora.querySelector('.rb-deal')){
+      pora.href='/pora?promo='+encodeURIComponent(d.bundle.code)+'&utm_source=app&utm_campaign=rinkinys';
+      const s=document.createElement('span'); s.className='rb-deal';
+      s.innerHTML='Tau — <b>'+_eur(d.bundle.price)+' €</b> <s>'+_eur(d.poraPrice)+' €</s>';
+      pora.querySelector('b').after(s);
+    }
+  }
+}
+
+// Palyginimas su ankstesne analize (atėjus per priminimo laiško nuorodą ?kartoti=)
+function renderCompare(c, prevDate){
+  const box=document.getElementById('r-compare'); if(!box) return;
+  if(!c||!c.sritys||!c.sritys.length){ box.innerHTML=''; return; }
+  const items=c.sritys.map(x=>'<div class="pr-cmp"><div class="pr-cmp-t">'+_xEsc(x.tema)+'</div><div class="pr-cmp-ab"><div><small>Anksčiau</small>'+_xEsc(x.anksciau)+'</div><div class="now"><small>Dabar</small>'+_xEsc(x.dabar)+'</div></div></div>').join('');
+  box.innerHTML='<div class="rs rs-std rs-reveal visible pl-greta cmp-box"><div class="pr-h">Kas pasikeitė</div><div class="pr-sub">'+(prevDate?'Palyginta su tavo analize, padaryta '+_ltDay(prevDate):'Palyginta su tavo ankstesne analize')+'</div>'+items+
+    (c.isvada?'<div class="pl-is"><b>Kur pajudėjai</b>'+_xEsc(c.isvada)+'</div>':'')+'</div>';
+}
+async function loadCompare(){
+  const d=_promoStored();
+  if(d&&d.kind&&d.kind!=='repeat'&&!window._manoView){ _promoSave(null); return; } // kodas panaudotas šiam užsakymui
+  if(!d||d.kind!=='repeat'||!window.bgSessionId||window._manoView) return;
+  const box=document.getElementById('r-compare'); if(!box) return;
+  box.innerHTML='<div class="rs rs-std cmp-box cmp-wait"><div class="pr-h">Kas pasikeitė</div><div class="pr-sub">Lyginame su tavo ankstesne analize…</div><div class="cmp-spin"></div></div>';
+  try{
+    const res=await fetch('/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:window.bgSessionId,code:d.c})});
+    const j=await res.json();
+    if(!res.ok||!j.palyginimas) throw new Error(j.error||'');
+    renderCompare(j.palyginimas,j.prevDate);
+    if(window._palmResult) window._palmResult.palyginimas=j.palyginimas;
+    _promoSave(null);
+  }catch(e){ box.innerHTML=''; }
+}
+
+// „Mano analizės“: /?mano=ID&t=NUORODA — išsaugotos analizės peržiūra
+(function manoView(){
+  const p=new URLSearchParams(location.search), id=p.get('mano'), t=p.get('t');
+  if(!id||!t) return;
+  window._manoView=true;
+  const run=async()=>{
+    try{
+      const d=await (await fetch('/mano/item?id='+encodeURIComponent(id)+'&t='+encodeURIComponent(t))).json();
+      if(!d||!d.result) throw new Error(d&&d.error||'Analizė nerasta');
+      window.userName=window._userName=d.name||'';
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      go('s-result'); displayResult(d.result);
+    }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
+  };
+  if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
+})();
+</script>
+<script>
+// ═══ Kameros užuominos realiu laiku: šviesa, atspindžiai, judesys, ar delnas rėmelyje ═══
+// Analizuojamas sumažintas (64×64) vaizdo kadras kas 0,6 s, tik kol kamera rodo gyvą vaizdą.
+// Užuominos nieko neblokuoja — tik padeda nufotografuoti gerai iš pirmo karto.
+(function liveCamHints(){
+  const N=64, c=document.createElement('canvas'); c.width=N; c.height=N;
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  let prev=null, last='', streak=0, shown='', goodUntil=0;
+  const MSG={dark:'💡 Per tamsu — pasistatyk prie šviesos',bright:'☀️ Per šviesu — pasisuk nuo tiesioginės šviesos',move:'✋ Laikyk telefoną ramiai',frame:'✋ Įkelk visą delną į rėmelį',fingers:'✋ Ištiesk pirštus — jie turi matytis rėmelyje',good:'✓ Puiku — galima fotografuoti'};
+  function show(k){
+    const el=document.getElementById('cam-live-hint'); if(!el) return;
+    if(k===shown) return; shown=k;
+    if(!k){ el.classList.remove('on'); return; }
+    el.textContent=MSG[k]; el.classList.toggle('good',k==='good'); el.classList.add('on');
+  }
+  function check(){
+    const scr=document.getElementById('s-camera'), v=document.getElementById('cam-video'), fr=document.getElementById('cam-frozen');
+    if(!scr||!scr.classList.contains('active')||!v||v.readyState<2||!v.videoWidth||(fr&&fr.classList.contains('active'))||parseFloat(getComputedStyle(v).opacity)<.5){ prev=null; streak=0; last=''; show(''); return; }
+    try{ ctx.drawImage(v,0,0,N,N); }catch(e){ return; }
+    const d=ctx.getImageData(0,0,N,N).data, g=new Float32Array(N*N);
+    let sum=0, glare=0, skin=0, skinTop=0, skinBot=0, diff=0;
+    for(let i=0,p=0;i<d.length;i+=4,p++){
+      const r=d[i],gg=d[i+1],b=d[i+2], y=0.299*r+0.587*gg+0.114*b; g[p]=y; sum+=y;
+      if(y>242) glare++;
+      if((r>95&&gg>40&&b>20&&r>gg&&r>b&&Math.abs(r-gg)>15&&r<250)||(r>60&&gg>30&&b>15&&r>gg&&r>b&&r-b>15&&r<200)){ skin++; if(p<N*N/2) skinTop++; else skinBot++; }
+      if(prev) diff+=Math.abs(y-prev[p]);
+    }
+    const tot=N*N, lum=sum/tot, motion=prev?diff/tot:0; prev=g;
+    let k='good';
+    if(lum<55) k='dark';
+    else if(lum>215||glare/tot>0.22) k='bright';
+    else if(motion>22) k='move';
+    else if(skin/tot<0.12) k='frame';
+    else if(skinTop/tot<0.04&&skinBot/tot>0.12) k='fingers';
+    // Rodoma tik pasikartojus 2 kartus iš eilės (be mirgėjimo); „puiku“ — trumpai
+    streak=(k===last)?streak+1:1; last=k;
+    if(streak<2) return;
+    if(k==='good'){ if(shown!=='good'&&shown!=='') goodUntil=Date.now()+2500; show(Date.now()<goodUntil?'good':''); return; }
+    show(k);
+  }
+  setInterval(check,600);
+  window._camHintCheck=check;
+})();
 </script>
 </body></html>

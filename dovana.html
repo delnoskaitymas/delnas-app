@@ -233,6 +233,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       <div class="hero"><i></i></div>
       <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
       <div class="season-tag hidden" id="season-tag"></div>
+      <div class="season-tag hidden" id="promo-tag"></div>
       <h1 id="form-h1">Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
     <p class="lead sm" id="form-lead">Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
@@ -410,7 +411,10 @@ body:not(.kind-pora) #v-form .hero2{display:none}
 
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
-  const prices = { asmenine: '12,99 €', pora: '19,99 €' };
+  const cents = { asmenine: 1299, pora: 1999 };
+  let promo = null; // −30 % pasiūlymas po analizės (?promo=KODAS, 24 val.)
+  const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100)) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k]) + '</s>' : eur(cents[k]);
+  const prices = { get asmenine(){ return priceHtml('asmenine'); }, get pora(){ return priceHtml('pora'); } };
   let kind = params.get('tipas') === 'pora' ? 'pora' : (params.get('tipas') ? 'asmenine' : (season ? SEASONS[season].kind : 'asmenine'));
   function setKind(k){
     kind = k;
@@ -423,19 +427,30 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     $('f-to').placeholder = pora ? 'Ievai ir Tomui' : 'pvz. Ievai';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
     $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja abiejų delnus ir per kelias minutes gauna suderinamumo įvertį bei 7 skyrių analizę su PDF. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.';
-    $('price').textContent = prices[k];
+    $('price').innerHTML = prices[k];
     document.title = pora ? 'DELNAS — Porų suderinamumo dovana' : 'DELNAS — Dovanų kuponas';
-    try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '')); } catch (e) {}
+    try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '') + (params.get('promo') ? (pora ? '&' : '?') + 'promo=' + encodeURIComponent(params.get('promo')) : '')); } catch (e) {}
   }
   $('k-asm').addEventListener('click', () => setKind('asmenine'));
   $('k-pora').addEventListener('click', () => setKind('pora'));
 
   fetch('/price-info').then(r => r.json()).then(d => {
-    if (d && d.active && d.active.amount) prices.asmenine = eur(d.active.amount);
-    if (d && d.pora && d.pora.amount) prices.pora = eur(d.pora.amount);
-    $('k-asm-p').textContent = prices.asmenine; $('k-pora-p').textContent = prices.pora;
-    $('price').textContent = prices[kind];
+    if (d && d.active && d.active.amount) cents.asmenine = d.active.amount;
+    if (d && d.pora && d.pora.amount) cents.pora = d.pora.amount;
+    showPrices();
   }).catch(() => {});
+  function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = prices.pora; $('price').innerHTML = prices[kind]; }
+  if (params.get('promo')) (async () => {
+    try {
+      const d = await (await fetch('/promo/check?code=' + encodeURIComponent(params.get('promo')))).json();
+      if (!d.valid || d.product !== 'dovana') return;
+      promo = d; showPrices();
+      const tag = $('promo-tag');
+      const tick = () => { const ms = d.expiresAt - Date.now(); if (ms <= 0) { promo = null; showPrices(); tag.classList.add('hidden'); clearInterval(tm); return; }
+        tag.innerHTML = '⏳ −' + d.pct + ' % dovanai · liko ' + Math.floor(ms / 36e5) + ' val. ' + String(Math.floor(ms % 36e5 / 6e4)).padStart(2, '0') + ' min.'; };
+      const tm = setInterval(tick, 30000); tick(); tag.classList.remove('hidden');
+    } catch (e) {}
+  })();
 
   $('gift-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -444,14 +459,14 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ kind, season, recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, season, promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';
-      btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + $('price').textContent + '</span> →';
+      btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + prices[kind] + '</span> →';
     }
   });
 
