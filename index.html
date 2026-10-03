@@ -6123,11 +6123,20 @@ function buildPoraPdfDoc(){
       iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
     y+=10;
   });
-  if(y>262){ doc.addPage(); dark(); y=40; }
-  doc.setFontSize(10); doc.setTextColor(140,112,55);
-  doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5.5; });
-  doc.setFont('NotoSans','bold'); doc.setFontSize(12); doc.setTextColor(...GOLD2);
-  doc.text('www.delnaskaitymas.lt', W/2, y+8, {align:'center'}); doc.link(W/2-25, y+2, 50, 9, { url:'https://www.delnaskaitymas.lt' });
+  // Pabaiga — tokia pati kaip asmeninės analizės PDF: padėka, mygtukas į svetainę, pastaba apie paslaugos pobūdį
+  if(y>240){ doc.addPage(); dark(); y=40; }
+  y+=4;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(13); doc.setTextColor(...MUTED);
+  doc.text('Dėkojame, kad patikėjote mums savo delnų analizę.', W/2, y, {align:'center'});
+  doc.text('Daugiau įžvalgų ir naujų atradimų rasite:', W/2, y+9, {align:'center'});
+  doc.setFont('NotoSans','bold'); doc.setFontSize(13);
+  const bl='www.delnaskaitymas.lt', bw=doc.getTextWidth(bl)+14, bh=9, bx=W/2-bw/2, by=y+16;
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.roundedRect(bx, by, bw, bh, 2, 2, 'S');
+  doc.setTextColor(...GOLD2); doc.text(bl, W/2, by+bh/2+3.2, {align:'center'});
+  doc.link(bx, by, bw, bh, { url:'https://www.delnaskaitymas.lt' });
+  doc.setFont('NotoSans','normal'); doc.setFontSize(10); doc.setTextColor(140,112,55);
+  let ny=by+bh+10;
+  doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
   return doc;
 }
 function poraPdfName(){ return (poraNames().replace(/\s+/g,'-')||'pora')+'-poru-suderinamumas.pdf'; }
