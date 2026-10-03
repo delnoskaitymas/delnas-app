@@ -905,6 +905,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="pora-map"></div>
     <div id="pora-compare"></div>
     <div id="pora-sections"></div>
+    <!-- „Klauskite savo delnų“ porai — mokėjimas naujame skirtuke -->
+    <div class="rs rs-std kl pr-rv" id="pora-kl">
+      <div class="rs-label">✦ Klauskite savo delnų</div>
+      <div class="kl-txt">Turite klausimą apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų porų analize: tuo, kas jus sieja, kuo papildote vienas kitą ir kur kyla trintis.</div>
+      <div class="kl-ex"><span>„Kaip mums rečiau ginčytis?“</span><span>„Kaip suderinti požiūrį į pinigus?“</span><span>„Kaip išlaikyti artumą kasdienybėje?“</span></div>
+      <button type="button" class="kl-btn" onclick="poraKlausk(this)">Užduoti klausimus — 4,99 €</button>
+      <div class="kl-err" id="pora-kl-err"></div>
+      <div class="kl-fine">Atsakymai ekrane ir el. paštu · Saugus mokėjimas per Stripe</div>
+    </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text">Ši analizė priklauso tik jums. Ji jau atkeliavo į el. paštą PDF formatu.</div>
@@ -5597,6 +5606,19 @@ function poraReveal(){
   if(!('IntersectionObserver' in window)){ els.forEach(on); return; }
   const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ on(e.target); io.unobserve(e.target); } }),{ threshold:.15 });
   els.forEach(el=>io.observe(el));
+}
+
+async function poraKlausk(btn){
+  const err=document.getElementById('pora-kl-err'); err.style.display='none';
+  const w=window.open('','_blank');
+  btn.disabled=true; const t=btn.textContent; btn.textContent='Jungiamasi prie Stripe…';
+  try{
+    const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'pora',poraSid:(window._pora||{}).sid})});
+    const d=await res.json();
+    if(!res.ok||!d.url) throw new Error(d.error||'Nepavyko pradėti mokėjimo');
+    if(w) w.location.href=d.url; else location.href=d.url;
+  }catch(e){ if(w) w.close(); err.textContent=e.message; err.style.display='block'; }
+  btn.disabled=false; btn.textContent=t;
 }
 
 function renderPoraResult(r){

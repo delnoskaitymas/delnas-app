@@ -3076,7 +3076,17 @@ function klauskContextText(res) {
   return t;
 }
 
+function klauskPoraContext(res) {
+  const T = { traukia: 'Kas jus traukia vienas prie kito', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kuo vienas kitą papildote', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jums abiem' };
+  const C = { sirdies: 'Širdies linijos (jausmai)', galvos: 'Galvos linijos (mąstymas)', gyvenimo: 'Gyvenimo linijos (tempas)', forma: 'Delnų forma (charakteris)' };
+  let t = `Suderinamumas: ${res.suderinamumas || ''}%\nPoros bruožai: ${(res.poros_bruozai || []).join(', ')}\n\n`;
+  for (const [k, l] of Object.entries(C)) { const c = (res.palyginimai || {})[k]; if (c) t += `## ${l}\nA: ${c.a}\nB: ${c.b}\nIšvada: ${c.isvada || ''}\n\n`; }
+  for (const [k, l] of Object.entries(T)) if (res[k]) t += `## ${l}\n${res[k]}\n${((res.izvalgos || {})[k] || []).join('; ')}\n\n`;
+  return t;
+}
+
 async function answerKlausk(order, question) {
+  if (order.kind === 'pora') return answerKlauskPora(order, question);
   const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
   const name = order.name || '';
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
@@ -3098,6 +3108,10 @@ KAIP ATSAKYTI:
 - Taisyklinga, natūrali lietuvių kalba. Tekste nenaudok dvigubų kabučių.
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
+  return klauskCallAI(prompt);
+}
+
+async function klauskCallAI(prompt) {
   let data;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -3118,6 +3132,31 @@ ATSAKYK TIK ATSAKYMO TEKSTU.`;
   return applyTextFixes(text.slice(0, 4000)).text;
 }
 
+async function answerKlauskPora(order, question) {
+  const A = order.nameA || 'Pirmasis partneris', B = order.nameB || 'Antrasis partneris';
+  const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
+  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Atsakyk remdamasis BŪTENT šia analize.
+
+PORŲ ANALIZĖ:
+${klauskPoraContext(order.result)}
+${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
+KLAUSIMAS: ${question}
+
+KAIP ATSAKYTI:
+- 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Kai kalbi apie vieną — vadink vardu (${A} arba ${B}), linksnį derink natūraliai. Pradėk iškart nuo esmės.
+- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kuo vienas kitą papildote, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
+- Pabaigoje — 2–3 aiškūs, praktiški žingsniai jums abiem (sklandžiu tekstu, ne sąrašu).
+- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos; rink neutralias formas. Apie delnus rašyk daugiskaita.
+- Nesakyk „gali būti“, „tikėtina“; nenaudok metaforų, „energijos“, „vibracijų“; nemini fizinių delnų požymių.
+- Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk išsiskyrimo, neištikimybės, ligų, nelaimių ar konkrečių datų; nespręsk už porą, ar jiems būti kartu. Neduok medicininių, teisinių ar investavimo patarimų — tokiu atveju švelniai pasakyk, kad verta pasitarti su specialistu.
+- Jei klausimas rodo smurtą, grėsmę ar minčių apie savęs žalojimą — atsakyk švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: skubiai — 112, Vilties linija 116 123 (visą parą), pagalba nukentėjusiems nuo smurto — 8 800 66366 (Moterų linija) arba 8 800 55522 (Vyrų linija).
+- Jei klausimas nesusijęs su jų santykiais ar gyvenimu — maloniai paaiškink, kad atsakai tik į klausimus apie jūsų porą, ir pasiūlyk, ko galėtų paklausti.
+- Taisyklinga, natūrali lietuvių kalba. Tekste nenaudok dvigubų kabučių.
+
+ATSAKYK TIK ATSAKYMO TEKSTU.`;
+  return klauskCallAI(prompt);
+}
+
 app.get('/klausk', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'klausk.html'));
@@ -3125,24 +3164,37 @@ app.get('/klausk', (req, res) => {
 
 app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, result } = req.body || {};
-    if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
-    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
-    const picked = pickKlauskResult(result);
-    if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
+    const { kind, poraSid } = req.body || {};
+    let { email, name, result } = req.body || {};
+    let record;
+    if (kind === 'pora') {
+      // Porų klausimai: analizė, vardai ir el. paštas imami iš apmokėto porų užsakymo
+      if (!isValidCheckoutSessionId(poraSid)) return res.status(400).json({ error: 'Neteisingas porų užsakymas' });
+      const po = loadPoraOrders()[poraSid];
+      if (!po || po.status !== 'done' || !po.result) return res.status(400).json({ error: 'Porų analizė nerasta' });
+      email = po.email; name = `${po.nameA} ir ${po.nameB}`;
+      if (!isValidEmail(email)) return res.status(400).json({ error: 'Nerastas užsakymo el. paštas' });
+      record = { kind: 'pora', email, name, nameA: po.nameA, nameB: po.nameB, poraSid, result: po.result };
+    } else {
+      if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+      if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
+      const picked = pickKlauskResult(result);
+      if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
+      record = { email, name: (name || '').trim(), result: picked };
+    }
     const base = appBaseUrl();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card', 'revolut_pay'],
-      line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
+      line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: record.kind === 'pora' ? 'DELNAS — Klauskite savo delnų: porai (3 klausimai)' : 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
       locale: 'lt',
       customer_email: email,
-      metadata: { type: 'klausk', email, name: (name || '').trim() },
+      metadata: { type: 'klausk', kind: record.kind || 'asmenine', email, name: (name || '').trim().slice(0, 120) },
       success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/klausk?atsaukta=1`
     });
     const orders = loadKlauskOrders();
-    orders[session.id] = { email, name: (name || '').trim(), result: picked, qa: [], paid: false, createdAt: Date.now() };
+    orders[session.id] = { ...record, qa: [], paid: false, createdAt: Date.now() };
     saveKlauskOrders(orders);
     res.json({ url: session.url });
   } catch (err) {
@@ -3164,11 +3216,11 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
-        subject: `Naujas „Klausk savo delnų“ užsakymas — ${o.name || o.email}`,
+        subject: `Naujas „Klausk savo delnų“${o.kind === 'pora' ? ' (porai)' : ''} užsakymas — ${o.name || o.email}`,
         html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
       }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
     }
-    res.json({ paid: true, name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
@@ -3197,8 +3249,8 @@ app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
     mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: cur.email,
-      subject: `✋ Tavo delnų atsakymas: „${q.slice(0, 60)}${q.length > 60 ? '…' : ''}“`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:18px">KLAUSK SAVO DELNŲ</div><div style="font-size:13px;color:#d4a843;margin-bottom:6px">Tavo klausimas</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:18px">„${escapeHtml(q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(a)}</div><div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${cur.qa.length < KLAUSK_MAX_QUESTIONS ? `Užduoti kitą klausimą (liko ${KLAUSK_MAX_QUESTIONS - cur.qa.length}) →` : 'Peržiūrėti visus atsakymus →'}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
+      subject: `✋ ${cur.kind === 'pora' ? 'Jūsų' : 'Tavo'} delnų atsakymas: „${q.slice(0, 60)}${q.length > 60 ? '…' : ''}“`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:18px">${cur.kind === 'pora' ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="font-size:13px;color:#d4a843;margin-bottom:6px">${cur.kind === 'pora' ? 'Jūsų klausimas' : 'Tavo klausimas'}</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:18px">„${escapeHtml(q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(a)}</div><div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${cur.qa.length < KLAUSK_MAX_QUESTIONS ? `Užduoti kitą klausimą (liko ${KLAUSK_MAX_QUESTIONS - cur.qa.length}) →` : 'Peržiūrėti visus atsakymus →'}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
     }).catch(e => console.error('[klausk] laiško klaida:', e.message));
     res.json({ ok: true, q, a, left: KLAUSK_MAX_QUESTIONS - cur.qa.length });
   } catch (err) {
