@@ -1545,7 +1545,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
-- potencialas: šešios sritys — santykiai, karjera, finansai, kuryba (kūrybiškumas), intuicija, stiprybe (vidinė stiprybė). Kiekvienai: balas (sveikas skaičius 55–98, pagal tai, kiek stiprus šios srities potencialas matomas ŠIUOSE delnuose; balai turi aiškiai skirtis tarpusavyje) ir fraze (3–6 žodžiai „tu/tavo“ forma, pvz. Tavo stiprybė — patikimi ryšiai)
+- potencialas: šešios sritys — santykiai, karjera, finansai, kuryba (kūrybiškumas), intuicija, stiprybe (vidinė stiprybė). Kiekvienai: balas (sveikas skaičius 55–98, pagal tai, kiek stiprus šios srities potencialas matomas ŠIUOSE delnuose; balai turi aiškiai skirtis — pagal juos parenkama ryškiausia sritis) ir fraze (1 sakinys iki 120 simbolių „tu/tavo“ forma: kuo konkrečiai pasireiškia tavo potencialas šioje srityje, pvz. Tau lengva kurti ilgalaikius, patikimus ryšius su žmonėmis)
 - planas: 4 savaičių planas ateinančioms 30 dienų, pagrįstas šia analize (stiprybėmis, kryptimi ir kliūtimis). Kiekvienai savaitei: tema (2–4 žodžiai) ir veiksmas (1–2 sakiniai, iki 170 simbolių, vienas labai konkretus, lengvai įgyvendinamas veiksmas „tu“ forma, pvz. Šią savaitę užsirašyk tris idėjas ir vieną iš jų išbandyk iki sekmadienio)
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
@@ -1681,7 +1681,7 @@ function sanitizeExtraResult(result) {
   const p = result.potencialas;
   if (p && typeof p === 'object' && KEYS.every(k => p[k] && Number.isFinite(Number(p[k].balas)))) {
     const out = {};
-    for (const k of KEYS) out[k] = { balas: Math.max(55, Math.min(98, Math.round(Number(p[k].balas)))), fraze: typeof p[k].fraze === 'string' ? applyTextFixes(p[k].fraze.trim().slice(0, 70)).text : '' };
+    for (const k of KEYS) out[k] = { balas: Math.max(55, Math.min(98, Math.round(Number(p[k].balas)))), fraze: typeof p[k].fraze === 'string' ? applyTextFixes(p[k].fraze.trim().slice(0, 160)).text : '' };
     result.potencialas = out;
   } else delete result.potencialas;
   const pl = Array.isArray(result.planas) ? result.planas.filter(w => w && typeof w.tema === 'string' && typeof w.veiksmas === 'string' && w.tema.trim() && w.veiksmas.trim()) : [];
@@ -2744,7 +2744,7 @@ PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sri
 - b: tas pats apie ${B} (iki 120 simbolių)
 - isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių)
 
-SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — balas (sveikas skaičius 55–98), frazė: 3–7 žodžių išvada (pvz. Atviri ir šilti vienas kitam) ir aprasymas: 2 sakiniai (iki 240 simbolių), kodėl toks balas ir kaip tai pasireiškia jūsų santykiuose.
+SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — tik balas (sveikas skaičius 55–98); iš jų skaičiuojamas bendras suderinamumas.
 
 SKYRIAI:
 - traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
@@ -2762,7 +2762,7 @@ Taip pat:
 PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
 
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
-{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84,"fraze":"...","aprasymas":"..."},"bendravimas":{"balas":76,"fraze":"...","aprasymas":"..."},"vertybes":{"balas":88,"fraze":"...","aprasymas":"..."},"kasdienybe":{"balas":71,"fraze":"...","aprasymas":"..."},"trauka":{"balas":90,"fraze":"...","aprasymas":"..."},"ateitis":{"balas":80,"fraze":"...","aprasymas":"..."}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
