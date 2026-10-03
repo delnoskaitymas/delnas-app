@@ -383,9 +383,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cam-scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.3) 20%,rgba(212,168,67,.8) 50%,rgba(212,168,67,.3) 80%,transparent 100%);box-shadow:0 0 8px 2px rgba(212,168,67,.3);animation:camScan 2.5s ease-in-out infinite;z-index:4;pointer-events:none;top:0}
 @keyframes camScan{0%{top:4%}50%{top:94%}100%{top:4%}}
 .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .08s}
-.cam-live-hint{position:absolute;left:50%;top:10px;transform:translate(-50%,-6px);z-index:4;max-width:calc(100% - 20px);padding:7px 13px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(212,168,67,.55);color:#f3e7c6;font:600 12.5px/1.3 'DM Sans',sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s ease,transform .3s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cam-live-hint.on{opacity:1;transform:translate(-50%,0)}
-.cam-live-hint.good{border-color:rgba(140,210,140,.7);color:#d9f2d0}
 .cam-frozen{position:absolute;inset:0;z-index:5;background-size:cover;background-position:center;display:none}
 .cam-frozen.active{display:block}
 .cam-rescan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,.5) 20%,var(--gold) 50%,rgba(212,168,67,.5) 80%,transparent 100%);box-shadow:0 0 10px 2px rgba(212,168,67,.5);z-index:6;pointer-events:none;display:none;top:4%}
@@ -567,7 +564,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 
 
     <video id="cam-video" autoplay playsinline muted style="transition:opacity 0.4s ease;opacity:0"></video>
-    <div id="cam-live-hint" class="cam-live-hint" aria-live="polite"></div>
     <canvas id="cam-detect" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0"></canvas>
     <div id="cam-frame" style="display:none"></div>
     <div id="cam-wait" style="display:none"></div>
@@ -6422,50 +6418,6 @@ async function loadCompare(){
     }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
   };
   if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
-})();
-</script>
-<script>
-// ═══ Kameros užuominos realiu laiku: šviesa, atspindžiai, judesys, ar delnas rėmelyje ═══
-// Analizuojamas sumažintas (64×64) vaizdo kadras kas 0,6 s, tik kol kamera rodo gyvą vaizdą.
-// Užuominos nieko neblokuoja — tik padeda nufotografuoti gerai iš pirmo karto.
-(function liveCamHints(){
-  const N=64, c=document.createElement('canvas'); c.width=N; c.height=N;
-  const ctx=c.getContext('2d',{willReadFrequently:true});
-  let prev=null, last='', streak=0, shown='', goodUntil=0;
-  const MSG={dark:'💡 Per tamsu — pasistatyk prie šviesos',bright:'☀️ Per šviesu — pasisuk nuo tiesioginės šviesos',move:'✋ Laikyk telefoną ramiai',frame:'✋ Įkelk visą delną į rėmelį',fingers:'✋ Ištiesk pirštus — jie turi matytis rėmelyje',good:'✓ Puiku — galima fotografuoti'};
-  function show(k){
-    const el=document.getElementById('cam-live-hint'); if(!el) return;
-    if(k===shown) return; shown=k;
-    if(!k){ el.classList.remove('on'); return; }
-    el.textContent=MSG[k]; el.classList.toggle('good',k==='good'); el.classList.add('on');
-  }
-  function check(){
-    const scr=document.getElementById('s-camera'), v=document.getElementById('cam-video'), fr=document.getElementById('cam-frozen');
-    if(!scr||!scr.classList.contains('active')||!v||v.readyState<2||!v.videoWidth||(fr&&fr.classList.contains('active'))||parseFloat(getComputedStyle(v).opacity)<.5){ prev=null; streak=0; last=''; show(''); return; }
-    try{ ctx.drawImage(v,0,0,N,N); }catch(e){ return; }
-    const d=ctx.getImageData(0,0,N,N).data, g=new Float32Array(N*N);
-    let sum=0, glare=0, skin=0, skinTop=0, skinBot=0, diff=0;
-    for(let i=0,p=0;i<d.length;i+=4,p++){
-      const r=d[i],gg=d[i+1],b=d[i+2], y=0.299*r+0.587*gg+0.114*b; g[p]=y; sum+=y;
-      if(y>242) glare++;
-      if((r>95&&gg>40&&b>20&&r>gg&&r>b&&Math.abs(r-gg)>15&&r<250)||(r>60&&gg>30&&b>15&&r>gg&&r>b&&r-b>15&&r<200)){ skin++; if(p<N*N/2) skinTop++; else skinBot++; }
-      if(prev) diff+=Math.abs(y-prev[p]);
-    }
-    const tot=N*N, lum=sum/tot, motion=prev?diff/tot:0; prev=g;
-    let k='good';
-    if(lum<55) k='dark';
-    else if(lum>215||glare/tot>0.22) k='bright';
-    else if(motion>22) k='move';
-    else if(skin/tot<0.12) k='frame';
-    else if(skinTop/tot<0.04&&skinBot/tot>0.12) k='fingers';
-    // Rodoma tik pasikartojus 2 kartus iš eilės (be mirgėjimo); „puiku“ — trumpai
-    streak=(k===last)?streak+1:1; last=k;
-    if(streak<2) return;
-    if(k==='good'){ if(shown!=='good'&&shown!=='') goodUntil=Date.now()+2500; show(Date.now()<goodUntil?'good':''); return; }
-    show(k);
-  }
-  setInterval(check,600);
-  window._camHintCheck=check;
 })();
 </script>
 <script>
