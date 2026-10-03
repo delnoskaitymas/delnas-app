@@ -412,9 +412,9 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
   const cents = { asmenine: 1299, pora: 1999 };
-  let klauskC = 200; // dovanoje visada įskaičiuoti 3 klausimai (kaina pridedama prie analizės)
+  const klauskC = { asmenine: 200, pora: 0 }; // dovanoje visada 3 klausimai: asmeninėje +2 €, porų — nemokamai
   let promo = null; // −30 % pasiūlymas po analizės (?promo=KODAS, 24 val.) — taikomas analizės kainai
-  const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100) + klauskC) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k] + klauskC) + '</s>' : eur(cents[k] + klauskC);
+  const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100) + klauskC[k]) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k] + klauskC[k]) + '</s>' : eur(cents[k] + klauskC[k]);
   const prices = { get asmenine(){ return priceHtml('asmenine'); }, get pora(){ return priceHtml('pora'); } };
   let kind = params.get('tipas') === 'pora' ? 'pora' : (params.get('tipas') ? 'asmenine' : (season ? SEASONS[season].kind : 'asmenine'));
   function setKind(k){
@@ -438,7 +438,8 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   fetch('/price-info').then(r => r.json()).then(d => {
     if (d && d.active && d.active.amount) cents.asmenine = d.active.amount;
     if (d && d.pora && d.pora.amount) cents.pora = d.pora.amount;
-    if (d && typeof d.giftKlausk === 'number') klauskC = d.giftKlausk;
+    if (d && typeof d.giftKlausk === 'number') klauskC.asmenine = d.giftKlausk;
+    if (d && typeof d.giftKlauskPora === 'number') klauskC.pora = d.giftKlauskPora;
     showPrices();
   }).catch(() => {});
   function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = prices.pora; $('price').innerHTML = prices[kind]; }

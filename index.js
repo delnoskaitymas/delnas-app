@@ -2637,7 +2637,8 @@ app.get('/price-info', async (req, res) => {
       active: { amount: activePrice.unit_amount, currency: activePrice.currency },
       isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO,
       pora: { amount: PORA_PRICE_CENTS, currency: 'eur' },
-      giftKlausk: GIFT_KLAUSK_CENTS
+      giftKlausk: GIFT_KLAUSK_CENTS,
+      giftKlauskPora: GIFT_KLAUSK_PORA_CENTS
     };
     _priceInfoCacheAt = Date.now();
     res.json(_priceInfoCache);
@@ -3000,6 +3001,8 @@ const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
 const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
 // Dovanų kupone visada įskaičiuoti 3 „Klausk savo delnų“ klausimai — prie dovanos kainos pridedama
 const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
+// Porų dovanoje klausimai — nemokamas priedas (kaina lieka iki 20 €)
+const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
 const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1299', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
@@ -3772,6 +3775,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     // −30 % pasiūlymas po analizės (24 val.)
     const pr = getValidPromo(req.body && req.body.promo, 'dovana');
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
+    const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
     const base = appBaseUrl();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -3783,10 +3787,10 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
           product_data: { name: (kind === 'pora' ? 'DELNAS dovanų kuponas — Porų suderinamumas' : 'DELNAS dovanų kuponas — Gyvenimo žemėlapis') + (pr ? ` (−${pr.pct} %)` : '') }
         },
         quantity: 1
-      }, {
-        price_data: { currency: activePrice.currency, unit_amount: GIFT_KLAUSK_CENTS, product_data: { name: kind === 'pora' ? 'Klauskite savo delnų — 3 klausimai porai (dovanoje)' : 'Klausk savo delnų — 3 klausimai (dovanoje)' } },
+      }, ...(giftKlauskCents > 0 ? [{
+        price_data: { currency: activePrice.currency, unit_amount: giftKlauskCents, product_data: { name: kind === 'pora' ? 'Klauskite savo delnų — 3 klausimai porai (dovanoje)' : 'Klausk savo delnų — 3 klausimai (dovanoje)' } },
         quantity: 1
-      }],
+      }] : [])],
       locale: 'lt',
       customer_email: buyerEmail,
       metadata: {
