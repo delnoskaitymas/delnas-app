@@ -199,7 +199,7 @@ a{color:var(--gold)}
       <h1>Ką apie jūsų porą<br><em>pasakoja delnai?</em></h1>
     </div>
     <div class="gift-note hidden" id="gift-note"></div>
-    <p class="lead sm" id="lead">Nufotografuokite abiejų delnus — ir gaukite porų suderinamumo analizę: kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.</p>
+    <p class="lead sm" id="lead">Nufotografuokite delnus — ir gaukite porų suderinamumo analizę: kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.</p>
     <form class="card-form" id="pora-form" novalidate>
       <div class="row2">
         <label for="f-a">Tavo vardas</label>
@@ -311,7 +311,7 @@ a{color:var(--gold)}
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(d.fromName) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
-      $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite abiejų delnus. Mokėti nereikia.';
+      $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti →';
       document.querySelector('#pora-form .trust').textContent = '🎁 Apmokėta dovanų kuponu ' + d.code;
     } catch (e) { giftError('Nepavyko patikrinti dovanos kodo'); }
