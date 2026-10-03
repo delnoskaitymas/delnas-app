@@ -6355,7 +6355,7 @@ async function loadResultOffers(){
     if(d.bundleGift&&d.bundleGift.status==='active'){
       pora.href=d.bundleGift.link;
       pora.querySelector('b').textContent='Jūsų porų analizė jau apmokėta — pradėti →';
-      pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite abiejų delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
+      pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite savo delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
     } else if(d.bundle&&!pora.querySelector('.rb-deal')){
       pora.href='/pora?promo='+encodeURIComponent(d.bundle.code)+'&utm_source=app&utm_campaign=rinkinys';
       const s=document.createElement('span'); s.className='rb-deal';

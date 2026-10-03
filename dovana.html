@@ -426,7 +426,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     $('form-lead').textContent = pora ? 'Porų suderinamumo analizė pagal abiejų delnus — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'Ievai ir Tomui' : 'pvz. Ievai';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
-    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja abiejų delnus ir per kelias minutes gauna suderinamumo įvertį bei 7 skyrių analizę su PDF. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.';
+    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja savo delnus ir per kelias minutes gauna suderinamumo įvertį bei 7 skyrių analizę su PDF. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF. Mokėti nereikės.';
     $('price').innerHTML = prices[k];
     document.title = pora ? 'DELNAS — Porų suderinamumo dovana' : 'DELNAS — Dovanų kuponas';
     try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '') + (params.get('promo') ? (pora ? '&' : '?') + 'promo=' + encodeURIComponent(params.get('promo')) : '')); } catch (e) {}
