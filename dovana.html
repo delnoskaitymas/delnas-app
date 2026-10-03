@@ -201,7 +201,7 @@ body.card-view #v-card{margin:auto 0}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
-.sched-chk{margin-top:14px!important;color:var(--gold2)!important;font-size:15px!important;font-weight:500;align-items:center!important}
+.sched-chk{margin-top:14px!important;color:var(--gold2)!important;font-size:15px!important;font-weight:500;align-items:center!important;white-space:nowrap}
 .sched-chk input{width:20px!important;height:20px!important;margin-top:0!important}
 @media (max-height:700px){ .sched-chk{margin-top:8px!important;font-size:14px!important} #v-form textarea{height:40px;min-height:40px} #v-form .trust{display:none} }
 .sched{margin-top:4px}
@@ -256,7 +256,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       </div>
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
-      <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui el. paštu nurodytą dieną</span></label>
+      <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui nurodytą dieną</span></label>
       <div class="sched hidden" id="sched">
         <label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off">
         <label for="f-y">Kada išsiųsti <span class="opt">(Lietuvos laiku)</span></label>
