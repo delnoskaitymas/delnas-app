@@ -3844,7 +3844,7 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
     const first = typeof name === 'string' ? name.trim().split(/\s+/)[0].slice(0, 30) : '';
     const fb = readJson(FEEDBACK_FILE, { items: [] });
     const id = crypto.randomBytes(8).toString('hex');
-    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
+    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
     const approve = item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
     mailer.sendMail({
