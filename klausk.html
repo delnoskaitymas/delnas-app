@@ -55,7 +55,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
 <div class="wrap">
   <div class="brand">DELNAS</div>
   <div class="hero"><i></i></div>
-  <h1>Klausk savo <em>delnų</em></h1>
+  <h1 id="h1">Klausk savo <em>delnų</em></h1>
   <p class="lead" id="lead">Tikrinamas užsakymas…</p>
 
   <div id="status" class="status hidden"></div>
@@ -64,7 +64,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   <div id="ask-wrap" class="hidden">
     <div class="left" id="left"></div>
     <form class="ask" id="ask" novalidate>
-      <label for="q">Tavo klausimas</label>
+      <label for="q" id="qlabel">Tavo klausimas</label>
       <textarea id="q" maxlength="400" placeholder="pvz. Ar man verta keisti darbą?"></textarea>
       <div class="hint"><span>Kuo konkretesnis klausimas — tuo tikslesnis atsakymas</span><span id="cnt">0/400</span></div>
       <div class="chips" id="chips">
@@ -81,10 +81,10 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   </div>
 
   <div id="all-done" class="hidden">
-    <div class="done">✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir tavo el. paštu.</div>
+    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir tavo el. paštu.</div>
   </div>
   <a class="link" href="/">← Grįžti į DELNAS</a>
-  <p class="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
+  <p class="fine" id="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
 </div>
 <script>
 (function(){
@@ -107,7 +107,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
     $('ask-wrap').classList.toggle('hidden', left <= 0);
     $('all-done').classList.toggle('hidden', left > 0);
     $('note').style.display = left === 3 ? '' : 'none';
-    $('left').textContent = left === 3 ? 'Gali užduoti 3 klausimus' : 'Liko klausimų: ' + left;
+    $('left').textContent = left === 3 ? (window._klKind === 'pora' ? 'Galite užduoti 3 klausimus' : 'Gali užduoti 3 klausimus') : 'Liko klausimų: ' + left;
   }
   function status(html){ $('status').innerHTML = html; $('status').classList.remove('hidden'); }
 
@@ -131,7 +131,21 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
         status('Jei manai, kad tai klaida — parašyk info@delnaskaitymas.lt');
         return;
       }
-      $('lead').textContent = (d.name ? d.name + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize: stiprybėmis, kryptimi ir kliūtimis.';
+      if (d.kind === 'pora') {
+        // Porų klausimai — „jūs“ forma ir porai skirti pavyzdžiai
+        document.title = 'DELNAS — Klauskite savo delnų';
+        $('h1').innerHTML = 'Klauskite savo <em>delnų</em>';
+        $('lead').textContent = (d.name ? d.name + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų porų suderinamumo analize.';
+        $('qlabel').textContent = 'Jūsų klausimas';
+        q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
+        $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
+        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir jūsų el. paštu.';
+        document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
+        $('fine').innerHTML = 'Atsakymai remiasi jūsų porų suderinamumo analize. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
+        window._klKind = 'pora';
+      } else {
+        $('lead').textContent = (d.name ? d.name + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize: stiprybėmis, kryptimi ir kliūtimis.';
+      }
       (d.qa || []).forEach(x => card(x, false));
       left = d.left; refresh();
     } catch (e) {
