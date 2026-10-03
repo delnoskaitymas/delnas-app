@@ -103,12 +103,13 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const paras = t => String(t || '').split(/\n+/).filter(x => x.trim()).map(x => '<p>' + esc(x.trim()) + '</p>').join('');
   let left = 0, n = 0;
+  const ORD = ['Pirmas', 'Antras', 'Trečias', 'Ketvirtas', 'Penktas'];
 
   function card(qa, isNew){
     n++;
     const d = document.createElement('div');
     d.className = 'qa' + (isNew ? ' new' : '');
-    d.innerHTML = '<div class="lbl">✦ ' + n + ' klausimas</div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
+    d.innerHTML = '<div class="lbl">✦ ' + ORD[n - 1] + ' klausimas</div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
     $('list').appendChild(d);
     return d;
   }
@@ -181,7 +182,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
     const question = q.value.trim(); if (question.length < 5) return;
     $('err').style.display = 'none'; $('go').disabled = true;
     // Laukelis paslepiamas — jo vietoje sukasi ratukas su užduotu klausimu
-    $('wait-lbl').textContent = '✦ ' + (n + 1) + ' klausimas'; $('wait-q').textContent = '„' + question + '“';
+    $('wait-lbl').textContent = '✦ ' + ORD[n] + ' klausimas'; $('wait-q').textContent = '„' + question + '“';
     $('ask-wrap').classList.add('hidden'); $('wait').classList.remove('hidden');
     setTimeout(() => $('wait').scrollIntoView({ behavior:'smooth', block:'center' }), 60);
     try {

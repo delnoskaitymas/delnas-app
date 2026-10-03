@@ -3621,7 +3621,7 @@ async function sendKlauskDigest(id) {
     if (!cur || !cur.email || !cur.digestPending || !(cur.qa || []).length) return;
     const pora = cur.kind === 'pora', n = cur.qa.length, left = KLAUSK_MAX_QUESTIONS - n;
     const para = t => escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join('');
-    const items = cur.qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${i + 1} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
+    const items = cur.qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS'][i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
     const btn = left > 0 ? `Užduoti kitą klausimą (liko ${left}) →` : 'Peržiūrėti atsakymus svetainėje →';
     // Pažymima prieš siunčiant — kad vienas atsakymas nebūtų išsiųstas du kartus
     cur.digestPending = false; cur.digestSentAt = Date.now(); cur.digestCount = n;
