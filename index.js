@@ -3035,6 +3035,30 @@ function clampScore(n) {
   return Math.max(55, Math.min(97, v));
 }
 
+// Lietuviškų vardų linksniai porų tekstams — AI duodamos tikslios formos, kad nerašytų
+// „pasakyk Darius“ ar „Ugne randa Darius ramybę“. Nežinomos galūnės — grąžinama tuščia eilutė.
+function ltNameForms(name) {
+  const n = String(name || '').trim();
+  if (!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return '';
+  const end = (k) => n.toLowerCase().endsWith(k);
+  const soft = (b) => b.replace(/t$/, 'č').replace(/d$/, 'dž');
+  let f = null;
+  if (end('ius')) { const b = n.slice(0, -2); f = [b + 'aus', b + 'ui', b + 'ų', b + 'umi', b + 'au']; }
+  else if (end('us')) { const b = n.slice(0, -2); f = [b + 'aus', b + 'ui', b + 'ų', b + 'umi', b + 'au']; }
+  else if (end('as')) { const b = n.slice(0, -2); f = [b + 'o', b + 'ui', b + 'ą', b + 'u', b + 'ai']; }
+  else if (end('is') || end('ys')) { const b = n.slice(0, -2); f = [soft(b) + 'io', soft(b) + 'iui', b + 'į', soft(b) + 'iu', b + (end('ys') ? 'y' : 'i')]; }
+  else if (end('ė') || end('e')) { const b = n.slice(0, -1); f = [b + 'ės', b + 'ei', b + 'ę', b + 'e', b + 'e']; }
+  else if (end('a')) { const b = n.slice(0, -1); f = [b + 'os', b + 'ai', b + 'ą', b + 'a', b + 'a']; }
+  if (!f) return '';
+  return `${n}: kilm. ${f[0]}, naud. ${f[1]}, gal. ${f[2]}, įnag. ${f[3]}, šauksm. ${f[4]}`;
+}
+// Bendros taisyklės apie vardus porų tekstuose (analizė ir „Klauskite“)
+function poraNameRules(A, B) {
+  const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
+  return `- VARDUS NAUDOK SAIKINGAI — tekstas turi skambėti profesionaliai, taktiškai ir natūraliai, o ne komiškai. Viename skyriuje kiekvieną vardą naudok ne daugiau kaip 1–2 kartus. Dažniausiai rašyk apie jus kaip porą („jūs abu“, „jums abiem“, „vienas iš jūsų“, „kitas“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk abiem kartu („pasakykite vienas kitam…“). Trumpose įžvalgose vardų nenaudok.
+- Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
+}
+
 async function runCoupleAnalysis(photos, nameA, nameB) {
   const A = nameA || 'Pirmasis partneris', B = nameB || 'Antrasis partneris';
   const img = p => ({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
@@ -3056,7 +3080,8 @@ KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
 4. Jei kurios nors linijos nuotraukoje neįžiūri — rašyk pagal tai, kas matoma aiškiausiai, ir nieko neišsigalvok.
 
 TAISYKLĖS:
-- Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku. Kai kalbi apie vieną iš jų — vadink vardu (${A} arba ${B}), vardą naudok tokį, koks parašytas, ir derink linksnį natūraliai.
+- Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku.
+${poraNameRules(A, B)}
 - Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos (pvz. „pasiruošęs/-usi“); rink neutralias formas.
 - Skyrių tekstuose (traukia…patarimai) PATIEMS fiziniams požymiams vietos neskirk — rašyk išvadas apie jų santykį. Fiziniai požymiai aprašomi TIK lauke „palyginimai“.
 - Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
@@ -3082,7 +3107,7 @@ SKYRIAI:
 
 Taip pat:
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
-- izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
+- izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma, be vardų — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
 
 PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
 
@@ -3526,7 +3551,8 @@ ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : 
 KLAUSIMAS: ${question}
 
 KAIP ATSAKYTI:
-- 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Kai kalbi apie vieną — vadink vardu (${A} arba ${B}), linksnį derink natūraliai. Pradėk iškart nuo esmės.
+- 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
+${poraNameRules(A, B)}
 - Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kuo vienas kitą papildote, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
 - Pabaigoje — 2–3 aiškūs, praktiški žingsniai jums abiem (sklandžiu tekstu, ne sąrašu).
 - Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos; rink neutralias formas. Apie delnus rašyk daugiskaita.
