@@ -2732,7 +2732,7 @@ SKYRIAI:
 - traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
 - bendravimas (Kaip bendraujate ir sprendžiate nesutarimus): jūsų bendravimo stiliai, kaip jie dera, kaip geriausiai išspręsti nesutarimus
 - papildo (Kuo vienas kitą papildote): kur vieno stiprybė užpildo kito silpnesnę vietą
-- trintis (Kur gali kilti trinties): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
+- trintis (Kur gali kilti trintis): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
 - ateitis (Požiūris į pinigus, namus ir ateitį): kur jūsų požiūriai sutampa ir kur verta susitarti
 - stiprybe (Jūsų poros stiprybė): kas daro jūsų porą išskirtinę
 - patarimai (Patarimai jums abiem): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
