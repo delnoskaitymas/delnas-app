@@ -3610,6 +3610,47 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// ═══ „Klausk“ atsakymai el. paštu — visi viename laiške ═══
+const KLAUSK_DIGEST_QUIET_MS = Number(process.env.KLAUSK_DIGEST_QUIET_MS) || 30 * 60 * 1000;
+const klauskDigestSending = new Set();
+async function sendKlauskDigest(id) {
+  if (klauskDigestSending.has(id)) return;
+  klauskDigestSending.add(id);
+  try {
+    const orders = loadKlauskOrders(), cur = orders[id];
+    if (!cur || !cur.email || !cur.digestPending || !(cur.qa || []).length) return;
+    const pora = cur.kind === 'pora', n = cur.qa.length, left = KLAUSK_MAX_QUESTIONS - n;
+    const para = t => escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join('');
+    const items = cur.qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${i + 1} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
+    const btn = left > 0 ? `Užduoti kitą klausimą (liko ${left}) →` : 'Peržiūrėti atsakymus svetainėje →';
+    // Pažymima prieš siunčiant — kad vienas atsakymas nebūtų išsiųstas du kartus
+    cur.digestPending = false; cur.digestSentAt = Date.now(); cur.digestCount = n;
+    saveKlauskOrders(orders);
+    await mailer.sendMail({
+      from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+      to: cur.email,
+      subject: `✋ ${pora ? 'Jūsų' : 'Tavo'} delnų ${n === 1 ? 'atsakymas' : 'atsakymai'}${n > 1 ? ` (${n})` : ''}${cur.name ? ' — ' + escapeHtml(cur.name) : ''}`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
+    });
+    console.log(`[klausk] suvestinė (${n} atsak.) išsiųsta į ${cur.email}`);
+  } catch (e) {
+    // Nepavyko išsiųsti — bandysime kitą kartą
+    try { const o = loadKlauskOrders(); if (o[id]) { o[id].digestPending = true; saveKlauskOrders(o); } } catch (_) {}
+    throw e;
+  } finally { klauskDigestSending.delete(id); }
+}
+function processKlauskDigests() {
+  try {
+    const now = Date.now();
+    for (const [id, o] of Object.entries(loadKlauskOrders())) {
+      if (!o.digestPending || !(o.qa || []).length) continue;
+      const lastAt = o.qa[o.qa.length - 1].at || 0;
+      if (now - lastAt >= KLAUSK_DIGEST_QUIET_MS) sendKlauskDigest(id).catch(e => console.error('[klausk] suvestinės laiško klaida:', e.message));
+    }
+  } catch (e) { console.error('[klausk] processKlauskDigests klaida:', e.message); }
+}
+setInterval(processKlauskDigests, Math.min(5 * 60 * 1000, KLAUSK_DIGEST_QUIET_MS));
+
 const klauskInFlight = new Set();
 app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
   const { s: id, question } = req.body || {};
@@ -3626,15 +3667,11 @@ app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
     const a = await answerKlausk(o, q);
     const orders = loadKlauskOrders(), cur = orders[id];
     cur.qa = [...(cur.qa || []), { q, a, at: Date.now() }];
+    // Visi atsakymai el. paštu VIENU laišku: iš karto, kai užduoti visi 3, arba
+    // po KLAUSK_DIGEST_QUIET_MS tylos (jei daugiau klausimų neužduodama) — žr. processKlauskDigests
+    cur.digestPending = true;
     saveKlauskOrders(orders);
-    // Atsakymas ir el. paštu (kad liktų)
-    const para = t => escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join('');
-    mailer.sendMail({
-      from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
-      to: cur.email,
-      subject: `✋ ${cur.kind === 'pora' ? 'Jūsų' : 'Tavo'} delnų atsakymas: „${q.slice(0, 60)}${q.length > 60 ? '…' : ''}“`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:18px">${cur.kind === 'pora' ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="font-size:13px;color:#d4a843;margin-bottom:6px">${cur.kind === 'pora' ? 'Jūsų klausimas' : 'Tavo klausimas'}</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:18px">„${escapeHtml(q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(a)}</div><div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${cur.qa.length < KLAUSK_MAX_QUESTIONS ? `Užduoti kitą klausimą (liko ${KLAUSK_MAX_QUESTIONS - cur.qa.length}) →` : 'Peržiūrėti visus atsakymus →'}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
-    }).catch(e => console.error('[klausk] laiško klaida:', e.message));
+    if (cur.qa.length >= KLAUSK_MAX_QUESTIONS) sendKlauskDigest(id).catch(e => console.error('[klausk] suvestinės laiško klaida:', e.message));
     res.json({ ok: true, q, a, left: KLAUSK_MAX_QUESTIONS - cur.qa.length });
   } catch (err) {
     console.error('/klausk/ask klaida:', err);

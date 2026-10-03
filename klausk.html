@@ -90,7 +90,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
     <div class="think"><div class="orb"></div>Delnai atsako… tai užtrunka apie 20–40 sekundžių</div></div>
 
   <div id="all-done" class="hidden">
-    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir tavo el. paštu.</div>
+    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
   </div>
   <a class="link" href="/">← Grįžti į DELNAS</a>
   <p class="fine" id="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
@@ -149,7 +149,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
         $('qlabel').textContent = 'Jūsų klausimas';
         q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
-        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Atsakymai išsiųsti ir jūsų el. paštu.';
+        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
         $('fine').innerHTML = 'Atsakymai remiasi jūsų porų suderinamumo analize. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
