@@ -111,7 +111,7 @@ PORT = 3000
 
 ## Daugiau pajamų ir patogumo
 
-- **Nebaigtas mokėjimas:** užsakymo formoje (ir /pora) — eilutė „Jei užsakymo nebaigsi, atsiųsime vieną priminimą su −15 %. Nesiųsti“ (be varnelės; „Nesiųsti“ — atsisakymas). Jei per ~1 val. neapmokėta, išsiunčiamas vienas laiškas su kodu (galioja 24 val., ne dažniau kaip kartą per 30 d.). Laiko tarpą galima keisti kintamuoju `ABANDON_DELAY_MIN` (numatyta 60), nuolaidą — `BACK_DISCOUNT_PCT` (15).
+- **Nebaigtas mokėjimas:** užsakymo formoje (ir /pora) — eilutė „Jei užsakymo nebaigsi, atsiųsime vieną priminimą. Nesiųsti“ (nuolaida minima tik pačiame laiške) (be varnelės; „Nesiųsti“ — atsisakymas). Jei per ~1 val. neapmokėta, išsiunčiamas vienas laiškas su kodu (galioja 24 val., ne dažniau kaip kartą per 30 d.). Laiko tarpą galima keisti kintamuoju `ABANDON_DELAY_MIN` (numatyta 60), nuolaidą — `BACK_DISCOUNT_PCT` (15).
 - **Rinkinys „Asmeninė + porų“:** mokėjimo ekrane — „Pridėti porų suderinamumą“ už `PORA_BUNDLE_CENTS` (numatyta 1299 = 12,99 €). Apmokėjus — porų kuponas el. paštu ir rezultato ekrane. Tą pačią kainą asmeninės analizės pirkėjas mato ir rezultato ekrane („Jums dviem“).
 - **Pasiūlymas po analizės:** rezultato ekrane „🎁 Padovanok“ — −30 % (`ONCE_DISCOUNT_PCT`) 24 val. su laikmačiu.
 - **Mano analizės (/mano):** „Išsaugoti ir priminti“ rezultato ekrane išsaugo analizę (be nuotraukų, 12 mėn.). Nuoroda į visas analizes siunčiama el. paštu (7 d.), analizę galima ištrinti.
