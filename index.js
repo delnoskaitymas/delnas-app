@@ -704,7 +704,7 @@ const ADMIN_EMAIL = 'info@delnaskaitymas.lt';
 // apačioje, kad el. laiškas ir PDF failas jaustųsi kaip viena visuma
 // (žr. buildResultPdfDoc() kliento pusėje — ten naudojama TA PATI
 // auksinė spalva #d4a843 ir tas pats "delnaskaitymas.lt" paminėjimas).
-const EMAIL_FOOTER_HTML = `<div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(212,168,67,.2);text-align:center"><a href="https://delnaskaitymas.lt" style="color:#d4a843;text-decoration:none;font-size:12px;letter-spacing:.04em">delnaskaitymas.lt</a></div>`;
+const EMAIL_FOOTER_HTML = `<div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(212,168,67,.2);text-align:center"><a href="https://www.delnaskaitymas.lt" style="color:#d4a843;text-decoration:none;font-size:12px;letter-spacing:.04em">www.delnaskaitymas.lt</a></div>`;
 
 // ═══════════════════════════════════════════════════════════════════════
 // EL. LAIŠKŲ SIUNTIMAS PER RESEND HTTP API (nebe SMTP/nodemailer)
@@ -2273,7 +2273,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       subject: isGift
         ? `${name ? escapeHtml(name) + ' — ' : ''}tavo dovana: gyvenimo žemėlapis paruoštas 🎁`
         : `${name ? escapeHtml(name) + ' — ' : ''}Mokėjimas gautas, tavo gyvenimo žemėlapis paruoštas ✦`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(name) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
@@ -2809,7 +2809,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
     <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">${pora ? 'Sužinoti, kaip derate poroje →' : 'Atskleisti savo žemėlapį →'}</a></div>
     <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">delnaskaitymas.lt/kodas&nbsp;↗</a>, tada ${pora ? 'abu nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
+      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas&nbsp;↗</a>, tada ${pora ? 'abu nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
       Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
@@ -3865,7 +3865,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
     const gift = store.codes[code];
     const status = giftStatus(gift);
     if (status === 'not_found') return res.status(404).json({ paid: false, status, error: 'Dovanos kodas nerastas' });
-    if (gift.kind === 'pora') return res.status(409).json({ paid: false, status, kind: 'pora', error: 'Tai porų suderinamumo kuponas — jį panaudokite adresu delnaskaitymas.lt/pora' });
+    if (gift.kind === 'pora') return res.status(409).json({ paid: false, status, kind: 'pora', error: 'Tai porų suderinamumo kuponas — jį panaudokite adresu www.delnaskaitymas.lt/pora' });
     if (status === 'expired') return res.status(410).json({ paid: false, status, error: 'Dovanos kodo galiojimas baigėsi' });
     if (status === 'void') return res.status(410).json({ paid: false, status, error: 'Dovanos kodas nebegalioja' });
     if (status === 'redeemed') {
