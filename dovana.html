@@ -201,21 +201,27 @@ body.card-view #v-card{margin:auto 0}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
-.sched-chk{margin-top:12px!important;color:var(--gold2)!important}
-@media (max-height:700px){ .sched-chk{margin-top:6px!important;font-size:11.5px!important} #v-form textarea{height:40px;min-height:40px} #v-form .trust{display:none} }
+.sched-chk{margin-top:14px!important;color:var(--gold2)!important;font-size:15px!important;font-weight:500;align-items:center!important}
+.sched-chk input{width:20px!important;height:20px!important;margin-top:0!important}
+@media (max-height:700px){ .sched-chk{margin-top:8px!important;font-size:14px!important} #v-form textarea{height:40px;min-height:40px} #v-form .trust{display:none} }
 .sched{margin-top:4px}
+/* Siuntimo data ir valanda: metai – mėnuo – diena, valanda (Lietuvos laiku) */
+.dt{display:grid;grid-template-columns:1.35fr auto 1fr auto 1fr 1.3fr;gap:6px;align-items:center}
+.dt span{color:var(--faint);text-align:center}
+.dt select{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 6px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
+.dt select#f-h{margin-left:6px}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
 .gcard .season{font:italic 400 19px 'Playfair Display',serif;color:var(--gold2);margin-top:10px;min-height:0}
 .gcard .season:empty{display:none}
 /* Dovanos tipo pasirinkimas: asmeninė / porų */
 .kind{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
-.kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:9px 6px 8px;cursor:pointer;
-  font:500 13px/1.25 'DM Sans',sans-serif;transition:all .2s}
-.kind button small{display:block;font-size:11.5px;color:var(--faint);margin-top:2px}
+.kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:12px 6px 11px;cursor:pointer;
+  font:600 15.5px/1.25 'DM Sans',sans-serif;transition:all .2s}
+.kind button small{display:block;font-size:14px;font-weight:500;color:var(--faint);margin-top:3px}
 .kind button.on{background:rgba(212,168,67,.13);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 14px rgba(212,168,67,.18)}
 .kind button.on small{color:var(--gold)}
-@media (max-height:700px){ .kind button{padding:6px 4px;font-size:12.5px} .kind button small{display:inline;margin:0 0 0 5px;font-size:11.5px} #v-form .kind{margin-bottom:0} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
+@media (max-height:700px){ .kind button{padding:9px 4px;font-size:14.5px} .kind button small{display:inline;margin:0 0 0 6px;font-size:13.5px} #v-form .kind{margin-bottom:0} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
 .hero2{display:flex;justify-content:center}
 .hero2 .hero{margin:0 -8px!important}
 .hero2 .hero:last-child i{transform:scaleX(-1)}
@@ -252,13 +258,15 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
       <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui el. paštu nurodytą dieną</span></label>
       <div class="sched hidden" id="sched">
-        <div class="row2">
-          <div><label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off"></div>
-          <div><label for="f-date">Kada išsiųsti</label><input type="date" id="f-date"></div>
-        </div>
+        <label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off">
+        <label for="f-y">Kada išsiųsti <span class="opt">(Lietuvos laiku)</span></label>
+        <div class="dt"><select id="f-y" aria-label="Metai"></select><span>–</span><select id="f-m" aria-label="Mėnuo"></select><span>–</span><select id="f-d" aria-label="Diena"></select><select id="f-h" aria-label="Valanda"></select></div>
+        <input type="hidden" id="f-date">
       </div>
-      <label for="f-email">Tavo el. paštas</label>
-      <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
+      <div id="buyer-wrap">
+        <label for="f-email">Tavo el. paštas</label>
+        <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
+      </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span> →</button>
       <div class="err" id="form-err"></div>
@@ -373,7 +381,8 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   // ---------- 1. Forma ----------
   function validForm(){
     const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-    if ($('f-sched') && $('f-sched').checked && (!em($('f-to-email').value.trim()) || !$('f-date').value)) return false;
+    // Siunčiant gavėjui — užtenka gavėjo el. pašto ir datos; kitaip — reikia pirkėjo el. pašto
+    if ($('f-sched') && $('f-sched').checked) return $('f-ok').checked && em($('f-to-email').value.trim()) && !!$('f-date').value;
     return $('f-ok').checked && em($('f-email').value.trim());
   }
   function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
@@ -404,10 +413,34 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   }
   // Planuotas siuntimas gavėjui
   const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
-  $('f-date').min = todayStr; $('f-date').value = todayStr;
-  { const mx = new Date(); mx.setFullYear(mx.getFullYear() + 1); $('f-date').max = mx.toISOString().slice(0, 10); }
-  $('f-sched').addEventListener('change', () => { $('sched').classList.toggle('hidden', !$('f-sched').checked); refreshBtn(); });
-  $('f-to-email').addEventListener('input', refreshBtn); $('f-date').addEventListener('input', refreshBtn);
+  const maxStr = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
+  const pad = n => String(n).padStart(2, '0');
+  const opt = (v, t) => '<option value="' + v + '">' + t + '</option>';
+  { const y = new Date().getFullYear(); $('f-y').innerHTML = opt(y, y) + opt(y + 1, y + 1); }
+  $('f-m').innerHTML = Array.from({ length: 12 }, (_, i) => opt(pad(i + 1), pad(i + 1))).join('');
+  $('f-h').innerHTML = Array.from({ length: 24 }, (_, i) => opt(i, pad(i) + ':00')).join('');
+  { const t = new Date(); $('f-m').value = pad(t.getMonth() + 1); $('f-h').value = String(Math.min(23, Math.max(8, t.getHours() + 1))); }
+  function fillDays(){
+    const y = +$('f-y').value, m = +$('f-m').value, n = new Date(y, m, 0).getDate(), cur = $('f-d').value || pad(new Date().getDate());
+    $('f-d').innerHTML = Array.from({ length: n }, (_, i) => opt(pad(i + 1), pad(i + 1))).join('');
+    $('f-d').value = +cur > n ? pad(n) : cur;
+  }
+  function syncDate(){
+    fillDays();
+    const v = $('f-y').value + '-' + $('f-m').value + '-' + $('f-d').value;
+    $('f-date').value = (v >= todayStr && v <= maxStr) ? v : '';
+    ['f-y','f-m','f-d'].forEach(id => $(id).style.borderColor = $('f-date').value ? '' : '#ff9b8a');
+    refreshBtn();
+  }
+  ['f-y','f-m','f-d','f-h'].forEach(id => $(id).addEventListener('change', syncDate));
+  syncDate();
+  $('f-sched').addEventListener('change', () => {
+    const on = $('f-sched').checked;
+    $('sched').classList.toggle('hidden', !on);
+    $('buyer-wrap').classList.toggle('hidden', on); // siunčiant gavėjui savo el. pašto rašyti nereikia
+    refreshBtn();
+  });
+  $('f-to-email').addEventListener('input', refreshBtn);
 
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
@@ -464,7 +497,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ kind, season, promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, season, promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-sched').checked ? '' : $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
