@@ -147,9 +147,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   background:radial-gradient(circle,rgba(212,168,67,.18) 0%,rgba(212,168,67,.06) 40%,transparent 70%);animation:prHalo 4s ease-in-out infinite}
 @keyframes prHalo{50%{opacity:.55;transform:translateX(-50%) scale(1.08)}}
 .pr-orbs{position:relative;z-index:1}
-.pr-spark{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff3cf;
-  box-shadow:0 0 12px 4px rgba(240,201,106,.9),0 0 30px 10px rgba(212,168,67,.45);animation:prSpark 3s ease-in-out infinite;z-index:3}
-@keyframes prSpark{0%,100%{transform:scale(.6);opacity:.6}50%{transform:scale(1.15);opacity:1}}
 .pr-hero .pora-ring,.pr-hero .result-name,.pr-hero .result-subtitle{position:relative;z-index:1}
 .pr-level{font-family:'Playfair Display',serif;font-style:italic;font-size:20px;color:var(--gold2);margin:-2px 0 10px;min-height:26px;
   text-shadow:0 0 14px rgba(240,201,106,.35);opacity:0;transform:translateY(6px);transition:opacity .8s ease,transform .8s ease}
@@ -1004,7 +1001,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-pora-result" style="background:var(--bg)">
   <div class="pr-hero" style="text-align:center;padding:40px 16px 18px">
     <div class="pr-halo"></div>
-    <div class="pora-orbs pr-orbs" style="margin-bottom:18px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div><div class="pr-spark"></div></div>
+    <div class="pora-orbs pr-orbs" style="margin-bottom:18px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
     <div class="result-subtitle" style="margin-bottom:8px">Porų suderinamumas pagal delnus</div>
     <div class="result-name" id="pora-names"></div>
     <div class="pora-ring">
