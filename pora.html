@@ -166,7 +166,22 @@ a{color:var(--gold)}
 .gift-note i{display:block;font-family:'Playfair Display',serif;font-size:14px;color:var(--gold2);margin-top:4px}
 .gift-note span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .hero2 .hero{width:78px;height:78px;margin:0 -8px}
-.hero2 .hero:last-child i{transform:scaleX(-1)}
+.hero2 .hero:nth-child(2) i{transform:scaleX(-1)}
+.hero2{position:relative}
+.hero2::before{content:"";position:absolute;left:50%;top:50%;width:230px;height:230px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(212,168,67,.2) 0%,rgba(212,168,67,.06) 45%,transparent 70%);animation:halo 4s ease-in-out infinite}
+@keyframes halo{50%{opacity:.5;transform:translate(-50%,-50%) scale(1.1)}}
+.hero2 .hero:nth-child(1){animation:hl 3s ease-in-out infinite}
+.hero2 .hero:nth-child(2){animation:hr 3s ease-in-out infinite}
+@keyframes hl{50%{transform:translateX(5px)}}
+@keyframes hr{50%{transform:translateX(-5px)}}
+.hero2 .spark{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff3cf;z-index:2;
+  box-shadow:0 0 10px 4px rgba(240,201,106,.9),0 0 26px 9px rgba(212,168,67,.45);animation:spk 3s ease-in-out infinite}
+@keyframes spk{0%,100%{transform:scale(.6);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+.gets{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.gets li{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;line-height:1.4}
+.gets li b{color:var(--gold2);font-weight:500}
+.mini-radar{display:block;width:150px;margin:-4px auto 4px}
 </style>
 </head>
 <body class="form-view">
@@ -175,7 +190,7 @@ a{color:var(--gold)}
 
   <section id="v-form">
     <div class="intro">
-      <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
+      <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div><span class="spark"></span></div>
       <h1>Ką apie jūsų porą<br><em>pasakoja delnai?</em></h1>
     </div>
     <div class="gift-note hidden" id="gift-note"></div>
@@ -194,7 +209,7 @@ a{color:var(--gold)}
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
-    <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
+    <button type="button" class="how-link" id="how-open">✦ Ką gausite ir kaip tai veikia?</button>
     <a class="how-link" id="gift-link" href="/dovana?tipas=pora" style="width:fit-content;margin-top:2px">🎁 Padovanoti porai</a>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
@@ -218,10 +233,22 @@ a{color:var(--gold)}
         <div class="num">03</div>
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
         <h3>Gaukite <em>analizę</em></h3>
-        <p>Suderinamumo įvertis ir 7 skyriai apie jūsų porą — ekrane ir PDF el. paštu.</p>
+        <p>Per kelias minutes — ekrane ir PDF el. paštu.</p>
+        <ul class="gets">
+          <li>💞 <span><b>Suderinamumo įvertis</b> ir jūsų ryšio lygis</span></li>
+          <li>✦ <span><b>Ryšio žemėlapis</b> — 6 santykių sritys</span></li>
+          <li>✋ <span><b>Delnai greta</b> — ką rodo jūsų linijos</span></li>
+          <li>📖 <span><b>7 skyriai</b> ir patarimai jums abiem</span></li>
+        </ul>
+      </div>
+      <div class="slide">
+        <div class="num">04</div>
+        <svg class="mini-radar" viewBox="0 0 150 136" aria-hidden="true"><polygon points="75.0,42.0 97.5,55.0 97.5,81.0 75.0,94.0 52.5,81.0 52.5,55.0" fill="none" stroke="rgba(212,168,67,.15)" stroke-width="1"/><polygon points="75.0,16.0 120.0,42.0 120.0,94.0 75.0,120.0 30.0,94.0 30.0,42.0" fill="none" stroke="rgba(212,168,67,.35)" stroke-width="1"/><polygon points="75.0,23.3 106.5,49.8 116.4,91.9 75.0,101.3 32.2,92.7 39.0,47.2" fill="rgba(240,201,106,.35)" stroke="#f0c96a" stroke-width="1.6" stroke-linejoin="round"/><text x="75" y="74" text-anchor="middle" font-family="Playfair Display,serif" font-size="20" fill="#fff0c4">86%</text></svg>
+        <h3>Jūsų <em>ryšio žemėlapis</em></h3>
+        <p>Palyginę abiejų jūsų delnų linijas, formą ir pirštus, įvertiname jausmus, bendravimą, vertybes, kasdienybę, trauką ir ateities planus — ir parodome, kur jūs stipriausi.</p>
       </div>
     </div>
-    <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+    <div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i></div>
     <p class="fine" style="margin-top:16px">Pramoginio pobūdžio paslauga, skirta 18+ · info@delnaskaitymas.lt</p>
     </div></div>
   </section>
