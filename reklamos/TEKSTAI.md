@@ -158,7 +158,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 
 **H — su drauge (14, 15)**
 > Merginų vakarui — kažkas naujo ✨
-> Kiekviena gaunate savo asmeninę analizę — palyginkit, kuri iš jūsų lyderė, o kuri svajotoja 👭
+> Nufotografuokit delnus — kiekviena atrasit savo gyvenimo žemėlapį. O tada smagiausia: kuri iš jūsų lyderė, o kuri svajotoja? 👭
 > 👉 https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems
 
 **I — ruduo (16)**
@@ -169,12 +169,12 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - Tavo ateitis — tavo rankose
 - Linijos nemeluoja
 - Kas tau lemta?
-- Kiekviena — savo analizė. Palyginkit!
+- Kuri iš jūsų lyderė? ✨
 - Ruduo — laikas pokyčiams
 
 > Pastaba (atnaujinta): dovanų kuponai jau yra (delnaskaitymas.lt/dovana) — dovanų reklamas vesk į /dovana. „Draugių“ reklamose (14, 15) kiekviena draugė vis tiek fotografuoja ir moka pati, nebent kuponą nuperka kita.
 >
-> **Draugių reklamos (14, 15, 32–36, video „draugėms“):** atskiros „draugių palyginimo“ analizės nėra — kiekviena draugė užsisako savo asmeninę analizę, o palygina pačios. Todėl tekstuose visada aiškiai: „Kiekviena gaunate savo analizę“. Nuorodoje naudok `utm_campaign=draugems` — admin statistikoje „Iš kur atėjo“ matysi, kiek pirkimų atnešė būtent šios reklamos. Jei atneš daug — verta kurti atskirą „Draugių“ režimą.
+> **Draugių reklamos (14, 15, 32–36, video „draugėms“):** atskiros „draugių palyginimo“ analizės nėra — kiekviena draugė užsisako savo asmeninę analizę, o palygina pačios. Todėl tekstuose visada šiltai, bet aiškiai: „kiekviena atrasit savo gyvenimo žemėlapį“. Nuorodoje naudok `utm_campaign=draugems` — admin statistikoje „Iš kur atėjo“ matysi, kiek pirkimų atnešė būtent šios reklamos. Jei atneš daug — verta kurti atskirą „Draugių“ režimą.
 
 ---
 
@@ -251,10 +251,10 @@ Failas: `video/delnas-reels-draugems-1080x1920.mp4` — 15 s, 9:16, be muzikos.
 | Sek. | Scena |
 |---|---|
 | 0–3 | „Kuri iš jūsų — gimusi lyderė?“ — du delnai atskrenda iš šonų („Tu“ / „Ji“) |
-| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai: kiekviena nufotografuoja savo delnus → kiekviena gauna savo analizę → palyginat |
+| 3–6,6 | „Išbandykit kartu“ — 3 žingsniai: abi nufotografuojat delnus → kiekviena atrandat savo žemėlapį → lyginat ir juokiatės |
 | 6,6–10,4 | „Du delnai — du skirtingi keliai“ — du telefonai su žemėlapiais |
 | 10,4–12,6 | „Kas jus sieja? Kuo jūs skiriatės? Kurios laukia didesni pokyčiai?“ |
-| 12,6–15 | „Nustebink draugę“ + „Kiekvienai — sava analizė“ + „Išbandyti kartu“ + delnaskaitymas.lt |
+| 12,6–15 | „Nustebink draugę“ + „Kiekvienai — savas gyvenimo žemėlapis“ + „Išbandyti kartu“ + delnaskaitymas.lt |
 
 **Tekstas prie video:**
 > Kuri iš jūsų gimusi lyderė? 👭✨ Nufotografuokit delnus ir palyginkit savo gyvenimo žemėlapius. delnaskaitymas.lt
@@ -345,7 +345,7 @@ Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai ·
 
 **V — vakarėliui (32–36)**
 > Gimtadieniui, mergvakariui, staigmenai ar tiesiog vakarui su draugėmis 🥂
-> Kiekvienas gaunate savo asmeninę analizę — skaitykit ir palyginkit kartu. Juoko ir nuostabos netrūks ✨
+> Kiekvienas atrasit savo gyvenimo žemėlapį — o tada skaitykit ir lyginkit kartu. Juoko ir nuostabos netrūks ✨
 > 👉 https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems
 
 **X — dviese (37, 38)**
