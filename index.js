@@ -2832,7 +2832,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:15px;letter-spacing:.32em;color:#d4a843;font-weight:bold">DELNAS</div>
     <div style="font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);margin-top:4px">DOVANŲ KUPONAS</div>
     ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:12px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
-    ${gift.recipientEmail ? `<div style="margin:16px auto 0;max-width:420px;border:1px solid rgba(212,168,67,.45);border-radius:10px;padding:10px 14px;font-family:Arial,sans-serif;font-size:13px;color:#f0d58a">📅 Dovana bus išsiųsta gavėjui <b>${escapeHtml(gift.recipientEmail)}</b> ${gift.sendAt === ltDate(Date.now()) ? 'jau šiandien' : escapeHtml(gift.sendAt) + ' ryte'}.</div>` : ''}
+    ${gift.recipientEmail ? `<div style="margin:16px auto 0;max-width:420px;border:1px solid rgba(212,168,67,.45);border-radius:10px;padding:10px 14px;font-family:Arial,sans-serif;font-size:13px;color:#f0d58a">📅 Dovana bus išsiųsta gavėjui <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} ${String(Number.isInteger(gift.sendHour) ? gift.sendHour : 8).padStart(2, '0')}:00 (Lietuvos laiku).</div>` : ''}
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
@@ -2901,8 +2901,9 @@ function processGiftSchedules() {
     let changed = false;
     for (const g of Object.values(store.codes)) {
       if (giftStatus(g) === 'void') continue;
-      // 1) Siuntimas gavėjui nurodytą dieną (nuo 8 val.; jei data šiandien — iškart)
-      if (g.recipientEmail && !g.recipientSentAt && g.sendAt && (g.sendAt < today || (g.sendAt === today && (ltHour(now) >= 8 || ltDate(g.createdAt) === today)))) {
+      // 1) Siuntimas gavėjui nurodytą dieną ir valandą (Lietuvos laiku; senesni kuponai — 8 val.)
+      const sendHour = Number.isInteger(g.sendHour) ? g.sendHour : 8;
+      if (g.recipientEmail && !g.recipientSentAt && g.sendAt && (g.sendAt < today || (g.sendAt === today && ltHour(now) >= sendHour))) {
         g.recipientSentAt = now; changed = true;
         mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.recipientEmail, subject: g.fromName ? `🎁 ${g.fromName} ${g.kind === 'pora' ? 'jums' : 'tau'} dovanoja DELNAS ${g.kind === 'pora' ? 'porų suderinamumą' : 'gyvenimo žemėlapį'}` : `🎁 ${g.kind === 'pora' ? 'Jums' : 'Tau'} — DELNAS dovana: ${g.kind === 'pora' ? 'porų suderinamumas' : 'gyvenimo žemėlapis'}`, html: buildGiftRecipientEmailHtml(g) })
           .then(() => {
@@ -2925,7 +2926,7 @@ function processGiftSchedules() {
   } catch (e) { console.error('[gift] planavimo klaida:', e.message); }
 }
 setTimeout(processGiftSchedules, 15000);
-setInterval(processGiftSchedules, 60 * 60 * 1000);
+setInterval(processGiftSchedules, 5 * 60 * 1000);
 // Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų), asmeninis — programėlėje
 function giftRedeemLink(gift) {
   return gift.kind === 'pora'
@@ -2953,6 +2954,7 @@ function issueGiftForSession(session) {
     klausk: md.klausk === '1',
     recipientEmail: md.recipientEmail || '',
     sendAt: md.sendAt || '',
+    sendHour: md.sendHour !== undefined && md.sendHour !== '' ? parseInt(md.sendHour, 10) : 8,
     season: md.season || '',
     amount: session.amount_total,
     currency: session.currency,
@@ -3761,13 +3763,17 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { buyerEmail, fromName, recipientName, message } = req.body || {};
     const kind = (req.body && req.body.kind) === 'pora' ? 'pora' : 'asmenine';
-    // Neprivaloma: dovana gavėjui el. paštu nurodytą dieną (Vilniaus laiku, ryte)
+    // Neprivaloma: dovana gavėjui el. paštu nurodytą dieną ir valandą (Vilniaus laiku)
     const sendTo = (req.body && typeof req.body.recipientEmail === 'string') ? req.body.recipientEmail.trim() : '';
     const sendAt = (req.body && typeof req.body.sendAt === 'string') ? req.body.sendAt.trim() : '';
     if (sendTo && !isValidEmail(sendTo)) return res.status(400).json({ error: 'Neteisingas gavėjo el. paštas' });
     if (sendAt && (!/^\d{4}-\d{2}-\d{2}$/.test(sendAt) || sendAt < ltDate(Date.now()) || sendAt > ltDate(Date.now() + 366 * 864e5))) return res.status(400).json({ error: 'Neteisinga siuntimo data' });
+    // Siuntimo valanda Lietuvos laiku (0–23), numatyta 8
+    const sendHourRaw = req.body && req.body.sendHour;
+    const sendHour = Number.isInteger(Number(sendHourRaw)) && Number(sendHourRaw) >= 0 && Number(sendHourRaw) <= 23 ? Number(sendHourRaw) : 8;
     const season = ['valentinas', 'mama', 'kaledos'].includes(req.body && req.body.season) ? req.body.season : '';
-    if (!isValidEmail(buyerEmail)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    // Pirkėjo el. paštas privalomas, nebent dovana siunčiama gavėjui (tada Stripe pats paprašys pirkėjo el. pašto kvitui)
+    if (buyerEmail ? !isValidEmail(buyerEmail) : !sendTo) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (!isValidGiftText(fromName, 60) || !isValidGiftText(recipientName, 60)) return res.status(400).json({ error: 'Vardas per ilgas' });
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
@@ -3792,15 +3798,16 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         quantity: 1
       }] : [])],
       locale: 'lt',
-      customer_email: buyerEmail,
+      ...(buyerEmail ? { customer_email: buyerEmail } : {}),
       metadata: {
         type: 'gift',
         kind,
         klausk: '1',
         recipientEmail: sendTo,
         sendAt: sendTo ? (sendAt || ltDate(Date.now())) : '',
+        sendHour: sendTo ? String(sendHour) : '',
         season,
-        buyerEmail,
+        buyerEmail: buyerEmail || '',
         fromName: (fromName || '').trim(),
         recipientName: (recipientName || '').trim(),
         message: (message || '').trim(),
