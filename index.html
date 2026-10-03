@@ -5142,16 +5142,10 @@ async function buildStory916Blob(){
   const SAFE_TOP = 300, SAFE_BOT = 1560;
   const cw = sq.width, ch = sq.height, cx = Math.round((W - cw) / 2);
   ctx.textAlign = 'center';
-  // Kortelė + kvietimas (antraštės nėra — prierašas su nuoroda būna dalinimosi tekste)
-  const ctaGap = 80;
-  const groupH = ch + ctaGap;
-  const y0 = SAFE_TOP + Math.max(0, Math.round((SAFE_BOT - SAFE_TOP - groupH) / 2));
-  const top = y0;
+  // Tik kortelė (adresas www.delnaskaitymas.lt yra joje), centruota saugioje zonoje
+  const top = SAFE_TOP + Math.max(0, Math.round((SAFE_BOT - SAFE_TOP - ch) / 2));
   ctx.drawImage(sq, cx, top, cw, ch);
   URL.revokeObjectURL(sq.src);
-  // Apačia: kvietimas
-  ctx.font = '600 34px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(212,168,67,.9)';
-  ctx.fillText('Pažiūrėk, ką pasakoja tavo delnai →', W/2, top + ch + ctaGap);
   return new Promise(resolve => c.toBlob(b => resolve(b), 'image/png'));
 }
 
