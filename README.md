@@ -97,6 +97,12 @@ PORT = 3000
 - „Pakviesti draugus išbandyti“ apmokėjusiam klientui dalija asmeninę nuorodą `/?ref=KODAS`: draugas gauna −20 % (`REF_DISCOUNT_PCT`), kvietėjas už kiekvieną apmokėtą draugo pirkimą — 3 klausimus el. paštu (iki 5 kartų).
 - Įrašai — `SHARED_STORAGE_DIR/refs.json` (12 mėn.).
 
+## Įvertinimai, atsiliepimai ir statistika
+
+- Po rezultato (asmeninio ir porų) — ⭐1–5 ir neprivalomas atsiliepimas su sutikimu rodyti viešai. Tau atkeliauja laiškas; jei atsiliepimas 4–5 ⭐ ir leista rodyti — mygtukas „✓ Rodyti šį atsiliepimą svetainėje“. Patvirtinti atsiliepimai rodomi mokėjimo ekrane (aukštesniuose telefonuose).
+- Statistika be slapukų: `/admin/stats?key=ADMIN_KEY` — kiek kartų per dieną atidaryta, pradėta, pasiektas mokėjimo ekranas, apmokėta, porų/dovanų/klausimų pirkimai, įvertinimai. **Railway nustatyk kintamąjį `ADMIN_KEY`** (bet koks slaptas žodis); tikslią nuorodą rasi ir įvertinimo laiškuose.
+- Mokėjimo ekrane — „👁 Pavyzdys“: vieno skyriaus pavyzdys prieš mokėjimą.
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 

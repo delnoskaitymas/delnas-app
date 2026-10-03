@@ -1943,7 +1943,13 @@ function rewardReferrer(refCode, paymentRef, buyerEmail) {
     console.log(`[ref] kodas ${refCode} panaudotas (${paymentRef})${rewardId ? ' → atlygis ' + rewardId : ''}`);
   } catch (e) { console.error('[ref] atlygio klaida:', e.message); }
 }
+const _paidCounted = new Set();
 function handlePaidAnalysis(paymentRef, metadata, email) {
+  if (!_paidCounted.has(paymentRef)) {
+    _paidCounted.add(paymentRef); statInc('paid');
+    if (metadata && metadata.addKlausk === '1') statInc('bump');
+    if (metadata && metadata.ref) statInc('ref_paid');
+  }
   if (metadata && metadata.ref) rewardReferrer(normalizeRefCode(metadata.ref), paymentRef, email);
 }
 
@@ -3048,6 +3054,7 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
     const isFirst = !existing;
+    if (isFirst && !sessionId.startsWith('gp_')) statInc('pora_paid');
     updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now() });
     res.json({ started: true, status: 'pending' });
 
@@ -3371,7 +3378,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
     if (!o.paid) {
       const s = await getPaidKlausk(id);
       if (!s) return res.json({ paid: false });
-      o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders);
+      o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders); statInc('klausk_paid');
       mailer.sendMail({
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
@@ -3486,6 +3493,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
 
     const { gift, isNew } = issueGiftForSession(session);
     if (isNew) {
+      statInc('gift_paid');
       // Pirkėjui — dovanų kortelė el. paštu
       if (gift.buyerEmail) {
         mailer.sendMail({
@@ -3602,6 +3610,97 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
     console.error('/redeem-gift klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko panaudoti dovanos kodo' });
   }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ĮVERTINIMAI IR ATSILIEPIMAI + STATISTIKA (be slapukų ir asmens duomenų)
+// ═══════════════════════════════════════════════════════════════════
+const FEEDBACK_FILE = path.join(SHARED_STORAGE_DIR, 'feedback.json');
+const STATS_FILE = path.join(SHARED_STORAGE_DIR, 'stats.json');
+// Administratoriaus raktas (statistikai ir atsiliepimų patvirtinimui). Jei ADMIN_KEY
+// nenustatytas — išvedamas iš Stripe slapto rakto (stabilus, bet ne viešas).
+const ADMIN_KEY = process.env.ADMIN_KEY || crypto.createHash('sha256').update('delnas-admin:' + (process.env.STRIPE_SECRET_KEY || 'dev')).digest('hex').slice(0, 24);
+function readJson(file, def) { try { if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) {} return def; }
+function writeJson(file, data) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(data, null, 2)); fs.renameSync(tmp, file); }
+function feedbackToken(id) { return crypto.createHmac('sha256', ADMIN_KEY).update('fb:' + id).digest('hex').slice(0, 20); }
+
+app.post('/feedback', sensitiveLimiter, (req, res) => {
+  try {
+    const { stars, text, allowPublic, name, kind } = req.body || {};
+    const st = Math.round(Number(stars));
+    if (!(st >= 1 && st <= 5)) return res.status(400).json({ error: 'Pasirinkite įvertinimą' });
+    const t = typeof text === 'string' ? text.trim().slice(0, 500) : '';
+    const first = typeof name === 'string' ? name.trim().split(/\s+/)[0].slice(0, 30) : '';
+    const fb = readJson(FEEDBACK_FILE, { items: [] });
+    const id = crypto.randomBytes(8).toString('hex');
+    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
+    fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
+    const approve = item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
+    mailer.sendMail({
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `${'★'.repeat(st)}${'☆'.repeat(5 - st)} Naujas įvertinimas${first ? ' — ' + first : ''}`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${'★'.repeat(st)}${'☆'.repeat(5 - st)}</h2><p><strong>Vardas:</strong> ${escapeHtml(first || '—')} · ${item.kind === 'pora' ? 'porų analizė' : 'asmeninė analizė'}</p><p><strong>Atsiliepimas:</strong> ${escapeHtml(t || '—')}</p><p><strong>Leidžia rodyti viešai:</strong> ${item.allowPublic ? 'taip' : 'ne'}</p>${approve}<p style="margin-top:18px;font-size:13px"><a href="${appBaseUrl()}/admin/stats?key=${ADMIN_KEY}" style="color:#8a5a0f">📊 Statistika ir visi įvertinimai</a></p></div>`
+    }).catch(e => console.error('[feedback] laiško klaida:', e.message));
+    res.json({ ok: true });
+  } catch (err) { console.error('/feedback klaida:', err); res.status(500).json({ error: 'Nepavyko išsaugoti' }); }
+});
+
+// Patvirtinimas iš administratoriaus laiško (rodomi tik patvirtinti atsiliepimai)
+app.get('/feedback/approve', (req, res) => {
+  const { id, t } = req.query;
+  if (typeof id !== 'string' || typeof t !== 'string' || t !== feedbackToken(id)) return res.status(403).send('Neteisinga nuoroda');
+  const fb = readJson(FEEDBACK_FILE, { items: [] });
+  const it = fb.items.find(x => x.id === id);
+  if (!it || !it.allowPublic) return res.status(404).send('Atsiliepimas nerastas');
+  it.approved = true; writeJson(FEEDBACK_FILE, fb);
+  res.send('<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>✓ Atsiliepimas bus rodomas svetainėje</h2><p>„' + escapeHtml(it.text) + '“ — ' + escapeHtml(it.name || '') + '</p></div>');
+});
+
+app.get('/testimonials', (req, res) => {
+  const fb = readJson(FEEDBACK_FILE, { items: [] });
+  const items = fb.items.filter(x => x.approved && x.allowPublic && x.stars >= 4 && x.text).slice(-8).reverse()
+    .map(x => ({ stars: x.stars, text: x.text, name: x.name }));
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.json({ items });
+});
+
+// Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
+const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback'];
+let _statsBuf = null, _statsTimer = null;
+function statInc(ev) {
+  if (!STAT_EVENTS.includes(ev)) return;
+  if (!_statsBuf) _statsBuf = readJson(STATS_FILE, { days: {} });
+  const d = new Date().toISOString().slice(0, 10);
+  const day = (_statsBuf.days[d] = _statsBuf.days[d] || {});
+  day[ev] = (day[ev] || 0) + 1;
+  clearTimeout(_statsTimer);
+  _statsTimer = setTimeout(() => { try { writeJson(STATS_FILE, _statsBuf); } catch (e) {} }, 2000);
+}
+app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
+  try { const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); if (['home', 'start', 'photos', 'pay_view', 'result', 'pora_view', 'dovana_view'].includes(b.e)) statInc(b.e); } catch (e) {}
+  res.status(204).end();
+});
+app.get('/admin/stats', (req, res) => {
+  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+  const st = _statsBuf || readJson(STATS_FILE, { days: {} });
+  const days = Object.keys(st.days).sort().reverse().slice(0, 60);
+  const fb = readJson(FEEDBACK_FILE, { items: [] }).items;
+  const avg = fb.length ? (fb.reduce((a, x) => a + x.stars, 0) / fb.length).toFixed(2) : '—';
+  const cols = [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo'], ['bump', '+klausimai'], ['ref_paid', 'Per draugą'], ['klausk_paid', 'Klausk'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']];
+  const sum = {}; days.forEach(d => cols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+  const row = (label, v) => `<tr><td>${label}</td>${cols.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}<td>${pct(v.paid || 0, v.pay_view || 0)}</td></tr>`;
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(`<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DELNAS statistika</title>
+<style>body{font-family:system-ui,sans-serif;background:#0b0b0b;color:#eee;padding:16px}h1{color:#d4a843;font-size:20px}table{border-collapse:collapse;font-size:13px;width:100%;overflow:auto;display:block}td,th{border:1px solid #333;padding:6px 8px;text-align:right;white-space:nowrap}th{background:#1a1a1a;color:#d4a843}td:first-child,th:first-child{text-align:left}tr.sum td{background:#1d1708;font-weight:700}.k{color:#aaa;font-size:13px;margin:6px 0 14px}</style></head><body>
+<h1>DELNAS — statistika</h1><div class="k">Įvertinimų vidurkis: <b>${avg}</b> (${fb.length}) · „Mokėjimas %“ = apmokėjo / pasiekė mokėjimo ekraną</div>
+<table><tr><th>Diena</th>${cols.map(([, l]) => `<th>${l}</th>`).join('')}<th>Mokėjimas %</th></tr>
+<tr class="sum">${row('Iš viso (60 d.)', sum).slice(4)}
+${days.map(d => row(d, st.days[d])).join('')}</table>
+<h1 style="margin-top:24px">Paskutiniai įvertinimai</h1><table><tr><th>Data</th><th>★</th><th>Vardas</th><th style="text-align:left">Atsiliepimas</th><th>Viešai</th></tr>
+${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString().slice(0, 10)}</td><td>${x.stars}</td><td>${escapeHtml(x.name || '')}</td><td style="text-align:left;white-space:normal">${escapeHtml(x.text || '')}</td><td>${x.approved ? '✓ rodomas' : x.allowPublic ? `<a style="color:#d4a843" href="/feedback/approve?id=${x.id}&t=${feedbackToken(x.id)}">rodyti</a>` : 'ne'}</td></tr>`).join('')}</table>
+</body></html>`);
 });
 
 app.get('/privatumo-politika', (req, res) => {

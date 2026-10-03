@@ -622,5 +622,6 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   else { show('v-form'); if (kind === 'pora') setKind('pora'); }
 })();
 </script>
+<script>try{if(!sessionStorage.getItem('delnasEv:dovana_view')){sessionStorage.setItem('delnasEv:dovana_view','1');navigator.sendBeacon&&navigator.sendBeacon('/ev',new Blob([JSON.stringify({e:'dovana_view'})],{type:'application/json'}));}}catch(e){}</script>
 </body>
 </html>
