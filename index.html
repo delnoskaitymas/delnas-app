@@ -194,6 +194,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .px-top div strong{display:block;font-size:14.5px;color:#f3e7c6;font-weight:700}
 .px-row{padding:11px 0;border-bottom:.5px solid rgba(212,168,67,.14)}
 .px-rows .px-row:last-child{border-bottom:none}
+.kl{background:linear-gradient(160deg,rgba(212,168,67,.12),rgba(0,0,0,0) 55%),#000;border-color:rgba(212,168,67,.7)}
+.kl-txt{font-size:14px;line-height:1.6;color:rgba(255,255,255,.75)}
+.kl-txt b{color:var(--gold2)}
+.kl-ex{display:flex;flex-direction:column;gap:7px;margin:14px 0}
+.kl-ex span{font-family:'Playfair Display',serif;font-style:italic;font-size:14.5px;color:#f3e7c6;padding:9px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.07);border-radius:0 8px 8px 0}
+.kl-email{width:100%;margin-bottom:10px;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 13px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none}
+.kl-email.hidden{display:none}
+.kl-btn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 15px 'DM Sans',sans-serif;box-shadow:0 0 22px rgba(212,168,67,.3)}
+.kl-btn[disabled]{opacity:.6}
+.kl-err{display:none;color:#ffb3a0;font-size:12.5px;text-align:center;margin-top:8px}
+.kl-fine{font-size:11px;color:var(--muted);text-align:center;margin-top:9px}
 .px-row b{display:flex;align-items:center;gap:8px;font-size:14px;color:#f3e7c6;font-weight:700}
 .px-row b span{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:2px 8px}
 .px-row div{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.7);margin-top:2px}
@@ -3622,7 +3633,31 @@ function renderResultExtra(r){
       '<div class="px-plan" data-key="'+_xEsc(key)+'">'+steps+'<div class="px-prog"><span class="px-cnt"></span><div class="pr-track"><div class="pr-fill px-pf"></div></div></div><div class="px-done">✦ Puiku — tavo pirmasis mėnuo įveiktas!</div></div>'+
       '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Vienas mažas žingsnis per savaitę — ir po mėnesio būsi toliau, nei manai.</div></div>';
   }
+  // „Klausk savo delnų“ — mokamas priedas (mokėjimas naujame skirtuke, kad rezultatas liktų)
+  const em=window._userEmail||window.userEmail||'';
+  h+='<div class="rs rs-std rs-reveal kl"><div class="rs-label">✦ Klausk savo delnų</div>'+
+    '<div class="kl-txt">Turi klausimą, kuris neduoda ramybės? Užduok iki <b>3 asmeninių klausimų</b> — atsakymai remsis būtent tavo delnų analize: stiprybėmis, kryptimi ir kliūtimis.</div>'+
+    '<div class="kl-ex"><span>„Ar man verta keisti darbą?“</span><span>„Kodėl kartojasi tos pačios santykių problemos?“</span><span>„Kaip man geriau tvarkytis su pinigais?“</span></div>'+
+    '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
+    '<button type="button" class="kl-btn" id="kl-btn">Užduoti klausimus — 4,99 €</button>'+
+    '<div class="kl-err" id="kl-err"></div>'+
+    '<div class="kl-fine">Atsakymai ekrane ir el. paštu · Saugus mokėjimas per Stripe</div></div>';
   box.innerHTML=h;
+  const kb=document.getElementById('kl-btn');
+  if(kb) kb.addEventListener('click',async()=>{
+    const err=document.getElementById('kl-err'); err.style.display='none';
+    const email=(document.getElementById('kl-email').value||'').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ const i=document.getElementById('kl-email'); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
+    const w=window.open('','_blank');
+    kb.disabled=true; const t=kb.textContent; kb.textContent='Jungiamasi prie Stripe…';
+    try{
+      const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||'',result:window._palmResult||r})});
+      const d=await res.json();
+      if(!res.ok||!d.url) throw new Error(d.error||'Nepavyko pradėti mokėjimo');
+      if(w) w.location.href=d.url; else location.href=d.url;
+    }catch(e){ if(w) w.close(); err.textContent=e.message; err.style.display='block'; }
+    kb.disabled=false; kb.textContent=t;
+  });
   const plan=box.querySelector('.px-plan');
   if(plan){
     const upd=()=>{ const all=plan.querySelectorAll('.px-step'), d=plan.querySelectorAll('.px-step.done').length;

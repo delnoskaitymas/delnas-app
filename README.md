@@ -83,6 +83,13 @@ PORT = 3000
 - Užsakymai saugomi `SHARED_STORAGE_DIR/pora-orders.json` 90 dienų; nuotraukos nesaugomos.
 - Kainą galima pakeisti Railway kintamuoju `PORA_PRICE_CENTS` (pvz. `1999` = 19,99 €); atskiro Stripe produkto kurti nereikia.
 
+## Klausk savo delnų
+
+- Blokas asmeninės analizės rezultato ekrane: mokėjimas 4,99 € per Stripe Checkout atsidaro naujame skirtuke (rezultatas lieka).
+- Po mokėjimo — puslapis `delnaskaitymas.lt/klausk?s=SESSION_ID`: iki 3 klausimų, AI atsako remdamasis asmenine analize; kiekvienas atsakymas ir el. paštu, tau — pranešimas apie užsakymą.
+- Užsakymai (analizės tekstas, klausimai, atsakymai) saugomi `SHARED_STORAGE_DIR/klausk-orders.json`: neapmokėti — 1 d., apmokėti — 90 d.
+- Kainą galima pakeisti Railway kintamuoju `KLAUSK_PRICE_CENTS` (pvz. `499` = 4,99 €). Pakeitus kainą, atnaujink ir tekstą rezultato ekrane bei sąlygose.
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 
