@@ -642,7 +642,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
       try {
         const r = await fetch('/gift/confirm?session_id=' + encodeURIComponent(sessionId));
         const d = await r.json();
-        if (d.paid) { history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); return; }
+        if (d.paid) { if (window.delnasSrcBuy) window.delnasSrcBuy('dovana', sessionId); history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); return; }
         if (r.status === 400) break;
       } catch (e) {}
       $('wait-txt').textContent = 'Laukiame mokėjimo patvirtinimo…';
@@ -687,6 +687,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   else { show('v-form'); if (kind === 'pora') setKind('pora'); }
 })();
 </script>
+<script src="/src.js"></script>
 <script>try{if(!sessionStorage.getItem('delnasEv:dovana_view')){sessionStorage.setItem('delnasEv:dovana_view','1');navigator.sendBeacon&&navigator.sendBeacon('/ev',new Blob([JSON.stringify({e:'dovana_view'})],{type:'application/json'}));}}catch(e){}</script>
 </body>
 </html>
