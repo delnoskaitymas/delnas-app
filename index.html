@@ -3890,17 +3890,19 @@ function renderResultExtra(r){
   box.innerHTML=h;
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   const rn=document.getElementById('ref-note'); if(rn) rn.style.display=payRef?'block':'none';
+  // Klausimai apmokėti kartu su analize (payRef) arba įskaičiuoti į dovaną (gift:KODAS)
+  const kref=payRef||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   setupKlauskBlock({
     q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
     body:email=>({email,name:window.userName||'',result:window._palmResult||r}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
-    prepaid:payRef&&!window._manoView?(async()=>{
-      const d=await (await fetch('/order-extras?ref='+encodeURIComponent(payRef))).json();
+    prepaid:kref&&!window._manoView?(async()=>{
+      const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref))).json();
       if(!d||!d.addKlausk) return null;
-      const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||r})});
+      const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:kref,result:window._palmResult||r})});
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
       const blk=document.querySelector('#r-extra .kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ Tavo 3 klausimai jau apmokėti.</b> Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
       document.getElementById('kl-btn').textContent='Gauti atsakymą →';
       return '/klausk?s='+dd.id;
@@ -6000,7 +6002,17 @@ function poraReveal(){
 // Porų „Klauskite“ blokas inicijuojamas vieną kartą, kai parodomas porų rezultatas
 function setupPoraKlausk(){
   const btn=document.getElementById('pora-kl-btn'); if(!btn||btn.dataset.ready) return; btn.dataset.ready='1';
-  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', body:()=>({kind:'pora',poraSid:(window._pora||{}).sid}) });
+  const sid=(window._pora||{}).sid||'';
+  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', body:()=>({kind:'pora',poraSid:(window._pora||{}).sid}),
+    // Porų dovanoje įskaičiuoti 3 klausimai — blokas jau apmokėtas
+    prepaid:/^gp_/.test(sid)?(async()=>{
+      const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
+      const d=await r.json(); if(!r.ok||!d.id) return null;
+      const blk=document.getElementById('pora-kl');
+      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų porų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
+      btn.textContent='Gauti atsakymą →';
+      return '/klausk?s='+d.id;
+    })():null });
 }
 
 function renderPoraResult(r){
@@ -6309,6 +6321,8 @@ async function redeemGiftAndProceed(){
     if(!d||!d.paid) throw new Error((d&&d.error)||'Nepavyko panaudoti dovanos kodo.');
     window._giftRedeemResult=d;
     window._isGiftOrder=true;
+    // Dovanoje įskaičiuoti klausimai — rezultato ekrane „Klausk“ blokas bus jau apmokėtas
+    window._giftRef='gift:'+window._giftCode; try{ sessionStorage.setItem('delnasGiftRef',window._giftRef); }catch(e){}
     try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){}
   }catch(e){
     // Kodas nebegalioja — grąžiname įprastą mokėjimą, kad žmogus nebūtų užstrigęs.

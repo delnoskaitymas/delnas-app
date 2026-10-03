@@ -2037,9 +2037,38 @@ app.post('/order-quote', sensitiveLimiter, async (req, res) => {
 });
 
 // Ar mokėjime buvo pridėtas „Klausk“ priedas ir ar jau sukurtas klausimų užsakymas
+// Dovanų kuponas su įskaičiuotais klausimais: ref „gift:KODAS“ → panaudota asmeninė dovana su klausk
+function giftKlausk(ref) {
+  if (typeof ref !== 'string' || !ref.startsWith('gift:') || ref.length > 40) return null;
+  const g = loadGiftStore().codes[ref.slice(5)];
+  return g && g.klausk && g.kind !== 'pora' && g.status === 'redeemed' ? g : null;
+}
+// Porų dovana su įskaičiuotais klausimais → klausimų užsakymas porai (kp_…), vieną kartą
+app.post('/klausk/pora-gift', sensitiveLimiter, (req, res) => {
+  try {
+    const poraSid = req.body && req.body.poraSid;
+    if (typeof poraSid !== 'string' || !/^gp_[a-f0-9]{24}$/.test(poraSid)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    const po = loadPoraOrders()[poraSid];
+    const g = po && po.gift ? loadGiftStore().codes[po.gift] : null;
+    if (!g || !g.klausk) return res.json({ id: null });
+    if (po.status !== 'done' || !po.result) return res.status(400).json({ error: 'Porų analizė dar neparuošta' });
+    const orders = loadKlauskOrders();
+    const existing = Object.entries(orders).find(([, o]) => o.poraSid === poraSid && o.gift);
+    if (existing) return res.json({ id: existing[0] });
+    const id = 'kp_' + crypto.randomBytes(12).toString('hex');
+    orders[id] = { kind: 'pora', email: po.email, name: `${po.nameA} ir ${po.nameB}`, nameA: po.nameA, nameB: po.nameB, poraSid, result: po.result, qa: [], paid: true, paidAt: Date.now(), amount: 0, gift: po.gift, createdAt: Date.now() };
+    saveKlauskOrders(orders);
+    res.json({ id });
+  } catch (err) {
+    console.error('/klausk/pora-gift klaida:', err);
+    res.status(500).json({ error: 'Nepavyko atidaryti klausimų' });
+  }
+});
 app.get('/order-extras', sensitiveLimiter, async (req, res) => {
   try {
     const ref = req.query.ref;
+    const gk = giftKlausk(ref);
+    if (gk) { const ex = Object.entries(loadKlauskOrders()).find(([, o]) => o.paymentRef === ref); return res.json({ addKlausk: true, gift: true, klauskId: ex ? ex[0] : null }); }
     const p = await getPaidAnalysisPayment(ref);
     if (!p) return res.json({ addKlausk: false });
     const existing = Object.entries(loadKlauskOrders()).find(([, o]) => o.paymentRef === ref);
@@ -2051,7 +2080,8 @@ app.get('/order-extras', sensitiveLimiter, async (req, res) => {
 app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
-    const p = await getPaidAnalysisPayment(paymentRef);
+    const gk = giftKlausk(paymentRef);
+    const p = gk ? { email: gk.redeemedEmail || '', metadata: { addKlausk: '1', name: gk.redeemedName || '' } } : await getPaidAnalysisPayment(paymentRef);
     if (!p || p.metadata.addKlausk !== '1') return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
     const orders = loadKlauskOrders();
     const existing = Object.entries(orders).find(([, o]) => o.paymentRef === paymentRef);
@@ -2059,7 +2089,7 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
     const picked = pickKlauskResult(result);
     if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
     const id = 'kp_' + crypto.randomBytes(12).toString('hex');
-    orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: KLAUSK_BUMP_CENTS, paymentRef, createdAt: Date.now() };
+    orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: gk ? 0 : KLAUSK_BUMP_CENTS, gift: gk ? gk.code : undefined, paymentRef, createdAt: Date.now() };
     saveKlauskOrders(orders);
     res.json({ id });
   } catch (err) {
@@ -2606,7 +2636,8 @@ app.get('/price-info', async (req, res) => {
       regular: { amount: regular.unit_amount, currency: regular.currency },
       active: { amount: activePrice.unit_amount, currency: activePrice.currency },
       isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO,
-      pora: { amount: PORA_PRICE_CENTS, currency: 'eur' }
+      pora: { amount: PORA_PRICE_CENTS, currency: 'eur' },
+      giftKlausk: GIFT_KLAUSK_CENTS
     };
     _priceInfoCacheAt = Date.now();
     res.json(_priceInfoCache);
@@ -2918,6 +2949,7 @@ function issueGiftForSession(session) {
     recipientName: md.recipientName || '',
     message: md.message || '',
     kind: md.kind === 'pora' ? 'pora' : 'asmenine',
+    klausk: md.klausk === '1',
     recipientEmail: md.recipientEmail || '',
     sendAt: md.sendAt || '',
     season: md.season || '',
@@ -2966,6 +2998,8 @@ setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 // analizė; grįžus ta pačia nuoroda rodomas tas pats rezultatas).
 const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
 const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
+// Dovanų kupone visada įskaičiuoti 3 „Klausk savo delnų“ klausimai — prie dovanos kainos pridedama
+const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
 const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1299', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
@@ -3749,12 +3783,16 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
           product_data: { name: (kind === 'pora' ? 'DELNAS dovanų kuponas — Porų suderinamumas' : 'DELNAS dovanų kuponas — Gyvenimo žemėlapis') + (pr ? ` (−${pr.pct} %)` : '') }
         },
         quantity: 1
+      }, {
+        price_data: { currency: activePrice.currency, unit_amount: GIFT_KLAUSK_CENTS, product_data: { name: kind === 'pora' ? 'Klauskite savo delnų — 3 klausimai porai (dovanoje)' : 'Klausk savo delnų — 3 klausimai (dovanoje)' } },
+        quantity: 1
       }],
       locale: 'lt',
       customer_email: buyerEmail,
       metadata: {
         type: 'gift',
         kind,
+        klausk: '1',
         recipientEmail: sendTo,
         sendAt: sendTo ? (sendAt || ltDate(Date.now())) : '',
         season,
