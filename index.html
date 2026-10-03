@@ -247,9 +247,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cmp-box .pr-cmp-ab .now{border-color:rgba(212,168,67,.6);background:rgba(212,168,67,.12)}
 .cmp-wait{text-align:center}
 .cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
-.o-remind{display:flex;gap:9px;align-items:flex-start;margin:4px 2px 14px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
-.o-remind input{margin:2px 0 0;width:16px;height:16px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
-.o-remind span{font-size:12px;line-height:1.45;color:rgba(255,255,255,.55)}
+.o-remind{margin:2px 4px 12px;text-align:center;font-family:'DM Sans',sans-serif}
+.o-remind span{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.45)}
+.o-remind button{background:none;border:none;padding:0;color:rgba(212,168,67,.75);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .o-remind b{color:var(--gold2);font-weight:700}
 @media(max-width:374px){#kl-bump s,#pora-bump s{display:none}#kl-bump span,#pora-bump span{font-size:11px}}
 @media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump,#pora-bump{padding:5px 10px}}
@@ -781,7 +781,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <input type="email" id="o-email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
     <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
-    <label class="o-remind" for="o-remind"><input type="checkbox" id="o-remind"><span>Jei nebaigsiu užsakymo — atsiųskite man vieną priminimą su <b>−15 %</b> nuolaida</span></label>
+    <!-- Vienas priminimas su nuolaida siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
+    <div class="o-remind" id="o-remind-row"><span id="o-remind-txt">Jei užsakymo nebaigsi, atsiųsime vieną priminimą su <b>−15&nbsp;%</b> nuolaida. <button type="button" id="o-noremind" onclick="window._noRemind=true;document.getElementById('o-remind-txt').textContent='✓ Priminimo nesiųsime.';">Nesiųsti</button></span></div>
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
     <!-- Mygtukas -->
@@ -5644,7 +5645,7 @@ function proceedToPayment(){
   // ir el. paštas (dar prieš mokėjimą) — jis bus parodytas rezultato
   // ekrane ir naudojamas pranešimui į info@delnaskaitymas.lt.
   fetch('/register-order',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name,email,remind:!!(document.getElementById('o-remind')||{}).checked})}).then(r=>r.json()).then(d=>{
+    body:JSON.stringify({name,email,remind:!window._noRemind})}).then(r=>r.json()).then(d=>{
       if(d&&d.orderNumber) window._orderNumber=d.orderNumber;
     }).catch(e=>console.error('[register-order] klaida:',e));
   // Atnaujinti bgSessionId su vardu (analizė jau vyksta fone)
