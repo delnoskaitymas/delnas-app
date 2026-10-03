@@ -5129,7 +5129,6 @@ async function buildStoryCardBlob(){
 // ~250 px palikti tušti (ten istorijose būna programėlės mygtukai); svarbiausia dalis telpa į 4:5 vidurį.
 async function buildStory916Blob(){
   const sqBlob = await buildStoryCardBlob(); if(!sqBlob) return null;
-  const r = window._palmResult || {};
   const sq = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(sqBlob); });
   const W = 1080, H = 1920;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -5138,31 +5137,28 @@ async function buildStory916Blob(){
   const g = ctx.createRadialGradient(W/2, H/2, 80, W/2, H/2, 900);
   g.addColorStop(0, 'rgba(212,168,67,.10)'); g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  const top = Math.round((H - sq.height) / 2) - 30;
+  // Viskas sudedama į saugią zoną (y 300–1560): ji matosi ir story (viršuje profilio juosta,
+  // apačioje „Siųsti žinutę“), ir Instagram/Facebook sraute, kur 9:16 apkerpama iki 4:5 (y 285–1635)
+  const SAFE_TOP = 300, SAFE_BOT = 1560;
+  const cw = sq.width, ch = sq.height, cx = Math.round((W - cw) / 2);
   ctx.textAlign = 'center';
+  // Antraštė (2 eil.) + tarpas + kortelė + tarpas + kvietimas — be citatos, kad būtų erdvu
+  const headH = 112, gap = 56, ctaGap = 74;
+  const groupH = headH + gap + ch + ctaGap;
+  const y0 = SAFE_TOP + Math.max(0, Math.round((SAFE_BOT - SAFE_TOP - groupH) / 2));
   // Viršus
   ctx.font = '600 40px "DM Sans", sans-serif'; ctx.fillStyle = '#f5eed8';
-  ctx.fillText('Nufotografavau savo delnus —', W/2, top - 92);
+  ctx.fillText('Nufotografavau savo delnus —', W/2, y0 + 36);
   ctx.font = 'italic 700 54px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#f0c96a';
   ctx.shadowColor = 'rgba(240,201,106,.45)'; ctx.shadowBlur = 16;
-  ctx.fillText('štai ką jie pasakė ✦', W/2, top - 30);
+  ctx.fillText('štai ką jie pasakė ✦', W/2, y0 + 100);
   ctx.shadowBlur = 0;
-  ctx.drawImage(sq, 0, top);
+  const top = y0 + headH + gap;
+  ctx.drawImage(sq, cx, top, cw, ch);
   URL.revokeObjectURL(sq.src);
-  // Apačia: viena įžvalga (jei yra) ir kvietimas
-  let y = top + sq.height + 70;
-  const quote = (r.delnai_greta && r.delnai_greta.isvada) || (r.prigimtines_insights || [])[0] || '';
-  if(quote){
-    ctx.font = 'italic 400 36px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#f3e7c6';
-    const words = ('„' + quote.trim() + '“').split(/\s+/), lines = []; let line = '';
-    words.forEach(w => { const t = line ? line + ' ' + w : w; if(ctx.measureText(t).width > 860 && line){ lines.push(line); line = w; } else line = t; });
-    if(line) lines.push(line);
-    if(lines.length > 3){ lines.length = 3; lines[2] = lines[2].replace(/[\s,.;:—-]*\S*$/, '') + '…“'; }
-    lines.forEach(l => { ctx.fillText(l, W/2, y); y += 50; });
-    y += 22;
-  }
-  ctx.font = '600 32px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(212,168,67,.9)';
-  ctx.fillText('Pažiūrėk, ką pasakoja tavo delnai →', W/2, Math.min(y + 10, H - 270));
+  // Apačia: kvietimas
+  ctx.font = '600 34px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(212,168,67,.9)';
+  ctx.fillText('Pažiūrėk, ką pasakoja tavo delnai →', W/2, top + ch + ctaGap);
   return new Promise(resolve => c.toBlob(b => resolve(b), 'image/png'));
 }
 
