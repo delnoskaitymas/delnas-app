@@ -3076,6 +3076,8 @@ function clampScore(n) {
 
 // Lietuviškų vardų linksniai porų tekstams — AI duodamos tikslios formos, kad nerašytų
 // „pasakyk Darius“ ar „Ugne randa Darius ramybę“. Nežinomos galūnės — grąžinama tuščia eilutė.
+// Porų užsakymo numeris (rodomas PDF, laiške ir admin pranešime) — iš užsakymo ID, be atskiros saugyklos
+function poraOrderNo(sid) { return 'P-' + String(sid || '').replace(/[^A-Za-z0-9]/g, '').slice(-8).toUpperCase(); }
 function ltNameForms(name) {
   const n = String(name || '').trim();
   if (!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return '';
@@ -3300,6 +3302,7 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
         to: ADMIN_EMAIL,
         subject: `Nauja porų analizė — ${s.nameA} ir ${s.nameB}`,
         html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Nauja porų analizė</h2>
+          <p><strong>Užsakymo numeris:</strong> ${poraOrderNo(sessionId)}</p>
           <p><strong>Pora:</strong> ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)}</p>
           <p><strong>El. paštas:</strong> ${escapeHtml(s.email)}</p>
           <p><strong>Suma:</strong> ${(s.amount / 100).toFixed(2).replace('.', ',')} €</p>
@@ -3386,7 +3389,7 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
       from: `"Delno Skaitymas — Užsakymai" <${CLIENT_EMAIL_FROM}>`,
       to: o.email,
       subject: `${o.nameA} ir ${o.nameB} — jūsų porų suderinamumas paruoštas 💞`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų porų suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė →</a>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų porų suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:12px;color:rgba(245,238,216,.55);margin:6px 0 0">Užsakymo numeris: ${poraOrderNo(sessionId)}</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė →</a>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{ filename: `${(o.nameA + '-ir-' + o.nameB).replace(/\s+/g, '-')}-poru-suderinamumas.pdf`, content: pdfBase64, encoding: 'base64' }]
     }).finally(() => poraEmailsInFlight.delete(sessionId));
     updatePoraOrder(sessionId, { emailSent: true });

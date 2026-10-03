@@ -6137,6 +6137,9 @@ function buildPoraPdfDoc(){
   doc.setFont('NotoSans','normal'); doc.setFontSize(10); doc.setTextColor(140,112,55);
   let ny=by+bh+10;
   doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
+  // Užsakymo numeris — reikalingas kreipiantis dėl pinigų grąžinimo (sąlygų 5 skyrius)
+  const sid=(window._pora||{}).sid||'';
+  if(sid){ doc.setFontSize(9.5); doc.setTextColor(...MUTED); doc.text('Užsakymo numeris: P-'+sid.replace(/[^A-Za-z0-9]/g,'').slice(-8).toUpperCase(), W/2, ny+4, {align:'center'}); }
   return doc;
 }
 function poraPdfName(){ return (poraNames().replace(/\s+/g,'-')||'pora')+'-poru-suderinamumas.pdf'; }
