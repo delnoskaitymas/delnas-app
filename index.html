@@ -294,6 +294,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .rate-more textarea{width:100%;min-height:70px;resize:vertical;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:10px 12px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none}
 .rate-more label{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .rate-more label input{margin-top:2px;accent-color:#d4a843}
+.rate-private{display:none;font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .rate-send{width:100%;margin-top:10px;border:none;border-radius:10px;padding:12px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 14px 'DM Sans',sans-serif;cursor:pointer}
 .rate-thx{display:none;font-family:'Playfair Display',serif;font-style:italic;color:var(--gold2);font-size:15px;margin-top:6px}
 /* Porų nuotolinis režimas */
@@ -1529,11 +1530,16 @@ function renderRating(boxId, kind){
     (done?'<div class="rate-thx" style="display:block">Ačiū už įvertinimą! ✦</div>':
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
-    '<label><input type="checkbox" class="rate-pub"> Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)</label>'+
+    '<label class="rate-pub-row"><input type="checkbox" class="rate-pub"> Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)</label>'+
+    '<div class="rate-private">Šį atsiliepimą matysime tik mes — jis padės mums tobulėti.</div>'+
     '<button type="button" class="rate-send">Siųsti</button></div><div class="rate-thx">Ačiū už įvertinimą! ✦</div>')+'</div>';
   if(done) return;
   let stars=0; const card=box.querySelector('.rate');
-  card.querySelectorAll('.rate-stars button').forEach(b=>b.addEventListener('click',()=>{ stars=+b.dataset.n; card.querySelectorAll('.rate-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); card.querySelector('.rate-more').style.display='block'; }));
+  const ta=card.querySelector('textarea'), pubRow=card.querySelector('.rate-pub-row'), pub=card.querySelector('.rate-pub'), priv=card.querySelector('.rate-private');
+  card.querySelectorAll('.rate-stars button').forEach(b=>b.addEventListener('click',()=>{ stars=+b.dataset.n; card.querySelectorAll('.rate-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); card.querySelector('.rate-more').style.display='block';
+    // 1–3 ★ — atsiliepimas tik mums: viešo rodymo pasirinkimo nėra
+    const low=stars<=3; pubRow.style.display=low?'none':''; priv.style.display=low?'block':'none'; if(low) pub.checked=false;
+    ta.placeholder=low?(you?'Ką galėtume patobulinti? (neprivaloma)':'Ką galėtume patobulinti? (neprivaloma)'):(you?'Kas jums labiausiai patiko? (neprivaloma)':'Kas labiausiai patiko? (neprivaloma)'); }));
   card.querySelector('.rate-send').addEventListener('click',async()=>{
     if(!stars) return; const btn=card.querySelector('.rate-send'); btn.disabled=true; btn.textContent='Siunčiama…';
     const name=kind==='pora'?((window._pora||{}).nameA||''):(window.userName||window._userName||'');
