@@ -1266,6 +1266,26 @@ const KNOWN_REGEX_FIXES = [
   // → "veiki produktyviausiai"). Veikia ir moteriškai giminei ("esi produktyviausia" — ta pati problema).
   [/\b[Ee]si (\p{L}+?)iausi(?:as|a)\b/gu, 'veiki $1iausiai'],
 
+  // LYTIES NEUTRALUMAS: „buvai/esi/tapai + giminę turintis būdvardis“ (pvz. „iš prigimties buvai atviras“)
+  // → neutralus „… atviro būdo“. Dažniausi charakterio būdvardžiai abiem giminėm.
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:atviras|atvira)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'atviro būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:uždaras|uždara)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'uždaro būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:linksmas|linksma)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'linksmo būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:emocingas|emocinga)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'emocingo būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:savarankiškas|savarankiška)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'savarankiško būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:ramus|rami)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'ramaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:drąsus|drąsi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'drąsaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:jautrus|jautri)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'jautraus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:stiprus|stipri)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'stipraus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:kantrus|kantri)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'kantraus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:santūrus|santūri)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'santūraus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:atsargus|atsargi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'atsargaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:švelnus|švelni)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'švelnaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:impulsyvus|impulsyvi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'impulsyvaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:aktyvus|aktyvi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'aktyvaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:nedrąsus|nedrąsi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'nedrąsaus būdo'],
+  [/(?<!\p{L})(esi|buvai|tapai|likai|išlikai|išlieki|tampi|lieki)\s+(labai\s+|daug\s+|kur kas\s+|labiau\s+)?(?:užsispyręs|užsispyrusi)(?!\p{L})/giu, (_, v, mod) => v + ' ' + (mod || '') + 'užsispyrusio būdo'],
+
   // Asmenų nesutapimas: "kai nusprendžia," (3 asm.) — šioje app'oje VISADA kreipiamasi "tu", tad be aiškaus
   // trečio asmens daiktavardžio prieš tai, "kai nusprendžia" turi būti "kai nusprendi"
   [/\b([Kk])ai nusprendžia,/g, '$1ai nusprendi,'],
@@ -1366,6 +1386,15 @@ function applyKnownGrammarFixes(result) {
         return r.text;
       });
     }
+  }
+  // Kairysis/dešinysis delnas greta — tie patys pataisymai (ypač lyties neutralumas)
+  const dg = result.delnai_greta;
+  if (dg && typeof dg === 'object') {
+    const fx = t => { if (typeof t !== 'string') return t; const r = applyTextFixes(t); fixCount += r.count; return r.text; };
+    for (const k of ['sirdis', 'protas', 'gyvenimas']) {
+      if (dg[k] && typeof dg[k] === 'object') { dg[k].kairys = fx(dg[k].kairys); dg[k].desinys = fx(dg[k].desinys); }
+    }
+    dg.isvada = fx(dg.isvada);
   }
   if (fixCount > 0) console.log(`[applyKnownGrammarFixes] pritaikyta ${fixCount} deterministinių pataisymų`);
   return result;
@@ -1571,7 +1600,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
-- delnai_greta (Kairysis ir dešinysis delnas): ŠIS BLOKAS — VIENINTELĖ IŠIMTIS iš draudimo minėti linijas ir delno anatomiją: čia PRIVALAI trumpai įvardyti, KĄ matai. Chiromantijoje kairysis delnas rodo prigimtį (su kuo žmogus gimė), dešinysis — kokiu žmogus tapo dabar. Palygink TIKRUS skirtumus tarp ŠIŲ dviejų nuotraukų trijose srityse: sirdis (širdies linija — jausmai), protas (galvos linija — mąstymas), gyvenimas (gyvenimo linija — gyvenimo tempas ir jėgos). Kiekvienai sričiai: kairys ir desinys — po vieną frazę (iki 80 simbolių) formatu „trumpas, ką matai — ką tai reiškia“, „tu“ forma, pvz. kairys: „Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai“, desinys: „Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau“. Jei kurioje srityje delnai beveik vienodi — taip ir parašyk (pvz. „Beveik tokia pati — šią savybę išlaikei nepakitusią“). Žodžio „galva“ nenaudok — rašyk „mąstymas“ ar „protas“. isvada: 2 sakiniai — ką žmogus per gyvenimą išsiugdė ar pakeitė, palyginus su prigimtimi (konkretu, šilta, be giminę turinčių dalyvių)
+- delnai_greta (Kairysis ir dešinysis delnas): ŠIS BLOKAS — VIENINTELĖ IŠIMTIS iš draudimo minėti linijas ir delno anatomiją: čia PRIVALAI trumpai įvardyti, KĄ matai. Chiromantijoje kairysis delnas rodo prigimtį (su kuo žmogus gimė), dešinysis — kokiu žmogus tapo dabar. Palygink TIKRUS skirtumus tarp ŠIŲ dviejų nuotraukų trijose srityse: sirdis (širdies linija — jausmai), protas (galvos linija — mąstymas), gyvenimas (gyvenimo linija — gyvenimo tempas ir jėgos). Kiekvienai sričiai: kairys ir desinys — po vieną frazę (iki 80 simbolių) formatu „trumpas, ką matai — ką tai reiškia“, „tu“ forma, pvz. kairys: „Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai“, desinys: „Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau“. Jei kurioje srityje delnai beveik vienodi — taip ir parašyk (pvz. „Beveik tokia pati — šią savybę išlaikei nepakitusią“). Žodžio „galva“ nenaudok — rašyk „mąstymas“ ar „protas“. isvada: 2 sakiniai — ką žmogus per gyvenimą išsiugdė ar pakeitė, palyginus su prigimtimi (konkretu, šilta). LYTIS NEŽINOMA: šiame bloke (ir kairys/desinys frazėse) NIEKADA nerašyk giminę turinčių būdvardžių ar dalyvių apie žmogų — NE „buvai atviras/atvira“, „esi ramus“, „tapai santūresnis“, „gimęs“, „išmokęs“; VIETOJ jų — veiksmažodis + prieveiksmis: „iš prigimties jausmus reiškei atvirai“, „dabar elgiesi ramiau“, „tapo lengviau susivaldyti“
 - Kiekvienam skyriui "_insights": 3 trumpi sakiniai (max 8 žodžiai) — NAUJI faktai kurie PAPILDO tekstą, tiksliai atitinkantys skyriaus temą, nesikartojantys su tekstu
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
