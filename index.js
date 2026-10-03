@@ -3888,8 +3888,26 @@ function statInc(ev) {
   clearTimeout(_statsTimer);
   _statsTimer = setTimeout(() => { try { writeJson(STATS_FILE, _statsBuf); } catch (e) {} }, 2000);
 }
+// Reklamos šaltiniai (UTM): apsilankymai ir pirkimai pagal „šaltinis / kampanija“ (iki 40 skirtingų per dieną)
+function statSrc(src, field) {
+  const s = String(src).toLowerCase().replace(/[^a-z0-9ąčęėįšųūž_\- /]/g, '').replace(/\s+/g, ' ').trim().slice(0, 64);
+  if (!s) return;
+  if (!_statsBuf) _statsBuf = readJson(STATS_FILE, { days: {} });
+  const d = new Date().toISOString().slice(0, 10);
+  const day = (_statsBuf.days[d] = _statsBuf.days[d] || {});
+  const src2 = (day.src = day.src || {});
+  if (!src2[s] && Object.keys(src2).length >= 40) return;
+  const row = (src2[s] = src2[s] || {});
+  row[field] = (row[field] || 0) + 1;
+  clearTimeout(_statsTimer);
+  _statsTimer = setTimeout(() => { try { writeJson(STATS_FILE, _statsBuf); } catch (e) {} }, 2000);
+}
 app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
-  try { const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); if (['home', 'start', 'photos', 'pay_view', 'result', 'pora_view', 'dovana_view'].includes(b.e)) statInc(b.e); } catch (e) {}
+  try {
+    const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    if (['home', 'start', 'photos', 'pay_view', 'result', 'pora_view', 'dovana_view'].includes(b.e)) statInc(b.e);
+    else if ((b.e === 'src_visit' || b.e === 'src_buy') && typeof b.s === 'string') statSrc(b.s, b.e === 'src_visit' ? 'v' : (['asmenine', 'pora', 'dovana'].includes(b.k) ? b.k : 'kita'));
+  } catch (e) {}
   res.status(204).end();
 });
 app.get('/admin/stats', (req, res) => {
@@ -3918,6 +3936,13 @@ ${days.map(d => row(d, st.days[d])).join('')}</table></div>`;
 <style>body{font-family:system-ui,sans-serif;background:#0b0b0b;color:#eee;padding:16px;max-width:1100px}h1{color:#d4a843;font-size:20px}h2{color:#d4a843;font-size:15px;margin:22px 0 8px}.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid #333;padding:6px 8px;text-align:right;white-space:nowrap}th{background:#1a1a1a;color:#d4a843;white-space:normal;max-width:110px;vertical-align:bottom}td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:#0b0b0b}th:first-child{background:#1a1a1a}tr.sum td{background:#1d1708;font-weight:700}.k{color:#aaa;font-size:13px}</style></head><body>
 <h1>DELNAS — statistika</h1><div class="k">Įvertinimų vidurkis: <b>${avg}</b> (${fb.length}) · „Mokėjimas %“ = apmokėjo / pasiekė mokėjimo ekraną</div>
 ${groups.map(table).join('')}
+${(() => {
+  const agg = {};
+  days.forEach(d => Object.entries(st.days[d].src || {}).forEach(([k, v]) => { const a = (agg[k] = agg[k] || {}); for (const [f, n] of Object.entries(v)) a[f] = (a[f] || 0) + n; }));
+  const rows = Object.entries(agg).sort((a, b) => (b[1].v || 0) - (a[1].v || 0));
+  const buys = v => (v.asmenine || 0) + (v.pora || 0) + (v.dovana || 0);
+  return `<h2>Iš kur atėjo (reklamos nuorodos su UTM, 60 d.)</h2>` + (rows.length ? `<div class="tw"><table><tr><th>Šaltinis / kampanija</th><th>Apsilankė</th><th>Asmeninė</th><th>Poros</th><th>Dovanos</th><th>Pirkimai %</th></tr>${rows.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${v.v || 0}</td><td>${v.asmenine || 0}</td><td>${v.pora || 0}</td><td>${v.dovana || 0}</td><td>${pct(buys(v), v.v || 0)}</td></tr>`).join('')}</table></div>` : '<div class="k">Kol kas nėra lankytojų, atėjusių per nuorodas su UTM žymomis (pvz. ?utm_source=facebook&amp;utm_campaign=kaledos).</div>');
+})()}
 <h2>Paskutiniai įvertinimai</h2><div class="tw"><table><tr><th>Data</th><th>★</th><th>Vardas</th><th style="text-align:left">Atsiliepimas</th><th>Viešai</th></tr>
 ${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString().slice(0, 10)}</td><td>${x.stars}</td><td>${escapeHtml(x.name || '')}</td><td style="text-align:left;white-space:normal">${escapeHtml(x.text || '')}</td><td>${x.approved ? '✓ rodomas' : x.allowPublic ? `<a style="color:#d4a843" href="/feedback/approve?id=${x.id}&t=${feedbackToken(x.id)}">rodyti</a>` : 'ne'}</td></tr>`).join('')}</table></div>
 </body></html>`);

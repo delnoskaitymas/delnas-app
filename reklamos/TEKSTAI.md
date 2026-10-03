@@ -1,5 +1,7 @@
 # DELNAS — reklamų tekstai ir naudojimas
 
+> **Naujausia medžiaga (2026 ruduo–žiema):** video scenarijai, porų ir kalėdinės dovanos reklamos, UTM nuorodos ir kalėdinės kampanijos planas — skyrius **„4 banga“** šio failo pabaigoje.
+
 Vizualai: `png/` aplanke (sugeneruoti iš `reklamos.html`).
 Norint pakeisti tekstą ar spalvas — redaguok `reklamos.html` ir paleisk `node reklamos/render.js`.
 
@@ -170,7 +172,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - Palyginkit savo žemėlapius su drauge
 - Ruduo — laikas pokyčiams
 
-> Pastaba dėl „draugės“ reklamų: kiekviena draugė perka ir fotografuoja savo delnus pati — dovanų kuponų programa neturi, todėl reklamoje nerašyk „nupirk dovaną“, kad nebūtų klaidinančio pažado.
+> Pastaba (atnaujinta): dovanų kuponai jau yra (delnaskaitymas.lt/dovana) — dovanų reklamas vesk į /dovana. „Draugių“ reklamose (14, 15) kiekviena draugė vis tiek fotografuoja ir moka pati, nebent kuponą nuperka kita.
 
 ---
 
@@ -307,7 +309,7 @@ Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–
 > Nauji metai. Nauji tikslai. Nauji atsakymai.
 > Pasitik 2027-uosius su savo gyvenimo žemėlapiu ✦
 
-> ⚠️ Kol programėlėje nėra dovanų kuponų, **nerašyk** „padovanok draugei / nupirk dovaną“ — rašyk tik „dovana sau“ arba „išbandykit kartu“. Kai kuponai atsiras — galima pridėti atskirą „Dovanų kupono“ bangą.
+> Atnaujinta: dovanų kuponai jau veikia — kalėdinėms dovanoms naudok „🎁 Dovanų kuponų bangą“ (40–44) ir naujus 47–48 (dovana atkeliauja Kalėdų rytą). Šios (23–30) reklamos — „dovana sau“ ir Naujųjų metų tema.
 
 Kalėdinį video generuoti: `node reklamos/video-render.js video3.html delnas-reels-kaledos-1080x1920.mp4`
 
@@ -347,7 +349,7 @@ Kiekvienoje reklamoje parašyta: **Gimtadieniui · Mergvakariui · Staigmenai ·
 > Valentino dienai, sukakčiai ar tiesiog vakarui dviese ♥
 > Nufotografuokit delnus ir palyginkit, ką apie jus pasakoja jūsų linijos.
 
-> ⚠️ Reklamose nėra „nupirk dovaną / dovanų kuponas“ — kiekvienas išbando ir moka pats. Porų reklamose nežadama „suderinamumo įvertinimo“ — programėlė analizuoja kiekvieną atskirai, todėl rašoma „palyginkit“.
+> Atnaujinta: porų suderinamumas (su įverčiu procentais) jau yra — porų reklamas (37, 38, 45, 46) vesk į **delnaskaitymas.lt/pora**. 31–36 tinka asmeninei analizei („kiekviena išbando pati“).
 
 ---
 
@@ -382,3 +384,169 @@ Visos šios reklamos veda į **delnaskaitymas.lt/dovana** (ne į pagrindinį adr
 **Kada rodyti:** visus metus mažu biudžetu; smarkiai padidinti lapkr. 15 – gruod. 24, vasario 1–14, prieš Motinos dieną (gegužės 1-as sekmadienis). 43-ią — paskutinėmis dienomis prieš šventes.
 
 **Taikymas:** 25–55 m., pomėgiai: dovanos, gimtadieniai, astrologija, savęs pažinimas; Meta „Life events → Close friend's birthday“ (jei yra jūsų paskyroje).
+
+---
+
+## 4 banga — 2026 ruduo–žiema
+
+### Nauji vizualai
+
+| Failas | Formatas | Tema | Nuoroda |
+|---|---|---|---|
+| `45-poru-suderinamumas-1080x1080.png` | 1:1 | „Kaip derate poroje?“ + 86 % įvertis | /pora |
+| `46-poru-suderinamumas-story-1080x1920.png` | 9:16 | Tas pats Stories / Reels | /pora |
+| `47-kaledu-rytas-1080x1080.png` | 1:1 | „Dovana atkeliaus Kalėdų rytą“ (suplanuotas siuntimas) | /dovana |
+| `48-kaledu-rytas-story-1080x1920.png` | 9:16 | Tas pats Stories / Reels | /dovana |
+
+Generuoti iš naujo: `node reklamos/render.js` (sugeneruoja visus).
+
+### UTM nuorodos — kad statistikoje matytum, iš kur atėjo pirkėjai
+
+Statistikoje (`/admin/stats?key=…`) dabar yra lentelė **„Iš kur atėjo“**: kiek žmonių atėjo per kiekvieną reklamą ir kiek jų nupirko asmeninę analizę, porų analizę ar dovaną (pirkimas priskiriamas paskutinei reklamai per 30 d.).
+
+Naudok du laukus — **šaltinis** ir **kampanija** (lentelėje jie rodomi kaip „facebook / kaledos“):
+
+| Kur reklamuoji | utm_source |
+|---|---|
+| Facebook | `facebook` |
+| Instagram | `instagram` |
+| TikTok | `tiktok` |
+| Google | `google` |
+| Savo įrašai / bio nuoroda (nemokamai) | `bio` |
+
+| Ką reklamuoji | utm_campaign | Nuoroda |
+|---|---|---|
+| Asmeninė analizė | `asmenine` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=asmenine` |
+| Porų suderinamumas | `pora` | `https://www.delnaskaitymas.lt/pora?utm_source=facebook&utm_campaign=pora` |
+| Dovanos (visus metus) | `dovanos` | `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=dovanos` |
+| Kalėdos | `kaledos` | `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=kaledos` |
+| Naujieji metai | `metai` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=metai` |
+| Valentino diena | `valentinas` | `https://www.delnaskaitymas.lt/pora?utm_source=instagram&utm_campaign=valentinas` |
+
+Pakeisk `facebook` į `instagram`, `tiktok` ar `bio` pagal tai, kur dedi nuorodą. Meta Ads Manager'yje tą patį gali įrašyti laukelyje **„URL parameters“**: `utm_source=facebook&utm_campaign=kaledos`.
+
+---
+
+### TikTok / Reels scenarijai — „nufotografavau delnus — štai ką sužinojau“
+
+Filmuok pati telefonu, vertikaliai, natūraliai (ne „reklamiškai“ — tokie video TikTok'e veikia geriausiai). 15–30 s. Pirmos 2 sekundės — svarbiausios: pradėk nuo klausimo ar reakcijos, ne nuo logotipo. Muziką pridėk pačioje programėlėje iš jų bibliotekos. Visada parašyk „pramoginio pobūdžio“ aprašyme ir nežadėk tikslių spėjimų.
+
+**1. „Net šiurpas nuėjo“ (asmeninė analizė)**
+| Sek. | Vaizdas | Tekstas ekrane / balsas |
+|---|---|---|
+| 0–2 | Tavo veidas, nustebusi | „Nufotografavau savo delnus ir… 😳“ |
+| 2–6 | Fotografuoji delną programėlėje | „Kairįjį ir dešinįjį — užtruko minutę“ |
+| 6–14 | Slenki rezultatą: „Tavo delnai greta“ | „Kairysis — su kuo gimiau, dešinysis — kuo tapau“ |
+| 14–22 | Sustoji ties stiprybių korteles, perskaitai vieną | „Šita tiesiog apie mane…“ |
+| 22–27 | Telefonas su svetaine | „Nuoroda — bio. Parašykit, ką jums parodė 👇“ |
+
+Aprašymas: *Nufotografavau delnus — štai ką jie apie mane pasakė ✋✨ Pramoginio pobūdžio, bet… 😳 #delnųskaitymas #chiromantija #savęspažinimas #fyp*
+
+**2. „Kairysis prieš dešinįjį“ (smalsumas)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–3 | Rodai abu delnus į kamerą | „Ar žinojai, kad kairysis ir dešinysis delnas skiriasi?“ |
+| 3–8 | Artimas kairiojo, tada dešiniojo delno kadras | „Kairysis — su kuo gimei. Dešinysis — kuo tapai.“ |
+| 8–18 | Ekrano įrašas: „Tavo delnai greta“ su tavo rezultatu | „Mano širdies linija: iš prigimties — atvira, dabar — ramesnė…“ |
+| 18–24 | Tu | „O jūsų? Pasitikrinkit — nuoroda bio“ |
+
+**3. „Mūsų suderinamumas — 86 %“ (poroms)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–2 | Jūs abu, žiūrite į telefoną | „Pasitikrinom porų suderinamumą pagal delnus…“ |
+| 2–7 | Abu fotografuojatės (vienas, tada kitas) | „Pirma aš, tada jis“ |
+| 7–12 | Laukimo ekranas → rezultatas su procentais | „…ir gavom 86 %!“ (reakcija) |
+| 12–22 | Slenkat „Jūsų delnai greta“ | „Jis — ramybė, aš — šiluma. Tikrai taip 😂“ |
+| 22–27 | Abu | „Pasitikrinkit ir jūs — nuoroda bio 💞“ |
+
+Aprašymas: *Porų suderinamumas pagal delnus 💞 Kiek gavot jūs? #poros #santykiai #delnųskaitymas #fyp* — nuoroda: /pora
+
+**4. „Kuri iš mūsų lyderė?“ (draugės)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–2 | 3 draugės ant sofos | „Merginų vakaras: skaitom delnus 👭“ |
+| 2–10 | Paeiliui fotografuojasi | „Kiekviena — savo“ |
+| 10–20 | Skaitote viena kitai stiprybes, juokiatės | „Tu — gimusi lyderė, aš — intuicija…“ |
+| 20–25 | Tekstas | „Kurią žymėtum? 👇“ |
+
+**5. „Dovana mamai — be pakavimo“ (Kalėdos, nuo lapkr. 15)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–2 | Tu su telefonu | „Kalėdoms mamai radau neįprastą dovaną 🎄“ |
+| 2–10 | Pildai dovanos formą: vardas, palinkėjimas | „Įrašau palinkėjimą…“ |
+| 10–15 | Pažymi „Išsiųsti gavėjui nurodytą dieną“ → gruodžio 24 | „…ir ji gaus ją Kūčių rytą el. paštu“ |
+| 15–22 | Dovanų kortelė su QR | „Atsidarys ir pamatys savo gyvenimo žemėlapį“ |
+| 22–26 | Tekstas | „Nuoroda — bio 🎁“ |
+
+Nuoroda: `/dovana?utm_source=tiktok&utm_campaign=kaledos`
+
+**6. „Paklausiau savo delnų: ar keisti darbą?“ („Klausk savo delnų“)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–2 | Tu, susimąsčiusi | „Paklausiau savo delnų, ar keisti darbą 👀“ |
+| 2–8 | Rašai klausimą rezultato ekrane | „Įrašiau klausimą…“ |
+| 8–20 | Perskaitai atsakymo dalį | „…ir atsakymas buvo toks:“ |
+| 20–25 | Tu | „O jūs ko paklaustumėt? 👇“ |
+
+**7. „Horoskopas vs delnai“ (skeptikams)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–3 | Tekstas ant ekrano | „Horoskopas — vienodas milijonams.“ |
+| 3–6 | Tavo delnas iš arti | „Delnų linijos — tik tavo.“ |
+| 6–18 | Ekrano įrašas: fotografavimas → rezultatas | „Pabandžiau iš smalsumo…“ |
+| 18–24 | Tu | „Rezultatas — labiau apie mane nei bet koks horoskopas. Pramoga, bet įdomi ✨“ |
+
+**8. „Ką man atneš 2027-ieji?“ (Naujieji metai, gruod. 26 – saus. 10)**
+| Sek. | Vaizdas | Tekstas |
+|---|---|---|
+| 0–2 | Šventinė aplinka, fejerverkų / žvakių fonas | „Prieš Naujuosius pažiūrėjau į savo delnus ✨“ |
+| 2–12 | Fotografavimas → skyrius „Svarbiausi artėjantys pokyčiai“ | „Štai kas manęs laukia…“ |
+| 12–20 | Perskaitai vieną sakinį | — |
+| 20–25 | Tu | „Pasitikrinkit ir jūs — nuoroda bio 🥂“ |
+
+**Pasidalink ir rezultato kortele:** rezultato ekrane mygtukas „Dalintis kortele su stiprybėmis“ dabar sukuria **9:16 Stories kortelę** („Nufotografavau savo delnus — štai ką jie pasakė“ + tavo stiprybės + delnaskaitymas.lt) — ją galima tiesiai dėti į Instagram / TikTok / Facebook istorijas.
+
+---
+
+### Facebook / Instagram tekstai — nauji
+
+**AA — Porų suderinamumas (45, 46)** → /pora
+> Kaip derate poroje? 💞
+> Nufotografuokite abiejų delnus ir gaukite porų suderinamumo analizę: įvertis procentais, kas jus traukia, kur kyla trintis ir kaip augti kartu. Ekrane ir PDF el. paštu.
+> Antraštė: **Kaip derate poroje?** · Aprašymas: Porų analizė pagal abiejų delnus
+
+**AB — Kairysis ir dešinysis delnas** → / (asmeninė)
+> Ar žinojai, kad tavo kairysis ir dešinysis delnai pasakoja skirtingas istorijas? ✋
+> Kairysis — su kuo gimei, dešinysis — kuo tapai. Pamatyk jų palyginimą ir 7 skyrių asmeninę analizę per kelias minutes.
+> Antraštė: **Kuo gimei ir kuo tapai?**
+
+**AC — Dovana Kalėdų rytą (47, 48)** → /dovana
+> 🎄 Dovana, kuri atkeliaus Kalėdų rytą
+> Padovanok asmeninį Gyvenimo žemėlapį ar porų suderinamumą. Įrašyk palinkėjimą, pasirink dieną — kortelė gavėjui ateis el. paštu tą rytą. Nereikia nei pakuoti, nei siųsti.
+> Antraštė: **Dovana atkeliaus Kalėdų rytą** · Aprašymas: Asmeninė delnų analizė dovanų
+
+**AD — Paskutinė minutė (43, gruod. 21–24)** → /dovana
+> Pamiršai dovaną? ⏱ Spėsi.
+> Kortelė su QR kodu — tavo el. pašte per kelias minutes. Arba pasirink, kad gavėjas ją gautų Kalėdų rytą. 🎁
+
+---
+
+### 🎄 Kalėdų kampanija 2026 — planas
+
+| Laikotarpis | Ką rodyti | Nuoroda (utm_campaign) | Biudžetas |
+|---|---|---|---|
+| Lapkr. 1 – 14 | Nemokami TikTok / Reels (1, 2, 4, 7), bio nuoroda | `bio / asmenine` | 0 € — renkam, kuris video patinka labiausiai |
+| Lapkr. 15 – gruod. 9 | Dovanų reklamos 40, 41, 47, 48 + video 5 | `kaledos` → /dovana | ~10–15 €/d. |
+| Gruod. 1 – 24 | Svetainės pradžioje pati įsijungia eilutė „🎄 Kalėdoms — padovanok delnų analizę“ | — | — |
+| Gruod. 10 – 20 | Padidink dovanų biudžetą (+30 %), akcentuok „atkeliaus Kalėdų rytą“ (47, 48, AC) | `kaledos` | ~15–20 €/d. |
+| Gruod. 21 – 24 | „Paskutinė minutė“ (43, AD) | `kaledos` | ~15 €/d. |
+| Gruod. 26 – saus. 10 | Naujųjų metų tema (23, 24, 29, video 8); pradžioje pati įsijungia „✨ Ką tau žada nauji metai?“ | `metai` → / | ~10 €/d. (sausį reklama pigesnė) |
+| Vas. 1 – 14 | Valentino diena: 45, 46, 37, 38, video 3; pradžioje „💞 Valentino dienai — sužinokite, kaip derate“ | `valentinas` → /pora | ~10 €/d. |
+
+**Prieš kampaniją (iki lapkr. 15):**
+1. Patikrink tikrą dovanos pirkimą su suplanuota data (pvz. sau rytojui) — ar laiškas ateina 8 val. ryto.
+2. Įsitikink, kad Stripe įjungti Apple Pay / Google Pay (žr. README).
+3. Paruošk 2–3 savo video (1–8 scenarijai) ir paskelbk nemokamai — geriausią vėliau paleisk kaip reklamą.
+4. Kas savaitę žiūrėk `/admin/stats` → „Iš kur atėjo“: išjunk reklamas, kurios atveda lankytojų, bet neatneša pirkimų.
+
+**Svarbu:** dovaną su data galima pirkti iš anksto — tad jau lapkritį verta rašyti „nupirk dabar, ji atkeliaus Kalėdų rytą“.
