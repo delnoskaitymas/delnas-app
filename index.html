@@ -3687,15 +3687,6 @@ function _xEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
-  const p=r.potencialas;
-  if(p){
-    // Paprastas sąrašas: sritis ir trumpa išvada, ryškiausia pažymėta — be skaičių ir juostų
-    const topK=POT_DIMS.map(([k])=>[k,(p[k]||{}).balas||0]).sort((a,b)=>b[1]-a[1])[0][0];
-    const rows=POT_DIMS.filter(([k])=>(p[k]||{}).fraze).map(([k,label])=>'<div class="px-row'+(k===topK?' top':'')+'"><b>'+label+(k===topK?' <span>Ryškiausia</span>':'')+'</b><div>'+_xEsc(p[k].fraze)+'</div></div>').join('');
-    if(rows) h+='<div class="rs rs-std rs-reveal"><div class="rs-label">✦ Tavo potencialo žemėlapis</div>'+
-      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Kur tavo delnuose matomas ryškiausias potencialas.</div><div class="px-rows">'+rows+'</div>'+
-      '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ Potencialas — tai, ką gali išauginti. Pradėk nuo ryškiausios srities.</div></div>';
-  }
   const pl=r.planas;
   if(pl&&pl.length){
     const key='delnasPlan:'+(window._orderNumber||(r.userName||'')+'|'+(pl[0].tema||''));
@@ -4175,20 +4166,7 @@ function buildResultPdfDoc(r, name, orderNumber){
     if(PAGE_BOTTOM - y < 15){ y = newPage(); }
   });
 
-  // Potencialo žemėlapis ir 30 dienų kelias (jei analizėje yra)
-  if(r.potencialas){
-    if(y > PAGE_BOTTOM - 80){ y = newPage(); }
-    doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO POTENCIALO ŽEMĖLAPIS', margin, y); y += 12;
-    POT_DIMS.forEach(([k,label])=>{
-      const d=r.potencialas[k]||{}; if(!d.fraze) return;
-      if(y > PAGE_BOTTOM - 16){ y = newPage(); }
-      doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(label, margin, y); y += 7;
-      doc.setFont('NotoSans','normal'); doc.setFontSize(15); doc.setTextColor(...BODY);
-      doc.splitTextToSize(d.fraze, maxW).forEach(l=>{ doc.text(l, margin, y); y += 7.2; });
-      y += 4;
-    });
-    y += 6;
-  }
+  // 30 dienų kelias (jei analizėje yra)
   if(r.planas && r.planas.length){
     if(y > PAGE_BOTTOM - 45){ y = newPage(); }
     doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO 30 DIENŲ KELIAS', margin, y); y += 12;
