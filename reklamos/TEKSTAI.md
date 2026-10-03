@@ -518,7 +518,7 @@ Nuoroda: `/dovana?utm_source=tiktok&utm_campaign=kaledos`
 
 **AA — Porų suderinamumas (45, 46)** → /pora
 > Kaip derate poroje? 💞
-> Nufotografuokite savo delnus ir gaukite porų suderinamumo analizę: įvertis procentais, kas jus traukia, kur kyla trintis ir kaip augti kartu. Ekrane ir PDF el. paštu.
+> Nufotografuokite delnus ir gaukite porų suderinamumo analizę: įvertis procentais, kas jus traukia, kur kyla trintis ir kaip augti kartu. Ekrane ir PDF el. paštu.
 > Antraštė: **Kaip derate poroje?** · Aprašymas: Porų analizė pagal abiejų delnus
 
 **AB — Kairysis ir dešinysis delnas** → / (asmeninė)
