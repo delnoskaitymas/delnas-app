@@ -90,6 +90,13 @@ PORT = 3000
 - Užsakymai (analizės tekstas, klausimai, atsakymai) saugomi `SHARED_STORAGE_DIR/klausk-orders.json`: neapmokėti — 1 d., apmokėti — 90 d.
 - Kainą galima pakeisti Railway kintamuoju `KLAUSK_PRICE_CENTS` (pvz. `499` = 4,99 €). Pakeitus kainą, atnaujink ir tekstą rezultato ekrane bei sąlygose.
 
+## Pasiūlymas prie mokėjimo ir draugo nuoroda
+
+- Mokėjimo ekrane langelis „Pridėti 3 asmeninius klausimus — 2,99 €“ (`KLAUSK_BUMP_CENTS`, numatyta 299). Suma visada skaičiuojama serveryje (`/order-quote`), Apple/Google Pay lange atnaujinama.
+- Rezultato ekrane, jei priedas apmokėtas — „✓ Tavo 3 klausimai jau apmokėti“ (sukuriamas `kp_…` klausimų užsakymas).
+- „Pakviesti draugus išbandyti“ apmokėjusiam klientui dalija asmeninę nuorodą `/?ref=KODAS`: draugas gauna −20 % (`REF_DISCOUNT_PCT`), kvietėjas už kiekvieną apmokėtą draugo pirkimą — 3 klausimus el. paštu (iki 5 kartų).
+- Įrašai — `SHARED_STORAGE_DIR/refs.json` (12 mėn.).
+
 ## Pinigų srautas:
 Klientas moka kortele/Google Pay/Apple Pay/Revolut Pay → Stripe → banko sąskaita (pagal Stripe atsiskaitymų grafiką, žr. Stripe Dashboard → Payouts)
 
