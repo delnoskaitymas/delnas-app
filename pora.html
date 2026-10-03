@@ -48,7 +48,12 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 #v-form .row2 label,#v-form .card-form > label:first-child{margin-top:0}
 #v-form .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
 #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:13px 14px;font-size:16px}
-#v-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
+/* Užrašai — pirmoje eilutėje, laukeliai — antroje: abu užrašai ir abu laukeliai visada viename lygyje */
+#v-form .row2{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;row-gap:0;align-items:end}
+#v-form .row2 label{margin:0 0 7px;white-space:nowrap;letter-spacing:.07em;overflow:hidden;text-overflow:clip}
+#v-form .row2 input{min-width:0;width:100%}
+@media (max-width:380px){#v-form .row2 label{font-size:10px;letter-spacing:.03em}}
+@media (max-width:340px){#v-form .row2 label{white-space:normal}}
 #v-form .chk{margin-top:18px;font-size:12.5px;line-height:1.5;letter-spacing:0;text-transform:none}
 #v-form .chk2{margin-top:10px;font-size:11.5px;line-height:1.45;color:var(--faint);text-align:center}
 #v-form .chk2 button{background:none;border:none;padding:0;color:var(--gold);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
@@ -200,10 +205,10 @@ a{color:var(--gold)}
     <p class="lead sm" id="lead">Nufotografuokite abiejų delnus — ir gaukite porų suderinamumo analizę: kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.</p>
     <form class="card-form" id="pora-form" novalidate>
       <div class="row2">
-        <div><label for="f-a">Tavo vardas</label>
-        <input type="text" id="f-a" maxlength="40" placeholder="pvz. Monika" autocomplete="given-name"></div>
-        <div><label for="f-b">Partnerio (-ės) vardas</label>
-        <input type="text" id="f-b" maxlength="40" placeholder="pvz. Tomas" autocomplete="off"></div>
+        <label for="f-a">Tavo vardas</label>
+        <label for="f-b">Partnerio (-ės) vardas</label>
+        <input type="text" id="f-a" maxlength="40" placeholder="pvz. Monika" autocomplete="given-name">
+        <input type="text" id="f-b" maxlength="40" placeholder="pvz. Tomas" autocomplete="off">
       </div>
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
