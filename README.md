@@ -108,6 +108,7 @@ PORT = 3000
 - /dovana: „📅 Išsiųsti gavėjui el. paštu nurodytą dieną“ — gavėjo el. paštas ir data; serveris kas valandą tikrina ir siunčia nuo 8 val. Lietuvos laiku (jei data šiandien — iškart). Pirkėjas gauna „✓ Jūsų dovana išsiųsta“.
 - Nepanaudotas kuponas po 30 d. — vienas priminimas pirkėjui.
 - Sezoninės temos įsijungia pačios: Valentino diena (vasario 1–14, pažymėtas porų kuponas), Motinos diena (balandžio 20 – pirmas gegužės sekmadienis), Kalėdos (gruodžio 1–24). Peržiūra: `/dovana?sezonas=valentinas|mama|kaledos`.
+- Pradžios ekrane — viena šventinė eilutė virš pagrindinio mygtuko (įsijungia pati, Vilniaus laiku): Kalėdos gruod. 1–24 → /dovana; Naujieji metai gruod. 26 – saus. 10 → pradeda analizę; Valentino diena vas. 1–14 → /pora; Motinos diena bal. 20 – pirmas gegužės sekmadienis → /dovana?sezonas=mama. Be animacijų. Peržiūra: `/?sezonas=kaledos|metai|valentinas|mama`.
 
 ## Daugiau pajamų ir patogumo
 
