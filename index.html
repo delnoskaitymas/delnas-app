@@ -5847,10 +5847,18 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   })(0);
 })();
 
-// Sutikimo langas porų režimui — daugiskaita, už abu partnerius
+// Sutikimo langas porų režimui — daugiskaita (fotografuojant viename telefone);
+// antrajam žmogui, atidariusiam nuorodą, — vienaskaita: sutinka tik už save
 function poraConsentTexts(){
   const L='color:#d4a843;text-decoration:underline';
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
+  if(window._pora&&window._pora.remoteB){
+    set('consent-intro','✋ Paprašysime nufotografuoti tavo kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
+    set('consent-age-txt','Patvirtinu, kad man yra 18 metų, ir sutinku su delnų analize ir <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
+    set('consent-wd-txt','Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo.');
+    const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinku ir tęsiu ✦';
+    return;
+  }
   set('consent-intro','✋ Paprašysime paeiliui nufotografuoti jūsų kairiuosius ir dešiniuosius delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
   set('consent-age-txt','Patvirtiname, kad mums yra 18 metų ir sutinkame su delnų analize ir su <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
   set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
@@ -5951,8 +5959,8 @@ function poraShowError(msg){
 // tekstai (nuotraukų atpažinimas), tada visi 7 punktai užsidega kartu su šviesos perbėgimu
 // ir bendru ratuku prie procentų, pabaigoje — varnelės, 100 % ir išblukimas.
 const PORA_MICRO1=['Tikrinamos visų keturių delnų nuotraukos...','Nustatoma jūsų delnų forma...','Lyginamas pirštų ilgis ir padėtis...','Atpažįstamos jūsų delnų linijos...','Lyginami kairieji ir dešinieji delnai...'];
-const PORA_MICRO2=['Analizuojamos jūsų širdies linijos...','Lyginama, kaip reiškiate jausmus...','Analizuojamos jūsų galvos linijos...','Lyginamas mąstymo ir sprendimų stilius...','Tyrinėjamos jūsų gyvenimo linijos...','Lyginamas jūsų gyvenimo tempas...','Ieškoma likimo linijų sąsajų...','Lyginami ryškiausi delnų kalneliai...','Ieškoma, kur jūsų bruožai sutampa...','Ieškoma, kaip derate tarpusavyje...','Vertinamos šešios santykių sritys...','Skaičiuojamas jūsų porų suderinamumas...','Lyginamas jūsų jausmų gylis...','Vertinama, kaip rodote rūpestį...','Ieškoma bendrų vertybių ženklų...','Lyginamas požiūris į pinigus...','Vertinama, kaip kuriate namų jaukumą...','Lyginami jūsų ateities planai...','Analizuojamos jūsų likimo linijos...','Lyginamas jūsų nykščių lankstumas...','Vertinami jūsų Veneros kalneliai...','Ieškoma, kas jus natūraliai traukia...','Lyginama, kaip sprendžiate nesutarimus...','Vertinamas jūsų bendravimo ritmas...','Ieškoma, kur verta susitarti...','Lyginamas jūsų kasdienybės tempas...','Atskleidžiamos jūsų poros stiprybės...'];
-const PORA_MICRO3=['Ruošiami patarimai jūsų porai...','Sudėliojamos baigiamosios analizės išvados...','Baigiama ruošti jūsų porų analizę...','Tikrinamas kiekvienas analizės skyrius...','Ruošiamas jūsų rezultatų ekranas...'];
+const PORA_MICRO2=['Analizuojamos jūsų širdies linijos...','Lyginama, kaip reiškiate jausmus...','Analizuojamos jūsų galvos linijos...','Lyginamas mąstymo ir sprendimų stilius...','Tyrinėjamos jūsų gyvenimo linijos...','Lyginamas jūsų gyvenimo tempas...','Ieškoma likimo linijų sąsajų...','Lyginami ryškiausi delnų kalneliai...','Ieškoma, kur jūsų bruožai sutampa...','Ieškoma, kaip derate tarpusavyje...','Vertinamos šešios santykių sritys...','Skaičiuojamas jūsų porų suderinamumas...','Lyginamas jūsų jausmų gylis...','Vertinama, kaip rodote rūpestį...','Ieškoma bendrų vertybių ženklų...','Lyginamas požiūris į pinigus...','Vertinama, kaip kuriate namų jaukumą...','Lyginami jūsų ateities planai...','Analizuojamos jūsų likimo linijos...','Ieškoma, kas jus natūraliai traukia...','Lyginama, kaip sprendžiate nesutarimus...','Vertinamas jūsų bendravimo ritmas...','Ieškoma, kur verta susitarti...','Lyginamas jūsų kasdienybės tempas...','Atskleidžiamos jūsų poros stiprybės...'];
+const PORA_MICRO3=['Ruošiami patarimai jūsų porai...','Sudėliojamos baigiamosios analizės išvados...','Baigiama ruošti jūsų porų analizę...','Tikrinamas kiekvienas analizės skyrius...','Ruošiamas jūsų rezultatų ekranas...','Tikrinamas analizės tekstų sklandumas...','Suderinami visų skyrių akcentai...','Ruošiamos įžvalgos kiekvienam skyriui...','Tikslinamas jūsų suderinamumo įvertis...','Ruošiamas jūsų analizės PDF failas...','Dėliojami paskutiniai analizės štrichai...','Peržiūrimi visi septyni skyriai...','Jūsų porų analizė beveik paruošta...'];
 function poraStopProgress(){
   window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
   const sp=document.getElementById('pora-spinner'); if(sp) sp.style.display='none';
@@ -5974,9 +5982,8 @@ function poraProgress(start){
   window._poraDone=false;
   const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
   let order=[], idx=0, lastPool=null;
-  const pp=window._pora||{}, ga=ltForms(pp.nameA||'').gen, gb=ltForms(pp.nameB||'').gen;
-  // 1 etapas — kiekvieno delnai atskirai, eilės tvarka (nemaišoma)
-  const MICRO1=(pp.nameA&&pp.nameB)?['Analizuojama '+ga+' delnų forma...','Atpažįstamos '+ga+' delnų linijos...','Analizuojama '+gb+' delnų forma...','Atpažįstamos '+gb+' delnų linijos...','Lyginami jūsų delnai tarpusavyje...']:PORA_MICRO1;
+  // 1 etapas — eilės tvarka (nemaišoma)
+  const MICRO1=PORA_MICRO1;
   const pool=()=>window._poraPhase===1?MICRO1:((window._poraPct||0)>=85?PORA_MICRO3:PORA_MICRO2);
   const micro=()=>{
     if(window._poraDone) return;
@@ -6592,16 +6599,16 @@ async function loadCompare(){
 function fitPayScreen(){
   const si=document.getElementById('s-info'), tr=document.getElementById('pay-trust-row');
   if(!si||!tr||!si.classList.contains('active')) return;
-  si.classList.remove('pay-t1','pay-t2'); document.body.style.overflowY='';
+  si.classList.remove('pay-t1','pay-t2'); if(window._payOY){ document.body.style.overflowY=''; window._payOY=false; }
   const bottom=()=>{ let y=0,e=tr; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y+tr.offsetHeight; };
   const over=()=>bottom()>window.innerHeight-6;
   if(over()) si.classList.add('pay-t1');
   if(over()) si.classList.add('pay-t2');
-  if(over()) document.body.style.overflowY='auto';
+  if(over()){ document.body.style.overflowY='auto'; window._payOY=true; }
 }
 (function(){
   const _go=window.go;
-  window.go=function(id){ const r=_go.apply(this,arguments); if(id!=='s-info') document.body.style.overflowY=''; else { [60,700,1600].forEach(t=>setTimeout(fitPayScreen,t)); } return r; };
+  window.go=function(id){ const r=_go.apply(this,arguments); if(id!=='s-info'&&window._payOY){ document.body.style.overflowY=''; window._payOY=false; } else { [60,700,1600].forEach(t=>setTimeout(fitPayScreen,t)); } return r; };
   window.addEventListener('resize',()=>setTimeout(fitPayScreen,100));
 })();
 </script>
