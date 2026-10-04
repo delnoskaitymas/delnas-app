@@ -113,11 +113,11 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
     }
     if (d.poros.length) {
       h += '<div class="sec">Porų suderinamumas</div>';
-      h += d.poros.map(p => '<div class="item"><div class="ic">💞</div><div class="tx"><b>' + esc(p.nameA) + ' ir ' + esc(p.nameB) + '</b><small>' + day(p.createdAt) + '</small></div><div class="act"><a class="open" href="/?pora=' + encodeURIComponent(p.id) + '">Atidaryti</a></div></div>').join('');
+      h += d.poros.map(p => '<div class="item"><div class="ic">💞</div><div class="tx"><b>' + esc(p.nameA) + ' ir ' + esc(p.nameB) + '</b><small>' + day(p.createdAt) + '</small></div><div class="act"><a class="open" href="/?pora=' + encodeURIComponent(p.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a></div></div>').join('');
     }
     if (d.klausimai.length) {
       h += '<div class="sec">Klausk savo delnų</div>';
-      h += d.klausimai.map(k => '<div class="item"><div class="ic">✦</div><div class="tx"><b>' + (k.kind === 'pora' ? 'Klausimai porai' : 'Asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '">Atidaryti</a></div></div>').join('');
+      h += d.klausimai.map(k => '<div class="item"><div class="ic">✦</div><div class="tx"><b>' + (k.kind === 'pora' ? 'Klausimai porai' : 'Asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a></div></div>').join('');
     }
     $('list').innerHTML = h || '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {

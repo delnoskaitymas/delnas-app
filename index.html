@@ -6529,4 +6529,18 @@ function fitPayScreen(){
   }catch(e){}
 })();
 </script>
+<script>
+// Atidaryta iš „Mano analizių“ — mygtukas atgal į sąrašą
+(function(){
+  try{
+    const p=new URLSearchParams(location.search), t=p.get('mt')||(p.get('mano')?p.get('t'):'');
+    if(!t||!/^mt_[a-f0-9]{32}$/.test(t)) return;
+    const a=document.createElement('a');
+    a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='← Mano analizės';
+    a.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+    const add=()=>document.body.appendChild(a);
+    if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+  }catch(e){}
+})();
+</script>
 </body></html>
