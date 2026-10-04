@@ -51,8 +51,9 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .tabs button{border:1px solid rgba(212,168,67,.4);background:#000;color:var(--muted);border-radius:12px;padding:10px 8px;text-align:center;font:500 13px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
 .tabs button.on{background:rgba(212,168,67,.15);border-color:var(--gold);color:var(--gold2)}
 .tabs button i{font-style:normal;opacity:.7;margin-left:4px}
-body.list-view .hero{display:none}
-body.list-view h1{font-size:26px;margin-top:14px}
+body.list-view .brand{font-size:19px}
+body.list-view .hero{width:80px;height:80px;margin:14px auto 10px}
+body.list-view h1{font-size:34px;margin-top:0}
 body.list-view .wrap{padding-top:58px}
 body.list-view #list-lead{margin-bottom:4px}
 .item[hidden],.sec[hidden]{display:none!important}
@@ -81,6 +82,9 @@ body.list-view .sec{display:none}
 body.fit:not(.list-view) .brand{font-size:var(--bf,16px)!important}
 body.fit:not(.list-view) .hero{width:var(--hs,86px)!important;height:var(--hs,86px)!important;margin:var(--hm,14px) auto var(--hm,14px)!important}
 body:not(.list-view) .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
+.tabs button{padding:13px 8px;font-size:14.5px;white-space:normal;line-height:1.25}
+@media (max-width:370px){.tabs button{font-size:13.5px;padding:11px 6px}}
+.tabs button i{font-size:14px}
 </style>
 </head>
 <body>
