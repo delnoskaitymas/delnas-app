@@ -4591,6 +4591,17 @@ app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};
   const email = manoEmailFromToken(t);
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  // Porų analizė arba klausimai su atsakymais — ištrinami, jei priklauso šiam el. paštui
+  const type = (req.body || {}).type;
+  if (type === 'pora' || type === 'kl') {
+    const key = String(id || '');
+    const orders = type === 'pora' ? loadPoraOrders() : loadKlauskOrders(), o = orders[key];
+    if (!o || (o.email || '').toLowerCase() !== email) return res.status(404).json({ error: 'Įrašas nerastas' });
+    delete orders[key];
+    if (type === 'pora') { savePoraOrders(orders); try { deletePoraFirstPhotos(key); } catch (e) {} } else saveKlauskOrders(orders);
+    console.log(`[mano] ištrintas ${type === 'pora' ? 'porų užsakymas' : 'klausimų užsakymas'} ${key}`);
+    return res.json({ ok: true });
+  }
   const s = loadSaved(), it = s.items[String(id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
   delete s.items[it.id];

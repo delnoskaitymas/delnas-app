@@ -145,11 +145,11 @@ body.ask-sent #v-ask .note{display:none}
     }
     if (d.poros.length) {
       h += '<div class="sec" data-cat="pora">Porų suderinamumas</div>';
-      h += d.poros.map(p => '<div class="item" data-cat="pora"><div class="ic">💞</div><div class="tx"><b>' + esc(p.nameA) + ' ir ' + esc(p.nameB) + '</b><small>' + day(p.createdAt) + '</small></div><div class="act"><a class="open" href="/?pora=' + encodeURIComponent(p.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a></div></div>').join('');
+      h += d.poros.map(p => '<div class="item" data-cat="pora" data-type="pora" data-id="' + esc(p.id) + '"><div class="ic">💞</div><div class="tx"><b>' + esc(p.nameA) + ' ir ' + esc(p.nameB) + '</b><small>' + day(p.createdAt) + '</small></div><div class="act"><a class="open" href="/?pora=' + encodeURIComponent(p.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
     if (d.klausimai.length) {
       h += '<div class="sec" data-cat="kl">Klausk savo delnų</div>';
-      h += d.klausimai.map(k => '<div class="item" data-cat="kl"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a></div></div>').join('');
+      h += d.klausimai.map(k => '<div class="item" data-cat="kl" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
     const cats = [['all', 'Visi', d.analizes.length + d.poros.length + d.klausimai.length], ['asm', 'Asmeninės', d.analizes.length], ['pora', 'Porų', d.poros.length], ['kl', 'Klausimai', d.klausimai.length]].filter(c => c[2]);
     const tabs = cats.length > 2 ? '<div class="tabs" id="tabs">' + cats.map((c, i) => '<button type="button" data-cat="' + c[0] + '"' + (i ? '' : ' class="on"') + '>' + c[1] + '<i>' + c[2] + '</i></button>').join('') + '</div>' : '';
@@ -164,11 +164,18 @@ body.ask-sent #v-ask .note{display:none}
     });
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {
       const it = b.closest('.item');
-      if (!confirm('Ištrinti šią analizę? To atšaukti nebus galima.')) return;
+      const ty = it.dataset.type || 'asm';
+      if (!confirm(ty === 'kl' ? 'Ištrinti šiuos klausimus ir atsakymus? To atšaukti nebus galima.' : 'Ištrinti šią analizę? To atšaukti nebus galima.')) return;
       try {
-        const r = await fetch('/mano/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t, id: it.dataset.id }) });
+        const r = await fetch('/mano/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t, id: it.dataset.id, type: ty }) });
         if (!r.ok) throw new Error((await r.json()).error || 'Nepavyko ištrinti');
-        it.remove();
+        // Atnaujinami skaičiai skirtukuose; tuščia kategorija paslepiama
+        const cat = it.dataset.cat; it.remove();
+        const left = $('list').querySelectorAll('.item[data-cat="' + cat + '"]').length;
+        if (!left) { const sec = $('list').querySelector('.sec[data-cat="' + cat + '"]'); if (sec) sec.remove(); }
+        const tb = $('tabs');
+        if (tb) tb.querySelectorAll('button').forEach(b => { const c = b.dataset.cat, n = c === 'all' ? $('list').querySelectorAll('.item').length : $('list').querySelectorAll('.item[data-cat="' + c + '"]').length; b.querySelector('i').textContent = n; if (!n && c !== 'all') b.remove(); });
+        if (!$('list').querySelectorAll('.item').length) $('list').innerHTML = '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
       } catch (ex) { alert(ex.message); }
     }));
   }
