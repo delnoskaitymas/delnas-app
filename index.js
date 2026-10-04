@@ -4105,7 +4105,7 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `${'★'.repeat(st)}${'☆'.repeat(5 - st)} Naujas įvertinimas${first ? ' — ' + first : ''}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${'★'.repeat(st)}${'☆'.repeat(5 - st)}</h2><p><strong>Vardas:</strong> ${escapeHtml(first || '—')} · ${item.kind === 'pora' ? 'porų analizė' : 'asmeninė analizė'}</p><p><strong>Atsiliepimas:</strong> ${escapeHtml(t || '—')}</p><p><strong>Leidžia rodyti viešai:</strong> ${item.allowPublic ? 'taip' : 'ne'}</p>${approve}<p style="margin-top:18px;font-size:13px"><a href="${appBaseUrl()}/admin/stats?key=${ADMIN_KEY}" style="color:#8a5a0f">📊 Statistika ir visi įvertinimai</a></p></div>`
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${'★'.repeat(st)}${'☆'.repeat(5 - st)}</h2><p><strong>Vardas:</strong> ${escapeHtml(first || '—')} · ${item.kind === 'pora' ? 'porų analizė' : 'asmeninė analizė'}</p><p><strong>Atsiliepimas:</strong> ${escapeHtml(t || '—')}</p><p><strong>Leidžia rodyti viešai:</strong> ${item.allowPublic ? 'taip' : 'ne'}${item.allowPublic && t && t.length <= 60 ? ' · <b>trumpas — tiks ir pradžios ekranui</b>' : ''}</p>${approve}<p style="margin-top:18px;font-size:13px"><a href="${appBaseUrl()}/admin/stats?key=${ADMIN_KEY}" style="color:#8a5a0f">📊 Statistika ir visi įvertinimai</a></p></div>`
     }).catch(e => console.error('[feedback] laiško klaida:', e.message));
     res.json({ ok: true });
   } catch (err) { console.error('/feedback klaida:', err); res.status(500).json({ error: 'Nepavyko išsaugoti' }); }

@@ -461,6 +461,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sample-more-l span{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(212,168,67,.75);padding:7px 8px;border-radius:8px;background:rgba(212,168,67,.06)}
 .sample-more-l span::before{content:"🔒 ";filter:grayscale(1);opacity:.7}
 .sample-more-f{font-size:12px;line-height:1.5;color:var(--muted);margin-top:10px}
+.home-testi{text-align:center;font-size:12px;line-height:1.4;color:rgba(255,255,255,.62);margin:10px 18px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-testi .st{color:var(--gold2);letter-spacing:1px;margin-right:5px;font-size:11px}
+.home-testi i{font-family:'Playfair Display',serif}
+.home-testi .nm{color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
@@ -558,6 +562,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <a id="season-line" class="season-line" href="#" style="display:none"></a>
     <button id="main-cta-btn" class="btn btn-gold" style="font-size:15px;padding:14px;border-radius:14px;margin-bottom:8px;animation:mainBtnBreathing 3s ease-in-out infinite" onclick="startApp()" onmousedown="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" onmouseup="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'" ontouchstart="this.style.animation='none';this.style.transform='scale(.97)';this.style.opacity='.85'" ontouchend="this.style.transform='';this.style.opacity='';this.style.animation='mainBtnBreathing 3s ease-in-out infinite'">Atskleisti gyvenimo žemėlapį →</button>
     <div id="home-time" style="text-align:center;font-size:11px;color:rgba(212,168,67,.7);margin-bottom:0;letter-spacing:.02em">⏱ Užtruksi tik kelias minutes</div>
+    <div id="home-testi" class="home-testi" style="display:none"></div>
     <a href="/mano" class="home-mano" id="home-mano">Jau darei analizę? <b>Mano analizės →</b></a>
   </div>
   </div>
@@ -1517,6 +1522,22 @@ function track(e){
 const SAMPLE_PALMS={sirdis:{kairys:'Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai ir šiltai',desinys:'Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau'},protas:{kairys:'Lenkta žemyn — iš prigimties mąstai vaizdžiai ir intuityviai',desinys:'Ilga ir tiesi — dabar sprendimus priimi nuosekliai'},gyvenimas:{kairys:'Plačiu lanku — daug jėgų ir smalsumo',desinys:'Beveik tokia pati — savo energiją išlaikei'},isvada:'Per gyvenimą išmokai jautrumą derinti su praktišku protu. Jausmus rodai rečiau, bet sprendimus priimi tvirčiau.'};
 function openSample(){ const m=document.getElementById('sample-modal'); if(m){ const sp=document.getElementById('sample-palms'); if(sp&&!sp.innerHTML) sp.innerHTML=palmsBlockHtml(SAMPLE_PALMS,''); m.classList.add('open'); m.setAttribute('aria-hidden','false'); m.scrollTop=0; } }
 function closeSample(){ const m=document.getElementById('sample-modal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
+
+// ═══ Pradžios ekrane — vienas trumpas patvirtintas atsiliepimas (atsitiktinis, per apsilankymą nesikeičia) ═══
+(function homeTestimonial(){
+  try{
+    const q=new URLSearchParams(location.search);
+    if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')||q.get('ref')) return;
+    fetch('/testimonials').then(r=>r.json()).then(d=>{
+      const short=((d&&d.items)||[]).filter(x=>x.text&&x.text.length<=60);
+      const el=document.getElementById('home-testi'); if(!short.length||!el) return;
+      const x=short[Math.floor(Math.random()*short.length)];
+      const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      el.innerHTML='<span class="st">'+'★'.repeat(x.stars)+'</span><i>„'+esc(x.text)+'“</i>'+(x.name?' <span class="nm">— '+esc(x.name)+'</span>':'');
+      el.style.display='block';
+    }).catch(()=>{});
+  }catch(e){}
+})();
 
 // ═══ Tikri, patvirtinti atsiliepimai mokėjimo ekrane ═══
 let _testiTimer=null;
