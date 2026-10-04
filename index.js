@@ -2889,12 +2889,12 @@ function buildGiftRecipientEmailHtml(gift) {
     ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:14px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
     <div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.8)">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
-    <div style="font-size:19px;color:#fff;margin-top:8px">${pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal abiejų delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus'}</div>
+    <div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal abiejų delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną →</a></div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Abu nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
   </div>
-  <div style="max-width:520px;margin:16px auto 0;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.6;color:#888;text-align:center">Šį laišką gavote, nes ${from || 'kažkas'} jums įsigijo DELNAS dovaną. Pramoginio pobūdžio paslauga, 18+.</div>
+  <div style="max-width:520px;margin:16px auto 0;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.6;color:#888;text-align:center">${from ? `Šį laišką ${pora ? 'gavote, nes ' + from + ' jums' : 'gavai, nes ' + from + ' tau'} padovanojo ${pora ? 'DELNAS porų suderinamumą' : 'DELNAS gyvenimo žemėlapį'}.` : `Šį laišką ${pora ? 'gavote, nes jums' : 'gavai, nes tau'} buvo padovanotas ${pora ? 'DELNAS porų suderinamumas' : 'DELNAS gyvenimo žemėlapis'}.`} Pramoginio pobūdžio paslauga, 18+.</div>
   ${EMAIL_FOOTER_HTML}
 </div>`;
 }
