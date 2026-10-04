@@ -209,7 +209,7 @@ body.card-view #v-card{margin:auto 0}
 .dt{display:grid;grid-template-columns:1.35fr auto 1fr auto 1fr 1.3fr;gap:6px;align-items:center}
 .dt span{color:var(--faint);text-align:center}
 .dt select{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 6px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
-.dt select#f-h{margin-left:6px}
+.dt select#f-h{margin-left:6px;width:calc(100% - 6px)}
 .dt-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.4}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
@@ -290,6 +290,7 @@ body.form-view.fit .wrap > .brand{font-size:var(--bf,14px)!important;margin-bott
 body.form-view.fit #v-form .intro > .hero,body.form-view.fit #v-redeem .intro > .hero{width:var(--hs,70px)!important;height:var(--hs,70px)!important}
 body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!important;height:calc(var(--hs,70px) * .92)!important}
 body.form-view.fit .wrap{padding-bottom:calc(var(--bt,12px) * .6)}
+body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!important}
 /* Kompaktiška forma — kai kitaip DELNAS ir ikona būtų per maži (įjungia fitHeader()) */
 body.form-view.tight #gift-form{padding-top:10px;padding-bottom:9px}
 body.form-view.tight #form-h1{font-size:24px;line-height:1.08}
@@ -301,6 +302,14 @@ body.form-view.tight #v-form input[type=text],body.form-view.tight #v-form input
 body.form-view.tight #v-form textarea{height:36px;min-height:36px;padding-top:7px;padding-bottom:7px}
 body.form-view.tight #v-form label[for=f-msg],body.form-view.tight #buyer-wrap>label{margin-top:5px}
 body.form-view.tight #v-form .sched-chk{margin-top:8px!important}
+body.form-view.tight #sched label{margin-top:5px}
+body.form-view.tight .dt select{padding-top:7px;padding-bottom:7px;min-height:38px}
+body.form-view.tight .dt-note{margin-top:3px;font-size:11px}
+/* Atidarius datą — antraštė vienoje eilutėje, pastaba apie vėlavimą paslepiama, kad DELNAS ir ikona liktų dideli */
+body.form-view.tight.sched-on #form-h1{font-size:22px;line-height:1.15}
+body.form-view.tight.sched-on #form-h1 br{display:none}
+body.form-view.tight.sched-on #form-h1 em{margin-left:.25em}
+body.form-view.tight.sched-on .dt-note{display:none}
 body.form-view.tight #v-form label[for=f-ok]{margin-top:7px}
 body.form-view.tight #pay-btn{margin-top:8px;padding-top:11px;padding-bottom:11px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
@@ -534,6 +543,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const on = $('f-sched').checked;
     $('sched').classList.toggle('hidden', !on);
     $('buyer-wrap').classList.toggle('hidden', on); // siunčiant gavėjui savo el. pašto rašyti nereikia
+    document.body.classList.toggle('sched-on', on);
     refreshBtn();
   });
   $('f-to-email').addEventListener('input', refreshBtn);
@@ -826,29 +836,36 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 // DELNAS užrašas ir delno ikona: parenkamas didžiausias dydis, kuriam esant visa forma telpa į ekraną be slinkimo
 (function(){
   const L=[[22,124,30,14],[20,112,26,12],[19,102,22,11],[18,94,18,10],[17,86,16,9],[16,78,14,8],[15,70,12,8],[14,62,10,7],[13,54,8,6],[12,46,6,4]];
-  const root=document.documentElement;
+  const root=document.documentElement; let mo=null;
   function fit(){
     if(!document.body.classList.contains('form-view')) return;
     document.body.classList.add('fit');
+    // Matuojant išjungiamos animacijos — kitaip matuojamas tarpinis (dar nepasikeitęs) dydis
+    document.body.classList.add('fitting');
     const set=l=>{ root.style.setProperty('--bf',l[0]+'px'); root.style.setProperty('--hs',l[1]+'px'); root.style.setProperty('--bt',l[2]+'px'); root.style.setProperty('--bg',l[3]+'px'); };
     const fits=()=>root.scrollHeight<=window.innerHeight+1;
-    // Pirmiausia — įprasta forma; jei ikona tada būtų mažesnė nei 86px, forma suglaudinama (.tight), kad liktų vietos DELNAS ir ikonai
+    const best=()=>{ for(const l of L){ set(l); if(fits()) return l; } return null; };
+    // Įprasta forma; jei ikona tada mažesnė nei 102px, bandoma suglaudinta (.tight) ir paliekamas variantas su didesne ikona
     document.body.classList.remove('tight');
-    let pick=null;
-    for(const l of L){ if(l[1]<86) break; set(l); if(fits()){ pick=l; break; } }
-    if(!pick){
+    const a=best(); let pick=a;
+    if(!a||a[1]<102){
       document.body.classList.add('tight');
-      for(const l of L){ set(l); if(fits()){ pick=l; break; } }
-      // Labai žemas ekranas — jei ir suglaudinta netelpa, grįžtama prie įprastos formos ir mažiausio dydžio, kuris telpa
-      if(!pick){ document.body.classList.remove('tight'); pick=L[L.length-1]; for(const l of L){ set(l); if(fits()){ pick=l; break; } } }
+      const b=best();
+      if(b&&(!a||b[1]>a[1])) pick=b; else document.body.classList.remove('tight');
     }
-    root.style.setProperty('--bf',pick[0]+'px'); root.style.setProperty('--hs',pick[1]+'px'); root.style.setProperty('--bt',pick[2]+'px'); root.style.setProperty('--bg',pick[3]+'px');
+    if(!pick) pick=L[L.length-1];
+    set(pick);
+    void root.offsetHeight; document.body.classList.remove('fitting');
+    // Pačios fit() pakeistos klasės neturi vėl paleisti perskaičiavimo
+    if(mo) mo.takeRecords();
   }
   let t=null; const later=()=>{ clearTimeout(t); t=setTimeout(fit,60); };
   window.addEventListener('resize',later);
   window.addEventListener('load',()=>{ fit(); setTimeout(fit,400); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit); });
   // Pasikeitus formos turiniui (tipas, nuolaidos pastaba, rodinys) — perskaičiuojama
-  try{ new MutationObserver(later).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']}); }catch(e){}
+  try{ mo=new MutationObserver(later); mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']}); }catch(e){}
+  // Išdėstymas gali pasikeisti ir be DOM pakeitimų (pvz., įsikėlus šriftams) — sekamas formos dydis
+  try{ const ro=new ResizeObserver(later); ['v-form','v-redeem'].forEach(id=>{ const e=document.getElementById(id); if(e) ro.observe(e); }); }catch(e){}
   window.fitHeader=fit;
 })();
 </script>
