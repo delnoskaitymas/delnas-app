@@ -5835,6 +5835,8 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuokite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
+      // Porų dovana — tokie patys auksiniai konfeti toje pačioje vietoje kaip asmeninės dovanos atveju
+      if(sid.startsWith('gp_')&&typeof giftConfetti==='function') giftConfetti();
     }catch(e){
       if(attempt<6){ setTimeout(()=>check(attempt+1),2000); return; }
       note.innerHTML='<div style="color:var(--gold2);font-size:13px">Nepavyko patikrinti užsakymo. Atnaujinkite puslapį.</div>';
