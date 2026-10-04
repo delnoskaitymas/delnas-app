@@ -5789,7 +5789,8 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
 (function initPoraFromUrl(){
   let sid=null;
   try{ sid=new URLSearchParams(location.search).get('pora'); }catch(e){}
-  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)) return;
+  // Ne porų puslapis — pamirštame porų pradžios nuorodą („Mano analizės“ → „← Pradžia“ ves į /)
+  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){ if(!new URLSearchParams(location.search).get('mano')) try{ sessionStorage.removeItem('delnasHome'); }catch(e){} return; }
   window._pora={ sid, nameA:'', nameB:'', stage:0, photos:[], active:false };
   const home=document.getElementById('s-home');
   const note=document.createElement('div');
@@ -5823,6 +5824,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       const ht=document.getElementById('home-time'), hm=document.getElementById('home-mano');
       if(ht) ht.textContent='⏱ Užtruksite tik kelias minutes';
       if(hm) hm.innerHTML='Jau darėte analizę? <b>Mano analizės →</b>';
+      try{ sessionStorage.setItem('delnasHome',location.pathname+location.search); }catch(e){}
       if(window._pora.remoteB){
         note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
           '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
@@ -5836,7 +5838,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
       // Porų dovana — tokie patys auksiniai konfeti toje pačioje vietoje kaip asmeninės dovanos atveju
-      if(sid.startsWith('gp_')&&typeof giftConfetti==='function') giftConfetti();
+      if(sid.startsWith('gp_')&&typeof giftConfetti==='function'){ let seen=false; try{ seen=sessionStorage.getItem('delnasConfetti:'+sid)==='1'; sessionStorage.setItem('delnasConfetti:'+sid,'1'); }catch(e){} if(!seen) giftConfetti(); }
     }catch(e){
       if(attempt<6){ setTimeout(()=>check(attempt+1),2000); return; }
       note.innerHTML='<div style="color:var(--gold2);font-size:13px">Nepavyko patikrinti užsakymo. Atnaujinkite puslapį.</div>';
@@ -6395,7 +6397,9 @@ function showGiftWelcome(d){
     // Vardai įvedami linksniuojant (Kam: „Ievai“, Nuo ko: „Tomo“).
     n.innerHTML='<div style="color:var(--gold2);font-size:14px;font-weight:600">🎁 Dovana '+(d.recipientName?_giftEsc(ltPhrase(d.recipientName,'dat')):'tau')+(d.fromName?' nuo '+_giftEsc(ltPhrase(d.fromName,'gen')):'')+'!</div>'+
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">Nufotografuok delnus — žemėlapis jau apmokėtas.</div>';
-    giftConfetti();
+    // Konfeti tik vieną kartą (grįžus iš „Mano analizių“ nebekrenta)
+    let seen=false; try{ const k='delnasConfetti:'+(window._giftCode||''); seen=sessionStorage.getItem(k)==='1'; sessionStorage.setItem(k,'1'); }catch(e){}
+    if(!seen) giftConfetti();
   }else{
     const why=d.status==='redeemed'?'Šis dovanos kodas jau panaudotas.':d.status==='expired'?'Šio dovanos kodo galiojimas baigėsi.':'Dovanos kodas nerastas arba nebegalioja.';
     n.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">'+why+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manai, kad tai klaida — parašyk info@delnaskaitymas.lt</div>';
