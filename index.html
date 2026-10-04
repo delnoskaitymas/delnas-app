@@ -6090,7 +6090,7 @@ function poraCompareHtml(r){
   const pc=r.palyginimai; if(!pc) return '';
   const p=window._pora||{};
   const items=PORA_CMP.filter(([k])=>pc[k]).map(([k,label])=>{ const c=pc[k];
-    return '<div class="pr-cmp pr-rv"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
+    return '<div class="pr-cmp pr-rv"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div>'+poraEsc(c.a)+'</div><div>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
   return '<div class="pr-card pr-rv"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė jūsų delnų palyginimas</div><div class="pr-names"><div>'+poraEsc(p.nameA)+'</div><div>'+poraEsc(p.nameB)+'</div></div>'+items+'</div>';
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
@@ -6200,17 +6200,19 @@ function buildPoraPdfDoc(){
     if(y>215){ doc.addPage(); dark(); y=30; }
     pdfHead('JŪSŲ DELNAI GRETA');
     const colW=(maxW-8)/2;
+    // Vardai — vieną kartą virš stulpelių (ne kiekviename langelyje)
+    doc.setFont('NotoSans','bold'); doc.setFontSize(10.5); doc.setTextColor(...GOLD);
+    doc.text(String((window._pora||{}).nameA||''), M+colW/2, y, {align:'center'}); doc.text(String((window._pora||{}).nameB||''), M+colW+8+colW/2, y, {align:'center'}); y+=8;
     PORA_CMP.filter(([k])=>r.palyginimai[k]).forEach(([k,label])=>{
       const c=r.palyginimai[k];
       doc.setFont('NotoSans','normal'); doc.setFontSize(11);
       const la=doc.splitTextToSize(c.a, colW-6), lb=doc.splitTextToSize(c.b, colW-6), li=c.isvada?doc.splitTextToSize(c.isvada, maxW-6):[];
-      const boxH=Math.max(la.length,lb.length)*5.2+10, need=8+boxH+li.length*5.6+10;
+      const boxH=Math.max(la.length,lb.length)*5.2+6, need=8+boxH+li.length*5.6+10;
       if(y+need>282){ doc.addPage(); dark(); y=30; }
       doc.setFont('NotoSans','bold'); doc.setFontSize(11.5); doc.setTextColor(...GOLD); doc.text(label.toUpperCase(), M, y); y+=4;
-      [[M,(window._pora||{}).nameA||'',la],[M+colW+8,(window._pora||{}).nameB||'',lb]].forEach(([bx,nm,lines])=>{
+      [[M,la],[M+colW+8,lb]].forEach(([bx,lines])=>{
         doc.setDrawColor(110,88,38); doc.setLineWidth(0.3); doc.roundedRect(bx, y, colW, boxH, 2, 2, 'S');
-        doc.setFont('NotoSans','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text(String(nm).toUpperCase(), bx+3, y+5);
-        doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...BODY); lines.forEach((l,i)=>doc.text(l, bx+3, y+10.2+i*5.2));
+        doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...BODY); lines.forEach((l,i)=>doc.text(l, bx+3, y+6.2+i*5.2));
       });
       y+=boxH+5;
       if(li.length){ doc.setFillColor(...GOLD); doc.rect(M, y-3.6, 0.8, li.length*5.6, 'F'); doc.setTextColor(243,231,198); li.forEach(l=>{ doc.text(l, M+4, y); y+=5.6; }); }
