@@ -454,6 +454,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #stripe-payment-element [class*="RedirectText"],
 #stripe-payment-element [class*="nextStep"],
 #stripe-payment-element [class*="p-PaymentMethod-detail--redirect"]{display:none!important;}
+.sample-sub{text-align:center;font-size:12.5px;color:var(--muted);margin:-8px 0 14px}
+.sample-more{border:1px dashed rgba(212,168,67,.45);border-radius:14px;padding:14px 14px 12px;margin:0 0 14px;text-align:center}
+.sample-more-h{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold2);margin-bottom:10px}
+.sample-more-l{display:flex;flex-direction:column;gap:6px}
+.sample-more-l span{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(212,168,67,.75);padding:7px 8px;border-radius:8px;background:rgba(212,168,67,.06)}
+.sample-more-l span::before{content:"🔒 ";filter:grayscale(1);opacity:.7}
+.sample-more-f{font-size:12px;line-height:1.5;color:var(--muted);margin-top:10px}
 </style>
 </head>
 <body>
@@ -483,8 +490,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div id="sample-modal" class="sample-bg" onclick="if(event.target===this)closeSample()" aria-hidden="true">
   <div class="sample-card" role="dialog" aria-label="Rezultato pavyzdys">
     <button type="button" class="sample-x" onclick="closeSample()" aria-label="Uždaryti">✕</button>
-    <div class="sample-kicker">Rezultato pavyzdys</div>
+    <div class="sample-kicker">Rezultato pavyzdys · ištrauka</div>
     <div class="sample-h">Taip atrodo analizės rezultatas</div>
+    <div class="sample-sub">Čia — tik nedidelė dalis. Pilnoje analizėje jos daug daugiau.</div>
     <div id="sample-palms"></div>
     <div class="rs rs-std" style="margin:0 0 12px">
       <div class="rs-label" style="white-space:normal">I · Prigimtinės stiprybės ir charakteris</div>
@@ -494,7 +502,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <div class="insight-card"><div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold2);font-size:12px">✦</div><div class="insight-text">Tau lengva įkvėpti kitus</div></div>
       </div>
     </div>
-    <div class="sample-note">Tai pavyzdys. Tavo analizė jau paruošta pagal <b>tavo delnus</b> — apmokėjus ją pamatysi iškart: kairiojo ir dešiniojo delno palyginimas, 7 skyriai, įžvalgos ir PDF el. paštu.</div>
+    <div class="sample-more">
+      <div class="sample-more-h">Pilnoje analizėje — dar 6 skyriai</div>
+      <div class="sample-more-l"><span>II · Gyvenimo kryptis ir tikslai</span><span>III · Bendravimo būdas ir įtaka santykiams</span><span>IV · Finansinis potencialas</span><span>V · Unikalus sėkmės raktas</span><span>VI · Svarbiausi artėjantys pokyčiai</span><span>VII · Pažangą stabdančios kliūtys</span></div>
+      <div class="sample-more-f">Kiekviename skyriuje — 7–9 sakiniai ir 3 įžvalgos, taip pat tavo stiprybių sąrašas ir PDF el. paštu.</div>
+    </div>
+    <div class="sample-note">Tavo analizė jau paruošta pagal <b>tavo delnus</b> — apmokėjus ją pamatysi visą iškart.</div>
     <button type="button" class="sample-btn" onclick="closeSample()">Grįžti į užsakymą</button>
   </div>
 </div>
