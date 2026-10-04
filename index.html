@@ -273,15 +273,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .sample-note{font-size:12.5px;line-height:1.55;color:var(--muted);text-align:center;margin-bottom:12px}
 .sample-note b{color:var(--gold2)}
 .sample-btn{width:100%;border:none;border-radius:12px;padding:13px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 14px 'DM Sans',sans-serif}
-.pay-testi{text-align:center;font-size:11.5px;line-height:1.4;color:rgba(255,255,255,.7);margin:-2px 8px 0;height:32px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transition:opacity .4s}
-.pay-testi .st{color:var(--gold2);letter-spacing:1px;margin-right:4px}
-.pay-testi i{font-family:'Playfair Display',serif}
-.pay-testi .nm{color:var(--muted)}
-@media(max-height:700px){.pay-testi{display:none!important}}
 /* Mokėjimo ekranas nesislenka — jei turinys netelpa (mažas telefonas), suspaudžiama tik tiek, kiek reikia (žr. fitPayScreen) */
 #s-info.pay-t1 #info-qs>div>span:nth-child(2)>span{display:none!important}
 #s-info.pay-t1 #info-qs>div{padding:3px 0!important}
-#s-info.pay-t1 .pay-testi{display:none!important}
 #s-info.pay-t1 #kl-bump{margin:4px 0;padding:10px 12px}
 #s-info.pay-t2 #kl-bump{margin:0;padding:7px 11px}
 #s-info.pay-t2 #kl-bump span{font-size:12px}
@@ -716,7 +710,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
     </div>
 
-    <div id="pay-testi" class="pay-testi" style="display:none"></div>
     <!-- Mokėjimo metodai — vienas blokas, mygtukai su tarpais -->
     <div id="pm-group" class="pay-anim-item" style="border-left:2px solid var(--gold);border-right:2px solid var(--gold);border-top:.5px solid rgba(212,168,67,.3);border-bottom:.5px solid rgba(212,168,67,.3);border-radius:10px;overflow:visible;background:#000000;box-shadow:0 0 18px rgba(212,168,67,.08),-4px 0 12px rgba(212,168,67,.06),4px 0 12px rgba(212,168,67,.06);display:flex;flex-direction:column;gap:5px;padding:5px;position:relative;z-index:56">
 
@@ -1539,18 +1532,6 @@ function closeSample(){ const m=document.getElementById('sample-modal'); if(m){ 
   }catch(e){}
 })();
 
-// ═══ Tikri, patvirtinti atsiliepimai mokėjimo ekrane ═══
-let _testiTimer=null;
-function loadTestimonials(){
-  const el=document.getElementById('pay-testi'); if(!el||el.dataset.loaded) return; el.dataset.loaded='1';
-  fetch('/testimonials').then(r=>r.json()).then(d=>{
-    const items=(d&&d.items)||[]; if(!items.length) return;
-    let i=0; const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    const show=()=>{ const x=items[i%items.length]; i++; const t=x.text.length>90?x.text.slice(0,88)+'…':x.text;
-      el.style.opacity='0'; setTimeout(()=>{ el.innerHTML='<span class="st">'+'★'.repeat(x.stars)+'</span><i>„'+esc(t)+'“</i>'+(x.name?' <span class="nm">— '+esc(x.name)+'</span>':''); el.style.opacity='1'; },300); };
-    el.style.display='-webkit-box'; show(); setTimeout(fitPayScreen,400); clearInterval(_testiTimer); if(items.length>1) _testiTimer=setInterval(show,6000);
-  }).catch(()=>{});
-}
 
 // ═══ Įvertinimas po rezultato ═══
 function renderRating(boxId, kind){
@@ -5372,7 +5353,7 @@ function applyDefaultPayMethod(){
   if(btn){btn.disabled=true;btn.style.opacity='.55';}
 }
 function startPayProgressBar(){
-  track('pay_view'); loadTestimonials();
+  track('pay_view');
   const ps=document.getElementById('pay-section');
   if(ps){ps.style.opacity='1';ps.style.transform='none';}
   const items=document.querySelectorAll('#pay-section .pay-anim-item');
