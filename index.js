@@ -2834,7 +2834,7 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.). Kai laiškas bus išsiųstas, gausite patvirtinimą.</p>
   <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}</p>
   <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atsisiųsti dovanų kortelę</a>
-  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Atsargai: jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kortelę ar kodą persiųskite bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
+  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kortelę ar kodą galite persiųsti bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
   ${EMAIL_FOOTER_HTML}
 </div>`;
 }
