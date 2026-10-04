@@ -46,9 +46,9 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .home-back{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:50;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 
 /* Sąrašas: kategorijų skirtukai — greitai rasti bet kurį rezultatą */
-.tabs{position:sticky;top:0;z-index:20;display:flex;gap:6px;overflow-x:auto;padding:10px 0 10px;margin:4px 0 4px;background:linear-gradient(#000 80%,rgba(0,0,0,0));scrollbar-width:none}
+.tabs{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 0 10px;margin:4px 0 4px;background:linear-gradient(#000 80%,rgba(0,0,0,0));scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:none;border:1px solid rgba(212,168,67,.4);background:transparent;color:var(--muted);border-radius:999px;padding:8px 13px;font:500 13px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.tabs button{border:1px solid rgba(212,168,67,.4);background:#000;color:var(--muted);border-radius:12px;padding:10px 8px;text-align:center;font:500 13px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
 .tabs button.on{background:rgba(212,168,67,.15);border-color:var(--gold);color:var(--gold2)}
 .tabs button i{font-style:normal;opacity:.7;margin-left:4px}
 body.list-view .hero{display:none}
@@ -74,6 +74,8 @@ body.ask-sent #v-ask .note{display:none}
   #v-ask .lead{font-size:12.5px;margin-bottom:10px}
   body:not(.list-view) .fine{font-size:9.5px;margin-top:10px}
 }
+.tabs button[disabled]{opacity:.35;cursor:default}
+body.list-view .sec{display:none}
 </style>
 </head>
 <body>
@@ -149,17 +151,21 @@ body.ask-sent #v-ask .note{display:none}
     }
     if (d.klausimai.length) {
       h += '<div class="sec" data-cat="kl">Klausk savo delnų</div>';
-      h += d.klausimai.map(k => '<div class="item" data-cat="kl" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
+      h += d.klausimai.map(k => '<div class="item" data-cat="' + (k.kind === 'pora' ? 'klp' : 'kl') + '" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
-    const cats = [['all', 'Visi', d.analizes.length + d.poros.length + d.klausimai.length], ['asm', 'Asmeninės', d.analizes.length], ['pora', 'Porų', d.poros.length], ['kl', 'Klausimai', d.klausimai.length]].filter(c => c[2]);
-    const tabs = cats.length > 2 ? '<div class="tabs" id="tabs">' + cats.map((c, i) => '<button type="button" data-cat="' + c[0] + '"' + (i ? '' : ' class="on"') + '>' + c[1] + '<i>' + c[2] + '</i></button>').join('') + '</div>' : '';
+    // Keturi skirtukai — paspaudus rodoma būtent tai, ko reikia
+    const kAsm = d.klausimai.filter(k => k.kind !== 'pora').length, kPora = d.klausimai.length - kAsm;
+    const cats = [['asm', 'Asmeninės analizės', d.analizes.length], ['pora', 'Porų analizės', d.poros.length], ['kl', 'Asmeniniai klausimai', kAsm], ['klp', 'Porų klausimai', kPora]];
+    const first = (cats.find(c => c[2]) || cats[0])[0];
+    const tabs = h ? '<div class="tabs" id="tabs">' + cats.map(c => '<button type="button" data-cat="' + c[0] + '"' + (c[0] === first ? ' class="on"' : '') + (c[2] ? '' : ' disabled') + '>' + c[1] + ' <i>' + c[2] + '</i></button>').join('') + '</div>' : '';
     $('list').innerHTML = h ? tabs + h : '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
+    const show = c => $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; });
+    show(first);
     const tb = $('tabs');
     if (tb) tb.addEventListener('click', e => {
-      const b = e.target.closest('button'); if (!b) return;
+      const b = e.target.closest('button'); if (!b || b.disabled) return;
       tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-      const c = b.dataset.cat;
-      $('list').querySelectorAll('.item,.sec').forEach(el => { el.hidden = c !== 'all' && el.dataset.cat !== c; });
+      show(b.dataset.cat);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {
@@ -174,7 +180,8 @@ body.ask-sent #v-ask .note{display:none}
         const left = $('list').querySelectorAll('.item[data-cat="' + cat + '"]').length;
         if (!left) { const sec = $('list').querySelector('.sec[data-cat="' + cat + '"]'); if (sec) sec.remove(); }
         const tb = $('tabs');
-        if (tb) tb.querySelectorAll('button').forEach(b => { const c = b.dataset.cat, n = c === 'all' ? $('list').querySelectorAll('.item').length : $('list').querySelectorAll('.item[data-cat="' + c + '"]').length; b.querySelector('i').textContent = n; if (!n && c !== 'all') b.remove(); });
+        if (tb) { tb.querySelectorAll('button').forEach(b => { const n = $('list').querySelectorAll('.item[data-cat="' + b.dataset.cat + '"]').length; b.querySelector('i').textContent = n; b.disabled = !n; });
+          const on = tb.querySelector('button.on'); if (on && on.disabled) { const nx = tb.querySelector('button:not([disabled])'); if (nx) nx.click(); } }
         if (!$('list').querySelectorAll('.item').length) $('list').innerHTML = '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
       } catch (ex) { alert(ex.message); }
     }));
