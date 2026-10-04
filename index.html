@@ -254,7 +254,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
 .o-remind{margin:2px 4px 12px;text-align:center;font-family:'DM Sans',sans-serif}
 .o-remind span{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.45)}
-.o-remind button{background:none;border:none;padding:0;color:rgba(212,168,67,.75);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.o-remind button{background:none;border:none;padding:0;color:inherit;font:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.3);text-underline-offset:2px;cursor:pointer;white-space:nowrap}
 .o-remind b{color:var(--gold2);font-weight:700}
 @media(max-width:374px){#kl-bump s{display:none}#kl-bump span{font-size:11px}}
 @media(max-height:600px){#info-qs>div{padding:1px 0!important}#kl-bump{padding:5px 10px}}
@@ -782,7 +782,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     </div>
     <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
     <!-- Vienas priminimas su nuolaida siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
-    <div class="o-remind" id="o-remind-row"><span id="o-remind-txt">Jei užsakymą tektų atidėti, vieną kartą priminsime el. paštu. <button type="button" id="o-noremind" onclick="window._noRemind=true;document.getElementById('o-remind-txt').textContent='✓ Gerai, priminimo nesiųsime.';">Nereikia</button></span></div>
+    <div class="o-remind" id="o-remind-row"><span id="o-remind-txt">Jei užsakymą atidėtum, vieną kartą priminsime. <button type="button" id="o-noremind" onclick="window._noRemind=true;document.getElementById('o-remind-txt').textContent='✓ Gerai, priminimo nesiųsime.';">Nereikia</button></span></div>
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
     <!-- Mygtukas -->
