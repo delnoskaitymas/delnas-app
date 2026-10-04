@@ -368,42 +368,6 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     } catch (e) {}
   })();
 
-  // Auksiniai konfeti iš viršaus — kaip asmeninės dovanos atveju (index.html giftConfetti)
-  function giftConfetti(){
-    try{
-      if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const cv=document.createElement('canvas'); cv.id='gift-confetti';
-      cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999';
-      document.body.appendChild(cv);
-      const ctx=cv.getContext('2d'), dpr=Math.min(window.devicePixelRatio||1,2);
-      let W,H;
-      function size(){ W=innerWidth; H=innerHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
-      size(); addEventListener('resize',size);
-      const cols=['#d4a843','#f0d58a','#f5d061','#fff3cf','#e8b4b0','#ffffff','#b8862a'];
-      const N=Math.min(160,Math.round(W*0.35));
-      const P=[];
-      for(let i=0;i<N;i++){
-        P.push({x:Math.random()*W, y:-20-Math.random()*H*0.6, w:5+Math.random()*6, h:8+Math.random()*8,
-          vy:2+Math.random()*3, vx:-1+Math.random()*2, r:Math.random()*6.28, vr:-0.15+Math.random()*0.3,
-          sw:Math.random()*6.28, c:cols[i%cols.length], circle:Math.random()<0.25});
-      }
-      const t0=performance.now(), DUR=3600;
-      function frame(t){
-        const el=t-t0; ctx.clearRect(0,0,W,H);
-        const fade=el>DUR-800?Math.max(0,(DUR-el)/800):1;
-        for(const p of P){
-          p.sw+=0.05; p.x+=p.vx+Math.sin(p.sw)*0.6; p.y+=p.vy; p.r+=p.vr;
-          ctx.save(); ctx.globalAlpha=fade; ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c;
-          if(p.circle){ ctx.beginPath(); ctx.arc(0,0,p.w/2,0,6.28); ctx.fill(); }
-          else { ctx.scale(1,Math.cos(p.sw*2)); ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); }
-          ctx.restore();
-        }
-        if(el<DUR) requestAnimationFrame(frame); else { removeEventListener('resize',size); cv.remove(); }
-      }
-      requestAnimationFrame(frame);
-    }catch(e){}
-  }
-
   // Porų dovanų kuponas: /pora?dovana=KODAS — mokėti nereikia
   const giftCode = new URLSearchParams(location.search).get('dovana');
   const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -431,7 +395,6 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti →';
       document.querySelector('#pora-form .trust').textContent = '🎁 Apmokėta dovanų kuponu ' + d.code;
-      giftConfetti();
     } catch (e) { giftError('Nepavyko patikrinti dovanos kodo'); }
   })();
 
