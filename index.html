@@ -5960,7 +5960,7 @@ function poraShowError(msg){
 // ir bendru ratuku prie procentų, pabaigoje — varnelės, 100 % ir išblukimas.
 const PORA_MICRO1=['Tikrinamos visų keturių delnų nuotraukos...','Nustatoma jūsų delnų forma...','Lyginamas pirštų ilgis ir padėtis...','Atpažįstamos jūsų delnų linijos...','Lyginami kairieji ir dešinieji delnai...'];
 const PORA_MICRO2=['Analizuojamos jūsų širdies linijos...','Lyginama, kaip reiškiate jausmus...','Analizuojamos jūsų galvos linijos...','Lyginamas mąstymo ir sprendimų stilius...','Tyrinėjamos jūsų gyvenimo linijos...','Lyginamas jūsų gyvenimo tempas...','Ieškoma likimo linijų sąsajų...','Lyginami ryškiausi delnų kalneliai...','Ieškoma, kur jūsų bruožai sutampa...','Ieškoma, kaip derate tarpusavyje...','Vertinamos šešios santykių sritys...','Skaičiuojamas jūsų porų suderinamumas...','Lyginamas jūsų jausmų gylis...','Vertinama, kaip rodote rūpestį...','Ieškoma bendrų vertybių ženklų...','Lyginamas požiūris į pinigus...','Vertinama, kaip kuriate namų jaukumą...','Lyginami jūsų ateities planai...','Analizuojamos jūsų likimo linijos...','Ieškoma, kas jus natūraliai traukia...','Lyginama, kaip sprendžiate nesutarimus...','Vertinamas jūsų bendravimo ritmas...','Ieškoma, kur verta susitarti...','Lyginamas jūsų kasdienybės tempas...','Atskleidžiamos jūsų poros stiprybės...'];
-const PORA_MICRO3=['Ruošiami patarimai jūsų porai...','Sudėliojamos baigiamosios analizės išvados...','Baigiama ruošti jūsų porų analizę...','Tikrinamas kiekvienas analizės skyrius...','Ruošiamas jūsų rezultatų ekranas...','Tikrinamas analizės tekstų sklandumas...','Suderinami visų skyrių akcentai...','Ruošiamos įžvalgos kiekvienam skyriui...','Tikslinamas jūsų suderinamumo įvertis...','Ruošiamas jūsų analizės PDF failas...','Dėliojami paskutiniai analizės štrichai...','Peržiūrimi visi septyni skyriai...','Jūsų porų analizė beveik paruošta...'];
+const PORA_MICRO3=['Ruošiami patarimai jūsų porai...','Sudėliojamos baigiamosios analizės išvados...','Baigiama ruošti jūsų porų analizę...','Tikrinamas kiekvienas analizės skyrius...','Ruošiamas jūsų rezultatų ekranas...','Ruošiamos įžvalgos kiekvienam skyriui...','Tikslinamas jūsų suderinamumo įvertis...','Dėliojami paskutiniai analizės štrichai...','Peržiūrimi visi septyni skyriai...','Jūsų porų analizė beveik paruošta...'];
 function poraStopProgress(){
   window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
   const sp=document.getElementById('pora-spinner'); if(sp) sp.style.display='none';
@@ -5984,7 +5984,7 @@ function poraProgress(start){
   let order=[], idx=0, lastPool=null;
   // 1 etapas — eilės tvarka (nemaišoma)
   const MICRO1=PORA_MICRO1;
-  const pool=()=>window._poraPhase===1?MICRO1:((window._poraPct||0)>=85?PORA_MICRO3:PORA_MICRO2);
+  const pool=()=>window._poraPhase===1?MICRO1:((window._poraPct||0)>=90?PORA_MICRO3:PORA_MICRO2);
   const micro=()=>{
     if(window._poraDone) return;
     const P=pool(); if(P!==lastPool||idx>=order.length){ order=P===MICRO1?P.slice():shuffle(P); idx=0; lastPool=P; }
