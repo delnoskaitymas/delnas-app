@@ -4512,7 +4512,7 @@ function sendResultPdfEmail(r){
     const dataUri = doc.output('datauristring');
     const base64 = dataUri.split(',').pop();
     fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,gift:!!window._isGiftOrder})})
+      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,gift:!!window._isGiftOrder,paymentRef:window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef')||''; }catch(e){ return ''; } })()})})
       .then(r=>r.json()).then(d=>{
         if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
         else console.log('[sendResultPdfEmail] serveris patvirtino išsiuntimą');

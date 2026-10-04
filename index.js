@@ -2280,7 +2280,7 @@ app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => 
 // rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, orderNumber, pdfBase64, gift } = req.body;
+    const { email, name, orderNumber, pdfBase64, gift, paymentRef } = req.body;
     const isGift = gift === true;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
@@ -2297,13 +2297,25 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       return res.json({ ok: true, alreadySent: true });
     }
     if (orderNumber) sentPdfEmailsForOrder.add(orderNumber);
+    // Kukli eilutė apie porų analizę rinkinio kaina (tas pats kodas kaip rezultato ekrane, galioja 30 d.)
+    let poraLine = '';
+    try {
+      const pay = !isGift && typeof paymentRef === 'string' && paymentRef ? await getPaidAnalysisPayment(paymentRef) : null;
+      if (pay && pay.metadata.bundle !== '1') {
+        const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: isValidEmail(pay.email) ? pay.email : email, key: 'bundle:' + paymentRef });
+        if (!pr.usedBy && Date.now() < pr.expiresAt) {
+          const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
+          poraLine = `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:16px 0 0">💞 <a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline"><b>Kaip derate poroje?</b> Tau — porų analizė už ${eur(pr.price)} vietoj ${eur(PORA_PRICE_CENTS)} (galioja iki ${fmtLtDate(pr.expiresAt)}) →</a></p>`;
+        }
+      }
+    } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: isGift
         ? `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} dovana paruošta: gyvenimo žemėlapis pagal delnus 🎁`
         : `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p>${poraLine}</div>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
