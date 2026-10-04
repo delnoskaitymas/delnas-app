@@ -187,6 +187,40 @@ a{color:var(--gold)}
 .gets li{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;line-height:1.4}
 .gets li b{color:var(--gold2);font-weight:500}
 .mini-radar{display:block;width:150px;margin:-4px auto 4px}
+
+/* Užrašas DELNAS virš delno ikonos — kaip „Mano analizėse“ ir klausimų puslapyje */
+body.form-view .wrap > .brand{display:block;font-size:14px;margin:0 0 10px}
+body.form-view .wrap > .brand small{display:none}
+@media (max-height:760px){
+  body.form-view .wrap > .brand{font-size:13px;margin-bottom:6px}
+  #v-form .intro .hero{width:70px;height:70px}
+  .hero2 .hero{width:66px!important;height:66px!important}
+  #v-form .intro h1{font-size:27px}
+  #v-form .lead.sm{font-size:12.5px;line-height:1.45;margin-bottom:10px}
+  #v-form .card-form{padding:12px 13px 11px}
+  #v-form label{margin:8px 0 5px}
+  #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:9px 12px}
+  #v-form textarea{height:44px}
+  #v-form .chk{margin-top:9px;font-size:11.5px;line-height:1.4}
+  #v-form .btn{margin-top:10px;padding:13px;font-size:16px}
+  #v-form .trust{margin-top:6px}
+  .how-link{margin-top:0;padding:4px 10px}
+}
+@media (max-height:760px){
+  .gift-note{padding:7px 12px;margin-bottom:9px}
+  .gift-note b{font-size:15.5px}
+  body.has-note #v-form #lead{display:none}
+}
+@media (max-height:660px){
+  #v-form .intro .hero{width:56px;height:56px}
+  .hero2 .hero{width:54px!important;height:54px!important}
+  #v-form .intro h1{font-size:24px}
+  #v-form .card-form{padding:10px 12px 9px}
+  #v-form label{margin:6px 0 4px}
+  #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:8px 11px}
+  #v-form textarea{height:38px}
+  #v-form .btn{margin-top:8px;padding:11px}
+}
 </style>
 </head>
 <body class="form-view">
@@ -298,7 +332,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('gift-note').innerHTML = d.kind === 'bundle'
         ? '<b>💞 Jums — rinkinio kaina ' + eur(price) + '</b><span>Kaip asmeninės analizės pirkėjui (vietoj ' + eur(d.poraPrice) + ')</span>'
         : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
-      $('gift-note').classList.remove('hidden');
+      $('gift-note').classList.remove('hidden'); document.body.classList.add('has-note');
       $('remind-row').classList.add('hidden');
     } catch (e) {}
   })();
