@@ -2467,7 +2467,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         saveAnalysisSessionToDisk(sessionId, ce);
         // Automatiškai į „Mano analizes“ 90 d. (paslaugos dalis); 12 mėn. ir priminimas — tik paspaudus „Išsaugoti ir priminti“
         if (isValidEmail(ce.paidEmail) && ce.result) {
-          try { upsertSavedAnalysis(sessionId, ce.paidEmail, userName, ce.result, { auto: true }, AUTO_SAVED_DAYS); } catch (e) { console.error('[mano] automatinio išsaugojimo klaida:', e.message); }
+          try { upsertSavedAnalysis(sessionId, ce.paidEmail, userName, ce.result, { auto: true, ...(isValidOrderNumber(orderNumber) ? { orderNumber } : {}) }, AUTO_SAVED_DAYS); } catch (e) { console.error('[mano] automatinio išsaugojimo klaida:', e.message); }
         }
       }
     }
@@ -3716,7 +3716,7 @@ app.get('/klausk/result', sensitiveLimiter, (req, res) => {
   if (!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(s)) return res.status(400).json({ error: 'Neteisinga nuoroda' });
   const o = loadKlauskOrders()[s];
   if (!o || !o.paid || o.kind === 'pora' || !o.result) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '', email: o.email || '' });
+  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '', email: o.email || '', orderNumber: o.orderNumber || '' });
 });
 
 app.get('/klausk', (req, res) => {
@@ -3742,7 +3742,7 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
       const picked = pickKlauskResult(result);
       if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
-      record = { email, name: (name || '').trim(), result: picked };
+      record = { email, name: (name || '').trim(), result: picked, ...(isValidOrderNumber((req.body || {}).orderNumber) ? { orderNumber: req.body.orderNumber } : {}) };
       // Analizės mokėjimo nuoroda — kad iš klausimų puslapio būtų galima grįžti į rezultatą su jo pasiūlymais
       const pr = req.body && req.body.paymentRef;
       if (typeof pr === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(pr)) record.paymentRef = pr;
@@ -4589,7 +4589,7 @@ app.get('/mano/item', sensitiveLimiter, (req, res) => {
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
   const it = loadSaved().items[String(req.query.id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email });
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '' });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};

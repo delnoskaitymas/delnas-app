@@ -1075,6 +1075,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Asmeninis gyvenimo žemėlapis — 7 skyriai apie kiekvieną iš jūsų.</div>
       <a href="/?utm_source=app&amp;utm_campaign=pora" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė →</a>
     </div>
+    <div id="pora-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
 
@@ -3932,7 +3933,7 @@ function renderResultExtra(r){
   const kref=payRef||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   setupKlauskBlock({
     q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
-    body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||''}),
+    body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
     prepaid:kref&&!window._manoView?(async()=>{
       const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref))).json();
@@ -5759,6 +5760,8 @@ const PORA_SECTIONS = [
   ['patarimai', 'VII · Patarimai jums abiem'],
 ];
 function poraEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Porų užsakymo numeris (toks pat kaip PDF ir laiškuose): P- + paskutiniai 8 sesijos simboliai
+function poraOrderNumber(){ const sid=(window._pora||{}).sid||''; return sid?'P-'+sid.replace(/[^A-Za-z0-9]/g,'').slice(-8).toUpperCase():''; }
 function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.nameB : ''; }
 // Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
 function ltForms(name){
@@ -6104,6 +6107,7 @@ function renderPoraResult(r){
     const cards=(iz[k]||[]).map(t=>'<div class="insight-card"><div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+pillIconFor(t,used)+'</div><div class="insight-text">'+poraEsc(t)+'</div></div>').join('');
     return '<div class="rs rs-std pr-rv"><div class="rs-label">'+title+'</div><div class="rs-body">'+para(r[k])+'</div>'+(cards?'<div class="insight-cards">'+cards+'</div>':'')+
       '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ '+PORA_FOOTERS[k]+'</div></div>'; }).join('');
+  { const on=document.getElementById('pora-order-number'); if(on) on.textContent=poraOrderNumber()?'Užsakymo numeris: '+poraOrderNumber():''; }
   go('s-pora-result');
   window.scrollTo(0,0);
   // Grįžus iš klausimų puslapio (#klausk) — iškart prie klausimų bloko
@@ -6211,8 +6215,8 @@ function buildPoraPdfDoc(){
   let ny=by+bh+10;
   doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
   // Užsakymo numeris — reikalingas kreipiantis dėl pinigų grąžinimo (sąlygų 5 skyrius)
-  const sid=(window._pora||{}).sid||'';
-  if(sid){ doc.setFontSize(9.5); doc.setTextColor(...MUTED); doc.text('Užsakymo numeris: P-'+sid.replace(/[^A-Za-z0-9]/g,'').slice(-8).toUpperCase(), W/2, ny+4, {align:'center'}); }
+  const pon=poraOrderNumber();
+  if(pon){ doc.setFontSize(9.5); doc.setTextColor(...MUTED); doc.text('Užsakymo numeris: '+pon, W/2, ny+4, {align:'center'}); }
   return doc;
 }
 function poraPdfName(){ return (poraNames().replace(/\s+/g,'-')||'pora')+'-poru-suderinamumas.pdf'; }
@@ -6527,6 +6531,7 @@ async function loadCompare(){
       window.userName=window._userName=d.name||'';
       if(d.paymentRef) window._paymentRef=d.paymentRef;
       if(d.email){ window._userEmail=window.userEmail=d.email; }
+      if(d.orderNumber) window._orderNumber=d.orderNumber;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(location.hash==='#klausk') setTimeout(klScrollAfter,250);
@@ -6546,6 +6551,7 @@ async function loadCompare(){
       if(!d||!d.result) throw new Error(d&&d.error||'Analizė nerasta');
       window.userName=window._userName=d.name||'';
       if(d.email){ window._userEmail=window.userEmail=d.email; }
+      if(d.orderNumber) window._orderNumber=d.orderNumber;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
     }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
