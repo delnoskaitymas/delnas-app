@@ -3765,7 +3765,7 @@ function displayResult(r){
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
   const resNameEl=document.getElementById('res-name');
-  resNameEl.textContent=name?`✦ ${name}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
+  resNameEl.textContent=name?`✦ ${ltPhrase(name,'voc')}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
   const rChar=document.getElementById('r-char');
   if(rChar) rChar.innerHTML=formatText(r.prigimtines_stiprybes);
   else console.error('r-char not found!');
@@ -4162,7 +4162,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   doc.setFont('NotoSans','bold');
   doc.setFontSize(28);
   doc.setTextColor(...GOLD2);
-  const coverHeading = name ? `${name}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
+  const coverHeading = name ? `${ltPhrase(name,'voc')}, tavo asmeninis gyvenimo žemėlapis` : 'Tavo asmeninė delnų analizė';
   const headingLines = doc.splitTextToSize(coverHeading, maxW);
   doc.text(headingLines, W/2, y, {align:'center'});
   // SVARBU: tarpas iki poraštės priklauso NUO TO, kiek eilučių užėmė
@@ -4547,7 +4547,7 @@ async function sharePdfToFriend(){
     const blob = doc.output('blob');
     const file = new File([blob], fileName, {type:'application/pdf'});
     const shareText = name
-      ? `${name} gyvenimo žemėlapis 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: www.delnaskaitymas.lt`
+      ? `${ltPhrase(name,'gen')} gyvenimo žemėlapis 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: www.delnaskaitymas.lt`
       : `Atlikau delnų analizę 🤚 Pažvelk, ką pasakoja delnai — pabandyk ir tu: www.delnaskaitymas.lt`;
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText});
@@ -5296,7 +5296,7 @@ async function shareSection(){
       if(!blob){return;}
       const file=new File([blob],'delnas-analize.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare({files:[file]})){
-        await navigator.share({title:'Mano gyvenimo žemėlapis',text:`${window.userName||'Mano'} gyvenimo žemėlapis — bandyk pati! #delnaskaitymas`,files:[file]});
+        await navigator.share({title:'Mano gyvenimo žemėlapis',text:`${window.userName?ltPhrase(window.userName,'gen'):'Mano'} gyvenimo žemėlapis — pabandyk ir tu! #delnaskaitymas`,files:[file]});
       }else{
         const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='delnas-analize.png';a.click();
       }
