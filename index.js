@@ -585,7 +585,7 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
     // VIENINTELIS administracinis laiškas apie šį užsakymą —
     // /notify-order-complete (žr. žemiau) daugiau ANTRO tokio laiško
     // NEBESIUNČIA.
-    mailer.sendMail({
+    adminDigestAdd('sales', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `Naujas užsakymas #${displayOrderNumber}`,
@@ -2920,6 +2920,46 @@ function buildGiftRecipientEmailHtml(gift) {
 </div>`;
 }
 
+// ── Administratoriaus vakarinė suvestinė: pardavimai, dovanos ir įvertinimai — vienu laišku vakare.
+// Klaidų pranešimai siunčiami iškart (jų ši funkcija neliečia).
+const ADMIN_DIGEST_FILE = path.join(SHARED_STORAGE_DIR, 'admin-digest.json');
+const ADMIN_DIGEST_HOUR = parseInt(process.env.ADMIN_DIGEST_HOUR || '21', 10);
+function adminDigestAdd(cat, mail) {
+  try {
+    const d = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' });
+    d.items.push({ cat, subject: String(mail.subject || ''), html: String(mail.html || ''), at: Date.now() });
+    writeJson(ADMIN_DIGEST_FILE, d);
+  } catch (e) { console.error('[digest] įrašymo klaida:', e.message); }
+  return Promise.resolve();
+}
+function adminDigestHtml(items) {
+  const hm = ts => new Date(ts).toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const block = it => `<div style="border:1px solid #e3d3a6;border-radius:10px;padding:2px 14px;margin:0 0 10px;background:#fffdf6"><div style="font:12px Arial,sans-serif;color:#8a6d1f;margin-top:10px">${hm(it.at)} · ${escapeHtml(it.subject)}</div>${it.html.replace(/padding:20px/, 'padding:4px 0')}</div>`;
+  const sec = (title, list) => list.length ? `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">${title} (${list.length})</h2>${list.map(block).join('')}` : '';
+  const sales = items.filter(i => i.cat === 'sales'), gifts = items.filter(i => i.cat === 'gifts'), ratings = items.filter(i => i.cat === 'ratings');
+  // Nepanaudotos (galiojančios) dovanos — sąrašas kiekvieną vakarą
+  let unused = [];
+  try { unused = Object.values(loadGiftStore().codes).filter(g => giftStatus(g) === 'active' && !g.bundle).sort((a, b) => a.createdAt - b.createdAt); } catch (e) {}
+  const unusedHtml = unused.length ? `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Nepanaudotos dovanos (${unused.length})</h2><table style="border-collapse:collapse;font:13px Arial,sans-serif;width:100%">${unused.map(g => `<tr><td style="padding:5px;border-bottom:1px solid #eee"><b>${escapeHtml(g.code)}</b></td><td style="padding:5px;border-bottom:1px solid #eee">${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}</td><td style="padding:5px;border-bottom:1px solid #eee">${escapeHtml(g.buyerEmail || '—')}</td><td style="padding:5px;border-bottom:1px solid #eee">pirkta ${fmtLtDate(g.createdAt)}</td><td style="padding:5px;border-bottom:1px solid #eee">galioja iki ${fmtLtDate(g.expiresAt)}</td></tr>`).join('')}</table>` : '';
+  return `<div style="font-family:Georgia,serif;max-width:640px;padding:16px"><h1 style="font-size:22px;color:#3a2c08;margin:0 0 4px">DELNAS — dienos suvestinė</h1><div style="font:13px Arial,sans-serif;color:#777">${ltDate(Date.now())} · pardavimai: ${sales.length} · dovanos: ${gifts.length} · įvertinimai: ${ratings.length}</div>
+    ${sec('Parduotos analizės ir klausimai', sales)}${sec('Dovanos: parduotos ir panaudotos', gifts)}${unusedHtml}${sec('Įvertinimai', ratings)}</div>`;
+}
+function processAdminDigest() {
+  try {
+    const now = Date.now(), today = ltDate(now);
+    if (ltHour(now) < ADMIN_DIGEST_HOUR) return;
+    const d = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' });
+    if (d.lastSent === today || !d.items.length) return;
+    const items = d.items.slice();
+    d.items = []; d.lastSent = today; writeJson(ADMIN_DIGEST_FILE, d);
+    mailer.sendMail({ from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`, to: ADMIN_EMAIL, subject: `DELNAS suvestinė ${today} — ${items.filter(i => i.cat === 'sales').length} pardav., ${items.filter(i => i.cat === 'gifts').length} dovan., ${items.filter(i => i.cat === 'ratings').length} įvert.`, html: adminDigestHtml(items) })
+      .then(() => console.log(`[digest] suvestinė išsiųsta (${items.length} įrašų)`))
+      .catch(e => { console.error('[digest] siuntimo klaida:', e.message); const d2 = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' }); d2.items = items.concat(d2.items); d2.lastSent = ''; writeJson(ADMIN_DIGEST_FILE, d2); });
+  } catch (e) { console.error('[digest] klaida:', e.message); }
+}
+setTimeout(processAdminDigest, 20000);
+setInterval(processAdminDigest, 10 * 60 * 1000);
+
 // Planuotas siuntimas gavėjams ir priminimas pirkėjams (tikrinama kas valandą)
 function processGiftSchedules() {
   try {
@@ -3326,7 +3366,7 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     res.json({ started: true, status: 'pending' });
 
     if (isFirst) {
-      mailer.sendMail({
+      adminDigestAdd('sales', {
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
         subject: `Nauja porų analizė — ${s.nameA} ir ${s.nameB}`,
@@ -3464,7 +3504,7 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     g.status = 'redeemed'; g.redeemedAt = Date.now(); g.redeemedName = `${A} ir ${B}`; g.redeemedEmail = em; g.poraOrderId = id;
     saveGiftStore(fresh);
     console.log(`[gift] panaudotas porų kodas ${code} → ${id}`);
-    mailer.sendMail({
+    adminDigestAdd('gifts', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `Panaudotas porų dovanų kuponas ${code} — ${A} ir ${B}`,
@@ -3724,7 +3764,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       const s = await getPaidKlausk(id);
       if (!s) return res.json({ paid: false });
       o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders); statInc('klausk_paid');
-      mailer.sendMail({
+      adminDigestAdd('sales', {
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
         subject: `Naujas „Klausk savo delnų“${o.kind === 'pora' ? ' (porai)' : ''} užsakymas — ${o.name || o.email}`,
@@ -3912,7 +3952,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
           .catch(e => console.error('[gift] nepavyko išsiųsti kortelės pirkėjui:', e.message));
       }
       // Administratoriui — pranešimas apie pardavimą
-      mailer.sendMail({
+      adminDigestAdd('gifts', {
         from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
         subject: `Parduotas ${gift.kind === 'pora' ? 'porų ' : ''}dovanų kuponas ${gift.code}`,
@@ -4010,7 +4050,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
     markEmailPaid(email);
     const token = getOrCreateTokenForPayment('gift:' + code, name || '', email || '');
     console.log(`[gift] panaudotas kodas ${code} (order=${orderNumber || '-'})`);
-    mailer.sendMail({
+    adminDigestAdd('gifts', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `Panaudotas dovanų kuponas ${code}${orderNumber ? ' — užsakymas #' + orderNumber : ''}`,
@@ -4051,7 +4091,7 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
     const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
     const approve = item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
-    mailer.sendMail({
+    adminDigestAdd('ratings', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `${'★'.repeat(st)}${'☆'.repeat(5 - st)} Naujas įvertinimas${first ? ' — ' + first : ''}`,
