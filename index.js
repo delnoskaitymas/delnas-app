@@ -3712,7 +3712,7 @@ app.get('/klausk/result', sensitiveLimiter, (req, res) => {
   if (!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(s)) return res.status(400).json({ error: 'Neteisinga nuoroda' });
   const o = loadKlauskOrders()[s];
   if (!o || !o.paid || o.kind === 'pora' || !o.result) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '' });
+  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '', email: o.email || '' });
 });
 
 app.get('/klausk', (req, res) => {
@@ -4585,7 +4585,7 @@ app.get('/mano/item', sensitiveLimiter, (req, res) => {
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
   const it = loadSaved().items[String(req.query.id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result });
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};
