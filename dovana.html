@@ -653,7 +653,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
     $('c-season').textContent = SL[g.season] || '';
     $('c-what').innerHTML = (pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus') + (g.klausk ? '<span class="what-kl">+ 3 ' + (pora ? 'klausimai porai' : 'asmeniniai klausimai') + '</span>' : '');
-    $('c-how').textContent = pora ? 'abu nufotografuokite delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
+    $('c-how').textContent = pora ? 'nufotografuokite savo delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
     $('again').href = pora ? '/dovana?tipas=pora' : '/dovana';
     const link = redeemLink(g.code);
     $('c-link').textContent = link; $('c-link').href = link;

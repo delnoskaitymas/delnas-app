@@ -2867,7 +2867,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);margin-top:4px">DOVANŲ KUPONAS</div>
     ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:12px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
-    <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
+    <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
     ${gift.klausk ? `<div style="font-size:14px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
     ${gift.fromName ? `<div style="margin-top:10px;font-size:14px;color:rgba(255,255,255,.6)">— nuo ${escapeHtml(ltPhrase(gift.fromName, 'gen'))}</div>` : ''}
@@ -2875,7 +2875,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
     <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">${pora ? 'Sužinoti, kaip derate poroje →' : 'Atskleisti savo žemėlapį →'}</a></div>
     <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas&nbsp;↗</a>, tada ${pora ? 'abu nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
+      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas&nbsp;↗</a>, tada ${pora ? 'nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
       Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
@@ -2919,11 +2919,11 @@ function buildGiftRecipientEmailHtml(gift) {
     ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:14px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
     <div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.8)">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
-    <div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal abiejų delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal abiejų delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>
+    <div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>
     ${gift.klausk ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną →</a></div>
-    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Abu nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
+    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
   </div>
   <div style="max-width:520px;margin:16px auto 0;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.6;color:#888;text-align:center">${from ? `Šį laišką ${pora ? 'gavote, nes ' + from + ' jums' : 'gavai, nes ' + from + ' tau'} padovanojo ${pora ? 'DELNAS porų suderinamumą' : 'DELNAS gyvenimo žemėlapį'}.` : `Šį laišką ${pora ? 'gavote, nes jums' : 'gavai, nes tau'} buvo padovanotas ${pora ? 'DELNAS porų suderinamumas' : 'DELNAS gyvenimo žemėlapis'}.`} Pramoginio pobūdžio paslauga, 18+.</div>
   ${EMAIL_FOOTER_HTML}
@@ -3176,8 +3176,8 @@ function ltPhrase(s, c) { return String(s || '').split(/(\s+)/).map(w => /^\s*$/
 // Bendros taisyklės apie vardus porų tekstuose (analizė ir „Klauskite“)
 function poraNameRules(A, B) {
   const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
-  return `- VARDUS NAUDOK SAIKINGAI — tekstas turi skambėti profesionaliai, taktiškai ir natūraliai, o ne komiškai. Viename skyriuje kiekvieną vardą naudok ne daugiau kaip 1–2 kartus. Dažniausiai rašyk apie jus kaip porą („jūs“, „jums abiem“, „jūsų poroje“, „tarpusavyje“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk abiem kartu („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
-- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „abu“ (apie žmones), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums abiem“, „abiejų jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
+  return `- VARDUS NAUDOK SAIKINGAI — tekstas turi skambėti profesionaliai, taktiškai ir natūraliai, o ne komiškai. Viename skyriuje kiekvieną vardą naudok ne daugiau kaip 1–2 kartus. Dažniausiai rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
+- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
@@ -3225,7 +3225,7 @@ ${poraNameRules(A, B)}
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
-${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.' })}
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.' })}
 - Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${A} delnų išsami atskira analizė, b — ${B} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
@@ -3244,7 +3244,7 @@ SKYRIAI:
 - trintis (Kur gali kilti trintis): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
 - ateitis (Požiūris į pinigus, namus ir ateitį): kur jūsų požiūriai sutampa ir kur verta susitarti
 - stiprybe (Jūsų poros stiprybė): kas daro jūsų porą išskirtinę
-- patarimai (Patarimai jums abiem): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
+- patarimai (Patarimai jūsų porai): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
 
 Taip pat:
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
@@ -3629,7 +3629,7 @@ function klauskContextText(res) {
 }
 
 function klauskPoraContext(res) {
-  const T = { traukia: 'Kas jus traukia ir sieja', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kaip jūsų savybės dera tarpusavyje', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jums abiem' };
+  const T = { traukia: 'Kas jus traukia ir sieja', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kaip jūsų savybės dera tarpusavyje', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jūsų porai' };
   const C = { sirdies: 'Širdies linijos (jausmai)', galvos: 'Galvos linijos (mąstymas)', gyvenimo: 'Gyvenimo linijos (tempas)', forma: 'Delnų forma (charakteris)' };
   let t = `Suderinamumas: ${res.suderinamumas || ''}%\nPoros bruožai: ${(res.poros_bruozai || []).join(', ')}\n\n`;
   for (const [k, l] of Object.entries(C)) { const c = (res.palyginimai || {})[k]; if (c) t += `## ${l}\nA: ${c.a}\nB: ${c.b}\nIšvada: ${c.isvada || ''}\n\n`; }
@@ -3718,7 +3718,7 @@ KAIP ATSAKYTI:
 - 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
 ${poraNameRules(A, B)}
 - Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kaip jūsų savybės dera tarpusavyje, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
-- Pabaigoje — 2–3 aiškūs, praktiški žingsniai jums abiem (sklandžiu tekstu, ne sąrašu).
+- Pabaigoje — 2–3 aiškūs, praktiški žingsniai jūsų porai (sklandžiu tekstu, ne sąrašu).
 - Apie delnus rašyk daugiskaita.
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk išsiskyrimo, neištikimybės, ligų, nelaimių ar konkrečių datų; nespręsk už porą, ar jiems būti kartu. Neduok medicininių, teisinių ar investavimo patarimų — tokiu atveju švelniai pasakyk, kad verta pasitarti su specialistu.
 - Jei klausimas rodo smurtą, grėsmę ar minčių apie savęs žalojimą — atsakyk švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: skubiai — 112, Vilties linija 116 123 (visą parą), pagalba nukentėjusiems nuo smurto — 8 800 66366 (Moterų linija) arba 8 800 55522 (Vyrų linija).
