@@ -246,7 +246,12 @@ body.form-view .wrap > .brand small{display:none}
 body.form-view.fit .wrap{padding-top:var(--bt,12px)}
 body.form-view.fit .wrap > .brand{font-size:var(--bf,14px)!important;margin-bottom:var(--bg,8px)!important}
 body.form-view.fit #v-form .intro > .hero,body.form-view.fit #v-redeem .intro > .hero{width:var(--hs,70px)!important;height:var(--hs,70px)!important}
-body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!important;height:calc(var(--hs,70px) * .92)!important}
+body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .8)!important;height:calc(var(--hs,70px) * .8)!important}
+/* Oras tarp antraštės ir nuolaidos bloko, apačioje — tarp „Padovanoti porai“ ir ekrano krašto */
+body.has-note #v-form #lead{display:none}
+body.form-view.fit #gift-note{margin-top:min(14px,calc(var(--bt,12px) * .5 + 4px))}
+body.form-view.fit .wrap{padding-bottom:calc(var(--bt,12px) * .7)}
+body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!important}
 </style>
 </head>
 <body class="form-view">
@@ -443,22 +448,27 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 // DELNAS užrašas ir delno ikona: parenkamas didžiausias dydis, kuriam esant visa forma telpa į ekraną be slinkimo
 (function(){
   const L=[[22,124,30,14],[20,112,26,12],[19,102,22,11],[18,94,18,10],[17,86,16,9],[16,78,14,8],[15,70,12,8],[14,62,10,7],[13,54,8,6],[12,46,6,4]];
-  const root=document.documentElement;
+  const root=document.documentElement; let mo=null;
   function fit(){
     if(!document.body.classList.contains('form-view')) return;
     document.body.classList.add('fit');
+    // Matuojant išjungiamos animacijos — kitaip matuojamas tarpinis (dar nepasikeitęs) dydis
+    document.body.classList.add('fitting');
+    const set=l=>{ root.style.setProperty('--bf',l[0]+'px'); root.style.setProperty('--hs',l[1]+'px'); root.style.setProperty('--bt',l[2]+'px'); root.style.setProperty('--bg',l[3]+'px'); };
     let pick=L[L.length-1];
-    for(const l of L){
-      root.style.setProperty('--bf',l[0]+'px'); root.style.setProperty('--hs',l[1]+'px'); root.style.setProperty('--bt',l[2]+'px'); root.style.setProperty('--bg',l[3]+'px');
-      if(root.scrollHeight<=window.innerHeight+1){ pick=l; break; }
-    }
-    root.style.setProperty('--bf',pick[0]+'px'); root.style.setProperty('--hs',pick[1]+'px'); root.style.setProperty('--bt',pick[2]+'px'); root.style.setProperty('--bg',pick[3]+'px');
+    for(const l of L){ set(l); if(root.scrollHeight<=window.innerHeight+1){ pick=l; break; } }
+    set(pick);
+    void root.offsetHeight; document.body.classList.remove('fitting');
+    // Pačios fit() pakeistos klasės neturi vėl paleisti perskaičiavimo
+    if(mo) mo.takeRecords();
   }
   let t=null; const later=()=>{ clearTimeout(t); t=setTimeout(fit,60); };
   window.addEventListener('resize',later);
   window.addEventListener('load',()=>{ fit(); setTimeout(fit,400); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit); });
   // Pasikeitus formos turiniui (tipas, nuolaidos pastaba, rodinys) — perskaičiuojama
-  try{ new MutationObserver(later).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']}); }catch(e){}
+  try{ mo=new MutationObserver(later); mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']}); }catch(e){}
+  // Išdėstymas gali pasikeisti ir be DOM pakeitimų (pvz., įsikėlus šriftams) — sekamas formos dydis
+  try{ const ro=new ResizeObserver(later); ['v-form','v-redeem'].forEach(id=>{ const e=document.getElementById(id); if(e) ro.observe(e); }); }catch(e){}
   window.fitHeader=fit;
 })();
 </script>
