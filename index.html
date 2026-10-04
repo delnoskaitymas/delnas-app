@@ -2215,6 +2215,12 @@ function _startAppReal(){
 
 function openCameraScreen(){startApp();}
 
+// Kameros antraštė; porų režime — kaip asmeninėje, tik prasideda vardu (šauksmininku), kad būtų aišku, kieno eilė
+function camTitleSet(el,isLeft){
+  const t=isLeft?'nufotografuok kairįjį delną':'nufotografuok dešinįjį delną';
+  // Visa antraštė vienos spalvos ir stiliaus — abiem žmonėms vienodai
+  el.textContent=(window._pora&&window._pora.active&&poraCurrentName()) ? ltForms(poraCurrentName()).voc+', '+t : t.charAt(0).toUpperCase()+t.slice(1);
+}
 function updateCameraUI(){
   const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');const dot3=document.getElementById('cam-dot3');if(dot3) dot3.classList.add('inactive');
   const hint=document.getElementById('cam-hint-txt');const shutterTxt=document.getElementById('cam-shutter-txt');
@@ -2225,10 +2231,9 @@ function updateCameraUI(){
     title.textContent='Nufotografuok dešinįjį delną';dot1.classList.remove('inactive');dot2.classList.remove('inactive');
     if(shutterTxt) shutterTxt.textContent='Užfiksuoti dešinįjį delną';
   }
+  const sub0=document.getElementById('cam-sub'); if(sub0) sub0.textContent='Laikyk delną tiesiai prieš kamerą, pirštus laikyk išskėstus.';
   if(window._pora&&window._pora.active){
-    title.textContent=poraCamTitle(camHand==='left');
-    if(shutterTxt) shutterTxt.textContent=camHand==='left'?'Užfiksuoti kairę ranką':'Užfiksuoti dešinę ranką';
-    const sub=document.getElementById('cam-sub'); if(sub) sub.textContent='Laikyk ranką tiesiai prieš kamerą, pirštus laikyk išskėstus.';
+    camTitleSet(title,camHand==='left');
   }
   if(hint){hint.textContent='';hint.style.color='rgba(212,168,67,.85)';hint.style.opacity='1';}
   // Resetinti būseną perjungiant tarp delno
@@ -2734,7 +2739,6 @@ function capturePhoto(){
           'no_hand':['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.']
         };
         let [title,msg]=msgs[v.reason]||['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.'];
-        if(window._pora&&window._pora.active){ title=poraPlural(title); msg=poraPlural(msg); }
         const encourage='<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko – bandyk dar kartą ✨</div>';
         // Rodyti klaidos laukelį frozen apačioje
         hideMsgBar();
@@ -2757,7 +2761,7 @@ function capturePhoto(){
             video.style.transition='';
             // Grąžinti antraštę
             const titleEl=document.getElementById('cam-title');
-            if(titleEl){titleEl.textContent=poraCamTitle(isLeftHand)||(isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną');}
+            if(titleEl) camTitleSet(titleEl,isLeftHand);
             if(camSub) camSub.style.visibility='';
             const vpWrap1=document.getElementById('cam-vp-wrap');
             if(vpWrap1){vpWrap1.style.flex='';vpWrap1.style.height='';vpWrap1.style.maxHeight='calc(100dvh - 235px)';vpWrap1.style.width='';}
@@ -2800,7 +2804,7 @@ function capturePhoto(){
             if(camSub) camSub.style.visibility='';
             const vpWrap2=document.getElementById('cam-vp-wrap');
             if(vpWrap2){vpWrap2.style.flex='';vpWrap2.style.height='';vpWrap2.style.maxHeight='calc(100dvh - 235px)';vpWrap2.style.width='';}
-            document.getElementById('cam-title').textContent='Nufotografuok dešinįjį delną';
+            camTitleSet(document.getElementById('cam-title'),false);
             camHand='right';
             updateCameraUI();
             // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
@@ -2854,7 +2858,7 @@ function capturePhoto(){
       if(camSub) camSub.style.visibility='';
       const vpWrap3=document.getElementById('cam-vp-wrap');
       if(vpWrap3){vpWrap3.style.flex='';vpWrap3.style.height='';vpWrap3.style.maxHeight='calc(100dvh - 235px)';vpWrap3.style.width='';}
-      document.getElementById('cam-title').textContent=poraCamTitle(isLeftHand)||(isLeftHand?'Nufotografuok kairįjį delną':'Nufotografuok dešinįjį delną');
+      camTitleSet(document.getElementById('cam-title'),isLeftHand);
       _shutterUnlock(shutter);
       shutter.style.opacity='1';
       shutter.style.pointerEvents='auto';
@@ -5754,9 +5758,6 @@ const PORA_SECTIONS = [
 ];
 function poraEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.nameB : ''; }
-// Porų režime kameroje apie delnus rašoma daugiskaita (kiekvienas fotografuoja abu delnus)
-function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? ltForms(poraCurrentName()).gen+' delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
-function poraPlural(t){ return String(t).replace('ranką toliau, kad visas delnas tilptų','ranką toliau, kad ji visa tilptų').replace('Pasuk delną į save','Pasuk ranką vidine puse į save').replace('laikyk delną','laikyk ranką'); }
 // Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
 function ltForms(name){
   const n=String(name||'').trim(), o={nom:n,gen:n,dat:n,acc:n,ins:n,voc:n};
