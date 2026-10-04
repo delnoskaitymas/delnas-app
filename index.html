@@ -299,10 +299,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 /* Porų nuotolinis režimas */
 .pora-remote-link{display:block;margin:14px auto 0;background:none;border:none;color:var(--gold2);font:500 13.5px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.45);cursor:pointer}
 /* Porų suderinamumas */
-.pora-ring{position:relative;width:150px;height:150px;margin:18px auto 14px}
+.pora-ring{position:relative;width:124px;height:124px;margin:16px auto 12px}
 .pora-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.pora-pct b{font-family:'Playfair Display',serif;font-size:38px;color:var(--gold2);line-height:1}
-.pora-pct span{font-size:11px;letter-spacing:.08em;color:var(--muted);margin-top:4px}
+.pora-pct b{font-family:'Playfair Display',serif;font-size:32px;color:var(--gold2);line-height:1}
+.pora-pct span{font-size:10px;letter-spacing:.06em;color:var(--muted);margin-top:4px}
 .pora-traits{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 12px}
 .pora-traits span{border:1px solid rgba(212,168,67,.45);background:rgba(212,168,67,.08);color:#e8e2d4;border-radius:999px;padding:6px 12px;font-size:12.5px}
 .pora-orbs{position:relative;width:190px;height:120px;flex-shrink:0;margin:0 auto}
@@ -1043,7 +1043,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="result-subtitle" style="margin-bottom:8px">Porų suderinamumas pagal delnus</div>
     <div class="result-name" id="pora-names"></div>
     <div class="pora-ring">
-      <svg viewBox="0 0 120 120" width="150" height="150"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,168,67,.18)" stroke-width="8"/><circle id="pora-ring-arc" cx="60" cy="60" r="52" fill="none" stroke="url(#poraGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/><defs><linearGradient id="poraGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset=".5" stop-color="#e0a930"/><stop offset="1" stop-color="#8a5a0f"/></linearGradient></defs></svg>
+      <svg viewBox="0 0 120 120" width="124" height="124"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,168,67,.18)" stroke-width="8"/><circle id="pora-ring-arc" cx="60" cy="60" r="52" fill="none" stroke="url(#poraGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/><defs><linearGradient id="poraGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset=".5" stop-color="#e0a930"/><stop offset="1" stop-color="#8a5a0f"/></linearGradient></defs></svg>
       <div class="pora-pct"><b id="pora-pct">0%</b><span style="text-align:center;line-height:1.25">delnų<br>suderinamumas</span></div>
     </div>
     <div class="pr-level" id="pora-level"></div>
@@ -6091,7 +6091,7 @@ function poraCompareHtml(r){
   const p=window._pora||{};
   const items=PORA_CMP.filter(([k])=>pc[k]).map(([k,label])=>{ const c=pc[k];
     return '<div class="pr-cmp pr-rv"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
-  return '<div class="pr-card pr-rv"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė jūsų delnų palyginimas</div><div class="pr-names"><div>'+poraEsc(p.nameA)+'</div><div>'+poraEsc(p.nameB)+'</div></div>'+items+'</div>';
+  return '<div class="pr-card pr-rv"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė jūsų delnų palyginimas</div>'+items+'</div>';
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
 function poraReveal(){
@@ -6118,7 +6118,34 @@ function setupPoraKlausk(){
     })():null });
 }
 
+// Lyčiai neutrali kalba — tas pats saugiklis kaip serveryje (poraNeutral), kad būtų pataisyti
+// ir anksčiau išsaugoti rezultatai: „abu jaučiate“ → „jaučiate“, „vienas kitą“ → „tarpusavyje“
+function poraNeutralText(t){
+  const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`, V = `${start}(?:vienas|viena)\\s+`;
+  return String(t)
+    // „Abu jaučiate“ / „jūs abu esate“ → „Jaučiate“ / „jūs esate“
+    .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte|atės|otės|itės|ėtės))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
+    // „papildo vienas kitą“ (apie savybes) → „dera tarpusavyje“
+    .replace(new RegExp(`${start}papildo\\s+(?:vienas|viena)\\s+kitą${end}`, 'g'), 'dera tarpusavyje')
+    // „vienas kitą/kitam/kitu/kito“ → „savo porą/porai/pora/poros“ („savo pora“ = kitas poros žmogus)
+    .replace(new RegExp(`${V}(?:su\\s+kitu|su\\s+kita|prie\\s+kito|prie\\s+kitos)${end}`, 'g'), 'tarpusavyje')
+    .replace(new RegExp(`${V}be\\s+(?:kito|kitos)${end}`, 'g'), 'be savo poros')
+    .replace(new RegExp(`${V}kitą${end}`, 'g'), 'savo porą')
+    .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
+    .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
+    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros');
+}
+function poraNeutralResult(r){
+  const f=t=>typeof t==='string'?poraNeutralText(t):t;
+  PORA_SECTIONS.forEach(([k])=>{ r[k]=f(r[k]); });
+  if(r.palyginimai) Object.values(r.palyginimai).forEach(c=>{ if(c){ c.a=f(c.a); c.b=f(c.b); c.isvada=f(c.isvada); } });
+  if(r.izvalgos) Object.keys(r.izvalgos).forEach(k=>{ if(Array.isArray(r.izvalgos[k])) r.izvalgos[k]=r.izvalgos[k].map(f); });
+  if(Array.isArray(r.poros_bruozai)) r.poros_bruozai=r.poros_bruozai.map(f);
+  if(r.sritys) Object.values(r.sritys).forEach(d=>{ if(d){ d.fraze=f(d.fraze); d.aprasymas=f(d.aprasymas); } });
+  return r;
+}
 function renderPoraResult(r){
+  try{ poraNeutralResult(r); }catch(e){}
   window._poraResult=r;
   try{ const sid=(window._pora||{}).sid||''; if(window.delnasSrcBuy&&sid&&!sid.startsWith('gp_')) window.delnasSrcBuy('pora',sid); }catch(e){}
   setTimeout(setupPoraKlausk,0);

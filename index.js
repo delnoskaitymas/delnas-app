@@ -3177,7 +3177,7 @@ function ltPhrase(s, c) { return String(s || '').split(/(\s+)/).map(w => /^\s*$/
 function poraNameRules(A, B) {
   const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
   return `- VARDUS NAUDOK RETAI — tai rimta, profesionali analizė; dažnai kartojami vardai skamba skurdžiai ir komiškai. Daugumoje skyrių vardų nerašyk visai. Vardą rašyk TIK ten, kur be jo neįmanoma suprasti, apie kurį žmogų kalbama, — ir tada ne daugiau kaip VIENĄ kartą kiekvieną vardą skyriuje. Lauke „isvada“ (palyginimuose) vardų nerašyk: abiejų bruožai jau parodyti šalia, todėl rašyk apie jūsų porą („jūsų poroje“, „jums“). Dažniausiai rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
-- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
+- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „ta, kuri“ / „tas, kuris“ (KLAIDA: „Mila jūsų poroje yra ta, kuri drąsiau reiškia jausmus“ — teisingai: „Mila jūsų poroje drąsiau reiškia jausmus“), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
@@ -3194,13 +3194,19 @@ function smartTrim(t, max) {
 }
 // Porų tekstų saugiklis: giminę rodančios formos apie porą („abu jaučiate“, „vienas kitą“) → neutralios
 function poraNeutral(t) {
-  const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`;
+  const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`, V = `${start}(?:vienas|viena)\\s+`;
   return String(t)
     // „Abu jaučiate“ / „jūs abu esate“ → „Jaučiate“ / „jūs esate“
-    .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
-    .replace(new RegExp(`${start}(?:vienas|viena)\\s+(?:kitą|kitam|kitai|su\\s+kitu|su\\s+kita|prie\\s+kito|prie\\s+kitos|be\\s+kito|be\\s+kitos)${end}`, 'g'), 'tarpusavyje')
-    .replace(new RegExp(`${start}(?:vienas|viena)\\s+(?:kito|kitos)${end}`, 'g'), 'tarpusavio')
-    .replace(new RegExp(`${start}papildo tarpusavyje${end}`, 'g'), 'dera tarpusavyje');
+    .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte|atės|otės|itės|ėtės))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
+    // „papildo vienas kitą“ (apie savybes) → „dera tarpusavyje“
+    .replace(new RegExp(`${start}papildo\\s+(?:vienas|viena)\\s+kitą${end}`, 'g'), 'dera tarpusavyje')
+    // „vienas kitą/kitam/kitu/kito“ → „savo porą/porai/pora/poros“ („savo pora“ = kitas poros žmogus)
+    .replace(new RegExp(`${V}(?:su\\s+kitu|su\\s+kita|prie\\s+kito|prie\\s+kitos)${end}`, 'g'), 'tarpusavyje')
+    .replace(new RegExp(`${V}be\\s+(?:kito|kitos)${end}`, 'g'), 'be savo poros')
+    .replace(new RegExp(`${V}kitą${end}`, 'g'), 'savo porą')
+    .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
+    .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
+    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros');
 }
 
 // Porų analizė su pakartojimu: jei AI atsakymas nukirptas, sugadintas JSON ar trūksta skyriaus —
