@@ -5830,7 +5830,7 @@ async function poraRemote(){
 function poraShowRemote(link){
   const p=window._pora; p.remoteLink=link;
   document.getElementById('pr-remote-title').textContent='Nuoroda '+ltForms(p.nameB).dat;
-  document.getElementById('pr-remote-txt').textContent=ltForms(p.nameA).gen+' delnai jau nufotografuoti. Nusiųskite nuorodą '+ltForms(p.nameB).dat+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
+  document.getElementById('pr-remote-txt').textContent=ltForms(p.nameA).gen+' delnai jau nufotografuoti. Nusiųsk nuorodą '+ltForms(p.nameB).dat+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
   document.getElementById('pr-remote-wait').textContent='Laukiame, kol '+p.nameB+' nufotografuos delnus…';
   go('s-pora-remote');
   clearInterval(window._poraRemoteTimer);
