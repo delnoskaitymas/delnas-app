@@ -3176,12 +3176,13 @@ function ltPhrase(s, c) { return String(s || '').split(/(\s+)/).map(w => /^\s*$/
 // Bendros taisyklės apie vardus porų tekstuose (analizė ir „Klauskite“)
 function poraNameRules(A, B) {
   const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
-  return `- VARDUS NAUDOK SAIKINGAI — tekstas turi skambėti profesionaliai, taktiškai ir natūraliai, o ne komiškai. Viename skyriuje kiekvieną vardą naudok ne daugiau kaip 1–2 kartus. Dažniausiai rašyk apie jus kaip porą („jūs abu“, „jums abiem“, „vienas iš jūsų“, „kitas“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk abiem kartu („pasakykite vienas kitam…“). Trumpose įžvalgose vardų nenaudok.
+  return `- VARDUS NAUDOK SAIKINGAI — tekstas turi skambėti profesionaliai, taktiškai ir natūraliai, o ne komiškai. Viename skyriuje kiekvieną vardą naudok ne daugiau kaip 1–2 kartus. Dažniausiai rašyk apie jus kaip porą („jūs“, „jums abiem“, „jūsų poroje“, „tarpusavyje“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk abiem kartu („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
+- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „abu“ (apie žmones), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums abiem“, „abiejų jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
 async function runCoupleAnalysis(photos, nameA, nameB) {
-  const A = nameA || 'Pirmasis partneris', B = nameB || 'Antrasis partneris';
+  const A = nameA || 'Pirmasis žmogus', B = nameB || 'Antrasis žmogus';
   const img = p => ({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
   const content = [
     { type: 'text', text: `${A} — kairysis delnas:` }, img(photos[0]),
@@ -3195,6 +3196,7 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
 Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — dviejų žmonių, ${A} ir ${B}, abiejų delnų nuotraukos (po kairįjį ir dešinįjį). Tavo užduotis — kuo tiksliau palyginti JŲ KONKREČIUS delnus ir parašyti poros suderinamumo analizę.
 
 KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
+0. PIRMIAUSIA kiekvieno žmogaus delnus išanalizuok ATSKIRAI ir užrašyk lauke „stebejimai“ (a — ${A}, b — ${B}), lyg darytum asmeninę analizę: delnų forma, pirštai, nykštys, visos pagrindinės linijos (ilgis, gylis, lenkimas, pradžia, pabaiga, šakelės), kalneliai, kairio ir dešinio delno skirtumai ir ką visa tai reiškia šio žmogaus charakteriui santykiuose. Tik turėdamas abu atskirus aprašus — lygink.
 1. Atidžiai išnagrinėk kiekvieną iš 4 nuotraukų atskirai: delno formą (kvadratinis / pailgas, platus / siauras), pirštų ilgį palyginus su delnu, nykščio padėtį, širdies, galvos, gyvenimo ir likimo linijų ilgį, gylį, lenkimą, pradžią ir pabaigą, šakeles, ryškiausius kalnelius, kairio ir dešinio delno skirtumus (kairysis — prigimtis, dešinysis — kaip žmogus gyvena dabar).
 2. Kiekvienai sričiai palygink abu žmones TARPUSAVYJE: kur bruožai panašūs (lengvas supratimas), kur priešingi, bet papildo, o kur priešingi ir kelia trintį.
 3. Tik tada rašyk išvadas. Kiekvienas teiginys turi kilti iš to, ką MATAI būtent šiuose delnuose — ne bendros frazės, tinkančios bet kuriai porai. Dvi skirtingos poros turi gauti aiškiai skirtingas analizes ir balus.
@@ -3208,10 +3210,12 @@ ${poraNameRules(A, B)}
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
-${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?' })}
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.' })}
 - Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
-PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
+STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${A} delnų išsami atskira analizė, b — ${B} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
+
+PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
 - a: ką matai ${A} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
 - b: tas pats apie ${B} (iki 120 simbolių)
 - isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių)
@@ -3219,9 +3223,9 @@ PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sri
 SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — tik balas (sveikas skaičius 55–98); iš jų skaičiuojamas bendras suderinamumas.
 
 SKYRIAI:
-- traukia (Kas jus traukia vienas prie kito): kas jus natūraliai sieja ir ko kiekvienas randa kitame
+- traukia (Kas jus traukia ir sieja): kas jus natūraliai sieja ir ką kiekvienas iš jūsų randa savo poroje
 - bendravimas (Kaip bendraujate ir sprendžiate nesutarimus): jūsų bendravimo stiliai, kaip jie dera, kaip geriausiai išspręsti nesutarimus
-- papildo (Kuo vienas kitą papildote): kur vieno stiprybė užpildo kito silpnesnę vietą
+- papildo (Kaip jūsų savybės papildo viena kitą): kur vieno žmogaus stiprybė užpildo kito silpnesnę vietą
 - trintis (Kur gali kilti trintis): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
 - ateitis (Požiūris į pinigus, namus ir ateitį): kur jūsų požiūriai sutampa ir kur verta susitarti
 - stiprybe (Jūsų poros stiprybė): kas daro jūsų porą išskirtinę
@@ -3232,7 +3236,7 @@ Taip pat:
 - izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma, be vardų — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
 
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
-{"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+{"stebejimai":{"a":"...","b":"..."},"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
@@ -3606,7 +3610,7 @@ function klauskContextText(res) {
 }
 
 function klauskPoraContext(res) {
-  const T = { traukia: 'Kas jus traukia vienas prie kito', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kuo vienas kitą papildote', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jums abiem' };
+  const T = { traukia: 'Kas jus traukia ir sieja', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kaip jūsų savybės papildo viena kitą', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jums abiem' };
   const C = { sirdies: 'Širdies linijos (jausmai)', galvos: 'Galvos linijos (mąstymas)', gyvenimo: 'Gyvenimo linijos (tempas)', forma: 'Delnų forma (charakteris)' };
   let t = `Suderinamumas: ${res.suderinamumas || ''}%\nPoros bruožai: ${(res.poros_bruozai || []).join(', ')}\n\n`;
   for (const [k, l] of Object.entries(C)) { const c = (res.palyginimai || {})[k]; if (c) t += `## ${l}\nA: ${c.a}\nB: ${c.b}\nIšvada: ${c.isvada || ''}\n\n`; }
@@ -3682,7 +3686,7 @@ async function klauskCallAI(prompt) {
 }
 
 async function answerKlauskPora(order, question) {
-  const A = order.nameA || 'Pirmasis partneris', B = order.nameB || 'Antrasis partneris';
+  const A = order.nameA || 'Pirmasis žmogus', B = order.nameB || 'Antrasis žmogus';
   const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Atsakyk remdamasis BŪTENT šia analize.
 
@@ -3694,7 +3698,7 @@ KLAUSIMAS: ${question}
 KAIP ATSAKYTI:
 - 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
 ${poraNameRules(A, B)}
-- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kuo vienas kitą papildote, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
+- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kaip jūsų savybės papildo viena kitą, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
 - Pabaigoje — 2–3 aiškūs, praktiški žingsniai jums abiem (sklandžiu tekstu, ne sąrašu).
 - Apie delnus rašyk daugiskaita.
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk išsiskyrimo, neištikimybės, ligų, nelaimių ar konkrečių datų; nespręsk už porą, ar jiems būti kartu. Neduok medicininių, teisinių ar investavimo patarimų — tokiu atveju švelniai pasakyk, kad verta pasitarti su specialistu.

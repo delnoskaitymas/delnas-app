@@ -311,6 +311,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pora-orb i{position:absolute;inset:8%;border-radius:50%;overflow:hidden;border:1.5px solid rgba(212,168,67,.4);background:url(/img/delnas.jpg) center 20%/cover no-repeat;filter:grayscale(.3) brightness(1.1) contrast(1.05)}
 .pora-orb:nth-child(2) i{transform:scaleX(-1)}
 .pora-orbs.sm{width:118px;height:72px}
+#s-pora-wait .pora-orbs{width:150px;height:94px}
+#s-pora-wait .pora-orb{width:94px;height:94px;border-width:2.5px}
 .pora-orbs.sm .pora-orb{width:72px;height:72px;animation:none;border-width:2.5px}
 .pora-orbs.xs{width:62px;height:38px;margin:0}
 .pora-orbs.xs .pora-orb{width:38px;height:38px;border-width:1.5px;animation:none;box-shadow:0 0 10px rgba(212,168,67,.3)}
@@ -959,7 +961,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       </div>
 
       <div class="rb-sec">💞 Jums dviem</div>
-      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami abiejų partnerių delnai: kas jus traukia, kaip bendraujate, kuo papildote vienas kitą — su suderinamumo įverčiu procentais.</small></a>
+      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami abiejų jūsų delnai: kas jus traukia, kaip bendraujate, kaip jūsų savybės papildo viena kitą — su suderinamumo įverčiu procentais.</small></a>
     </div>
     <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
@@ -974,7 +976,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(212,168,67,.75);margin-bottom:10px">Porų suderinamumas pagal delnus</div>
     <div id="pora-next-done" style="font-size:14px;color:var(--muted);margin-bottom:6px"></div>
     <div id="pora-next-title" style="font-family:'Playfair Display',serif;font-size:28px;line-height:1.2;color:#e8e2d4;margin-bottom:10px"></div>
-    <div style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:320px;margin-bottom:26px">Perduok telefoną partneriui — dabar reikia nufotografuoti jo arba jos delnus.</div>
+    <div id="pora-next-txt" style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:320px;margin-bottom:26px"></div>
     <button class="btn btn-gold" id="pora-next-btn" onclick="poraNextPartner()" style="max-width:340px"></button>
     <button type="button" class="pora-remote-link" id="pora-remote-btn" onclick="poraRemote()"></button>
     <div class="kl-err" id="pora-remote-err" style="max-width:340px"></div>
@@ -996,7 +998,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 <div class="screen" id="s-pora-wait">
   <div class="load-wrap" style="padding:44px 16px 0;gap:0;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0;margin-bottom:20px">
-      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.35;color:#e8e2d4;text-shadow:0 1px 8px rgba(212,168,67,.25)">Lyginami jūsų delnai</div>
+      <div class="load-title" style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;margin-bottom:8px;letter-spacing:.02em;line-height:1.3;color:#e8e2d4;text-shadow:0 1px 8px rgba(212,168,67,.25)" id="pora-wait-title">Analizuojami ir lyginami<br>jūsų delnai</div>
       <div id="pora-wait-names" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,.7)"></div>
     </div>
     <div class="pora-orbs">
@@ -1010,13 +1012,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="position:relative;width:100%;max-width:340px;flex:1;min-height:0;overflow:hidden">
       <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none"></div>
       <div class="load-steps" style="gap:4px;padding-bottom:20px">
-        <div class="ls" id="pls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Atrandama, kas jus traukia vienas prie kito.</div><div class="ls-status" id="pls1-status">·</div></div>
-        <div class="ls" id="pls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="ls-text">Analizuojama, kaip bendraujate ir sprendžiate nesutarimus.</div><div class="ls-status" id="pls2-status">·</div></div>
-        <div class="ls" id="pls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div><div class="ls-text">Ieškoma, kuo vienas kitą papildote.</div><div class="ls-status" id="pls3-status">·</div></div>
-        <div class="ls" id="pls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><div class="ls-text">Nustatoma, kur gali kilti trintis.</div><div class="ls-status" id="pls4-status">·</div></div>
-        <div class="ls" id="pls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></div><div class="ls-text">Lyginamas požiūris į pinigus, namus ir ateitį.</div><div class="ls-status" id="pls5-status">·</div></div>
-        <div class="ls" id="pls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6.5 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21l1.5-7L2 9.3l7-.8z"/></svg></div><div class="ls-text">Atskleidžiama jūsų poros stiprybė.</div><div class="ls-status" id="pls6-status">·</div></div>
-        <div class="ls" id="pls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></div><div class="ls-text">Ruošiami patarimai jums abiem.</div><div class="ls-status" id="pls7-status">·</div></div>
+        <div class="ls" id="pls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="ls-text">Analizuojami pirmojo žmogaus delnai.</div><div class="ls-status" id="pls1-status">·</div></div>
+        <div class="ls" id="pls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="ls-text">Analizuojami antrojo žmogaus delnai.</div><div class="ls-status" id="pls2-status">·</div></div>
+        <div class="ls" id="pls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Lyginama, kas jus traukia ir sieja.</div><div class="ls-status" id="pls3-status">·</div></div>
+        <div class="ls" id="pls4"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="ls-text">Lyginama, kaip bendraujate ir sprendžiate nesutarimus.</div><div class="ls-status" id="pls4-status">·</div></div>
+        <div class="ls" id="pls5"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div><div class="ls-text">Ieškoma, kur jūsų savybės papildo viena kitą, o kur gali kilti trintis.</div><div class="ls-status" id="pls5-status">·</div></div>
+        <div class="ls" id="pls6"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></div><div class="ls-text">Lyginamas požiūris į pinigus, namus ir ateitį.</div><div class="ls-status" id="pls6-status">·</div></div>
+        <div class="ls" id="pls7"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></div><div class="ls-text">Ruošiami tikslūs rezultatai ir patarimai jums abiem.</div><div class="ls-status" id="pls7-status">·</div></div>
       </div>
       <div id="pora-wait-err" style="display:none;position:relative;z-index:3;margin-top:14px;text-align:center">
         <div style="color:#ffb3a0;font-size:13px;line-height:1.5;margin-bottom:12px" id="pora-wait-err-txt"></div>
@@ -5742,9 +5744,9 @@ function proceedToPayment(){
 // Nuoroda lieka adreso juostoje, todėl perkrovus puslapį (ar grįžus vėliau)
 // rodoma ta pati analizė — antrą kartą mokėti ar fotografuoti nereikia.
 const PORA_SECTIONS = [
-  ['traukia', 'I · Kas jus traukia vienas prie kito'],
+  ['traukia', 'I · Kas jus traukia ir sieja'],
   ['bendravimas', 'II · Kaip bendraujate ir sprendžiate nesutarimus'],
-  ['papildo', 'III · Kuo vienas kitą papildote'],
+  ['papildo', 'III · Kaip jūsų savybės papildo viena kitą'],
   ['trintis', 'IV · Kur gali kilti trintis'],
   ['ateitis', 'V · Požiūris į pinigus, namus ir ateitį'],
   ['stiprybe', 'VI · Jūsų poros stiprybė'],
@@ -5753,7 +5755,7 @@ const PORA_SECTIONS = [
 function poraEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.nameB : ''; }
 // Porų režime kameroje apie delnus rašoma daugiskaita (kiekvienas fotografuoja abu delnus)
-function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? poraCurrentName()+' — delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
+function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? ltForms(poraCurrentName()).gen+' delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
 function poraPlural(t){ return String(t).replace('ranką toliau, kad visas delnas tilptų','ranką toliau, kad ji visa tilptų').replace('Pasuk delną į save','Pasuk ranką vidine puse į save').replace('laikyk delną','laikyk ranką'); }
 // Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
 function ltForms(name){
@@ -5804,7 +5806,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       const hk=document.getElementById('home-kicker'), hh=document.getElementById('home-h1'), hl=document.getElementById('home-lead');
       if(hk) hk.textContent='Porų suderinamumas pagal delnus';
       if(hh) hh.innerHTML='Jūsų porų<br><em class="gold">suderinamumas</em>';
-      if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kuo papildote vienas kitą ir kur verta susitarti.';
+      if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kaip jūsų savybės papildo viena kitą ir kur verta susitarti.';
       // Porų režime — daugiskaita
       const ht=document.getElementById('home-time'), hm=document.getElementById('home-mano');
       if(ht) ht.textContent='⏱ Užtruksite tik kelias minutes';
@@ -5844,10 +5846,12 @@ function poraAfterPartner(){
   p.photos[p.stage]=[photoLeft,photoRight];
   if(p.stage===0){
     p.stage=1;
-    document.getElementById('pora-next-done').textContent=p.nameA+' — abu delnai nufotografuoti';
-    document.getElementById('pora-next-title').textContent='Dabar — '+p.nameB;
-    document.getElementById('pora-next-btn').textContent='Tęsti — '+p.nameB;
-    document.getElementById('pora-remote-btn').textContent=p.nameB+' ne šalia? Nusiųsti nuorodą →';
+    const fa=ltForms(p.nameA), fb=ltForms(p.nameB);
+    document.getElementById('pora-next-done').textContent=fa.gen+' delnai nufotografuoti';
+    document.getElementById('pora-next-title').textContent='Dabar — '+fb.gen+' eilė';
+    document.getElementById('pora-next-txt').textContent='Perduok telefoną '+fb.dat+' — dabar reikia nufotografuoti '+fb.gen+' delnus.';
+    document.getElementById('pora-next-btn').textContent='Fotografuoti '+fb.gen+' delnus →';
+    document.getElementById('pora-remote-btn').textContent=fb.gen+' nėra šalia? Nusiųsti nuorodą →';
     go('s-pora-next');
   } else {
     poraStart();
@@ -5916,7 +5920,7 @@ function poraShowError(msg){
 // tekstai (nuotraukų atpažinimas), tada visi 7 punktai užsidega kartu su šviesos perbėgimu
 // ir bendru ratuku prie procentų, pabaigoje — varnelės, 100 % ir išblukimas.
 const PORA_MICRO1=['Tikrinamos visų keturių delnų nuotraukos...','Nustatoma abiejų delnų forma...','Lyginamas pirštų ilgis ir padėtis...','Atpažįstamos abiejų delnų linijos...','Lyginami kairieji ir dešinieji delnai...'];
-const PORA_MICRO2=['Analizuojamos abiejų širdies linijos...','Lyginama, kaip reiškiate jausmus...','Analizuojamos abiejų galvos linijos...','Lyginamas mąstymo ir sprendimų stilius...','Tyrinėjamos abiejų gyvenimo linijos...','Lyginamas jūsų gyvenimo tempas...','Ieškoma likimo linijų sąsajų...','Lyginami ryškiausi delnų kalneliai...','Ieškoma, kur jūsų bruožai sutampa...','Ieškoma, kur vienas kitą papildote...','Vertinamos šešios santykių sritys...','Skaičiuojamas jūsų suderinamumas...'];
+const PORA_MICRO2=['Analizuojamos abiejų širdies linijos...','Lyginama, kaip reiškiate jausmus...','Analizuojamos abiejų galvos linijos...','Lyginamas mąstymo ir sprendimų stilius...','Tyrinėjamos abiejų gyvenimo linijos...','Lyginamas jūsų gyvenimo tempas...','Ieškoma likimo linijų sąsajų...','Lyginami ryškiausi delnų kalneliai...','Ieškoma, kur jūsų bruožai sutampa...','Ieškoma, kur jūsų savybės papildo viena kitą...','Vertinamos šešios santykių sritys...','Skaičiuojamas jūsų suderinamumas...'];
 const PORA_MICRO3=['Ruošiami patarimai jums abiem...','Sudėliojamos baigiamosios išvados...','Baigiama ruošti jūsų porų analizę...'];
 function poraStopProgress(){
   window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
@@ -5926,6 +5930,9 @@ function poraProgress(start){
   clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
   const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct'), txt=document.getElementById('pora-wait-txt'), spin=document.getElementById('pora-spinner');
   document.getElementById('pora-wait-names').textContent=poraNames();
+  { const p=window._pora||{}, t1=document.querySelector('#pls1 .ls-text'), t2=document.querySelector('#pls2 .ls-text');
+    if(p.nameA&&t1) t1.textContent='Analizuojami '+ltForms(p.nameA).gen+' delnai.';
+    if(p.nameB&&t2) t2.textContent='Analizuojami '+ltForms(p.nameB).gen+' delnai.'; }
   if(start||!window._poraT0){
     window._poraT0=Date.now(); window._poraPhase=1; window._poraPct=0;
     for(let i=1;i<=7;i++){
@@ -5935,14 +5942,19 @@ function poraProgress(start){
     }
     if(spin) spin.style.display='none';
     pbar.style.transition=''; pbar.style.width='0%'; pct.textContent='0%';
+    setTimeout(()=>{ if(!window._poraDone&&window._poraPhase===1) activateStep(1,false,0,'pls'); },300);
+    setTimeout(()=>{ if(!window._poraDone&&window._poraPhase===1){ activateStep(1,true,0,'pls'); activateStep(2,false,0,'pls'); } },2400);
   }
   window._poraDone=false;
   const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
   let order=[], idx=0, lastPool=null;
-  const pool=()=>window._poraPhase===1?PORA_MICRO1:((window._poraPct||0)>=85?PORA_MICRO3:PORA_MICRO2);
+  const pp=window._pora||{}, ga=ltForms(pp.nameA||'').gen, gb=ltForms(pp.nameB||'').gen;
+  // 1 etapas — kiekvieno delnai atskirai, eilės tvarka (nemaišoma)
+  const MICRO1=(pp.nameA&&pp.nameB)?['Analizuojama '+ga+' delnų forma ir pirštai...','Atpažįstamos '+ga+' delnų linijos...','Analizuojama '+gb+' delnų forma ir pirštai...','Atpažįstamos '+gb+' delnų linijos...','Lyginami abiejų jūsų delnai...']:PORA_MICRO1;
+  const pool=()=>window._poraPhase===1?MICRO1:((window._poraPct||0)>=85?PORA_MICRO3:PORA_MICRO2);
   const micro=()=>{
     if(window._poraDone) return;
-    const P=pool(); if(P!==lastPool||idx>=order.length){ order=shuffle(P); idx=0; lastPool=P; }
+    const P=pool(); if(P!==lastPool||idx>=order.length){ order=P===MICRO1?P.slice():shuffle(P); idx=0; lastPool=P; }
     txt.style.transition='opacity .25s ease'; txt.style.opacity='0';
     setTimeout(()=>{
       if(window._poraDone) return;
@@ -5957,7 +5969,9 @@ function poraProgress(start){
     if(window._poraPhase===1 && s>=4.5){
       window._poraPhase=2;
       if(spin) spin.style.display='inline-block';
-      for(let n=1;n<=7;n++) setTimeout(()=>{ if(!window._poraDone) activateStep(n,false,(n-1)*180,'pls'); },(n-1)*180);
+      // Pirma — kiekvieno delnai atskirai (1–2), tada lyginimas (3–7)
+      activateStep(1,true,0,'pls'); activateStep(2,true,0,'pls');
+      for(let n=3;n<=7;n++) setTimeout(()=>{ if(!window._poraDone) activateStep(n,false,(n-3)*180,'pls'); },(n-3)*180);
     }
     const v=Math.min(94,Math.round(window._poraPhase===1?Math.min(20,s/4.5*20):20+74*(1-Math.exp(-(s-4.5)/35))));
     window._poraPct=v; pbar.style.width=v+'%'; pct.textContent=v+'%';
@@ -5993,7 +6007,7 @@ function poraPoll(){
 }
 
 // Šešios santykių sritys ir delnų palyginimai (nauji rezultatai; seni rodomi be jų)
-const PORA_FOOTERS={traukia:'Tai, kas jus traukia, verta priminti vienas kitam dažniau.',bendravimas:'Geras pokalbis prasideda nuo noro išgirsti.',papildo:'Jūsų skirtumai — bendra jūsų stiprybė.',trintis:'Kiekviena trintis — galimybė geriau pažinti vienas kitą.',ateitis:'Bendri planai suartina labiau nei bendri žodžiai.',stiprybe:'Ši stiprybė — jūsų poros pagrindas.',patarimai:'Maži kasdieniai žingsniai kuria didelius pokyčius.'};
+const PORA_FOOTERS={traukia:'Tai, kas jus traukia, verta dažniau priminti sau ir savo porai.',bendravimas:'Geras pokalbis prasideda nuo noro išgirsti.',papildo:'Jūsų skirtumai — bendra jūsų stiprybė.',trintis:'Kiekviena trintis — galimybė geriau pažinti savo porą.',ateitis:'Bendri planai suartina labiau nei bendri žodžiai.',stiprybe:'Ši stiprybė — jūsų poros pagrindas.',patarimai:'Maži kasdieniai žingsniai kuria didelius pokyčius.'};
 const PORA_DIMS=[['jausmai','Jausmai ir artumas','Jausmai'],['bendravimas','Bendravimas','Bendravimas'],['vertybes','Vertybės ir požiūris','Vertybės'],['kasdienybe','Kasdienybė ir ritmas','Kasdienybė'],['trauka','Trauka ir aistra','Trauka'],['ateitis','Ateities planai','Ateitis']];
 const PORA_CMP=[['sirdies','Širdies linijos · jausmai'],['galvos','Galvos linijos · mąstymas'],['gyvenimo','Gyvenimo linijos · tempas'],['forma','Delnų forma · charakteris']];
 const PORA_ICON_PATHS={
