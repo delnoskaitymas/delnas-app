@@ -91,10 +91,19 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   <div id="all-done" class="hidden">
     <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
   </div>
-  <a class="link" href="/">← Grįžti į DELNAS</a>
+  <a class="link" href="/" id="back-link">← Grįžti į DELNAS</a>
   <p class="fine" id="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
 </div>
 <script>
+// „Grįžti“ — ten, iš kur atėjo: į atidarytą rezultato langą (klausimai atidaromi naujame lange), porų rezultatą arba atgal
+window._klBack = '';
+document.getElementById('back-link').addEventListener('click', e => {
+  e.preventDefault();
+  try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { window.opener.focus(); window.close(); } } catch (x) {}
+  if (window._klBack) { location.href = window._klBack; return; }
+  try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (x) {}
+  location.href = '/';
+});
 (function(){
   const $ = id => document.getElementById(id);
   const params = new URLSearchParams(location.search);
@@ -135,6 +144,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   (async function check(attempt){
     try {
       const d = await (await fetch('/klausk/check?s=' + encodeURIComponent(sid))).json();
+      window._klBack = d.poraSid ? '/?pora=' + encodeURIComponent(d.poraSid) + '#klausk' : '/?kl=' + encodeURIComponent(sid) + '#klausk';
       if (!d.paid) {
         if (attempt < 6 && !d.notfound) { setTimeout(() => check(attempt + 1), 2000); return; }
         $('lead').textContent = 'Užsakymas nerastas arba neapmokėtas.';

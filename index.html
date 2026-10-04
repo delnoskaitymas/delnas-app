@@ -1498,7 +1498,7 @@ function track(e){
   try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(err){}
   try{ const body=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([body],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}); }catch(err){}
 }
-(function(){ try{ const q=new URLSearchParams(location.search); if(!q.get('pora')&&!q.get('session_id')&&!q.get('dovana')&&!q.get('s')&&!q.get('id')) track('home'); }catch(e){} })();
+(function(){ try{ const q=new URLSearchParams(location.search); if(!q.get('pora')&&!q.get('session_id')&&!q.get('dovana')&&!q.get('s')&&!q.get('id')&&!q.get('kl')&&!q.get('mano')) track('home'); }catch(e){} })();
 
 // ═══ Rezultato pavyzdys prieš mokėjimą ═══
 const SAMPLE_PALMS={sirdis:{kairys:'Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai ir šiltai',desinys:'Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau'},protas:{kairys:'Lenkta žemyn — iš prigimties mąstai vaizdžiai ir intuityviai',desinys:'Ilga ir tiesi — dabar sprendimus priimi nuosekliai'},gyvenimas:{kairys:'Plačiu lanku — daug jėgų ir smalsumo',desinys:'Beveik tokia pati — savo energiją išlaikei'},isvada:'Per gyvenimą išmokai jautrumą derinti su praktišku protu. Jausmus rodai rečiau, bet sprendimus priimi tvirčiau.'};
@@ -3797,7 +3797,7 @@ function displayResult(r){
   renderResultExtra(r);
   renderRating('r-rate','asmenine');
   track('result');
-  if(!window._manoView&&window.delnasSrcBuy&&(window._paymentRef||window._orderNumber)) window.delnasSrcBuy('asmenine',window._orderNumber||window._paymentRef);
+  if(!window._manoView&&!window._klView&&window.delnasSrcBuy&&(window._paymentRef||window._orderNumber)) window.delnasSrcBuy('asmenine',window._orderNumber||window._paymentRef);
   // Sklandi "iškilimo" animacija (fade-in + slide-up), su patikima
   // apsauga jei kas nors nepavyktų (žr. initScrollReveal() aukščiau)
   initScrollReveal();
@@ -3869,7 +3869,7 @@ function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
   // Priminimas po 3 mėnesių — atskira kortelė po „Klausk“
-  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+  const hPlan=(window._manoView||window._klView)?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
@@ -3894,7 +3894,7 @@ function renderResultExtra(r){
   const kref=payRef||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   setupKlauskBlock({
     q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
-    body:email=>({email,name:window.userName||'',result:window._palmResult||r}),
+    body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
     prepaid:kref&&!window._manoView?(async()=>{
       const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref))).json();
@@ -6050,6 +6050,8 @@ function renderPoraResult(r){
       '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ '+PORA_FOOTERS[k]+'</div></div>'; }).join('');
   go('s-pora-result');
   window.scrollTo(0,0);
+  // Grįžus iš klausimų puslapio (#klausk) — iškart prie klausimų bloko
+  if(location.hash==='#klausk') setTimeout(()=>{ const k=document.getElementById('pora-kl'); if(k) k.scrollIntoView({block:'center'}); },900);
   // Procentų žiedo animacija, tada ryšio lygio užrašas
   const pct=Math.max(0,Math.min(100,r.suderinamumas||0)), arc=document.getElementById('pora-ring-arc'), lbl=document.getElementById('pora-pct'), lv=document.getElementById('pora-level');
   lv.classList.remove('on'); lv.textContent=poraLevel(pct);
@@ -6457,6 +6459,25 @@ async function loadCompare(){
   }catch(e){ box.innerHTML=''; }
 }
 
+// Grįžimas iš klausimų puslapio: /?kl=ID#klausk — asmeninės analizės rezultatas su pasiūlymais, iškart prie klausimų bloko
+(function klView(){
+  const id=new URLSearchParams(location.search).get('kl');
+  if(!id||!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(id)) return;
+  window._klView=true;
+  const run=async()=>{
+    try{
+      const d=await (await fetch('/klausk/result?s='+encodeURIComponent(id))).json();
+      if(!d||!d.result) throw new Error();
+      window.userName=window._userName=d.name||'';
+      if(d.paymentRef) window._paymentRef=d.paymentRef;
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      go('s-result'); displayResult(d.result);
+      if(location.hash==='#klausk') setTimeout(()=>{ const k=document.querySelector('#r-extra .kl'); if(k) k.scrollIntoView({block:'center'}); },1200);
+    }catch(e){ location.replace('/'); }
+  };
+  if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
+})();
+
 // „Mano analizės“: /?mano=ID&t=NUORODA — išsaugotos analizės peržiūra
 (function manoView(){
   const p=new URLSearchParams(location.search), id=p.get('mano'), t=p.get('t');
@@ -6519,7 +6540,7 @@ function fitPayScreen(){
   try{
     const q=new URLSearchParams(location.search);
     // Ne pradžios ekrano lankytojams (porų nuoroda, dovana, rezultatas, „Mano analizės“) — nerodoma
-    if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kartoti')||q.get('grizk')) return;
+    if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')) return;
     const k=current(), s=SEASONS[k]; if(!s) return;
     const a=document.getElementById('season-line'); if(!a) return;
     a.innerHTML='<span>'+s.ic+'</span><span>'+s.html+' <i>→</i></span>';

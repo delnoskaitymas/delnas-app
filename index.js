@@ -3652,6 +3652,15 @@ ATSAKYK TIK ATSAKYMO TEKSTU.`;
   return klauskCallAI(prompt);
 }
 
+// Grįžimas iš klausimų puslapio į asmeninės analizės rezultatą (kai pradinis langas jau uždarytas)
+app.get('/klausk/result', sensitiveLimiter, (req, res) => {
+  const s = String(req.query.s || '');
+  if (!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(s)) return res.status(400).json({ error: 'Neteisinga nuoroda' });
+  const o = loadKlauskOrders()[s];
+  if (!o || !o.paid || o.kind === 'pora' || !o.result) return res.status(404).json({ error: 'Analizė nerasta' });
+  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '' });
+});
+
 app.get('/klausk', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'klausk.html'));
@@ -3676,6 +3685,9 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       const picked = pickKlauskResult(result);
       if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
       record = { email, name: (name || '').trim(), result: picked };
+      // Analizės mokėjimo nuoroda — kad iš klausimų puslapio būtų galima grįžti į rezultatą su jo pasiūlymais
+      const pr = req.body && req.body.paymentRef;
+      if (typeof pr === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(pr)) record.paymentRef = pr;
     }
     const base = appBaseUrl();
     const session = await stripe.checkout.sessions.create({
@@ -3715,7 +3727,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
         html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
       }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
