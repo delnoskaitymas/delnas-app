@@ -2834,7 +2834,6 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.). Kai laiškas bus išsiųstas, gausite patvirtinimą.</p>
   <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}</p>
   <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Peržiūrėti dovanų kortelę</a>
-  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Kortelę galite atsisiųsti, jei norėsite dovaną įteikti ir asmeniškai.</p>
   ${EMAIL_FOOTER_HTML}
 </div>`;
 }
