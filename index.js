@@ -3181,7 +3181,22 @@ function poraNameRules(A, B) {
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
+// Porų analizė su pakartojimu: jei AI atsakymas nukirptas, sugadintas JSON ar trūksta skyriaus —
+// AI klausiama dar kartą (vartotojas mato tik ilgiau trunkantį laukimą, ne klaidą)
 async function runCoupleAnalysis(photos, nameA, nameB) {
+  let last;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try { return await runCoupleAnalysisOnce(photos, nameA, nameB); }
+    catch (e) {
+      last = e;
+      console.log(`[pora] analizė nepavyko, bandymas ${attempt}/2: ${e.message}`);
+      if (/authentication_error|permission_error|invalid_request_error/.test(e.message)) break;
+    }
+  }
+  throw last;
+}
+
+async function runCoupleAnalysisOnce(photos, nameA, nameB) {
   const A = nameA || 'Pirmasis žmogus', B = nameB || 'Antrasis žmogus';
   const img = p => ({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
   const content = [
@@ -3261,7 +3276,11 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   const text = '{' + data.content.map(b => b.text || '').join('');
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('JSON nerastas');
-  const raw = parseJsonLenient(m[0]);
+  // Dažniausia AI JSON klaida — trūksta kablelio tarp laukų eilutės pradžioje
+  // („Expected ',' or '}' after property value … column 2“): pridedame jį ir tik tada taisome toliau
+  let raw;
+  try { raw = JSON.parse(m[0]); }
+  catch (e) { raw = parseJsonLenient(m[0].replace(/(["}\]0-9]|true|false|null)(\s*\n\s*)(?="[A-Za-z_]+"\s*:)/g, '$1,$2')); }
   const fix = (t, max) => applyTextFixes(String(t).trim().slice(0, max)).text;
   // Sritys: balai 55–98; bendras suderinamumas — sričių vidurkis (nuoseklu su tuo, ką mato vartotojas)
   const sritys = {};

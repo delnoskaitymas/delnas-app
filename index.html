@@ -6026,7 +6026,7 @@ function poraPoll(){
       if(d.status==='done' && d.result){ poraFinishProgress(()=>renderPoraResult(d.result)); return; }
       if(d.status==='error'){ poraStopProgress(); poraShowError('Analizė nepavyko.'); return; }
     }catch(e){}
-    if(Date.now()-t0>5*60*1000){ poraStopProgress(); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
+    if(Date.now()-t0>9*60*1000){ poraStopProgress(); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
     setTimeout(tick,3000);
   })();
 }
