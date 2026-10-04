@@ -3535,6 +3535,28 @@ function klauskPoraContext(res) {
   return t;
 }
 
+// Klausimų atsakymų kalbos taisyklės — tokios pačios kaip asmeninės analizės punktų blokuose
+// (taisyklinga kalba, vidutinis stilius, lyties neutralumas, be metaforų ir tuščių sakinių, galutinis patikrinimas).
+function klauskLangRules(you) {
+  const pl = you === 'jūs';
+  return `KALBOS TAISYKLĖS (tokios pačios kaip analizės tekste):
+- Rašyk taisyklinga, natūralia lietuvių kalba, kreipdamasis „${pl ? 'jūs' : 'tu'}“ esamuoju laiku — taip, kaip natūraliai kalbėtų gimtakalbis lietuvis. Jei abejoji dėl retesnio žodžio formos, rinkis paprastesnį, tau gerai žinomą.
+- Lytis nežinoma: NIEKADA nerašyk giminę turinčių dalyvių ir būdvardžių apie ${pl ? 'juos' : 'skaitytoją'} — NE „pasirengęs/-usi“, „atradęs“, „likęs“, „buvai atviras“, „esi ramus“, „laukdamas“; VIETOJ jų — asmenuojamas veiksmažodis + prieveiksmis (pvz. ${pl ? '„elgiatės ramiau“, „jausmus reiškiate atvirai“' : '„elgiesi ramiau“, „jausmus reiški atvirai“'}).
+- Stiliaus lygis: VIDUTINIS — nei knyginis/mokslinis/oficialus, nei gatvės stiliaus su žargonu ar sutrumpinimais. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje.
+- DRAUDŽIAMA: sudėtingi, knyginiai žodžiai (pvz. „manifestuoja“, „transformacija“, „potencialas“ kaip terminas, „orientyras“, „dinamika“, „konsensusas“, „delegavimas“, „faktorius“, „kontempliacija“). Jei parašai žodį, kurio nevartotum kalbėdamas su draugu prie kavos — pakeisk paprastesniu, kasdieniu atitikmeniu.
+- DRAUDŽIAMA: „gali būti“, „tikėtina“, „galima manyti“, „energija“, „vibracija“, žodis „galva“ (rašyk „protas“), „akcija“ reikšme „veiksmas“.
+- DRAUDŽIAMA: metaforos ir palyginimai („kaip…“, „tarsi…“, „lyg…“), bendros frazės, kurios tiktų bet kam (pvz. „gyvenimas kupinas galimybių“), linijų pavadinimai ir fiziniai delnų požymiai.
+- DRAUDŽIAMA: tušti, „vatos“ sakiniai ir ilgi, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais; kiekvienas sakinys turi nešti konkrečią mintį.
+- Tekste nenaudok dvigubų kabučių.
+
+GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas): perskaityk KIEKVIENĄ sakinį iš naujo ir patikrink:
+1. Ar jis taisyklingas — be rašybos, linksnių, galūnių ir skyrybos klaidų?
+2. Ar jis aiškus iš pirmo skaitymo ir konkretus, susietas su šia analize?
+3. Ar jame NĖRA giminę turinčio dalyvio ar būdvardžio apie ${pl ? 'juos' : 'skaitytoją'}?
+4. Ar jame NĖRA draudžiamų žodžių, metaforų ir fizinių delnų požymių?
+Jei bent vienas atsakymas „ne“ — perrašyk sakinį ir patikrink jį dar kartą nuo pradžios.`;
+}
+
 async function answerKlausk(order, question) {
   if (order.kind === 'pora') return answerKlauskPora(order, question);
   const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
@@ -3550,12 +3572,10 @@ KAIP ATSAKYTI:
 - 7–10 sakinių, sklandus tekstas „tu“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės (be „Puikus klausimas“).
 - Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (pvz. kokia jo stiprybė čia padės, kokia kliūtis trukdo) — kad žmogus jaustų, jog atsakymas skirtas būtent jam.
 - Pabaigoje — 2–3 aiškūs, praktiški žingsniai, ką daryti dabar (sklandžiu tekstu, ne sąrašu).
-- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie skaitytoją (pvz. „pasiruošęs/-usi“); rink neutralias formas.
-- Nesakyk „gali būti“, „tikėtina“; nenaudok metaforų, „energijos“, „vibracijų“; nemini fizinių delno požymių.
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk mirties, ligų, nelaimių, išsiskyrimo ar konkrečių datų. Neduok medicininių, teisinių ar konkrečių investavimo patarimų — tokiu atveju švelniai pasakyk, kad dėl to verta pasitarti su specialistu, ir atsakyk tik apie tai, ką analizė sako apie žmogaus savybes ir sprendimų būdą.
 - Jei klausimas rodo, kad žmogui labai sunku arba kyla minčių apie savęs žalojimą — atsakyk itin švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: Vilties linija 116 123 (visą parą), Jaunimo linija 8 800 28888, skubiai — 112.
 - Jei klausimas visai nesusijęs su žmogaus gyvenimu (pvz. matematika, kodas) — trumpai ir maloniai paaiškink, kad atsakai tik į klausimus apie jo paties gyvenimą, ir pasiūlyk, ko galėtų paklausti.
-- Taisyklinga, natūrali lietuvių kalba. Tekste nenaudok dvigubų kabučių.
+${klauskLangRules('tu')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
   return klauskCallAI(prompt);
@@ -3568,7 +3588,7 @@ async function klauskCallAI(prompt) {
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
       }, 90000);
       data = await r.json();
     } catch (e) { data = null; console.log(`[klausk] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`); }
@@ -3597,12 +3617,11 @@ KAIP ATSAKYTI:
 ${poraNameRules(A, B)}
 - Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kuo vienas kitą papildote, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
 - Pabaigoje — 2–3 aiškūs, praktiški žingsniai jums abiem (sklandžiu tekstu, ne sąrašu).
-- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos; rink neutralias formas. Apie delnus rašyk daugiskaita.
-- Nesakyk „gali būti“, „tikėtina“; nenaudok metaforų, „energijos“, „vibracijų“; nemini fizinių delnų požymių.
+- Apie delnus rašyk daugiskaita.
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk išsiskyrimo, neištikimybės, ligų, nelaimių ar konkrečių datų; nespręsk už porą, ar jiems būti kartu. Neduok medicininių, teisinių ar investavimo patarimų — tokiu atveju švelniai pasakyk, kad verta pasitarti su specialistu.
 - Jei klausimas rodo smurtą, grėsmę ar minčių apie savęs žalojimą — atsakyk švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: skubiai — 112, Vilties linija 116 123 (visą parą), pagalba nukentėjusiems nuo smurto — 8 800 66366 (Moterų linija) arba 8 800 55522 (Vyrų linija).
 - Jei klausimas nesusijęs su jų santykiais ar gyvenimu — maloniai paaiškink, kad atsakai tik į klausimus apie jūsų porą, ir pasiūlyk, ko galėtų paklausti.
-- Taisyklinga, natūrali lietuvių kalba. Tekste nenaudok dvigubų kabučių.
+${klauskLangRules('jūs')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
   return klauskCallAI(prompt);
