@@ -464,7 +464,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
   const cents = { asmenine: 1299, pora: 1999 };
   const klauskC = { asmenine: 200, pora: 0 }; // dovanoje visada 3 klausimai: asmeninėje +2 €, porų — nemokamai
-  let promo = null; // −30 % pasiūlymas po analizės (?promo=KODAS, 24 val.) — taikomas analizės kainai
+  let promo = null; // −20 % pasiūlymas po analizės (?promo=KODAS, 24 val.) — taikomas analizės kainai
   const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100) + klauskC[k]) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k] + klauskC[k]) + '</s>' : eur(cents[k] + klauskC[k]);
   const prices = { get asmenine(){ return priceHtml('asmenine'); }, get pora(){ return priceHtml('pora'); } };
   let kind = params.get('tipas') === 'pora' ? 'pora' : (params.get('tipas') ? 'asmenine' : (season ? SEASONS[season].kind : 'asmenine'));

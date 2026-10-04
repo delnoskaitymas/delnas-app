@@ -246,7 +246,7 @@ function isReminderBlacklisted(email) {
 }
 
 
-// Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −30 %.
+// Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −20 %.
 function buildReminderMail(r) {
   const site = `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}`;
   const saved = r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null;
@@ -3024,7 +3024,7 @@ const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
 // Porų dovanoje klausimai — nemokamas priedas (kaina lieka iki 20 €)
 const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
-const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1299', 10);
+const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1499', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
 // Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
 const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
@@ -3821,7 +3821,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
     const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : await stripe.prices.retrieve(ACTIVE_PRICE_ID);
-    // −30 % pasiūlymas po analizės (24 val.)
+    // −20 % pasiūlymas po analizės (24 val.)
     const pr = getValidPromo(req.body && req.body.promo, 'dovana');
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
@@ -4135,17 +4135,17 @@ ${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString(
 // ═══════════════════════════════════════════════════════════════════
 // NUOLAIDŲ KODAI, NEBAIGTI MOKĖJIMAI, „MANO ANALIZĖS“ IR PALYGINIMAS
 // ─ back:   −15 % 24 val. — laiške apie nebaigtą mokėjimą (tik su sutikimu)
-// ─ once:   −30 % dovanai artimam žmogui, 24 val. po apmokėtos analizės
+// ─ once:   −20 % dovanai artimam žmogui, 24 val. po apmokėtos analizės
 // ─ bundle: porų analizė už rinkinio kainą tam, kas jau pirko asmeninę
-// ─ repeat: −30 % pakartotinei analizei su palyginimu (priminimo laiške po 3 mėn.)
+// ─ repeat: −20 % pakartotinei analizei su palyginimu (priminimo laiške po 3 mėn.)
 // Suma visada skaičiuojama serveryje; kodas vienkartinis.
 // ═══════════════════════════════════════════════════════════════════
 const PROMOS_FILE = path.join(SHARED_STORAGE_DIR, 'promos.json');
 const ABANDONED_FILE = path.join(SHARED_STORAGE_DIR, 'abandoned.json');
 const SAVED_FILE = path.join(SHARED_STORAGE_DIR, 'saved-analyses.json');
 const BACK_PCT = parseInt(process.env.BACK_DISCOUNT_PCT || '15', 10);
-const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '30', 10);
-const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '30', 10);
+const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '20', 10);
+const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '20', 10);
 const ABANDON_DELAY_MS = parseInt(process.env.ABANDON_DELAY_MIN || '60', 10) * 60 * 1000;
 const SAVED_DAYS = 365;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -4203,7 +4203,7 @@ app.get('/promo/check', (req, res) => {
   res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS });
 });
 
-// Pasiūlymai rezultato ekrane apmokėjusiam klientui: −30 % dovana (24 val.) ir porų analizė rinkinio kaina
+// Pasiūlymai rezultato ekrane apmokėjusiam klientui: −20 % dovana (24 val.) ir porų analizė rinkinio kaina
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};

@@ -3869,7 +3869,7 @@ function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
   // Priminimas po 3 mėnesių — atskira kortelė po „Klausk“
-  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Išsaugok analizę — po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Išsaugosime šią analizę „Mano analizėse“ (be nuotraukų), o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−30 %</b>.</div>'+
+  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Išsaugok analizę — po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Išsaugosime šią analizę „Mano analizėse“ (be nuotraukų), o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
@@ -6405,7 +6405,7 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
   }catch(e){}
 })();
 
-// Rezultato ekrane: −30 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
+// Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
 async function loadResultOffers(){
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(!payRef||window._manoView) return;
