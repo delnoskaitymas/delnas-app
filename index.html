@@ -5828,6 +5828,8 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
           '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
           '<div style="color:var(--muted);font-size:12px;margin-top:3px">Dabar tavo eilė, <b style="color:var(--gold2)">'+poraEsc(ltForms(window._pora.nameB).voc)+'</b> — nufotografuok delnus, ir pamatysite savo porų suderinamumą.</div>';
         const cta=document.getElementById('main-cta-btn'); if(cta) cta.textContent='Fotografuoti mano delnus';
+        // Porų dovana — antrajam žmogui per nuorodą taip pat krenta konfeti
+        if(sid.startsWith('gp_')&&typeof giftConfetti==='function') giftConfetti();
         return;
       }
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
