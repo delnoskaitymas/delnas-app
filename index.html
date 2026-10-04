@@ -473,7 +473,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 #s-info.pay-t2 #info-qs>div>span:nth-child(2){font-size:11px!important;line-height:1.22!important}
 #s-info.pay-t2 #info-qs>div>div:first-child{width:19px!important;height:19px!important}
 #s-info.pay-t2 #info-qs>div{gap:8px!important}
-.cam-name{color:#fff;font-weight:700;text-shadow:0 0 12px rgba(212,168,67,.45)}
 </style>
 </head>
 <body>
@@ -2219,8 +2218,8 @@ function openCameraScreen(){startApp();}
 // Kameros antraštė; porų režime — kaip asmeninėje, tik prasideda vardu (šauksmininku), kad būtų aišku, kieno eilė
 function camTitleSet(el,isLeft){
   const t=isLeft?'nufotografuok kairįjį delną':'nufotografuok dešinįjį delną';
-  if(window._pora&&window._pora.active&&poraCurrentName()) el.innerHTML='<span class="cam-name">'+poraEsc(ltForms(poraCurrentName()).voc)+'</span>, '+t;
-  else el.textContent=t.charAt(0).toUpperCase()+t.slice(1);
+  // Visa antraštė vienos spalvos ir stiliaus — abiem žmonėms vienodai
+  el.textContent=(window._pora&&window._pora.active&&poraCurrentName()) ? ltForms(poraCurrentName()).voc+', '+t : t.charAt(0).toUpperCase()+t.slice(1);
 }
 function updateCameraUI(){
   const title=document.getElementById('cam-title');const dot1=document.getElementById('cam-dot1');const dot2=document.getElementById('cam-dot2');const dot3=document.getElementById('cam-dot3');if(dot3) dot3.classList.add('inactive');
@@ -2805,7 +2804,7 @@ function capturePhoto(){
             if(camSub) camSub.style.visibility='';
             const vpWrap2=document.getElementById('cam-vp-wrap');
             if(vpWrap2){vpWrap2.style.flex='';vpWrap2.style.height='';vpWrap2.style.maxHeight='calc(100dvh - 235px)';vpWrap2.style.width='';}
-            document.getElementById('cam-title').textContent='Nufotografuok dešinįjį delną';
+            camTitleSet(document.getElementById('cam-title'),false);
             camHand='right';
             updateCameraUI();
             // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
