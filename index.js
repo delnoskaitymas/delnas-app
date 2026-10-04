@@ -3176,7 +3176,7 @@ function ltPhrase(s, c) { return String(s || '').split(/(\s+)/).map(w => /^\s*$/
 // Bendros taisyklės apie vardus porų tekstuose (analizė ir „Klauskite“)
 function poraNameRules(A, B) {
   const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
-  return `- VARDUS NAUDOK SAIKINGAI, BET JŲ NEPRALEISK — tai rimta, profesionali analizė: vardai suteikia asmeniškumo, o per dažnai kartojami skamba skurdžiai ir komiškai. KIEKVIENAME skyriuje (traukia…patarimai) paminėk abu vardus — kiekvieną vardą 1 kartą (daugiausiai 2 kartus, jei skyrius ilgas), ten, kur kalbi apie konkretaus žmogaus bruožą ar indėlį; likusį tekstą rašyk apie jus kaip porą. Išvadose (palyginimuose) vardą rašyk tik jei būtina atskirti, ne daugiau kaip po kartą. Vardas — vienintelis lyčiai neutralus būdas atskirti žmones. NIEKADA neatskirk žmonių žodžiais „vienas… kitas…“, „vienas iš jūsų“, „vienas žmogus“, „kitas“ — tai giminę rodančios formos. Dažniausiai rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“), o vardą rašyk tik ten, kur be jo neaišku, apie ką kalbama. Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
+  return `- VARDUS NAUDOK SAIKINGAI, BET JŲ NEPRALEISK — tai rimta, profesionali analizė: vardai suteikia asmeniškumo, o per dažnai kartojami skamba skurdžiai ir komiškai. KIEKVIENAME skyriuje (traukia…patarimai) paminėk abu vardus — kiekvieną vardą 1 kartą (daugiausiai 2 kartus, jei skyrius ilgas), ten, kur kalbi apie konkretaus žmogaus bruožą ar indėlį; likusį tekstą rašyk apie jus kaip porą. Išvadose (palyginimuose) vardą rašyk tik jei būtina atskirti, ne daugiau kaip po kartą. Vardas — vienintelis lyčiai neutralus būdas atskirti žmones. NIEKADA neatskirk žmonių žodžiais „vienas… kitas…“, „vienas iš jūsų“, „vienas žmogus“, „kitas“ — tai giminę rodančios formos. Kitur rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“). Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
 - LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „vienas žmogus… kitas…“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „ta, kuri“ / „tas, kuris“ (KLAIDA: „Mila jūsų poroje yra ta, kuri drąsiau reiškia jausmus“ — teisingai: „Mila jūsų poroje drąsiau reiškia jausmus“), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
@@ -3226,6 +3226,8 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
 
 async function runCoupleAnalysisOnce(photos, nameA, nameB) {
   const A = nameA || 'Pirmasis žmogus', B = nameB || 'Antrasis žmogus';
+  // Vardų linksniai užklausos tekstui (kad AI nekopijuotų netaisyklingų formų, pvz. „Gita delnų“)
+  const gA = (ltFormsObj(A) || {}).gen || A, gB = (ltFormsObj(B) || {}).gen || B, aB = (ltFormsObj(B) || {}).acc || B;
   const img = p => ({ type: 'image', source: { type: 'base64', media_type: p.type || 'image/jpeg', data: p.data } });
   const content = [
     { type: 'text', text: `${A} — kairysis delnas:` }, img(photos[0]),
@@ -3236,7 +3238,7 @@ async function runCoupleAnalysisOnce(photos, nameA, nameB) {
       type: 'text',
       text: `PIRMENYBĖ: šį tekstą skaitys du realūs žmonės, sumokėję pinigus, gimtąja lietuvių kalba. Taisyklinga, natūrali lietuvių kalba yra tiek pat svarbi kaip turinys.
 
-Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — dviejų žmonių, ${A} ir ${B}, abiejų delnų nuotraukos (po kairįjį ir dešinįjį). Tavo užduotis — kuo tiksliau palyginti JŲ KONKREČIUS delnus ir parašyti poros suderinamumo analizę.
+Tu esi chiromantijos meistras su 20 metų patirtimi. Prieš tave — ${gA} ir ${gB} delnų nuotraukos (po du delnus: kairįjį ir dešinįjį). Tavo užduotis — kuo tiksliau palyginti JŲ KONKREČIUS delnus ir parašyti poros suderinamumo analizę.
 
 KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
 0. PIRMIAUSIA kiekvieno žmogaus delnus išanalizuok ATSKIRAI ir užrašyk lauke „stebejimai“ (a — ${A}, b — ${B}), lyg darytum asmeninę analizę: delnų forma, pirštai, nykštys, visos pagrindinės linijos (ilgis, gylis, lenkimas, pradžia, pabaiga, šakelės), kalneliai, kairio ir dešinio delno skirtumai ir ką visa tai reiškia šio žmogaus charakteriui santykiuose. Tik turėdamas abu atskirus aprašus — lygink.
@@ -3253,14 +3255,14 @@ ${poraNameRules(A, B)}
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
-${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.' })}
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
 - Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
-STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${A} delnų išsami atskira analizė, b — ${B} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
+STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
 PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
-- a: ką matai ${A} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
-- b: tas pats apie ${B} (iki 120 simbolių)
+- a: ką matai ${gA} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
+- b: tas pats apie ${aB} (iki 120 simbolių)
 - isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių; vardą — tik jei būtina atskirti, ne daugiau kaip po kartą)
 - a, b ir isvada — LYČIAI NEUTRALIAI: apie žmogų NIEKADA nerašyk giminę rodančių būdvardžių ar dalyvių (KLAIDA: „tapo atsargesnė“, „ramus“, „linkęs“, „atvira“) — rašyk daiktavardžiu ar veiksmažodžiu („daugiau atsargumo“, „būdinga ramybė“, „jausmus reiškia atvirai“). Nerašyk „abu“, „abi“, „vienas kitą“, „viena kitą“ — net apie daiktus (ne „stiliai papildo vienas kitą“, o „stiliai dera tarpusavyje“); ne „abu jaučiate“, o „jaučiate“. Kiekvienas a ir b — užbaigtas sakinys, telpantis į 120 simbolių.
 
