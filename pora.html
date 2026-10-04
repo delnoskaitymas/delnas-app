@@ -189,7 +189,9 @@ a{color:var(--gold)}
 .mini-radar{display:block;width:150px;margin:-4px auto 4px}
 
 /* Užrašas DELNAS virš delno ikonos — kaip „Mano analizėse“ ir klausimų puslapyje */
-body.form-view .wrap > .brand{display:block;font-size:14px;margin:0 0 10px}
+body.form-view .wrap > .brand{display:block;font-size:14px;margin:auto 0 10px}
+/* DELNAS — kartu su forma ekrano viduryje, be tuščio tarpo tarp užrašo ir ikonų */
+body.form-view .wrap > .brand ~ section{margin-top:0!important}
 body.form-view .wrap > .brand small{display:none}
 @media (max-height:760px){
   body.form-view .wrap > .brand{font-size:13px;margin-bottom:6px}
@@ -220,6 +222,24 @@ body.form-view .wrap > .brand small{display:none}
   #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:8px 11px}
   #v-form textarea{height:38px}
   #v-form .btn{margin-top:8px;padding:11px}
+}
+@media (max-height:600px){
+  body.form-view .wrap{padding-top:8px;padding-bottom:4px}
+  body.form-view .wrap > .brand{font-size:12px;margin-bottom:4px}
+  #v-form .intro .hero{width:44px;height:44px}
+  .hero2 .hero{width:44px!important;height:44px!important}
+  #v-form .intro{margin-bottom:4px!important;gap:4px}
+  #v-form .intro h1{font-size:21px}
+  #v-form .lead.sm,#v-form #form-lead{display:none}
+  #v-form label{margin:5px 0 3px;font-size:10px}
+  #v-form input[type=text],#v-form input[type=email],#v-form textarea{padding:7px 10px;font-size:15px}
+  #v-form textarea{height:34px}
+  #v-form .chk{margin-top:6px;font-size:10.5px;line-height:1.35}
+  #v-form .btn{margin-top:7px;padding:10px;font-size:15px}
+  #v-form .trust{display:none}
+  .how-link{font-size:12px;padding:3px 8px}
+  .gift-note{padding:5px 10px;margin-bottom:6px}
+  .season-tag{margin-bottom:0}
 }
 </style>
 </head>
