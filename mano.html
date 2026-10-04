@@ -76,6 +76,11 @@ body.ask-sent #v-ask .note{display:none}
 }
 .tabs button[disabled]{opacity:.35;cursor:default}
 body.list-view .sec{display:none}
+
+/* DELNAS ir delno ikona — kuo didesni, kiek leidžia ekranas (dydį parenka fit()) */
+body.fit:not(.list-view) .brand{font-size:var(--bf,16px)!important}
+body.fit:not(.list-view) .hero{width:var(--hs,86px)!important;height:var(--hs,86px)!important;margin:var(--hm,14px) auto var(--hm,14px)!important}
+body:not(.list-view) .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
 </style>
 </head>
 <body>
@@ -187,6 +192,24 @@ body.list-view .sec{display:none}
     }));
   }
   if (t) load(); else showAsk();
+})();
+</script>
+<script>
+// Nuorodos prašymo rodinys: didžiausias DELNAS ir ikona, kad viskas tilptų į ekraną be slinkimo
+(function(){
+  const L=[[24,140,24],[22,126,22],[21,116,20],[20,106,18],[19,98,16],[18,90,14],[17,82,12],[16,74,10],[15,64,8],[14,56,6]];
+  const r=document.documentElement;
+  function fit(){
+    if(document.body.classList.contains('list-view')) return;
+    document.body.classList.add('fit');
+    let pick=L[L.length-1];
+    for(const l of L){ r.style.setProperty('--bf',l[0]+'px'); r.style.setProperty('--hs',l[1]+'px'); r.style.setProperty('--hm',l[2]+'px'); if(r.scrollHeight<=innerHeight+1){ pick=l; break; } }
+    r.style.setProperty('--bf',pick[0]+'px'); r.style.setProperty('--hs',pick[1]+'px'); r.style.setProperty('--hm',pick[2]+'px');
+  }
+  let tm=null; const later=()=>{ clearTimeout(tm); tm=setTimeout(fit,60); };
+  addEventListener('resize',later);
+  addEventListener('load',()=>{ fit(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit); });
+  try{ new MutationObserver(later).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']}); }catch(e){}
 })();
 </script>
 </body>
