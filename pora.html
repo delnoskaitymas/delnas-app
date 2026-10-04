@@ -291,8 +291,8 @@ body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!impo
       <div class="slide">
         <div class="num">01</div>
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0112 6.6 5.2 5.2 0 0121.3 12C19 16.6 12 21 12 21z"/></svg></div>
-        <h3>Užsakykite <em>kartu</em></h3>
-        <p>Įrašykite abu vardus ir el. paštą. Sumokėkite saugiai per Stripe — kortele, Apple Pay, Google Pay ar Revolut.</p>
+        <h3 id="how1-h">Užsakykite <em>kartu</em></h3>
+        <p id="how1-p">Įrašykite abu vardus ir el. paštą. Sumokėkite saugiai per Stripe — kortele, Apple Pay, Google Pay ar Revolut.</p>
       </div>
       <div class="slide">
         <div class="num">02</div>
@@ -394,6 +394,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
       $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti →';
+      // „Kaip tai veikia“ — dovanos atveju mokėti nereikia
+      $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
+      $('how1-p').textContent = 'Įrašykite abu vardus ir el. paštą. Mokėti nereikia — porų suderinamumas jums padovanotas.';
       document.querySelector('#pora-form .trust').textContent = '🎁 Apmokėta dovanų kuponu ' + d.code;
     } catch (e) { giftError('Nepavyko patikrinti dovanos kodo'); }
   })();
