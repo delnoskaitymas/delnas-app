@@ -3869,9 +3869,9 @@ function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
   // Priminimas po 3 mėnesių — atskira kortelė po „Klausk“
-  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Išsaugok analizę — po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Išsaugosime šią analizę „Mano analizėse“ (be nuotraukų), o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+  const hPlan=window._manoView?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
-    '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
+    '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
   renderPalmsSideBySide(r);
   if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; loadCompare(); }

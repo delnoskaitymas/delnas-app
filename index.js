@@ -2455,6 +2455,10 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
       if (ce.status === 'done') {
         ce.paid = true; ce.paidEmail = email || tokenEntry.email || ''; ce.paidName = userName;
         saveAnalysisSessionToDisk(sessionId, ce);
+        // Automatiškai į „Mano analizes“ 90 d. (paslaugos dalis); 12 mėn. ir priminimas — tik paspaudus „Išsaugoti ir priminti“
+        if (isValidEmail(ce.paidEmail) && ce.result) {
+          try { upsertSavedAnalysis(sessionId, ce.paidEmail, userName, ce.result, { auto: true }, AUTO_SAVED_DAYS); } catch (e) { console.error('[mano] automatinio išsaugojimo klaida:', e.message); }
+        }
       }
     }
 
@@ -4148,6 +4152,8 @@ const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '20', 10);
 const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '20', 10);
 const ABANDON_DELAY_MS = parseInt(process.env.ABANDON_DELAY_MIN || '60', 10) * 60 * 1000;
 const SAVED_DAYS = 365;
+// Be sutikimo apmokėta analizė „Mano analizėse“ saugoma tik tiek, kiek reikia paslaugai (vėl atsidaryti rezultatą)
+const AUTO_SAVED_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function loadPromos() { return readJson(PROMOS_FILE, { codes: {}, byKey: {} }); }
@@ -4334,13 +4340,15 @@ setTimeout(processAbandoned, 20 * 1000);
 // ── „Mano analizės“: išsaugotos (su sutikimu) asmeninės analizės, be nuotraukų ──
 function loadSaved() { return readJson(SAVED_FILE, { items: {}, bySession: {}, tokens: {}, lastLink: {} }); }
 function saveSavedStore(s) { writeJson(SAVED_FILE, s); }
-function upsertSavedAnalysis(sessionId, email, name, result, extra) {
+function upsertSavedAnalysis(sessionId, email, name, result, extra, days = SAVED_DAYS) {
   const s = loadSaved();
   let id = s.bySession[sessionId];
   const now = Date.now();
   if (!id || !s.items[id]) { id = 'sa_' + crypto.randomBytes(9).toString('hex'); s.bySession[sessionId] = id; statInc('saved'); }
   const prev = s.items[id] || {};
-  s.items[id] = { ...prev, ...(extra || {}), id, email: email.toLowerCase(), name: name || prev.name || '', result, createdAt: prev.createdAt || now, expiresAt: now + SAVED_DAYS * DAY_MS };
+  // Terminas niekada netrumpinamas (automatinis 90 d. įrašas nesumažina jau išsaugoto 12 mėn.)
+  const expiresAt = Math.max(prev.expiresAt || 0, now + days * DAY_MS);
+  s.items[id] = { ...prev, ...(extra || {}), id, email: email.toLowerCase(), name: name || prev.name || '', result, createdAt: prev.createdAt || now, expiresAt };
   saveSavedStore(s);
   return id;
 }
@@ -4367,7 +4375,7 @@ app.post('/save-analysis', sensitiveLimiter, async (req, res) => {
     const email = isValidEmail(e.paidEmail) ? e.paidEmail : (isValidEmail(req.body.email) ? req.body.email : '');
     if (!email) return res.status(400).json({ error: 'Nerastas el. paštas' });
     const name = e.paidName || e.name || '';
-    const id = upsertSavedAnalysis(sessionId, email, name, e.compare ? { ...e.result, palyginimas: e.compare } : e.result);
+    const id = upsertSavedAnalysis(sessionId, email, name, e.compare ? { ...e.result, palyginimas: e.compare } : e.result, { auto: false });
     scheduleReminderFor(email, name, id);
     res.json({ ok: true, id });
   } catch (err) {
