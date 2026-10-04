@@ -1605,8 +1605,8 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 - SVARBU (_insights formos nuoseklumas): kiekvienas "_insights" punktas PRIVALO būti "tu/tavo" forma, TA PAČIA kaip likęs tekstas — NIEKADA bendratimi ar trečiuoju asmeniu (KLAIDA: "Vengia paviršutiniškų pažinčių", "Siekia materialios sėkmės", "Pasitikėjimą užsitarnauti reikia laiko" — teisingai: "Vengi paviršutiniškų pažinčių", "Sieki materialios sėkmės" arba "Tavo siekis — materialinė sėkmė", "Pasitikėjimą užsitarnauji palaipsniui"). Jei natūraliau skamba daiktavardinė frazė su "tavo" (pvz. "Tavo lyderio pozicija natūralesnė"), tai irgi tinka — bet NIEKADA trečiojo asmens veiksmažodis (vengia/siekia/kuria/nustato) be "tu/tavo"
 
 GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas, be išimčių):
-Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo ir patikrink VISUS penkis klausimus kartu:
-1. Ar šis sakinys yra TIKSLUS, TIESIOGINIS FAKTAS apie ŠĮ konkretų žmogų (ne bendra tiesa, ne nuomonė, ne hipotezė, ne "gali būti")?
+Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį iš naujo — skyrių tekstuose, _insights punktuose IR lentelės delnai_greta frazėse (kairys, desinys, isvada) — ir patikrink VISUS penkis klausimus kartu:
+1. Ar šis sakinys (ar frazė) yra TIKSLUS, TIESIOGINIS FAKTAS apie ŠĮ konkretų žmogų (ne bendra tiesa, ne nuomonė, ne hipotezė, ne "gali būti")?
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą. (Vienintelė išimtis — delnai_greta kairys/desinys frazės, kur trumpai įvardyti, ką matai, PRIVALOMA.)
