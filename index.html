@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
+<script>/* Grįžus iš klausimų puslapio — nerodyti pradžios ekrano, kol neatšokta prie vietos po klausimų bloku */try{if(location.hash==="#klausk"&&/[?&](kl|pora)=/.test(location.search)){document.documentElement.classList.add("kl-boot");setTimeout(function(){document.documentElement.classList.remove("kl-boot")},7000);}}catch(e){}</script>
+<style>html.kl-boot body>*{visibility:hidden!important}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1295,9 +1297,12 @@ window.addEventListener('DOMContentLoaded',async()=>{
   document.documentElement.style.height="100vh";
   document.body.style.height="100vh";
   document.body.style.overflow="hidden";
-  window.scrollTo(0,1);
-  setTimeout(()=>window.scrollTo(0,1),300);
-  setTimeout(()=>window.scrollTo(0,1),600);
+  // Grįžtant iš klausimų puslapio (#klausk) neslinkti į viršų — rodoma vieta po klausimų bloku
+  if(location.hash!=='#klausk'){
+    window.scrollTo(0,1);
+    setTimeout(()=>window.scrollTo(0,1),300);
+    setTimeout(()=>window.scrollTo(0,1),600);
+  }
   requestWakeLock();
   // Patikrinti ar tai shared nuoroda
   const sharedMatch = window.location.pathname.match(/^\/shared\/([A-Za-z0-9_-]+)$/);
@@ -3943,8 +3948,11 @@ function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringif
 // Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
 function klScrollAfter(){
   const kl=document.querySelector('#s-pora-result.active #pora-kl')||document.querySelector('#s-result.active #r-extra .kl');
-  if(!kl) return;
-  window.scrollTo({top:Math.max(0,kl.getBoundingClientRect().bottom+window.scrollY-12),behavior:'smooth'});
+  const root=document.documentElement;
+  if(!kl){ root.classList.remove('kl-boot'); return; }
+  const boot=root.classList.contains('kl-boot');
+  window.scrollTo({top:Math.max(0,kl.getBoundingClientRect().bottom+window.scrollY-12),behavior:boot?'instant':'smooth'});
+  if(boot) requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('kl-boot')));
 }
 function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
 function setupKlauskBlock(o){
@@ -6082,7 +6090,7 @@ function renderPoraResult(r){
   go('s-pora-result');
   window.scrollTo(0,0);
   // Grįžus iš klausimų puslapio (#klausk) — iškart prie klausimų bloko
-  if(location.hash==='#klausk') setTimeout(klScrollAfter,900);
+  if(location.hash==='#klausk') setTimeout(klScrollAfter,document.documentElement.classList.contains('kl-boot')?250:900);
   // Procentų žiedo animacija, tada ryšio lygio užrašas
   const pct=Math.max(0,Math.min(100,r.suderinamumas||0)), arc=document.getElementById('pora-ring-arc'), lbl=document.getElementById('pora-pct'), lv=document.getElementById('pora-level');
   lv.classList.remove('on'); lv.textContent=poraLevel(pct);
@@ -6501,12 +6509,13 @@ async function loadCompare(){
       if(!d||!d.result) throw new Error();
       window.userName=window._userName=d.name||'';
       if(d.paymentRef) window._paymentRef=d.paymentRef;
+      if(d.email){ window._userEmail=window.userEmail=d.email; }
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
-      if(location.hash==='#klausk') setTimeout(klScrollAfter,1200);
+      if(location.hash==='#klausk') setTimeout(klScrollAfter,250);
     }catch(e){ location.replace('/'); }
   };
-  if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
+  if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
 // „Mano analizės“: /?mano=ID&t=NUORODA — išsaugotos analizės peržiūra
@@ -6519,6 +6528,7 @@ async function loadCompare(){
       const d=await (await fetch('/mano/item?id='+encodeURIComponent(id)+'&t='+encodeURIComponent(t))).json();
       if(!d||!d.result) throw new Error(d&&d.error||'Analizė nerasta');
       window.userName=window._userName=d.name||'';
+      if(d.email){ window._userEmail=window.userEmail=d.email; }
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
     }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
