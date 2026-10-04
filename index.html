@@ -153,7 +153,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pr-halo{position:absolute;left:50%;top:10px;width:320px;height:320px;transform:translateX(-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(212,168,67,.18) 0%,rgba(212,168,67,.06) 40%,transparent 70%);animation:prHalo 4s ease-in-out infinite}
 @keyframes prHalo{50%{opacity:.55;transform:translateX(-50%) scale(1.08)}}
-.pr-orbs{position:relative;z-index:1}
+.pora-orbs.pr-orbs{position:relative;z-index:1;width:150px;height:94px}
+.pora-orbs.pr-orbs .pora-orb{width:94px;height:94px}
 .pr-hero .pora-ring,.pr-hero .result-name,.pr-hero .result-subtitle{position:relative;z-index:1}
 .pr-level{font-family:'Playfair Display',serif;font-style:italic;font-size:20px;color:var(--gold2);margin:-2px 0 10px;min-height:26px;
   text-shadow:0 0 14px rgba(240,201,106,.35);opacity:0;transform:translateY(6px);transition:opacity .8s ease,transform .8s ease}
@@ -1003,7 +1004,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 </div>
 
 <div class="screen" id="s-pora-wait">
-  <div class="load-wrap" style="padding:44px 16px 0;gap:0;justify-content:flex-start">
+  <div class="load-wrap" style="padding:68px 16px 0;gap:0;justify-content:flex-start">
     <div style="text-align:center;flex-shrink:0;margin-bottom:20px">
       <div class="load-title" style="font-family:'Playfair Display',serif;font-size:23px;font-weight:700;margin-bottom:8px;letter-spacing:.03em;line-height:1.35;color:#e8e2d4;text-shadow:0 1px 8px rgba(212,168,67,.25)" id="pora-wait-title">Analizuojami ir lyginami<br><span style="color:var(--gold2)">jūsų</span> delnai</div>
       <div id="pora-wait-names" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,.7)"></div>
