@@ -56,7 +56,7 @@ body.form-view .brand small{font-size:9.5px;margin-top:4px}
 @media (max-width:340px){#v-form .row2 label{white-space:normal}}
 #v-form .chk{margin-top:18px;font-size:12.5px;line-height:1.5;letter-spacing:0;text-transform:none}
 #v-form .chk2{margin-top:10px;font-size:11.5px;line-height:1.45;color:var(--faint);text-align:center}
-#v-form .chk2 button{background:none;border:none;padding:0;color:var(--gold);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+#v-form .chk2 button{background:none;border:none;padding:0;color:inherit;font:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.3);text-underline-offset:2px;cursor:pointer;white-space:nowrap}
 #v-form .btn{margin-top:16px;padding:16px;font-size:17px}
 #v-form .trust{margin-top:12px;font-size:11.5px}
 .how-link{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold);font:400 13px 'DM Sans',sans-serif;
@@ -270,7 +270,7 @@ body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!importa
       <label for="f-email">Tavo el. paštas</label>
       <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Mums abiem yra 18+ ir abu sutinkame, kad būtų analizuojamos mūsų delnų nuotraukos. Sutinkame su <a href="/naudojimosi-salygos" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika" target="_blank">Privatumo politika</a>.</span></label>
-      <div class="chk2" id="remind-row"><span id="remind-txt">Jei užsakymą tektų atidėti, vieną kartą priminsime el. paštu. <button type="button" id="f-noremind">Nereikia</button></span></div>
+      <div class="chk2" id="remind-row"><span id="remind-txt">Jei užsakymą atidėtumėte, vieną kartą priminsime. <button type="button" id="f-noremind">Nereikia</button></span></div>
       <button type="submit" class="btn" id="pay-btn" disabled>Užsakyti — <span id="price">19,99 €</span> →</button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
