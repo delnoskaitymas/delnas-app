@@ -256,6 +256,22 @@ a{color:var(--gold)}
 </div>
 
 <script>
+// Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
+function ltForms(name){
+  const n=String(name||'').trim(), o={nom:n,gen:n,dat:n,acc:n,ins:n,voc:n};
+  if(!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return o;
+  const end=k=>n.toLowerCase().endsWith(k), soft=b=>b.replace(/t$/,'č').replace(/d$/,'dž');
+  let f=null;
+  if(end('us')){ const b=n.slice(0,-2); f=[b+'aus',b+'ui',b+'ų',b+'umi',b+'au']; }
+  else if(end('as')){ const b=n.slice(0,-2); f=[b+'o',b+'ui',b+'ą',b+'u',b+'ai']; }
+  else if(end('is')||end('ys')){ const b=n.slice(0,-2); f=[soft(b)+'io',soft(b)+'iui',b+'į',soft(b)+'iu',b+(end('ys')?'y':'i')]; }
+  else if(end('ė')||end('e')){ const b=n.slice(0,-1); f=[b+'ės',b+'ei',b+'ę',b+'e',b+'e']; }
+  else if(end('a')){ const b=n.slice(0,-1); f=[b+'os',b+'ai',b+'ą',b+'a',b+'a']; }
+  if(f){ o.gen=f[0]; o.dat=f[1]; o.acc=f[2]; o.ins=f[3]; o.voc=f[4]; }
+  return o;
+}
+function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(w)||w.toLowerCase()==='ir'?w:ltForms(w)[c]).join(''); }
+
 (function(){
   const $ = id => document.getElementById(id);
   function validForm(){
@@ -309,7 +325,7 @@ a{color:var(--gold)}
       if (d.status !== 'active') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
       window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
-      $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(d.fromName) + '</span>' : '') ;
+      $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
       $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti →';

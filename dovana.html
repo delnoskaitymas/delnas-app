@@ -250,10 +250,10 @@ body:not(.kind-pora) #v-form .hero2{display:none}
         <button type="button" id="k-pora" role="radio" aria-checked="false">💞 Porų analizė<small id="k-pora-p">19,99 €</small></button>
       </div>
       <div class="row2">
-        <div><label for="f-to">Kam dovanoji</label>
-        <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ievai" autocomplete="off"></div>
-        <div><label for="f-from">Nuo ko</label>
-        <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomo" autocomplete="name"></div>
+        <div><label for="f-to">Gavėjo vardas</label>
+        <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ieva" autocomplete="off"></div>
+        <div><label for="f-from">Tavo vardas</label>
+        <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomas" autocomplete="name"></div>
       </div>
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
@@ -373,6 +373,22 @@ body:not(.kind-pora) #v-form .hero2{display:none}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+// Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
+function ltForms(name){
+  const n=String(name||'').trim(), o={nom:n,gen:n,dat:n,acc:n,ins:n,voc:n};
+  if(!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return o;
+  const end=k=>n.toLowerCase().endsWith(k), soft=b=>b.replace(/t$/,'č').replace(/d$/,'dž');
+  let f=null;
+  if(end('us')){ const b=n.slice(0,-2); f=[b+'aus',b+'ui',b+'ų',b+'umi',b+'au']; }
+  else if(end('as')){ const b=n.slice(0,-2); f=[b+'o',b+'ui',b+'ą',b+'u',b+'ai']; }
+  else if(end('is')||end('ys')){ const b=n.slice(0,-2); f=[soft(b)+'io',soft(b)+'iui',b+'į',soft(b)+'iu',b+(end('ys')?'y':'i')]; }
+  else if(end('ė')||end('e')){ const b=n.slice(0,-1); f=[b+'ės',b+'ei',b+'ę',b+'e',b+'e']; }
+  else if(end('a')){ const b=n.slice(0,-1); f=[b+'os',b+'ai',b+'ą',b+'a',b+'a']; }
+  if(f){ o.gen=f[0]; o.dat=f[1]; o.acc=f[2]; o.ins=f[3]; o.voc=f[4]; }
+  return o;
+}
+function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(w)||w.toLowerCase()==='ir'?w:ltForms(w)[c]).join(''); }
+
 (function(){
   const $ = id => document.getElementById(id);
   const views = ['v-form','v-wait','v-card','v-error','v-redeem'];
@@ -460,7 +476,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
     $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
     $('form-h1').innerHTML = pora ? 'Padovanok<br><em>porų suderinamumą</em>' : 'Padovanok<br><em>gyvenimo žemėlapį</em>';
     $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
-    $('f-to').placeholder = pora ? 'Ievai ir Tomui' : 'pvz. Ievai';
+    $('f-to').placeholder = pora ? 'pvz. Ieva ir Tomas' : 'pvz. Ieva';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
     $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja delnus ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
     $('price').innerHTML = prices[k];
@@ -536,12 +552,12 @@ body:not(.kind-pora) #v-form .hero2{display:none}
 
   function renderCard(g, opts){
     current = g;
-    $('c-to').textContent = '🎁 ' + (g.recipientName ? g.recipientName : 'Tau');
+    $('c-to').textContent = '🎁 ' + (g.recipientName ? ltPhrase(g.recipientName, 'dat') : 'Tau');
     $('c-msg').textContent = g.message ? '„' + g.message + '“' : '';
     // Palinkėjimo dydis pagal ilgį: trumpas — didelis, ilgas — mažesnis
     const ml = (g.message || '').length;
     $('c-msg').style.fontSize = ml <= 60 ? '24px' : ml <= 150 ? '20px' : '17px';
-    $('c-from').textContent = g.fromName ? '— nuo ' + g.fromName : '';
+    $('c-from').textContent = g.fromName ? '— nuo ' + ltPhrase(g.fromName, 'gen') : '';
     $('c-code').textContent = g.code;
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
     const pora = g.kind === 'pora';
@@ -635,7 +651,7 @@ body:not(.kind-pora) #v-form .hero2{display:none}
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
     const what = current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus! 💞' : ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus!';
-    const text = '🎁 Dovana ' + (current.recipientName ? current.recipientName : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + current.fromName : '') + what + '\n\n👉 Atidaryk dovaną: ';
+    const text = '🎁 Dovana ' + (current.recipientName ? ltPhrase(current.recipientName, 'dat') : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + ltPhrase(current.fromName, 'gen') : '') + what + '\n\n👉 Atidaryk dovaną: ';
     try {
       // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.
       if (navigator.canShare) {

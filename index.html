@@ -5716,7 +5716,7 @@ function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.name
 // Porų režime kameroje apie delnus rašoma daugiskaita (kiekvienas fotografuoja abu delnus)
 function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? poraCurrentName()+' — delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
 function poraPlural(t){ return String(t).replace('ranką toliau, kad visas delnas tilptų','ranką toliau, kad ji visa tilptų').replace('Pasuk delną į save','Pasuk ranką vidine puse į save').replace('laikyk delną','laikyk ranką'); }
-// Vardų linksniavimas (tos pačios taisyklės kaip serveryje): kilm., naud., gal., įnag., šauksm. Nežinomą galūnę palieka kaip įvesta.
+// Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
 function ltForms(name){
   const n=String(name||'').trim(), o={nom:n,gen:n,dat:n,acc:n,ins:n,voc:n};
   if(!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return o;
@@ -5730,6 +5730,7 @@ function ltForms(name){
   if(f){ o.gen=f[0]; o.dat=f[1]; o.acc=f[2]; o.ins=f[3]; o.voc=f[4]; }
   return o;
 }
+function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(w)||w.toLowerCase()==='ir'?w:ltForms(w)[c]).join(''); }
 function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.nameA : p.nameB) : ''; }
 
 (function initPoraFromUrl(){
@@ -6311,7 +6312,7 @@ function showGiftWelcome(d){
   n.style.cssText='margin:14px 16px 0;padding:12px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:\'DM Sans\',sans-serif;position:relative;z-index:5';
   if(d.valid){
     // Vardai įvedami linksniuojant (Kam: „Ievai“, Nuo ko: „Tomo“).
-    n.innerHTML='<div style="color:var(--gold2);font-size:14px;font-weight:600">🎁 Dovana '+(d.recipientName?_giftEsc(d.recipientName):'tau')+(d.fromName?' nuo '+_giftEsc(d.fromName):'')+'!</div>'+
+    n.innerHTML='<div style="color:var(--gold2);font-size:14px;font-weight:600">🎁 Dovana '+(d.recipientName?_giftEsc(ltPhrase(d.recipientName,'dat')):'tau')+(d.fromName?' nuo '+_giftEsc(ltPhrase(d.fromName,'gen')):'')+'!</div>'+
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">Nufotografuok delnus — žemėlapis jau apmokėtas.</div>';
     giftConfetti();
   }else{
@@ -6331,7 +6332,7 @@ function applyGiftMode(){
     const el=document.getElementById(id); if(el) el.classList.toggle('gift-hide',on);
   });
   if(on){
-    document.getElementById('gift-pay-title').textContent=(g.fromName?'Dovana nuo '+g.fromName:'Dovana')+' — jau apmokėta';
+    document.getElementById('gift-pay-title').textContent=(g.fromName?'Dovana nuo '+ltPhrase(g.fromName,'gen'):'Dovana')+' — jau apmokėta';
     const m=document.getElementById('gift-pay-msg');
     if(g.message){ m.textContent='„'+g.message+'“'; m.style.display='block'; } else m.style.display='none';
   }
