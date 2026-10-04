@@ -991,7 +991,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div id="pr-remote-title" style="font-family:'Playfair Display',serif;font-size:26px;line-height:1.25;color:#e8e2d4;margin-bottom:10px"></div>
     <div id="pr-remote-txt" style="font-size:13.5px;color:var(--muted);line-height:1.55;max-width:330px;margin-bottom:20px"></div>
     <button class="btn btn-gold" id="pr-remote-share" onclick="poraShareRemote()" style="max-width:340px">Siųsti nuorodą →</button>
-    <button type="button" class="pora-remote-link" onclick="poraCopyRemote(this)">Kopijuoti nuorodą</button>
+    <div id="pr-remote-links"><button type="button" class="pora-remote-link" id="pr-remote-again" onclick="poraShareRemote()" style="display:inline-block;margin:14px 10px 0">Siųsti dar kartą</button><button type="button" class="pora-remote-link" id="pr-remote-copy" onclick="poraCopyRemote(this)" style="display:inline-block;margin:14px 10px 0">Kopijuoti nuorodą</button></div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:26px;font-size:12.5px;color:var(--muted)"><span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);border-radius:50%;animation:spinStep .9s linear infinite"></span><span id="pr-remote-wait"></span></div>
   </div>
 </div>
@@ -5805,7 +5805,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; }catch(e){}
-      if(d.status==='waiting_partner' && !isPartner){ note.remove(); poraShowRemote(location.origin+'/?pora='+encodeURIComponent(sid)+'&partneris=1'); return; }
+      if(d.status==='waiting_partner' && !isPartner){ note.remove(); poraShowRemote(location.origin+'/?pora='+encodeURIComponent(sid)+'&partneris=1',true); return; }
       if(d.status==='waiting_partner' && isPartner){ window._pora.stage=1; window._pora.remoteB=true; }
       window._pora.active=true;
       // Pradžios ekranas porų režimu — antraštė ir tekstas apie porą, ne apie asmeninį žemėlapį
@@ -5874,14 +5874,25 @@ async function poraRemote(){
     const r=await fetch('/pora/save-first',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid,photos})});
     const d=await r.json(); if(!r.ok||!d.link) throw new Error(d.error||'Nepavyko paruošti nuorodos');
     p.active=false; poraShowRemote(d.link);
+    // Iškart atveriamas siuntimo langas — nereikia antrą kartą spausti „Siųsti“
+    poraShareRemote(true);
   }catch(e){ err.textContent=e.message; err.style.display='block'; }
   btn.disabled=false; btn.textContent=t;
 }
-function poraShowRemote(link){
+// sent=false — nuoroda dar neišsiųsta (rodomas auksinis mygtukas), true — laukiama nuotraukų
+function poraRemoteState(sent){
+  const p=window._pora, gb=ltForms(p.nameB);
+  document.getElementById('pr-remote-title').textContent=sent?'Laukiame '+gb.gen:'Nusiųsk nuorodą '+gb.dat;
+  document.getElementById('pr-remote-txt').textContent=sent
+    ?'Kai nuoroda bus atidaryta ir delnai nufotografuoti, analizė prasidės automatiškai. Rezultatą matysite čia ir gausite el.\u00a0paštu.'
+    :'Atsidarius nuorodą savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite čia ir gausite el.\u00a0paštu.';
+  document.getElementById('pr-remote-share').style.display=sent?'none':'';
+  document.getElementById('pr-remote-again').style.display=sent?'inline-block':'none';
+}
+function poraShowRemote(link,sent){
   const p=window._pora; p.remoteLink=link;
-  document.getElementById('pr-remote-title').textContent='Nuoroda '+ltForms(p.nameB).dat;
-  document.getElementById('pr-remote-txt').textContent=ltForms(p.nameA).gen+' delnai jau nufotografuoti. Nusiųsk nuorodą '+ltForms(p.nameB).dat+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
-  document.getElementById('pr-remote-wait').textContent='Laukiame, kol '+p.nameB+' nufotografuos delnus…';
+  poraRemoteState(!!sent);
+  document.getElementById('pr-remote-wait').textContent='Laukiama nuotraukų…';
   go('s-pora-remote');
   clearInterval(window._poraRemoteTimer);
   window._poraRemoteTimer=setInterval(async()=>{
@@ -5891,15 +5902,18 @@ function poraShowRemote(link){
     }catch(e){}
   },5000);
 }
-async function poraShareRemote(){
+// auto=true — kviečiama iškart paruošus nuorodą; jei naršyklė siuntimo lango neatveria, lieka auksinis mygtukas
+async function poraShareRemote(auto){
   const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus — sužinosime mūsų porų suderinamumą:';
-  try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url:p.remoteLink }); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
-  poraCopyRemote(document.querySelector('#s-pora-remote .pora-remote-link'));
+  try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url:p.remoteLink }); poraRemoteState(true); return; } }
+  catch(e){ if(auto||(e&&e.name==='AbortError')) return; }
+  if(!auto) poraCopyRemote(document.getElementById('pr-remote-copy'));
 }
 async function poraCopyRemote(btn){
   const link=window._pora.remoteLink;
   try{ await navigator.clipboard.writeText(link); if(btn){ btn.textContent='Nukopijuota ✓'; setTimeout(()=>{ btn.textContent='Kopijuoti nuorodą'; },2000); } }
   catch(e){ prompt('Nukopijuokite nuorodą:',link); }
+  poraRemoteState(true);
 }
 
 async function poraStart(){
