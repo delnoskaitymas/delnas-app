@@ -1976,12 +1976,12 @@ async function getPaidAnalysisPayment(paymentRef) {
   if (paymentRef.startsWith('pi_')) {
     const pi = await stripe.paymentIntents.retrieve(paymentRef);
     if (!pi || pi.status !== 'succeeded') return null;
-    return { metadata: pi.metadata || {}, email: (pi.metadata && pi.metadata.email) || pi.receipt_email || '' };
+    return { metadata: pi.metadata || {}, email: (pi.metadata && pi.metadata.email) || pi.receipt_email || '', amount: pi.amount_received || pi.amount || 0 };
   }
   if (paymentRef.startsWith('cs_')) {
     const s = await stripe.checkout.sessions.retrieve(paymentRef);
     if (!s || s.payment_status !== 'paid' || (s.metadata && s.metadata.type)) return null;
-    return { metadata: s.metadata || {}, email: (s.metadata && s.metadata.email) || s.customer_email || '' };
+    return { metadata: s.metadata || {}, email: (s.metadata && s.metadata.email) || s.customer_email || '', amount: s.amount_total || 0 };
   }
   return null;
 }
@@ -2297,25 +2297,34 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       return res.json({ ok: true, alreadySent: true });
     }
     if (orderNumber) sentPdfEmailsForOrder.add(orderNumber);
-    // Kukli eilutė apie porų analizę rinkinio kaina (tas pats kodas kaip rezultato ekrane, galioja 30 d.)
-    let poraLine = '';
+    // Laiškas — pirmiausia mokėjimo / užsakymo patvirtinimas; pasiūlymai — tik smulkiai apačioje
+    const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
+    let pay = null, poraLine = '';
+    try { pay = !isGift && typeof paymentRef === 'string' && paymentRef ? await getPaidAnalysisPayment(paymentRef) : null; } catch (e) { pay = null; }
     try {
-      const pay = !isGift && typeof paymentRef === 'string' && paymentRef ? await getPaidAnalysisPayment(paymentRef) : null;
       if (pay && pay.metadata.bundle !== '1') {
         const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: isValidEmail(pay.email) ? pay.email : email, key: 'bundle:' + paymentRef });
-        if (!pr.usedBy && Date.now() < pr.expiresAt) {
-          const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
-          poraLine = `<div style="margin:24px 0 0;padding:18px 16px;border:1px solid rgba(212,168,67,.55);border-radius:14px;background:rgba(212,168,67,.07);text-align:center"><div style="font-size:24px;line-height:1">💞</div><div style="font-size:18px;font-weight:700;color:#d4a843;margin:6px 0 6px">Kaip derate poroje?</div><p style="font-size:14px;line-height:1.6;color:rgba(245,238,216,.85);margin:0 0 14px">Porų suderinamumo analizė pagal abiejų delnus — tau už <b style="color:#f0d58a">${eur(pr.price)}</b> <s style="opacity:.6">${eur(PORA_PRICE_CENTS)}</s></p><a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:13px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Sužinoti, kaip derate →</a><p style="font-size:11.5px;color:rgba(245,238,216,.5);margin:10px 0 0">Kaina galioja iki ${fmtLtDate(pr.expiresAt)}</p></div>`;
-        }
+        if (!pr.usedBy && Date.now() < pr.expiresAt) poraLine = `<p style="margin:0 0 8px">💞 <a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">Kaip derate poroje?</a> — porų analizė tau už ${eur(pr.price)} vietoj ${eur(PORA_PRICE_CENTS)} (iki ${fmtLtDate(pr.expiresAt)})</p>`;
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
+    const ordNo = orderNumber || (pay && isValidOrderNumber(pay.metadata.orderNumber || '') ? pay.metadata.orderNumber : '');
+    const withKl = pay && pay.metadata.addKlausk === '1';
+    const row = (k, v) => `<tr><td style="padding:6px 0;color:rgba(245,238,216,.6);font-size:13px;vertical-align:top;white-space:nowrap">${k}</td><td style="padding:6px 0 6px 14px;font-size:14px;color:#f5eed8;text-align:right">${v}</td></tr>`;
+    const orderBox = `<div style="border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:10px 16px;margin:0 0 20px"><table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif">`
+      + row('Užsakymas', isGift ? 'Asmeninė delnų analizė (dovana)' : `Asmeninė delnų analizė „Gyvenimo žemėlapis“${withKl ? ' + 3 klausimai' : ''}`)
+      + (ordNo ? row('Užsakymo numeris', `<b style="color:#d4a843;letter-spacing:.04em">${escapeHtml(ordNo)}</b>`) : '')
+      + row(isGift ? 'Apmokėta' : 'Suma', isGift ? 'dovanos pirkėjo' : (pay && pay.amount ? eur(pay.amount) : 'apmokėta'))
+      + row('Data', ltDate(Date.now()))
+      + row('El. paštas', escapeHtml(email))
+      + `</table></div>`;
+    const extras = `<div style="margin:26px 0 0;padding-top:14px;border-top:1px solid rgba(212,168,67,.15);font-family:Arial,sans-serif;font-size:12.5px;line-height:1.6;color:rgba(245,238,216,.6);text-align:center">${poraLine}<p style="margin:0">🎁 <a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">Padovanok gyvenimo žemėlapį</a> artimam žmogui</p></div>`;
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: isGift
         ? `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} dovana paruošta: gyvenimo žemėlapis pagal delnus 🎁`
         : `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p>${poraLine}<div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:20px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:8px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas.</div></div>${orderBox}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.85);text-align:center;margin:0">📎 Pilną analizę rasi pridėtame PDF faile.</p>${extras}${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
