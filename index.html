@@ -5716,6 +5716,20 @@ function poraNames(){ const p=window._pora; return p ? p.nameA + ' ir ' + p.name
 // Porų režime kameroje apie delnus rašoma daugiskaita (kiekvienas fotografuoja abu delnus)
 function poraCamTitle(isLeft){ return (window._pora&&window._pora.active) ? poraCurrentName()+' — delnai · '+(isLeft?'kairė ranka':'dešinė ranka') : ''; }
 function poraPlural(t){ return String(t).replace('ranką toliau, kad visas delnas tilptų','ranką toliau, kad ji visa tilptų').replace('Pasuk delną į save','Pasuk ranką vidine puse į save').replace('laikyk delną','laikyk ranką'); }
+// Vardų linksniavimas (tos pačios taisyklės kaip serveryje): kilm., naud., gal., įnag., šauksm. Nežinomą galūnę palieka kaip įvesta.
+function ltForms(name){
+  const n=String(name||'').trim(), o={nom:n,gen:n,dat:n,acc:n,ins:n,voc:n};
+  if(!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return o;
+  const end=k=>n.toLowerCase().endsWith(k), soft=b=>b.replace(/t$/,'č').replace(/d$/,'dž');
+  let f=null;
+  if(end('us')){ const b=n.slice(0,-2); f=[b+'aus',b+'ui',b+'ų',b+'umi',b+'au']; }
+  else if(end('as')){ const b=n.slice(0,-2); f=[b+'o',b+'ui',b+'ą',b+'u',b+'ai']; }
+  else if(end('is')||end('ys')){ const b=n.slice(0,-2); f=[soft(b)+'io',soft(b)+'iui',b+'į',soft(b)+'iu',b+(end('ys')?'y':'i')]; }
+  else if(end('ė')||end('e')){ const b=n.slice(0,-1); f=[b+'ės',b+'ei',b+'ę',b+'e',b+'e']; }
+  else if(end('a')){ const b=n.slice(0,-1); f=[b+'os',b+'ai',b+'ą',b+'a',b+'a']; }
+  if(f){ o.gen=f[0]; o.dat=f[1]; o.acc=f[2]; o.ins=f[3]; o.voc=f[4]; }
+  return o;
+}
 function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.nameA : p.nameB) : ''; }
 
 (function initPoraFromUrl(){
@@ -5758,7 +5772,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       if(window._pora.remoteB){
         note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
           '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
-          '<div style="color:var(--muted);font-size:12px;margin-top:3px">Dabar tavo eilė, <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b> — nufotografuok delnus, ir pamatysite savo porų suderinamumą.</div>';
+          '<div style="color:var(--muted);font-size:12px;margin-top:3px">Dabar tavo eilė, <b style="color:var(--gold2)">'+poraEsc(ltForms(window._pora.nameB).voc)+'</b> — nufotografuok delnus, ir pamatysite savo porų suderinamumą.</div>';
         const cta=document.getElementById('main-cta-btn'); if(cta) cta.textContent='Fotografuoti mano delnus';
         return;
       }
@@ -5815,8 +5829,8 @@ async function poraRemote(){
 }
 function poraShowRemote(link){
   const p=window._pora; p.remoteLink=link;
-  document.getElementById('pr-remote-title').textContent='Nuoroda — '+p.nameB;
-  document.getElementById('pr-remote-txt').textContent=p.nameA+' delnai jau nufotografuoti. Nusiųskite nuorodą '+p.nameB+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
+  document.getElementById('pr-remote-title').textContent='Nuoroda '+ltForms(p.nameB).dat;
+  document.getElementById('pr-remote-txt').textContent=ltForms(p.nameA).gen+' delnai jau nufotografuoti. Nusiųskite nuorodą '+ltForms(p.nameB).dat+' — atsidarius ją savo telefone, reikės nufotografuoti delnus. Analizė prasidės automatiškai, o rezultatą matysite abu ir gausite el. paštu.';
   document.getElementById('pr-remote-wait').textContent='Laukiame, kol '+p.nameB+' nufotografuos delnus…';
   go('s-pora-remote');
   clearInterval(window._poraRemoteTimer);
