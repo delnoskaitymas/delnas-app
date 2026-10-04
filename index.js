@@ -2280,7 +2280,7 @@ app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => 
 // rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, orderNumber, pdfBase64, gift, paymentRef } = req.body;
+    const { email, name, orderNumber, pdfBase64, gift } = req.body;
     const isGift = gift === true;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
@@ -2297,23 +2297,13 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       return res.json({ ok: true, alreadySent: true });
     }
     if (orderNumber) sentPdfEmailsForOrder.add(orderNumber);
-    // Rinkinys: porų analizės nuoroda — tame pačiame laiške (ne atskiru)
-    let bundleHtml = '';
-    try {
-      const st = typeof paymentRef === 'string' && paymentRef ? loadGiftStore() : null;
-      const bg = st && st.codes[st.bySession['bundle:' + paymentRef]];
-      if (bg && !bg.bundleMailed) {
-        bundleHtml = `<div style="margin:22px 0 0;padding:18px 16px;border:1px solid rgba(212,168,67,.45);border-radius:14px;text-align:center"><div style="font-size:22px">💞</div><div style="font-size:17px;font-weight:700;color:#d4a843;margin:4px 0 8px">Porų suderinamumas — jau apmokėtas</div><p style="font-size:14px;line-height:1.6;color:rgba(245,238,216,.85);margin:0 0 14px">Kai būsite kartu, atidarykite nuorodą ir nufotografuokite abiejų delnus. Porų analizę su PDF atsiųsime atskiru laišku, kai ji bus paruošta.</p><a href="${giftRedeemLink(bg)}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 22px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Pradėti porų analizę →</a><p style="font-size:11.5px;color:rgba(245,238,216,.5);margin:12px 0 0">Kodas: <b style="color:#f0d58a;letter-spacing:.08em">${escapeHtml(bg.code)}</b> · galioja iki ${fmtLtDate(bg.expiresAt)}</p></div>`;
-        bg.bundleMailed = 'pdf'; saveGiftStore(st);
-      }
-    } catch (e) { console.error('[email-result-pdf] rinkinio bloko klaida:', e.message); }
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: isGift
         ? `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} dovana paruošta: gyvenimo žemėlapis pagal delnus 🎁`
         : `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p>${bundleHtml}<div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0"><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį →</a><p style="font-size:12px;margin:10px 0 0"><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843;text-decoration:underline">www.delnaskaitymas.lt/dovana</a></p></div>${EMAIL_FOOTER_HTML}</div>`,
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
@@ -4309,28 +4299,8 @@ function issueBundleGift(paymentRef, email, name) {
   saveGiftStore(store);
   statInc('bundle');
   console.log(`[bundle] išduotas porų kuponas ${code} (${paymentRef})`);
-  // Atskiro laiško iškart nesiunčiame: porų nuoroda įdedama į asmeninės analizės PDF laišką.
-  // Jei to laiško per 15 min. nebūtų (žr. processBundleMailFallback) — siunčiamas atskiras laiškas.
   return gift;
 }
-
-// Rinkinio porų nuoroda: jei asmeninės analizės PDF laiškas jos neįtraukė per 15 min. — atskiras laiškas
-function bundleMailHtml(gift) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Porų suderinamumas — jau apmokėtas</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Kartu su asmenine analize įsigijote porų suderinamumą. Kai būsite kartu, atidarykite nuorodą ir nufotografuokite abiejų delnus — mokėti nebereikės. Porų analizę su PDF atsiųsime atskiru laišku, kai ji bus paruošta.</p><a href="${giftRedeemLink(gift)}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Pradėti porų analizę →</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Kodas: <b style="letter-spacing:.08em;color:#f0d58a">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}</p>${EMAIL_FOOTER_HTML}</div>`;
-}
-function processBundleMailFallback() {
-  try {
-    const store = loadGiftStore(), now = Date.now(); let changed = false;
-    for (const g of Object.values(store.codes)) {
-      if (!g.bundle || g.bundleMailed || !isValidEmail(g.buyerEmail) || now - g.createdAt < 15 * 60 * 1000 || now - g.createdAt > 3 * DAY_MS) continue;
-      g.bundleMailed = 'separate'; changed = true;
-      mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.buyerEmail, subject: '💞 Jūsų porų suderinamumas jau apmokėtas', html: bundleMailHtml(g) })
-        .catch(e => console.error('[bundle] laiško klaida:', e.message));
-    }
-    if (changed) saveGiftStore(store);
-  } catch (e) { console.error('[bundle] atsarginio laiško klaida:', e.message); }
-}
-setInterval(processBundleMailFallback, 5 * 60 * 1000);
 
 // Porų analizė PDF: laiškas siunčiamas iš rezultato ekrano. Jei per 10 min. po analizės jis neišsiųstas
 // (pvz. puslapis uždarytas) — užsakovui siunčiama nuoroda; ją atidarius, PDF atkeliauja el. paštu.
