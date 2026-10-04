@@ -82,6 +82,9 @@ body.list-view .sec{display:none}
 body.fit:not(.list-view) .brand{font-size:var(--bf,16px)!important}
 body.fit:not(.list-view) .hero{width:var(--hs,86px)!important;height:var(--hs,86px)!important;margin:var(--hm,14px) auto var(--hm,14px)!important}
 body:not(.list-view) .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
+/* Turinys šiek tiek aukščiau centro: apačioje paliekama daugiau vietos nei viršuje (po „← Pradžia“) */
+body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!important}
+@media (max-height:600px){body:not(.list-view) .wrap{padding-top:50px!important;padding-bottom:24px!important}}
 .tabs button{padding:11px 8px;font-size:13.5px;white-space:normal;line-height:1.25}
 @media (max-width:370px){.tabs button{font-size:12.5px;padding:10px 6px}}
 .tabs button i{font-size:13px}
