@@ -3123,11 +3123,12 @@ KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
 TAISYKLĖS:
 - Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku.
 ${poraNameRules(A, B)}
-- Lytis nežinoma — venk giminę turinčių dalyvių ir būdvardžių apie juos (pvz. „pasiruošęs/-usi“); rink neutralias formas.
 - Skyrių tekstuose (traukia…patarimai) PATIEMS fiziniams požymiams vietos neskirk — rašyk išvadas apie jų santykį. Fiziniai požymiai aprašomi TIK lauke „palyginimai“.
 - Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
-- DRAUDŽIAMA: „gali būti“, „tikėtina“, „energija“, „vibracija“, metaforos ir palyginimai („kaip…“, „tarsi…“), knyginiai ar mokslinio stiliaus žodžiai, žodis „galva“ (išskyrus pavadinimą „galvos linija“).
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
+- Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
+
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?' })}
 - Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
 PALYGINIMAI (pildyk PIRMIAUSIA — tai tavo stebėjimų pagrindas): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
@@ -3150,8 +3151,6 @@ Taip pat:
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
 - izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma, be vardų — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
 
-PRIEŠ ATSAKYDAMAS perskaityk kiekvieną sakinį: ar jis taisyklingas, konkretus šiai porai ir be giminę turinčių formų? Ar skyriuose nėra fizinių požymių? Jei ne — perrašyk.
-
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
 {"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
@@ -3162,7 +3161,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.3, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
       }, 220000);
       data = await r.json();
     } catch (e) {
@@ -3537,15 +3536,15 @@ function klauskPoraContext(res) {
 
 // Klausimų atsakymų kalbos taisyklės — tokios pačios kaip asmeninės analizės punktų blokuose
 // (taisyklinga kalba, vidutinis stilius, lyties neutralumas, be metaforų ir tuščių sakinių, galutinis patikrinimas).
-function klauskLangRules(you) {
+function klauskLangRules(you, opts = {}) {
   const pl = you === 'jūs';
-  return `KALBOS TAISYKLĖS (tokios pačios kaip analizės tekste):
+  return `KALBOS TAISYKLĖS (tokios pačios kaip asmeninės analizės tekste):
 - Rašyk taisyklinga, natūralia lietuvių kalba, kreipdamasis „${pl ? 'jūs' : 'tu'}“ esamuoju laiku — taip, kaip natūraliai kalbėtų gimtakalbis lietuvis. Jei abejoji dėl retesnio žodžio formos, rinkis paprastesnį, tau gerai žinomą.
 - Lytis nežinoma: NIEKADA nerašyk giminę turinčių dalyvių ir būdvardžių apie ${pl ? 'juos' : 'skaitytoją'} — NE „pasirengęs/-usi“, „atradęs“, „likęs“, „buvai atviras“, „esi ramus“, „laukdamas“; VIETOJ jų — asmenuojamas veiksmažodis + prieveiksmis (pvz. ${pl ? '„elgiatės ramiau“, „jausmus reiškiate atvirai“' : '„elgiesi ramiau“, „jausmus reiški atvirai“'}).
 - Stiliaus lygis: VIDUTINIS — nei knyginis/mokslinis/oficialus, nei gatvės stiliaus su žargonu ar sutrumpinimais. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje.
 - DRAUDŽIAMA: sudėtingi, knyginiai žodžiai (pvz. „manifestuoja“, „transformacija“, „potencialas“ kaip terminas, „orientyras“, „dinamika“, „konsensusas“, „delegavimas“, „faktorius“, „kontempliacija“). Jei parašai žodį, kurio nevartotum kalbėdamas su draugu prie kavos — pakeisk paprastesniu, kasdieniu atitikmeniu.
 - DRAUDŽIAMA: „gali būti“, „tikėtina“, „galima manyti“, „energija“, „vibracija“, žodis „galva“ (rašyk „protas“), „akcija“ reikšme „veiksmas“.
-- DRAUDŽIAMA: metaforos ir palyginimai („kaip…“, „tarsi…“, „lyg…“), bendros frazės, kurios tiktų bet kam (pvz. „gyvenimas kupinas galimybių“), linijų pavadinimai ir fiziniai delnų požymiai.
+- DRAUDŽIAMA: metaforos ir palyginimai („kaip…“, „tarsi…“, „lyg…“), bendros frazės, kurios tiktų bet kam (pvz. „gyvenimas kupinas galimybių“), ${opts.physicalOk ? 'fiziniai delnų požymiai skyrių tekstuose (jie aprašomi TIK lauke „palyginimai“), žodis „galva“ (išskyrus pavadinimą „galvos linija“).' : 'linijų pavadinimai ir fiziniai delnų požymiai.'}
 - DRAUDŽIAMA: tušti, „vatos“ sakiniai ir ilgi, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais; kiekvienas sakinys turi nešti konkrečią mintį.
 - Tekste nenaudok dvigubų kabučių.
 
@@ -3553,7 +3552,7 @@ GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas): perskaityk KIEKVIENĄ sakin
 1. Ar jis taisyklingas — be rašybos, linksnių, galūnių ir skyrybos klaidų?
 2. Ar jis aiškus iš pirmo skaitymo ir konkretus, susietas su šia analize?
 3. Ar jame NĖRA giminę turinčio dalyvio ar būdvardžio apie ${pl ? 'juos' : 'skaitytoją'}?
-4. Ar jame NĖRA draudžiamų žodžių, metaforų ir fizinių delnų požymių?
+4. Ar jame NĖRA draudžiamų žodžių, metaforų${opts.physicalOk ? ' (skyriuose — ir fizinių delnų požymių)' : ' ir fizinių delnų požymių'}?${opts.extraCheck ? '\n' + opts.extraCheck : ''}
 Jei bent vienas atsakymas „ne“ — perrašyk sakinį ir patikrink jį dar kartą nuo pradžios.`;
 }
 
