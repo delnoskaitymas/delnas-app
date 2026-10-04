@@ -3181,6 +3181,28 @@ function poraNameRules(A, B) {
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
+// Trumpina ne žodžio viduryje: iki paskutinės sakinio pabaigos, kitaip iki frazės (—, ;, ,) ar žodžio ribos su „…“
+function smartTrim(t, max) {
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const sent = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+  if (sent > max * 0.5) return cut.slice(0, sent + 1);
+  const clause = Math.max(cut.lastIndexOf(' — '), cut.lastIndexOf('; '), cut.lastIndexOf(', '));
+  if (clause > max * 0.6) return cut.slice(0, clause).replace(/[\s,;—]+$/, '') + '.';
+  const sp = cut.lastIndexOf(' ');
+  return (sp > 0 ? cut.slice(0, sp) : cut).replace(/[\s,;—]+$/, '') + '…';
+}
+// Porų tekstų saugiklis: giminę rodančios formos apie porą („abu jaučiate“, „vienas kitą“) → neutralios
+function poraNeutral(t) {
+  const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`;
+  return String(t)
+    // „Abu jaučiate“ / „jūs abu esate“ → „Jaučiate“ / „jūs esate“
+    .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
+    .replace(new RegExp(`${start}(?:vienas|viena)\\s+(?:kitą|kitam|kitai|su\\s+kitu|su\\s+kita|prie\\s+kito|prie\\s+kitos|be\\s+kito|be\\s+kitos)${end}`, 'g'), 'tarpusavyje')
+    .replace(new RegExp(`${start}(?:vienas|viena)\\s+(?:kito|kitos)${end}`, 'g'), 'tarpusavio')
+    .replace(new RegExp(`${start}papildo tarpusavyje${end}`, 'g'), 'dera tarpusavyje');
+}
+
 // Porų analizė su pakartojimu: jei AI atsakymas nukirptas, sugadintas JSON ar trūksta skyriaus —
 // AI klausiama dar kartą (vartotojas mato tik ilgiau trunkantį laukimą, ne klaidą)
 async function runCoupleAnalysis(photos, nameA, nameB) {
@@ -3234,6 +3256,7 @@ PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies
 - a: ką matai ${A} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
 - b: tas pats apie ${B} (iki 120 simbolių)
 - isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių)
+- a, b ir isvada — LYČIAI NEUTRALIAI: apie žmogų NIEKADA nerašyk giminę rodančių būdvardžių ar dalyvių (KLAIDA: „tapo atsargesnė“, „ramus“, „linkęs“, „atvira“) — rašyk daiktavardžiu ar veiksmažodžiu („daugiau atsargumo“, „būdinga ramybė“, „jausmus reiškia atvirai“). Nerašyk „abu“, „abi“, „vienas kitą“, „viena kitą“ — net apie daiktus (ne „stiliai papildo vienas kitą“, o „stiliai dera tarpusavyje“); ne „abu jaučiate“, o „jaučiate“. Kiekvienas a ir b — užbaigtas sakinys, telpantis į 120 simbolių.
 
 SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — tik balas (sveikas skaičius 55–98); iš jų skaičiuojamas bendras suderinamumas.
 
@@ -3281,14 +3304,14 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   let raw;
   try { raw = JSON.parse(m[0]); }
   catch (e) { raw = parseJsonLenient(m[0].replace(/(["}\]0-9]|true|false|null)(\s*\n\s*)(?="[A-Za-z_]+"\s*:)/g, '$1,$2')); }
-  const fix = (t, max) => applyTextFixes(String(t).trim().slice(0, max)).text;
+  const fix = (t, max) => poraNeutral(applyTextFixes(smartTrim(String(t).trim(), max)).text);
   // Sritys: balai 55–98; bendras suderinamumas — sričių vidurkis (nuoseklu su tuo, ką mato vartotojas)
   const sritys = {};
   const rs = raw.sritys && typeof raw.sritys === 'object' ? raw.sritys : {};
   for (const k of PORA_DIMENSIONS) {
     const d = rs[k] || {};
     const v = Math.round(Number(d.balas));
-    if (Number.isFinite(v)) sritys[k] = { balas: Math.max(55, Math.min(98, v)), fraze: typeof d.fraze === 'string' ? fix(d.fraze, 70) : '', aprasymas: typeof d.aprasymas === 'string' ? fix(d.aprasymas, 300) : '' };
+    if (Number.isFinite(v)) sritys[k] = { balas: Math.max(55, Math.min(98, v)), fraze: typeof d.fraze === 'string' ? fix(d.fraze, 90) : '', aprasymas: typeof d.aprasymas === 'string' ? fix(d.aprasymas, 420) : '' };
   }
   const allDims = PORA_DIMENSIONS.every(k => sritys[k]);
   const avg = allDims ? PORA_DIMENSIONS.reduce((a, k) => a + sritys[k].balas, 0) / PORA_DIMENSIONS.length : raw.suderinamumas;
@@ -3301,7 +3324,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   for (const k of PORA_COMPARE_KEYS) {
     const c = rp[k];
     if (c && typeof c.a === 'string' && typeof c.b === 'string' && c.a.trim() && c.b.trim()) {
-      pal[k] = { a: fix(c.a, 150), b: fix(c.b, 150), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 320) : '' };
+      pal[k] = { a: fix(c.a, 240), b: fix(c.b, 240), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 420) : '' };
     }
   }
   if (Object.keys(pal).length) out.palyginimai = pal;
@@ -3309,16 +3332,16 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   const ri = raw.izvalgos && typeof raw.izvalgos === 'object' ? raw.izvalgos : {};
   const izv = {};
   for (const k of PORA_RESULT_KEYS) {
-    const arr = Array.isArray(ri[k]) ? ri[k].filter(x => typeof x === 'string' && x.trim()).slice(0, 3).map(x => fix(x, 90)) : [];
+    const arr = Array.isArray(ri[k]) ? ri[k].filter(x => typeof x === 'string' && x.trim()).slice(0, 3).map(x => fix(x, 140)) : [];
     if (arr.length) izv[k] = arr;
   }
   if (Object.keys(izv).length) out.izvalgos = izv;
   for (const k of PORA_RESULT_KEYS) {
     if (typeof raw[k] !== 'string' || !raw[k].trim()) throw new Error(`Trūksta skyriaus: ${k}`);
-    out[k] = applyTextFixes(raw[k].trim()).text;
+    out[k] = poraNeutral(applyTextFixes(raw[k].trim()).text);
   }
   out.poros_bruozai = (Array.isArray(raw.poros_bruozai) ? raw.poros_bruozai : [])
-    .filter(s => typeof s === 'string' && s.trim()).slice(0, 3).map(s => applyTextFixes(s.trim().slice(0, 60)).text);
+    .filter(s => typeof s === 'string' && s.trim()).slice(0, 3).map(s => poraNeutral(applyTextFixes(smartTrim(s.trim(), 60)).text));
   return out;
 }
 
