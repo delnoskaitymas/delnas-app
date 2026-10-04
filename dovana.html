@@ -566,8 +566,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('kind-inc').textContent = pora ? '✦ Į dovanos kainą įeina ir 3 klausimai porai' : '✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai';
     $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'pvz. Ieva ir Tomas' : 'pvz. Ieva';
-    $('s3-h').innerHTML = pora ? 'Dovana atskleidžia, <em>kaip jie dera</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
-    $('s3-p').textContent = pora ? 'Pora viename telefone nufotografuoja delnus ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
+    $('s3-h').innerHTML = pora ? 'Dovana atskleidžia <em>poros suderinamumą</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
+    $('s3-p').textContent = pora ? 'Pora nufotografuoja delnus — paeiliui viename telefone arba per nuorodą, jei nėra kartu — ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
     $('price').innerHTML = prices[k];
     document.title = pora ? 'DELNAS — Porų suderinamumo dovana' : 'DELNAS — Dovanų kuponas';
     try { history.replaceState(null, '', location.pathname + (pora ? '?tipas=pora' : '') + (params.get('promo') ? (pora ? '&' : '?') + 'promo=' + encodeURIComponent(params.get('promo')) : '')); } catch (e) {}
