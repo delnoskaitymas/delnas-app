@@ -289,6 +289,22 @@ body.form-view.fit .wrap{padding-top:var(--bt,12px)}
 body.form-view.fit .wrap > .brand{font-size:var(--bf,14px)!important;margin-bottom:var(--bg,8px)!important}
 body.form-view.fit #v-form .intro > .hero,body.form-view.fit #v-redeem .intro > .hero{width:var(--hs,70px)!important;height:var(--hs,70px)!important}
 body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!important;height:calc(var(--hs,70px) * .92)!important}
+body.form-view.fit .wrap{padding-bottom:calc(var(--bt,12px) * .6)}
+/* Kompaktiška forma — kai kitaip DELNAS ir ikona būtų per maži (įjungia fitHeader()) */
+body.form-view.tight #gift-form{padding-top:10px;padding-bottom:9px}
+body.form-view.tight #form-h1{font-size:24px;line-height:1.08}
+body.form-view.tight #promo-tag,body.form-view.tight #season-tag{margin-top:-2px}
+body.form-view.tight #v-form .kind button{padding:5px 4px}
+body.form-view.tight #v-form .kind{margin-bottom:4px}
+body.form-view.tight #v-form .kind-inc{margin-bottom:7px}
+body.form-view.tight #v-form input[type=text],body.form-view.tight #v-form input[type=email]{padding-top:7px;padding-bottom:7px}
+body.form-view.tight #v-form textarea{height:36px;min-height:36px;padding-top:7px;padding-bottom:7px}
+body.form-view.tight #v-form label[for=f-msg],body.form-view.tight #buyer-wrap>label{margin-top:5px}
+body.form-view.tight #v-form .sched-chk{margin-top:8px!important}
+body.form-view.tight #v-form label[for=f-ok]{margin-top:7px}
+body.form-view.tight #pay-btn{margin-top:8px;padding-top:11px;padding-bottom:11px}
+body.form-view.tight #v-form .intro{margin-bottom:6px!important}
+body.form-view.tight #v-form .trust{display:none}
 </style>
 </head>
 <body>
@@ -814,10 +830,17 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   function fit(){
     if(!document.body.classList.contains('form-view')) return;
     document.body.classList.add('fit');
-    let pick=L[L.length-1];
-    for(const l of L){
-      root.style.setProperty('--bf',l[0]+'px'); root.style.setProperty('--hs',l[1]+'px'); root.style.setProperty('--bt',l[2]+'px'); root.style.setProperty('--bg',l[3]+'px');
-      if(root.scrollHeight<=window.innerHeight+1){ pick=l; break; }
+    const set=l=>{ root.style.setProperty('--bf',l[0]+'px'); root.style.setProperty('--hs',l[1]+'px'); root.style.setProperty('--bt',l[2]+'px'); root.style.setProperty('--bg',l[3]+'px'); };
+    const fits=()=>root.scrollHeight<=window.innerHeight+1;
+    // Pirmiausia — įprasta forma; jei ikona tada būtų mažesnė nei 86px, forma suglaudinama (.tight), kad liktų vietos DELNAS ir ikonai
+    document.body.classList.remove('tight');
+    let pick=null;
+    for(const l of L){ if(l[1]<86) break; set(l); if(fits()){ pick=l; break; } }
+    if(!pick){
+      document.body.classList.add('tight');
+      for(const l of L){ set(l); if(fits()){ pick=l; break; } }
+      // Labai žemas ekranas — jei ir suglaudinta netelpa, grįžtama prie įprastos formos ir mažiausio dydžio, kuris telpa
+      if(!pick){ document.body.classList.remove('tight'); pick=L[L.length-1]; for(const l of L){ set(l); if(fits()){ pick=l; break; } } }
     }
     root.style.setProperty('--bf',pick[0]+'px'); root.style.setProperty('--hs',pick[1]+'px'); root.style.setProperty('--bt',pick[2]+'px'); root.style.setProperty('--bg',pick[3]+'px');
   }
