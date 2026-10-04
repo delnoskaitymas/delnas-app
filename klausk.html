@@ -95,6 +95,10 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
   <p class="fine" id="fine">Atsakymai remiasi tavo asmenine delnų analize. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
 </div>
 <script>
+// Vardo šauksmininkas kreipiniui (Jonas → Jonai, Darius → Dariau); nežinoma galūnė paliekama
+function ltVoc(n){ n=String(n||'').trim(); if(!/^[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž-]{3,}$/.test(n)) return n; const e=k=>n.toLowerCase().endsWith(k);
+  if(e('us')) return n.slice(0,-2)+'au'; if(e('as')) return n.slice(0,-2)+'ai'; if(e('ys')) return n.slice(0,-2)+'y'; if(e('is')) return n.slice(0,-2)+'i'; if(e('ė')) return n.slice(0,-1)+'e'; return n; }
+const ltVocAll = s => String(s||'').split(' ir ').map(ltVoc).join(' ir ');
 // „Grįžti“ — ten, iš kur atėjo: į atidarytą rezultato langą (klausimai atidaromi naujame lange), porų rezultatą arba atgal
 window._klBack = '';
 document.getElementById('back-link').addEventListener('click', e => {
@@ -155,7 +159,7 @@ document.getElementById('back-link').addEventListener('click', e => {
         // Porų klausimai — „jūs“ forma ir porai skirti pavyzdžiai
         document.title = 'DELNAS — Klauskite savo delnų';
         $('h1').innerHTML = 'Klauskite savo <em>delnų</em>';
-        $('lead').textContent = (d.name ? d.name + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų porų suderinamumo analize.';
+        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų porų suderinamumo analize.';
         $('qlabel').textContent = 'Jūsų klausimas';
         q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
@@ -164,7 +168,7 @@ document.getElementById('back-link').addEventListener('click', e => {
         $('fine').innerHTML = 'Atsakymai remiasi jūsų porų suderinamumo analize. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
       } else {
-        $('lead').textContent = (d.name ? d.name + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize: stiprybėmis, kryptimi ir kliūtimis.';
+        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize.';
       }
       (d.qa || []).forEach(x => card(x, false));
       left = d.left; refresh();
