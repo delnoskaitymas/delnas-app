@@ -3915,6 +3915,12 @@ function renderResultExtra(r){
 // (kai kurios naršyklės blokuoja langus, atidaromus po užklausos). Įrašytas klausimas
 // perduodamas klausimų puslapiui ir ten užduodamas automatiškai.
 function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
+// Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
+function klScrollAfter(){
+  const kl=document.querySelector('#s-pora-result.active #pora-kl')||document.querySelector('#s-result.active #r-extra .kl');
+  if(!kl) return;
+  window.scrollTo({top:Math.max(0,kl.getBoundingClientRect().bottom+window.scrollY-12),behavior:'smooth'});
+}
 function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
 function setupKlauskBlock(o){
   const $=id=>document.getElementById(id);
@@ -6051,7 +6057,7 @@ function renderPoraResult(r){
   go('s-pora-result');
   window.scrollTo(0,0);
   // Grįžus iš klausimų puslapio (#klausk) — iškart prie klausimų bloko
-  if(location.hash==='#klausk') setTimeout(()=>{ const k=document.getElementById('pora-kl'); if(k) k.scrollIntoView({block:'center'}); },900);
+  if(location.hash==='#klausk') setTimeout(klScrollAfter,900);
   // Procentų žiedo animacija, tada ryšio lygio užrašas
   const pct=Math.max(0,Math.min(100,r.suderinamumas||0)), arc=document.getElementById('pora-ring-arc'), lbl=document.getElementById('pora-pct'), lv=document.getElementById('pora-level');
   lv.classList.remove('on'); lv.textContent=poraLevel(pct);
@@ -6472,7 +6478,7 @@ async function loadCompare(){
       if(d.paymentRef) window._paymentRef=d.paymentRef;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
-      if(location.hash==='#klausk') setTimeout(()=>{ const k=document.querySelector('#r-extra .kl'); if(k) k.scrollIntoView({block:'center'}); },1200);
+      if(location.hash==='#klausk') setTimeout(klScrollAfter,1200);
     }catch(e){ location.replace('/'); }
   };
   if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));

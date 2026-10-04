@@ -103,7 +103,7 @@ const ltVocAll = s => String(s||'').split(' ir ').map(ltVoc).join(' ir ');
 window._klBack = '';
 document.getElementById('back-link').addEventListener('click', e => {
   e.preventDefault();
-  try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { window.opener.focus(); window.close(); } } catch (x) {}
+  try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { if (typeof window.opener.klScrollAfter === 'function') window.opener.klScrollAfter(); window.opener.focus(); window.close(); } } catch (x) {}
   if (window._klBack) { location.href = window._klBack; return; }
   try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (x) {}
   location.href = '/';
