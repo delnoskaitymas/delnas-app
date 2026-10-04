@@ -1489,7 +1489,7 @@ async function toggleKlauskBump(on){
   const show=()=>{ const home=document.getElementById('s-home'); if(!home||document.getElementById('ref-welcome')) return;
     const n=document.createElement('div'); n.id='ref-welcome';
     n.style.cssText="margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;color:var(--gold2)";
-    n.innerHTML='🎁 Draugas tau dovanoja <b>−20 %</b> asmeninei delnų analizei'; home.prepend(n); };
+    n.innerHTML='🎁 Tau dovanojama <b>−20 %</b> asmeninei delnų analizei'; home.prepend(n); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
 })();
 
