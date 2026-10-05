@@ -1050,7 +1050,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div class="pr-halo"></div>
     <div class="pora-orbs pr-orbs" style="margin-bottom:18px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
     <div class="result-subtitle" style="margin-bottom:8px">Porų suderinamumas pagal delnus</div>
-    <div class="result-name" id="pora-names"></div>
+    <div class="result-name" id="pora-names" style="font-size:31px"></div>
     <div class="pora-ring">
       <svg viewBox="0 0 120 120" width="124" height="124"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,168,67,.18)" stroke-width="8"/><circle id="pora-ring-arc" cx="60" cy="60" r="52" fill="none" stroke="url(#poraGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/><defs><linearGradient id="poraGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset=".5" stop-color="#e0a930"/><stop offset="1" stop-color="#8a5a0f"/></linearGradient></defs></svg>
       <div class="pora-pct"><b id="pora-pct">0%</b><span style="text-align:center;line-height:1.25">delnų<br>suderinamumas</span></div>
@@ -1088,8 +1088,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-gold" style="margin:0" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
-        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)">🎁 Padovanoti kitai porai →</a>
+        <button class="btn" style="margin:0;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
+        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti kitai porai →</a>
       </div>
     </div>
     <!-- Priminimas porai po 6 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
@@ -6187,7 +6187,7 @@ async function loadPoraDuo(){
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
     return o.used ? '<div style="font-size:12.5px;color:var(--gold2);padding:10px 0">✓ '+g+' analizė užsakyta</div>'
-      : '<div><a class="btn btn-gold" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none">'+g+' analizė — '+eur(d.price)+' € →</a>'+
+      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)">'+g+' analizė — '+eur(d.price)+' € →</a>'+
         '<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button></div>'; };
   box.innerHTML='<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>'+
     '<div style="display:flex;flex-direction:column;gap:12px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
@@ -6207,6 +6207,19 @@ async function poraPlanRemind(){
 // ir anksčiau išsaugoti rezultatai: „abu jaučiate“ → „jaučiate“, „vienas kitą“ → „tarpusavyje“
 function poraNeutralText(t){
   const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`, V = `${start}(?:vienas|viena)\\s+`;
+    // Lyginamojo laipsnio („atsargesnis/-ė/-iam/-ei“) ir dažniausi charakterio būdvardžiai apie žmogų
+  const POS = 'atsarg|atvir|ram|jautr|uždar|šilt|kantr|drąs|santūr|nuošird|šveln|savarankišk|saug|laiming|stipr|tyl|lėt|greit|užsispyr|ryžting|kruopšt|spontanišk|praktišk|emocing|impulsyv|stabil|lankst|dėmesing|rūpesting|užtikrint|atsidav|ištikim|nepriklausom';
+  const ADJ = `(?:[${L}]+esn(?:is|ė|io|ės|iam|ei|į|ę|iu|e|iems|ėms|i|ios)|(?:${POS})(?:us|i|as|a|iam|am|ūs|ios|os|iai|ai|iems|ėms|ems|oms))(?![${L}])`;
+  const toAdv = w => {
+    let s = w.replace(new RegExp(`esn[${L}]*$`), '');
+    if (s !== w) { s = s.replace(/t$/, 'č').replace(/d$/, 'dž'); return s + 'iau'; }
+    if (/ai$/.test(w)) return w;
+    s = w.replace(/(us|ūs|iam|iems|ėms|i|ios)$/, '');
+    if (s === w) s = w.replace(/(ems|oms|as|am|a|os)$/, '');
+    const soft = /(atsarg|ram|jautr|kantr|drąs|santūr|nuošird|šveln|saug|stipr|užsispyr|kruopšt)$/.test(s);
+    if (/nuošird$/.test(s)) return 'nuoširdžiai';
+    return s + (soft ? 'iai' : 'ai');
+  };
   return String(t)
     // „Abu jaučiate“ / „jūs abu esate“ → „Jaučiate“ / „jūs esate“
     .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte|atės|otės|itės|ėtės))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
@@ -6218,7 +6231,18 @@ function poraNeutralText(t){
     .replace(new RegExp(`${V}kitą${end}`, 'g'), 'savo porą')
     .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
     .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
-    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros');
+    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros')
+    // Giminę rodantys būdvardžiai po „tapo/tampa/būti/būna/išlieka/jaučiasi“ → prieveiksmis
+    // („tapo atsargesnis“ → „ėmė elgtis atsargiau“, „natūralu būti šiltesniam ir atviresniam“ → „natūralu elgtis šilčiau ir atviriau“)
+    .replace(new RegExp(`${start}(tapo|tampa|tapti|būti|būna|išlieka|jaučiasi|jaučiatės)\\s+(${ADJ}(?:(?:,\\s+|\\s+ir\\s+)${ADJ})*)${end}`, 'g'), (m, v, list, off, all) => {
+      // „linija tapo ryškesnė“, „ryšys tampa stipresnis“ — būdvardis derinamas su daiktu, ne su žmogumi: nekeičiame
+      const prev = (all.slice(0, off).match(new RegExp(`([${L}]+)\\s*$`)) || [])[1] || '';
+      if (/^(tapo|tampa|būna|išlieka)$/.test(v) && /(as|is|ys|us|a|ė|ai|os|ės|iai|tis|uo)$/.test(prev) && !/^[A-ZĄČĘĖĮŠŲŪŽ]/.test(prev) && !/^(kartu|labiau|vis|dar|daug|gerokai|kur|kai|jei|ir|bet|o|tad|todėl|tik|jau|ilgainiui|laikui|metams)$/.test(prev)) return m;
+      const adv = list.replace(new RegExp(ADJ, 'g'), w => toAdv(w));
+      if (v === 'jaučiasi' || v === 'jaučiatės') return v + ' ' + adv;
+      const V2 = { tapo: 'ėmė elgtis', tampa: 'ima elgtis', tapti: 'pradėti elgtis', būti: 'elgtis', būna: 'elgiasi', išlieka: 'elgiasi' };
+      return V2[v] + ' ' + adv;
+    });
 }
 function poraNeutralResult(r){
   const f=t=>typeof t==='string'?poraNeutralText(t):t;
