@@ -475,10 +475,19 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .home-testi i{font-family:'Playfair Display',serif}
 .home-testi .nm{color:rgba(255,255,255,.4)}
 /* „Sužinok savo atsakymus“ — šiek tiek didesnis (fitPayScreen suspaudžia, jei netelpa) */
-#info-qs>div>span:nth-child(2){font-size:12px!important;line-height:1.3!important}
-#info-qs>div>div:first-child{width:22px!important;height:22px!important}
-#info-qs>div>div:first-child svg{width:11px;height:11px}
-#info-qs>div{gap:10px!important}
+#info-qs>div>span:nth-child(2){font-size:14px!important;line-height:1.3!important}
+#info-qs>div>div:first-child{width:26px!important;height:26px!important}
+#info-qs>div>div:first-child svg{width:13px;height:13px}
+#info-qs>div{gap:12px!important}
+#info-qs>div>span:last-child{font-size:11px!important}
+#s-info .qs-head{font-size:12px!important;margin-bottom:8px!important}
+#s-info.pay-t1:not(.pay-t15) #info-qs>div{padding:6px 0!important}
+/* Jei didelis netelpa — ankstesnis dydis (12px), paskui dar mažesnis (pay-t2) */
+#s-info.pay-t15 #info-qs>div>span:nth-child(2){font-size:12px!important}
+#s-info.pay-t15 #info-qs>div>div:first-child{width:22px!important;height:22px!important}
+#s-info.pay-t15 #info-qs>div>div:first-child svg{width:11px;height:11px}
+#s-info.pay-t15 #info-qs>div{gap:10px!important}
+#s-info.pay-t15 .qs-head{font-size:10.5px!important;margin-bottom:6px!important}
 .qs-head .sample-link{white-space:nowrap}
 @media(max-width:370px){.qs-head{font-size:9.5px!important;letter-spacing:.1em!important;gap:6px!important}}
 #s-info.pay-t2 #info-qs>div>span:nth-child(2){font-size:11px!important;line-height:1.22!important}
@@ -6636,14 +6645,16 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     const home=document.getElementById('s-home'); if(!home||document.getElementById('promo-welcome')) return;
     const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
     n.innerHTML=q.kind==='duo'
-      ? '💞 Porų kaina — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
+      ? (q.forName
+        ? '💞 '+_xEsc(ltForms(q.forName).voc||q.forName)+', tavo asmeninė analizė porų kaina — <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
+        : '💞 Porų kaina — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
       : q.kind==='repeat'
       ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
       : '⏳ Tavo <b>−'+q.pct+' %</b> nuolaida galioja iki '+_ltTime(q.expiresAt);
     const rw=document.getElementById('ref-welcome'); if(rw) rw.remove();
     home.prepend(n);
     // Porų kaina: „Karle, tavo eilė — …“
-    if(q.kind==='duo'){ try{ const duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null');
+    if(q.kind==='duo'&&!q.forName){ try{ const duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null');
       if(duo){ const o=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json();
         const nm=duo.side==='a'?o.nameA:o.nameB; if(nm) n.innerHTML='💞 '+_xEsc(ltForms(nm).voc)+', tavo eilė — asmeninė analizė porų kaina <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt); } }catch(e){} }
   }catch(e){}
@@ -6747,10 +6758,11 @@ async function loadCompare(){
 function fitPayScreen(){
   const si=document.getElementById('s-info'), tr=document.getElementById('pay-trust-row');
   if(!si||!tr||!si.classList.contains('active')) return;
-  si.classList.remove('pay-t1','pay-t2'); if(window._payOY){ document.body.style.overflowY=''; window._payOY=false; }
+  si.classList.remove('pay-t1','pay-t15','pay-t2'); if(window._payOY){ document.body.style.overflowY=''; window._payOY=false; }
   const bottom=()=>{ let y=0,e=tr; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y+tr.offsetHeight; };
   const over=()=>bottom()>window.innerHeight-6;
   if(over()) si.classList.add('pay-t1');
+  if(over()) si.classList.add('pay-t15');
   if(over()) si.classList.add('pay-t2');
   if(over()){ document.body.style.overflowY='auto'; window._payOY=true; }
 }

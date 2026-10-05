@@ -4410,10 +4410,21 @@ function cleanupPromos() {
 // Be užklausų ribos: tik skaito, o 8 ženklų kodų atspėti praktiškai neįmanoma
 app.get('/promo/check', (req, res) => {
   const code = normalizePromoCode(req.query.code);
-  const p = code && loadPromos().codes[code];
+  const s = code && loadPromos();
+  const p = s && s.codes[code];
   if (!p) return res.json({ valid: false });
   const valid = !p.usedBy && Date.now() <= p.expiresAt;
-  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS });
+  // Porų kaina: kam skirtas kodas (vardas iš porų užsakymo) — kad ir per „Nusiųsti“ nuorodą pasisveikintume vardu
+  let forName = '';
+  if (p.kind === 'duo') {
+    try {
+      const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('duo:'));
+      const m = key && key.match(/^duo:(.+):(a|b)$/);
+      const o = m && loadPoraOrders()[m[1]];
+      if (o) forName = (m[2] === 'a' ? o.nameA : o.nameB) || '';
+    } catch (e) {}
+  }
+  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}) });
 });
 
 // Pasiūlymai rezultato ekrane apmokėjusiam klientui: −20 % dovana (24 val.) ir porų analizė rinkinio kaina
