@@ -3967,7 +3967,10 @@ function klScrollAfter(){
   const root=document.documentElement;
   if(!kl){ root.classList.remove('kl-boot'); return; }
   const boot=root.classList.contains('kl-boot');
-  window.scrollTo({top:Math.max(0,kl.getBoundingClientRect().bottom+window.scrollY-12),behavior:boot?'instant':'smooth'});
+  // Klausimų bloko apačia — ekrano viduryje: viršuje matosi klausimų blokas, apačioje — kas po juo
+  // (vieta skaičiuojama be atsiradimo animacijos poslinkio — offsetTop, ne getBoundingClientRect)
+  let y=kl.offsetHeight, e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; }
+  window.scrollTo({top:Math.max(0,y-Math.round(window.innerHeight/2)),behavior:boot?'instant':'smooth'});
   if(boot) requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('kl-boot')));
 }
 function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
