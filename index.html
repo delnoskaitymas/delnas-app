@@ -6157,7 +6157,9 @@ async function renderDuoNext(){
   let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(e){}
   if(!duo) return;
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json(); }catch(e){ return; }
-  const other=duo.side==='a'?'b':'a', o=d&&d[other], name=other==='a'?d&&d.nameA:d&&d.nameB;
+  // Porų analizė daryta per nuorodą (skirtinguose telefonuose) — kiekvienas savo analizę daro savo telefone, kito eilės nesiūlome
+  if(!d||d.remote) return;
+  const other=duo.side==='a'?'b':'a', o=d[other], name=other==='a'?d.nameA:d.nameB;
   if(!o||o.used||!name) return;
   const f=ltForms(name), eur=c=>(c/100).toFixed(2).replace('.',',');
   box.innerHTML='<div style="margin:16px 16px 0;padding:16px;border:1px solid var(--gold);border-radius:14px;background:rgba(212,168,67,.08);text-align:center;box-shadow:0 0 14px rgba(212,168,67,.18)">'+
