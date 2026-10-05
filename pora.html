@@ -360,8 +360,11 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       window._promoCode = d.code;
       $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(d.poraPrice) + '</s>';
       const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
+      const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' });
       $('gift-note').innerHTML = d.kind === 'bundle'
         ? '<b>💞 Jums — rinkinio kaina ' + eur(price) + '</b><span>Kaip asmeninės analizės pirkėjui (vietoj ' + eur(d.poraPrice) + ')</span>'
+        : d.kind === 'repeat'
+        ? '<b>✦ Pakartotinė porų analizė −' + d.pct + ' %</b><span>Pažiūrėkite, kaip pasikeitė jūsų suderinamumas · galioja iki ' + day + '</span>'
         : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
       $('gift-note').classList.remove('hidden'); document.body.classList.add('has-note');
       $('remind-row').classList.add('hidden');
