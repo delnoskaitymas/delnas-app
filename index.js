@@ -3490,7 +3490,7 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     let base = null;
     try { base = (await stripe.prices.retrieve(ACTIVE_PRICE_ID)).unit_amount; } catch (e) {}
     const pub = p => ({ code: p.code, used: !!p.usedBy, expiresAt: p.expiresAt });
-    res.json({ price: PORA_DUO_CENTS, base, a: pub(a), b: pub(b), expiresAt: Math.min(a.expiresAt, b.expiresAt) });
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', expiresAt: Math.min(a.expiresAt, b.expiresAt) });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
     res.json({});
