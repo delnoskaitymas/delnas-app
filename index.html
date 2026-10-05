@@ -969,6 +969,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="rb-sec">💞 Jums dviem</div>
       <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami jūsų delnai: kas jus traukia, kaip bendraujate, kaip jūsų savybės dera tarpusavyje — su suderinamumo įverčiu procentais.</small></a>
     </div>
+    <div id="r-plan"></div>
     <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
@@ -3914,7 +3915,7 @@ function renderPalmsSideBySide(r){
 function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
-  // Priminimas po 3 mėnesių — atskira kortelė po „Klausk“
+  // Priminimas po 3 mėnesių — atskira kortelė pačiame gale (po vertinimo ir „Pasidalink“)
   const hPlan=(window._manoView||window._klView)?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
@@ -3932,8 +3933,8 @@ function renderResultExtra(r){
     '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymą — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
     '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
-  h+=hPlan;
   box.innerHTML=h;
+  { const pl=document.getElementById('r-plan'); if(pl) pl.innerHTML=hPlan; }
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   const rn=document.getElementById('ref-note'); if(rn) rn.style.display=payRef?'block':'none';
   // Klausimai apmokėti kartu su analize (payRef) arba įskaičiuoti į dovaną (gift:KODAS)
