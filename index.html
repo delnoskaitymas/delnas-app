@@ -217,6 +217,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .kl-email.hidden{display:none}
 .kl-btn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 15px 'DM Sans',sans-serif;box-shadow:0 0 22px rgba(212,168,67,.3)}
 .kl-btn[disabled]{opacity:.6}
+/* Porų rezultate pagrindinis — porų kainos mygtukas, todėl klausimų mygtukas kontūrinis */
+#pora-kl .kl-btn{background:transparent;border:1px solid var(--gold);color:var(--gold2);box-shadow:none;font-weight:700}
 .kl-err{display:none;color:#ffb3a0;font-size:12.5px;text-align:center;margin-top:8px}
 .kl-fine{font-size:11px;color:var(--muted);text-align:center;margin-top:9px}
 .px-row b{display:flex;align-items:center;gap:8px;font-size:14px;color:#f3e7c6;font-weight:700}
@@ -1088,7 +1090,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn" style="margin:0;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
+        <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti kitai porai →</a>
       </div>
     </div>
@@ -6187,7 +6189,7 @@ async function loadPoraDuo(){
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
     return o.used ? '<div style="font-size:12.5px;color:var(--gold2);padding:10px 0">✓ '+g+' analizė užsakyta</div>'
-      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)">'+g+' analizė — '+eur(d.price)+' € →</a>'+
+      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' analizė — '+eur(d.price)+' € →</a>'+
         '<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button></div>'; };
   box.innerHTML='<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>'+
     '<div style="display:flex;flex-direction:column;gap:12px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
