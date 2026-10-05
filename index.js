@@ -4394,6 +4394,16 @@ function markPromoUsed(code, ref) {
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
 const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Porų kaina' };
 function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
+// Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
+function duoForName(code) {
+  try {
+    const s = loadPromos();
+    const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('duo:'));
+    const m = key && key.match(/^duo:(.+):(a|b)$/);
+    const o = m && loadPoraOrders()[m[1]];
+    return o ? ((m[2] === 'a' ? o.nameA : o.nameB) || '') : '';
+  } catch (e) { return ''; }
+}
 function promoTag(p) {
   if (p.price) return `💞 ${PROMO_LABELS[p.kind] || 'Nuolaida'} — ${(p.price / 100).toFixed(2).replace('.', ',')} €`;
   return p.kind === 'repeat' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`;
@@ -4410,10 +4420,13 @@ function cleanupPromos() {
 // Be užklausų ribos: tik skaito, o 8 ženklų kodų atspėti praktiškai neįmanoma
 app.get('/promo/check', (req, res) => {
   const code = normalizePromoCode(req.query.code);
-  const p = code && loadPromos().codes[code];
+  const s = code && loadPromos();
+  const p = s && s.codes[code];
   if (!p) return res.json({ valid: false });
   const valid = !p.usedBy && Date.now() <= p.expiresAt;
-  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS });
+  // Porų kaina: kam skirtas kodas (vardas iš porų užsakymo) — kad ir per „Nusiųsti“ nuorodą pasisveikintume vardu
+  const forName = p.kind === 'duo' ? duoForName(code) : '';
+  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}) });
 });
 
 // Pasiūlymai rezultato ekrane apmokėjusiam klientui: −20 % dovana (24 val.) ir porų analizė rinkinio kaina
