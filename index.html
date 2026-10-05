@@ -255,6 +255,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .cmp-box .pr-cmp-ab .now{border-color:rgba(212,168,67,.6);background:rgba(212,168,67,.12)}
 .cmp-wait{text-align:center}
 .cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
+/* Grįžus iš klausimų — suskleistas klausimų blokas: patvirtinimas + „Užduoti dar 3 klausimus“ */
+.kl.kl-done > :not(.kl-done-box):not(.rs-label){display:none!important}
+.kl-done-box{display:none;text-align:center}.kl.kl-done .kl-done-box{display:block}
+.kl-done-ok{font-size:13px;color:var(--gold2);margin:2px 0 12px;line-height:1.5}
 .o-remind{margin:2px 4px 12px;text-align:center;font-family:'DM Sans',sans-serif}
 .o-remind span{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.45)}
 .o-remind button{background:none;border:none;padding:0;color:inherit;font:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.3);text-underline-offset:2px;cursor:pointer;white-space:nowrap}
@@ -947,11 +951,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Jis jau atkeliavo į tavo el. paštą PDF formatu.<br>Tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
     </div>
     <div id="r-extra"></div>
-    <div id="r-rate"></div>
-    <!-- Pasidalink, padovanok, jums dviem — vienas blokas, trys aiškios dalys -->
+    <!-- Porų suderinamumas — atskiras, ryškus blokas iškart po „Klausk“ (brangiausias pasiūlymas) -->
+    <div class="rs rs-std rs-reveal" id="r-pora-card" style="text-align:center">
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">💞 Jums dviem</div>
+      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami jūsų delnai: kas jus traukia, kaip bendraujate, kaip jūsų savybės dera tarpusavyje — su suderinamumo įverčiu procentais.</small></a>
+    </div>
+    <!-- Pasidalink ir padovanok -->
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);box-shadow:0 4px 16px rgba(0,0,0,.4);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:'Playfair Display',serif">Pasidalink, pakviesk ar padovanok</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5">Nustebink artimuosius savo stiprybėmis, padovanok delnų analizę arba sužinok, kaip derate poroje.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5">Nustebink artimuosius savo stiprybėmis, pakviesk draugus arba padovanok delnų analizę.</div>
 
       <div class="rb-sec">Pasidalink</div>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -966,10 +974,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-gift"><span class="rb-gi">💞</span><b>Porų suderinamumas</b><small>analizė porai + 3 klausimai</small><em>Padovanoti →</em></a>
       </div>
 
-      <div class="rb-sec">💞 Jums dviem</div>
-      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje? →</b><small>Palyginami jūsų delnai: kas jus traukia, kaip bendraujate, kaip jūsų savybės dera tarpusavyje — su suderinamumo įverčiu procentais.</small></a>
     </div>
     <div id="r-plan"></div>
+    <div id="r-rate"></div>
     <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
@@ -3968,10 +3975,18 @@ function klScrollAfter(){
   const root=document.documentElement;
   if(!kl){ root.classList.remove('kl-boot'); return; }
   const boot=root.classList.contains('kl-boot');
-  // Klausimų bloko apačia — ekrano viduryje: viršuje matosi klausimų blokas, apačioje — kas po juo
+  // Suskleidžiame klausimų bloką: patvirtinimas ir mygtukas užduoti daugiau klausimų
+  if(!kl.querySelector('.kl-done-box')){
+    const pora=kl.id==='pora-kl', b=document.createElement('div'); b.className='kl-done-box';
+    b.innerHTML='<div class="kl-done-ok">✓ Atsakymai atkeliaus ir į '+(pora?'jūsų':'tavo')+' el. paštą</div><button type="button" class="kl-btn">✦ Užduoti dar 3 klausimus — 4,99 €</button>';
+    b.querySelector('button').addEventListener('click',()=>{ kl.classList.remove('kl-done'); const q=kl.querySelector('textarea'); if(q) q.focus(); });
+    kl.appendChild(b);
+  }
+  kl.classList.add('kl-done');
+  // Suskleistas klausimų blokas — ekrano viršuje, po juo visas matosi kitas pasiūlymas
   // (vieta skaičiuojama be atsiradimo animacijos poslinkio — offsetTop, ne getBoundingClientRect)
-  let y=kl.offsetHeight, e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; }
-  window.scrollTo({top:Math.max(0,y-Math.round(window.innerHeight/2)),behavior:boot?'instant':'smooth'});
+  let y=0, e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; }
+  window.scrollTo({top:Math.max(0,y-16),behavior:boot?'instant':'smooth'});
   if(boot) requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('kl-boot')));
 }
 function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
