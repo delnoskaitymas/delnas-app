@@ -1077,7 +1077,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="kl-err" id="pora-kl-err"></div>
       <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div>
     </div>
-    <div id="pora-rate"></div>
+    <!-- Asmeninė analizė kiekvienam — pelningiausias pasiūlymas, iškart po „Klauskite“ (porų kaina abiem — /pora/offers) -->
+    <div id="pora-personal" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie jus atskirai?</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Asmeninis gyvenimo žemėlapis — 7 skyrių analizė pagal savo delnus.</div>
+      <div id="pora-duo"></div>
+      <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė →</a>
+    </div>
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -1085,11 +1091,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold2)">🎁 Padovanoti kitai porai →</a>
       </div>
     </div>
-    <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie kiekvieną atskirai?</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Asmeninis gyvenimo žemėlapis — 7 skyriai apie kiekvieną iš jūsų.</div>
-      <a href="/?utm_source=app&amp;utm_campaign=pora" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė →</a>
+    <!-- Priminimas porai po 6 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
+    <div id="pora-plan" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">✦ Po 6 mėnesių pažiūrėkite, kas pasikeitė</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Po 6 mėnesių atsiųsime vieną priminimą su <b style="color:var(--gold2)">−20 %</b> pakartotinei porų analizei.</div>
+      <button type="button" id="pora-plan-btn" class="btn" style="margin:0;background:transparent;border:1px solid var(--gold);color:var(--gold2)" onclick="poraPlanRemind()">✦ Priminti po 6 mėn.</button>
+      <div id="pora-plan-done" style="display:none;font-size:12.5px;color:var(--gold2);line-height:1.6;padding:6px 0"></div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:8px">Vienas laiškas. Atsisakyti galima bet kada.</div>
     </div>
+    <div id="pora-rate"></div>
     <div id="pora-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
@@ -6138,6 +6148,29 @@ function setupPoraKlausk(){
     })():null });
 }
 
+// Porų rezultate: asmeninė analizė kiekvienam porų kaina — du vienkartiniai kodai (/pora/offers)
+async function loadPoraDuo(){
+  const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
+  if(!box||!p.sid) return; box.innerHTML='';
+  let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
+  if(!d||!d.price||!d.a||!d.b) return;
+  const eur=c=>(c/100).toFixed(2).replace('.',',');
+  const one=(o,name)=>{ const g=poraEsc(ltForms(name||'').gen||name||'');
+    return o.used ? '<div style="font-size:12.5px;color:var(--gold2);padding:10px 0">✓ '+g+' analizė užsakyta</div>'
+      : '<a class="btn btn-gold" href="/?promo='+encodeURIComponent(o.code)+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none">'+g+' analizė — '+eur(d.price)+' € →</a>'; };
+  box.innerHTML='<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>'+
+    '<div style="display:flex;flex-direction:column;gap:8px">'+one(d.a,p.nameA)+one(d.b,p.nameB)+'</div>';
+  if(fb) fb.style.display='none';
+}
+async function poraPlanRemind(){
+  const p=window._pora||{}, btn=document.getElementById('pora-plan-btn'), done=document.getElementById('pora-plan-done');
+  if(!p.sid||!btn) return; btn.disabled=true; const t=btn.textContent; btn.textContent='Registruojama…';
+  try{
+    const r=await fetch('/pora/reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})}); const d=await r.json();
+    if(!r.ok||!d.ok) throw new Error(d.error||'');
+    btn.style.display='none'; done.textContent='✦ Priminsime po 6 mėnesių'+(d.email?' el. paštu '+d.email:'')+'.'; done.style.display='block';
+  }catch(e){ btn.disabled=false; btn.textContent=t; alert('Nepavyko užregistruoti priminimo. Bandykite dar kartą.'); }
+}
 // Lyčiai neutrali kalba — tas pats saugiklis kaip serveryje (poraNeutral), kad būtų pataisyti
 // ir anksčiau išsaugoti rezultatai: „abu jaučiate“ → „jaučiate“, „vienas kitą“ → „tarpusavyje“
 function poraNeutralText(t){
@@ -6194,6 +6227,7 @@ function renderPoraResult(r){
   const C=326.7, t0=performance.now();
   (function step(t){ const k=Math.min(1,(t-t0)/1600), e=1-Math.pow(1-k,3); arc.setAttribute('stroke-dashoffset',String(C*(1-pct/100*e))); lbl.textContent=Math.round(pct*e)+'%'; if(k<1) requestAnimationFrame(step); else lv.classList.add('on'); })(t0);
   renderRating('pora-rate','pora');
+  loadPoraDuo();
   setTimeout(poraReveal,100);
   poraSendEmail();
 }
@@ -6539,7 +6573,9 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     _promoSave({...d,kind:q.kind,pct:q.pct,exp:q.expiresAt});
     const home=document.getElementById('s-home'); if(!home||document.getElementById('promo-welcome')) return;
     const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
-    n.innerHTML=q.kind==='repeat'
+    n.innerHTML=q.kind==='duo'
+      ? '💞 Porų kaina — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+' €</b>, galioja iki '+_ltDay(q.expiresAt)
+      : q.kind==='repeat'
       ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
       : '⏳ Tavo <b>−'+q.pct+' %</b> nuolaida galioja iki '+_ltTime(q.expiresAt);
     const rw=document.getElementById('ref-welcome'); if(rw) rw.remove();

@@ -249,6 +249,7 @@ function isReminderBlacklisted(email) {
 // Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −20 %.
 function buildReminderMail(r) {
   const site = `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}`;
+  if (r.kind === 'pora') return buildPoraReminderMail(r, site);
   const saved = r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null;
   let link = site, btn = 'Nauja delnų analizė →', subtitle = 'Praėjo 3 mėnesiai nuo tavo delnų analizės';
   let body = 'Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.';
@@ -261,6 +262,17 @@ function buildReminderMail(r) {
   return {
     subject: `${r.name ? ltPhrase(r.name, 'voc') + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
     html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(ltPhrase(r.name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">${subtitle}</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">${body}</div><div style="text-align:center;margin-bottom:20px"><a href="${link}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">${btn}</a></div>${saved ? `<div style="text-align:center;margin-bottom:18px;font-size:12px"><a href="${site}/mano" style="color:#d4a843">Mano analizės</a></div>` : ''}<div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div>${EMAIL_FOOTER_HTML}</div>`
+  };
+}
+
+// Porų priminimas (po PORA_REMINDER_DAYS d.): kvietimas pakartotinei porų analizei su −REPEAT_PCT %
+function buildPoraReminderMail(r, site) {
+  const p = createPromo({ kind: 'repeat', product: 'pora', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat-pora:' + r.sessionId });
+  const names = r.nameA && r.nameB ? `${r.nameA} ir ${r.nameB}` : '';
+  const months = Math.round(PORA_REMINDER_DAYS / 30);
+  return {
+    subject: `${names ? escapeHtml(names) + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
+    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${names ? escapeHtml(names) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo ${months} mėnesiai nuo jūsų porų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Nufotografuokite delnus iš naujo ir pažiūrėkite, <b style="color:#f0d58a">kaip pasikeitė jūsų suderinamumas</b>. Pakartotinei porų analizei — <b style="color:#f0d58a">−${p.pct} %</b> (kodas galioja 30 dienų).</div><div style="text-align:center;margin-bottom:20px"><a href="${site}/pora?promo=${p.code}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Pažiūrėti, kas pasikeitė — −${p.pct} % →</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15)"><a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(245,238,216,.4);text-decoration:underline;font-size:11px">Nebenoriu gauti šių priminimų</a></div>${EMAIL_FOOTER_HTML}</div>`
   };
 }
 
@@ -2686,7 +2698,7 @@ function scheduleReminderFor(rawEmail, name, savedId) {
   // išsiunčiamas TIK praėjus 3 mėnesiams (žr. setInterval mechanizmą
   // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
   const reminders = loadReminders();
-  const ex = reminders.find(r => (r.email || '').toLowerCase() === email);
+  const ex = reminders.find(r => r.kind !== 'pora' && (r.email || '').toLowerCase() === email);
   if (ex) { if (savedId && ex.savedId !== savedId) { ex.savedId = savedId; saveReminders(reminders); } return 'exists'; }
   reminders.push({ email, name: name || '', ...(savedId ? { savedId } : {}), sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
   saveReminders(reminders);
@@ -3083,6 +3095,10 @@ const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
 const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
 const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1499', 10);
+// Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
+const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
+// Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
+const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '180', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
 // Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
 const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
@@ -3458,6 +3474,49 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
   } catch (err) {
     console.error('/pora/start klaida:', err);
     res.status(500).json({ error: 'Nepavyko pradėti analizės' });
+  }
+});
+
+// Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina — du vienkartiniai kodai (30 d.)
+app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
+  try {
+    const sessionId = req.body && req.body.sessionId;
+    if (!isValidCheckoutSessionId(sessionId)) return res.json({});
+    const o = loadPoraOrders()[sessionId];
+    if (!o || o.status !== 'done') return res.json({});
+    const email = isValidEmail(o.email) ? o.email : '';
+    const mk = side => createPromo({ kind: 'duo', product: 'asmenine', price: PORA_DUO_CENTS, ttlMs: 30 * DAY_MS, email, key: 'duo:' + sessionId + ':' + side });
+    const a = mk('a'), b = mk('b');
+    let base = null;
+    try { base = (await stripe.prices.retrieve(ACTIVE_PRICE_ID)).unit_amount; } catch (e) {}
+    const pub = p => ({ code: p.code, used: !!p.usedBy, expiresAt: p.expiresAt });
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a), b: pub(b), expiresAt: Math.min(a.expiresAt, b.expiresAt) });
+  } catch (err) {
+    console.error('/pora/offers klaida:', err.message);
+    res.json({});
+  }
+});
+
+// Porų priminimas po PORA_REMINDER_DAYS d. (vienas laiškas užsakovo el. paštu), užregistruojamas paspaudus mygtuką
+app.post('/pora/reminder', sensitiveLimiter, (req, res) => {
+  try {
+    const sessionId = req.body && req.body.sessionId;
+    if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    const o = loadPoraOrders()[sessionId];
+    if (!o || o.status !== 'done' || !isValidEmail(o.email)) return res.status(404).json({ error: 'Užsakymas nerastas' });
+    const email = String(o.email).trim().toLowerCase();
+    // Naujas aiškus sutikimas panaikina ankstesnį atsisakymą (kaip ir asmeniniuose priminimuose)
+    const bl = loadReminderBlacklist(), i = bl.indexOf(email);
+    if (i !== -1) { bl.splice(i, 1); saveReminderBlacklist(bl); }
+    const rem = loadReminders();
+    if (rem.some(r => r.kind === 'pora' && r.sessionId === sessionId)) return res.json({ ok: true, exists: true, email });
+    rem.push({ kind: 'pora', sessionId, email, nameA: o.nameA || '', nameB: o.nameB || '', sendAt: Date.now() + PORA_REMINDER_DAYS * DAY_MS, createdAt: Date.now() });
+    saveReminders(rem);
+    statInc('pora_reminder');
+    res.json({ ok: true, email });
+  } catch (err) {
+    console.error('/pora/reminder klaida:', err.message);
+    res.status(500).json({ error: 'Nepavyko užregistruoti priminimo' });
   }
 });
 
@@ -4185,7 +4244,7 @@ app.get('/testimonials', (req, res) => {
 });
 
 // Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
-const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano'];
+const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder'];
 let _statsBuf = null, _statsTimer = null;
 function statInc(ev) {
   if (!STAT_EVENTS.includes(ev)) return;
@@ -4228,7 +4287,7 @@ app.get('/admin/stats', (req, res) => {
   const groups = [
     ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
-    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys']]]
+    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];
   const allCols = groups.flatMap(g => g[1]);
   const sum = {}; days.forEach(d => allCols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
@@ -4308,9 +4367,12 @@ function markPromoUsed(code, ref) {
   if (p && !p.usedBy) { p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind); }
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
-const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė' };
+const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Porų kaina' };
 function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
-function promoTag(p) { return p.kind === 'repeat' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`; }
+function promoTag(p) {
+  if (p.price) return `💞 ${PROMO_LABELS[p.kind] || 'Nuolaida'} — ${(p.price / 100).toFixed(2).replace('.', ',')} €`;
+  return p.kind === 'repeat' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`;
+}
 function cleanupPromos() {
   try {
     const s = loadPromos(), cut = Date.now() - 30 * DAY_MS; let changed = false;
@@ -4652,7 +4714,11 @@ app.post('/mano/delete', sensitiveLimiter, (req, res) => {
     const orders = type === 'pora' ? loadPoraOrders() : loadKlauskOrders(), o = orders[key];
     if (!o || (o.email || '').toLowerCase() !== email) return res.status(404).json({ error: 'Įrašas nerastas' });
     delete orders[key];
-    if (type === 'pora') { savePoraOrders(orders); try { deletePoraFirstPhotos(key); } catch (e) {} } else saveKlauskOrders(orders);
+    if (type === 'pora') {
+      savePoraOrders(orders); try { deletePoraFirstPhotos(key); } catch (e) {}
+      const rem = loadReminders(), left = rem.filter(r => !(r.kind === 'pora' && r.sessionId === key));
+      if (left.length !== rem.length) saveReminders(left);
+    } else saveKlauskOrders(orders);
     console.log(`[mano] ištrintas ${type === 'pora' ? 'porų užsakymas' : 'klausimų užsakymas'} ${key}`);
     return res.json({ ok: true });
   }
