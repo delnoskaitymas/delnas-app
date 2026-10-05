@@ -3211,6 +3211,19 @@ function smartTrim(t, max) {
 // Porų tekstų saugiklis: giminę rodančios formos apie porą („abu jaučiate“, „vienas kitą“) → neutralios
 function poraNeutral(t) {
   const L = 'a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ', end = `(?![${L}])`, start = `(?<![${L}])`, V = `${start}(?:vienas|viena)\\s+`;
+    // Lyginamojo laipsnio („atsargesnis/-ė/-iam/-ei“) ir dažniausi charakterio būdvardžiai apie žmogų
+  const POS = 'atsarg|atvir|ram|jautr|uždar|šilt|kantr|drąs|santūr|nuošird|šveln|savarankišk|saug|laiming|stipr|tyl|lėt|greit|užsispyr|ryžting|kruopšt|spontanišk|praktišk|emocing|impulsyv|stabil|lankst|dėmesing|rūpesting|užtikrint|atsidav|ištikim|nepriklausom';
+  const ADJ = `(?:[${L}]+esn(?:is|ė|io|ės|iam|ei|į|ę|iu|e|iems|ėms|i|ios)|(?:${POS})(?:us|i|as|a|iam|am|ūs|ios|os|iai|ai|iems|ėms|ems|oms))(?![${L}])`;
+  const toAdv = w => {
+    let s = w.replace(new RegExp(`esn[${L}]*$`), '');
+    if (s !== w) { s = s.replace(/t$/, 'č').replace(/d$/, 'dž'); return s + 'iau'; }
+    if (/ai$/.test(w)) return w;
+    s = w.replace(/(us|ūs|iam|iems|ėms|i|ios)$/, '');
+    if (s === w) s = w.replace(/(ems|oms|as|am|a|os)$/, '');
+    const soft = /(atsarg|ram|jautr|kantr|drąs|santūr|nuošird|šveln|saug|stipr|užsispyr|kruopšt)$/.test(s);
+    if (/nuošird$/.test(s)) return 'nuoširdžiai';
+    return s + (soft ? 'iai' : 'ai');
+  };
   return String(t)
     // „Abu jaučiate“ / „jūs abu esate“ → „Jaučiate“ / „jūs esate“
     .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte|atės|otės|itės|ėtės))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
@@ -3222,7 +3235,18 @@ function poraNeutral(t) {
     .replace(new RegExp(`${V}kitą${end}`, 'g'), 'savo porą')
     .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
     .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
-    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros');
+    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros')
+    // Giminę rodantys būdvardžiai po „tapo/tampa/būti/būna/išlieka/jaučiasi“ → prieveiksmis
+    // („tapo atsargesnis“ → „ėmė elgtis atsargiau“, „natūralu būti šiltesniam ir atviresniam“ → „natūralu elgtis šilčiau ir atviriau“)
+    .replace(new RegExp(`${start}(tapo|tampa|tapti|būti|būna|išlieka|jaučiasi|jaučiatės)\\s+(${ADJ}(?:(?:,\\s+|\\s+ir\\s+)${ADJ})*)${end}`, 'g'), (m, v, list, off, all) => {
+      // „linija tapo ryškesnė“, „ryšys tampa stipresnis“ — būdvardis derinamas su daiktu, ne su žmogumi: nekeičiame
+      const prev = (all.slice(0, off).match(new RegExp(`([${L}]+)\\s*$`)) || [])[1] || '';
+      if (/^(tapo|tampa|būna|išlieka)$/.test(v) && /(as|is|ys|us|a|ė|ai|os|ės|iai|tis|uo)$/.test(prev) && !/^[A-ZĄČĘĖĮŠŲŪŽ]/.test(prev) && !/^(kartu|labiau|vis|dar|daug|gerokai|kur|kai|jei|ir|bet|o|tad|todėl|tik|jau|ilgainiui|laikui|metams)$/.test(prev)) return m;
+      const adv = list.replace(new RegExp(ADJ, 'g'), w => toAdv(w));
+      if (v === 'jaučiasi' || v === 'jaučiatės') return v + ' ' + adv;
+      const V2 = { tapo: 'ėmė elgtis', tampa: 'ima elgtis', tapti: 'pradėti elgtis', būti: 'elgtis', būna: 'elgiasi', išlieka: 'elgiasi' };
+      return V2[v] + ' ' + adv;
+    });
 }
 
 // Porų analizė su pakartojimu: jei AI atsakymas nukirptas, sugadintas JSON ar trūksta skyriaus —
@@ -3265,13 +3289,14 @@ KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
 
 TAISYKLĖS:
 - Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku.
+- LYČIAI NEUTRALI KALBA VISUOSE LAUKUOSE (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): žmonių lytis nežinoma. Apie žmogų ar apie jus NIEKADA nerašyk giminę rodančių būdvardžių, dalyvių ar įvardžių — nei paprastų, nei lyginamųjų (KLAIDA: „tapo atsargesnis“, „natūralu būti šiltesniam“, „jaučiasi saugi“, „yra rami“, „pavargusi“, „linkęs“, „jis/ji“, „būti atviresniems“). Rašyk veiksmažodžiu, prieveiksmiu ar daiktavardžiu: „ėmė elgtis atsargiau“, „natūralu šilčiau ir atviriau reikšti jausmus“, „jaučiasi saugiai“, „būdinga ramybė“, „kai trūksta jėgų“. Būdvardžiai leidžiami tik apie daiktus („linija ilga“, „ryšys stiprus“).
 ${poraNameRules(A, B)}
 - Skyrių tekstuose (traukia…patarimai) PATIEMS fiziniams požymiams vietos neskirk — rašyk išvadas apie jų santykį. Fiziniai požymiai aprašomi TIK lauke „palyginimai“.
 - Tonas šiltas, pozityvus ir sąžiningas: trintis aprašyk kaip augimo galimybes, ne kaip grėsmes. Nieko nepranašauk apie išsiskyrimą, ligas ar nelaimes.
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
-${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“)? Jei yra — perrašyk neutraliai.\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“) — ir lentelėje, ir visuose kituose laukuose? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
 - Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
