@@ -98,7 +98,9 @@ body.form-view #v-redeem{margin-top:auto;margin-bottom:auto}
 #v-redeem .lead.sm{font-size:13.5px;line-height:1.5;margin:0 0 16px}
 #v-redeem .card-form{margin-top:0;padding:20px 18px 18px;border-radius:20px}
 #v-redeem label{font-size:11px;margin:0 0 8px;letter-spacing:.13em}
-.code-in{text-align:center;font:700 24px 'Courier New',monospace!important;letter-spacing:.2em;color:var(--gold2)!important;padding:14px!important;text-transform:uppercase}
+.code-in{text-align:left;font:700 24px 'Courier New',monospace!important;letter-spacing:.2em;color:var(--gold2)!important;padding:14px!important;text-transform:uppercase}
+/* Kodas („XXXX-XXXX“ = 9 simboliai) centruojamas atitraukimu, o ne text-align — kad žymeklis stovėtų kodo pradžioje, ne viduryje */
+.code-in{box-sizing:border-box;padding-left:max(14px,calc(50% - 4.5ch - .8em))!important}
 #v-redeem .btn{margin-top:14px;padding:15px;font-size:16.5px}
 #v-redeem .how-link{margin:14px auto 0;width:fit-content}
 /* Iš apačios išslenkantis langas */
@@ -804,10 +806,12 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   }
 
   // ---------- Kodo įvedimas ----------
-  $('r-code').addEventListener('input', () => {
-    // Automatinis formatavimas: didžiosios raidės + brūkšnelis po 4 simbolių
+  $('r-code').addEventListener('input', e => {
+    // Automatinis formatavimas: didžiosios raidės + brūkšnelis iškart po 4 simbolių
+    // (žymeklis peršoka per jį); trinant brūkšnelis nepridedamas iš naujo
+    const del = e && e.inputType && e.inputType.indexOf('delete') === 0;
     const raw = $('r-code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
-    $('r-code').value = raw.length > 4 ? raw.slice(0, 4) + '-' + raw.slice(4) : raw;
+    $('r-code').value = raw.length > 4 ? raw.slice(0, 4) + '-' + raw.slice(4) : (raw.length === 4 && !del ? raw + '-' : raw);
     $('r-err').style.display = 'none';
   });
   $('redeem-form').addEventListener('submit', async e => {
