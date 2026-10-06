@@ -6329,7 +6329,7 @@ function buildPoraPdfDoc(){
   doc.setFont('NotoSans','bold'); doc.setFontSize(26); doc.setTextColor(...GOLD2);
   doc.splitTextToSize(poraNames(), maxW).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=11; });
   y+=6; doc.setFontSize(46); doc.text((r.suderinamumas||0)+'%', W/2, y+10, {align:'center'}); y+=18;
-  doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('delnų suderinamumas', W/2, y, {align:'center'}); y+=7;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('suderinamumas', W/2, y, {align:'center'}); y+=7;
   doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(poraLevel(r.suderinamumas||0), W/2, y+1, {align:'center'}); y+=9;
   doc.setFont('NotoSans','normal'); doc.setTextColor(...MUTED);
   doc.setFontSize(10); doc.splitTextToSize('Įvertinta palyginus jūsų delnus: formą, linijas, kalnelius, pirštus ir kairiųjų bei dešiniųjų delnų skirtumus', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5; }); y+=5;
@@ -6454,7 +6454,7 @@ async function poraCardBlob(){
   const gr=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R); gr.addColorStop(0,'#fff0c4'); gr.addColorStop(.5,'#e0a930'); gr.addColorStop(1,'#8a5a0f');
   x.strokeStyle=gr; x.lineCap='round'; x.beginPath(); x.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*pct/100); x.stroke(); x.lineCap='butt';
   x.fillStyle='#f0c96a'; x.font="700 112px 'Playfair Display', serif"; x.fillText(pct+'%', cx, cy+24);
-  x.fillStyle='rgba(255,255,255,.6)'; x.font="400 24px 'DM Sans', sans-serif"; x.fillText('delnų', cx, cy+66); x.fillText('suderinamumas', cx, cy+96);
+  x.fillStyle='rgba(255,255,255,.6)'; x.font="400 24px 'DM Sans', sans-serif"; x.fillText('suderinamumas', cx, cy+80);
   x.fillStyle='#f0c96a'; x.font="italic 400 46px 'Playfair Display', serif"; x.fillText(poraLevel(pct), cx, 835);
   let y=900;
   if(false){
