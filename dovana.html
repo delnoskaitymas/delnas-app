@@ -359,7 +359,7 @@ body.form-view.tight #v-form .trust{display:none}
         <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
-      <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span> →</button>
+      <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
@@ -368,7 +368,7 @@ body.form-view.tight #v-form .trust{display:none}
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
     <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
     <h2 class="how">Kaip tai <em>veikia</em></h2>
-    <div class="how-sub">Braukite →</div>
+    <div class="how-sub">Braukite</div>
     <div class="slides" id="slides">
       <div class="slide">
         <div class="num">01</div>
@@ -417,7 +417,7 @@ body.form-view.tight #v-form .trust{display:none}
             <div class="qr" id="c-qr"></div>
             <div>
               <div class="code" id="c-code">XXXX-XXXX</div>
-              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#f5d061;font-weight:700;text-decoration:underline;text-decoration-color:#f5d061;text-decoration-thickness:1.5px;text-underline-offset:3px;white-space:nowrap">www.delnaskaitymas.lt/kodas&nbsp;↗</a> — <span id="c-how">nufotografuok delnus, mokėti nereikės.</span></div>
+              <div class="how">Nuskenuok QR arba įvesk kodą <a class="kodas-link" href="/kodas" style="color:#f5d061;font-weight:700;text-decoration:underline;text-decoration-color:#f5d061;text-decoration-thickness:1.5px;text-underline-offset:3px;white-space:nowrap">www.delnaskaitymas.lt/kodas</a> — <span id="c-how">nufotografuok delnus, mokėti nereikės.</span></div>
               <div class="exp" id="c-exp"></div>
             </div>
           </div>
@@ -445,7 +445,7 @@ body.form-view.tight #v-form .trust{display:none}
     <form class="card-form" id="redeem-form" novalidate>
       <label for="r-code">Dovanos kodas</label>
       <input type="text" id="r-code" class="code-in" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <button type="submit" class="btn" id="r-btn">Tęsti →</button>
+      <button type="submit" class="btn" id="r-btn">Tęsti</button>
       <div class="err" id="r-err"></div>
     </form>
     <a class="how-link" href="/dovana">🎁 Nori padovanoti kitam?</a>
@@ -613,7 +613,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';
-      btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + prices[kind] + '</span> →';
+      btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + prices[kind] + '</span>';
     }
   });
 
@@ -825,7 +825,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if (d.valid) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
       err.textContent = d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
     } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
-    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti →';
+    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti';
   });
 
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }

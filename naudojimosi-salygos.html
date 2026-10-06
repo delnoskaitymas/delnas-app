@@ -23,7 +23,7 @@
 </head>
 <body>
 <div class="wrap">
-  <a href="/?consent=1" class="back">← Grįžti atgal</a>
+  <a href="/?consent=1" class="back">Grįžti atgal</a>
   <h1>✦ Naudojimosi sąlygos</h1>
   <div class="updated">Paskutinį kartą atnaujinta: 2026 m. spalio mėn.</div>
 
@@ -157,7 +157,7 @@
 // „Grįžti atgal“ — atidarius iš porų užsakymo, dovanos, „Mano analizių“ ar klausimų (?is=…) grąžina ten, o ne į asmeninės analizės sutikimą
 (function(){
   const a=document.querySelector('a.back'); if(!a) return;
-  const is=new URLSearchParams(location.search).get('is'), back={pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano'}[is];
+  const is=new URLSearchParams(location.search).get('is'), back=is&&({pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano',app:'/?consent=1',pay:'/',impressum:'/impressum'}[is]||'/');
   if(!back) return;
   a.href=back;
   a.addEventListener('click',e=>{
