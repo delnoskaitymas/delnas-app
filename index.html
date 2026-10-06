@@ -6248,6 +6248,17 @@ function poraNeutralText(t){
     .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
     .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
     .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros')
+    // „Viena kitos įtaka“ sakinio pradžioje → „Jūsų tarpusavio įtaka“; „mokykitės viena iš kitos“ → „mokykitės iš savo poros“
+    .replace(new RegExp(`(^|[.!?]\\s+)Vien(?:a|as)\\s+(?:kitos|kito)\\s+`, 'g'), '$1Jūsų tarpusavio ')
+    .replace(new RegExp(`${V}iš\\s+(?:kito|kitos)${end}`, 'g'), 'iš savo poros')
+    // „X linkusi/linkęs planuoti“ → „X mėgsta planuoti“; „linkusi į aktyvumą“ → „labiau renkasi aktyvumą“
+    .replace(new RegExp(`${start}(?:linkusi|linkęs|linkusios|linkę)\\s+į\\s+`, 'g'), 'labiau renkasi ')
+    .replace(new RegExp(`${start}(?:linkusi|linkęs)\\s+(?=[${L}]+ti${end})`, 'g'), 'mėgsta ')
+    .replace(new RegExp(`${start}(?:linkusios|linkę)\\s+(?=[${L}]+ti${end})`, 'g'), 'mėgstate ')
+    // „tinka abiems“ → „tinka jums“
+    .replace(new RegExp(`${start}(tinka|svarbu|patinka|naudinga|reikia|patogu|gera)\\s+abiem(?:s)?${end}`, 'g'), '$1 jums')
+    // „pasitiki kito gebėjimais“, „su kito poreikiais“ → „… savo poros …“
+    .replace(new RegExp(`${start}(pasitiki|pasitikite|su|kartu\\s+su)\\s+kito\\s+`, 'g'), '$1 savo poros ')
     // Giminę rodantys būdvardžiai po „tapo/tampa/būti/būna/išlieka/jaučiasi“ → prieveiksmis
     // („tapo atsargesnis“ → „ėmė elgtis atsargiau“, „natūralu būti šiltesniam ir atviresniam“ → „natūralu elgtis šilčiau ir atviriau“)
     .replace(new RegExp(`${start}(tapo|tampa|tapti|būti|būna|išlieka|jaučiasi|jaučiatės)\\s+(${ADJ}(?:(?:,\\s+|\\s+ir\\s+)${ADJ})*)${end}`, 'g'), (m, v, list, off, all) => {
