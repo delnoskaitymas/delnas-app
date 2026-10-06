@@ -105,6 +105,8 @@ window._klBack = '';
 document.getElementById('back-link').addEventListener('click', e => {
   e.preventDefault();
   try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { if (typeof window.opener.klScrollAfter === 'function') window.opener.klScrollAfter(); window.opener.focus(); window.close(); } } catch (x) {}
+  // Atidaryta iš „Mano analizių“ — grįžtame į sąrašą
+  try { const mt = new URLSearchParams(location.search).get('mt'); if (mt && /^mt_[a-f0-9]{32}$/.test(mt)) { location.href = '/mano?t=' + encodeURIComponent(mt); return; } } catch (x) {}
   if (window._klBack) { location.href = window._klBack; return; }
   try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (x) {}
   location.href = '/';
@@ -173,6 +175,10 @@ document.getElementById('back-link').addEventListener('click', e => {
       }
       (d.qa || []).forEach(x => card(x, false));
       left = d.left; refresh();
+      if (location.hash === '#klausti' && left > 0) {
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (x) {}
+        setTimeout(() => { const w = $('ask-wrap'); let y = 0, el = w; while (el) { y += el.offsetTop; el = el.offsetParent; } window.scrollTo(0, Math.max(0, y - 70)); }, 150);
+      }
       // Klausimas, įrašytas rezultato ekrane prieš mokėjimą, užduodamas automatiškai (vieną kartą)
       let draft = null;
       try { draft = JSON.parse(localStorage.getItem('delnasKlDraft') || 'null'); localStorage.removeItem('delnasKlDraft'); } catch (e) {}
