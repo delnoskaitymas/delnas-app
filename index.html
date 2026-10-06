@@ -1083,7 +1083,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
     <!-- „Klauskite savo delnų“ porai — mokėjimas naujame skirtuke -->
     <div class="rs rs-std kl pr-rv" id="pora-kl">
       <div class="rs-label">✦ Klauskite savo delnų</div>
-      <div class="kl-txt">Turite klausimą apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų porų analize.</div>
+      <div class="kl-txt">Turite klausimą apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų poros analize.</div>
       <textarea class="kl-q" id="pora-kl-q" maxlength="400" rows="3" placeholder="Įrašykite savo klausimą…"></textarea>
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
       <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymą — 4,99 €</button>
@@ -5865,7 +5865,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       // Pradžios ekranas porų režimu — antraštė ir tekstas apie porą, ne apie asmeninį žemėlapį
       const hk=document.getElementById('home-kicker'), hh=document.getElementById('home-h1'), hl=document.getElementById('home-lead');
       if(hk) hk.textContent='Porų suderinamumas pagal delnus';
-      if(hh) hh.innerHTML='Jūsų porų<br><em class="gold">suderinamumas</em>';
+      if(hh) hh.innerHTML='Jūsų poros<br><em class="gold">suderinamumas</em>';
       if(hl) hl.textContent='Abiejų delnai atskleis, kas jus sieja, kaip jūsų savybės dera tarpusavyje ir kur verta susitarti.';
       // Porų režime — daugiskaita
       const ht=document.getElementById('home-time'), hm=document.getElementById('home-mano');
@@ -5880,7 +5880,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
         return;
       }
       note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
-        '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų porų suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
+        '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(poraNames())+(sid.startsWith('gp_')?' — jūsų poros suderinamumo dovana! 🎁':' — porų suderinamumas pagal delnus apmokėtas!')+'</div>'+
         '<div style="color:var(--muted);font-size:12px;margin-top:3px">Delnus fotografuokite paeiliui: pirmiausia <b style="color:var(--gold2)">'+poraEsc(window._pora.nameA)+'</b>, tada <b style="color:var(--gold2)">'+poraEsc(window._pora.nameB)+'</b>.</div>';
       const cta=document.getElementById('main-cta-btn');
       if(cta) cta.textContent='Pradėti fotografuoti';
@@ -5899,13 +5899,13 @@ function poraConsentTexts(){
   const L='color:#d4a843;text-decoration:underline';
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
   if(window._pora&&window._pora.remoteB){
-    set('consent-intro','✋ Paprašysime nufotografuoti tavo kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
+    set('consent-intro','✋ Paprašysime nufotografuoti tavo kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų poros suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
     set('consent-age-txt','Patvirtinu, kad man yra 18 metų, ir sutinku su delnų analize ir <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
     set('consent-wd-txt','Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo.');
     const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinku ir tęsiu ✦';
     return;
   }
-  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti jūsų kairiuosius ir dešiniuosius delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
+  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti jūsų kairiuosius ir dešiniuosius delnus — nuotraukos naudojamos tik jūsų poros suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
   set('consent-age-txt','Patvirtiname, kad mums yra 18 metų ir sutinkame su delnų analize ir su <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
   set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
   const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinkame ir tęsiame ✦';
@@ -5969,7 +5969,7 @@ function poraShowRemote(link,sent){
 }
 // auto=true — kviečiama iškart paruošus nuorodą; jei naršyklė siuntimo lango neatveria, lieka auksinis mygtukas
 async function poraShareRemote(auto){
-  const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus — sužinosime mūsų porų suderinamumą:';
+  const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus — sužinosime mūsų poros suderinamumą:';
   try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url:p.remoteLink }); poraRemoteState(true); return; } }
   catch(e){ if(auto||(e&&e.name==='AbortError')) return; }
   if(!auto) poraCopyRemote(document.getElementById('pr-remote-copy'));
@@ -6006,7 +6006,7 @@ function poraShowError(msg){
 // ir bendru ratuku prie procentų, pabaigoje — varnelės, 100 % ir išblukimas.
 const PORA_MICRO1=['Tikrinamos visos keturios delnų nuotraukos...','Nustatoma jūsų delnų forma ir proporcijos...','Lyginamas jūsų pirštų ilgis ir padėtis...','Atpažįstamos pagrindinės jūsų delnų linijos...','Lyginami jūsų kairieji ir dešinieji delnai...'];
 const PORA_MICRO2=['Tyrinėjamos jūsų širdies linijos ir jausmai...','Lyginama, kaip reiškiate savo jausmus...','Tyrinėjamos jūsų galvos linijos ir mąstymas...','Lyginamas jūsų mąstymo ir sprendimų stilius...','Tyrinėjamos jūsų gyvenimo linijų kryptys...','Lyginamas jūsų gyvenimo tempas ir ritmas...','Ieškoma sąsajų tarp jūsų likimo linijų...','Lyginami ryškiausi jūsų delnų kalneliai...','Ieškoma, kur jūsų bruožai aiškiai sutampa...','Ieškoma, kaip gerai derate tarpusavyje...','Vertinamos šešios jūsų santykių sritys...','Skaičiuojama, kiek jūs derate tarpusavyje...','Lyginamas jūsų jausmų gylis ir raiška...','Vertinama, kaip rodote rūpestį savo porai...','Ieškoma bendrų jūsų vertybių ir tikslų...','Lyginamas jūsų požiūris į finansinę gerovę...','Vertinama, kaip kartu kuriate namų jaukumą...','Lyginami jūsų ateities planai ir siekiai...','Tyrinėjamos jūsų likimo linijos ir kryptis...','Ieškoma, kas jus stipriausiai traukia...','Lyginama, kaip sprendžiate savo nesutarimus...','Vertinamas jūsų kasdienio bendravimo ritmas...','Ieškoma, kur jums verta aiškiau susitarti...','Lyginami jūsų kasdieniai įpročiai ir tempas...','Atskleidžiamos jūsų poros stipriosios pusės...'];
-const PORA_MICRO3=['Ruošiami asmeniniai patarimai jūsų porai...','Rengiamos galutinės jūsų analizės išvados...','Baigiama ruošti visą jūsų porų analizę...','Tikrinamas kiekvienas jūsų analizės skyrius...','Ruošiamas jūsų porų rezultatų ekranas...','Ruošiamos įžvalgos kiekvienai jūsų sričiai...','Tikslinamas jūsų porų suderinamumo įvertis...','Dedami paskutiniai jūsų analizės štrichai...','Peržiūrimi visi septyni analizės skyriai...','Jūsų porų analizė jau beveik paruošta...'];
+const PORA_MICRO3=['Ruošiami asmeniniai patarimai jūsų porai...','Rengiamos galutinės jūsų analizės išvados...','Baigiama ruošti visą jūsų poros analizę...','Tikrinamas kiekvienas jūsų analizės skyrius...','Ruošiamas jūsų poros rezultatų ekranas...','Ruošiamos įžvalgos kiekvienai jūsų sričiai...','Tikslinamas jūsų poros suderinamumo įvertis...','Dedami paskutiniai jūsų analizės štrichai...','Peržiūrimi visi septyni analizės skyriai...','Jūsų poros analizė jau beveik paruošta...'];
 function poraStopProgress(){
   window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
   const sp=document.getElementById('pora-spinner'); if(sp) sp.style.display='none';
@@ -6062,7 +6062,7 @@ function poraFinishProgress(done){
   poraStopProgress();
   const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct'), txt=document.getElementById('pora-wait-txt'), scr=document.getElementById('s-pora-wait');
   for(let n=1;n<=6;n++) activateStep(n,true,0,'pls');
-  txt.style.opacity='1'; txt.textContent='Jūsų porų suderinamumas paruoštas ✦';
+  txt.style.opacity='1'; txt.textContent='Jūsų poros suderinamumas paruoštas ✦';
   const STEP_MS=40, startPct=window._poraPct||94; let cur=startPct;
   pbar.style.transition='width '+STEP_MS+'ms linear';
   (function count(){ if(cur>=100) return; cur++; pct.textContent=cur+'%'; pbar.style.width=cur+'%'; setTimeout(count,STEP_MS); })();
@@ -6162,7 +6162,7 @@ function setupPoraKlausk(){
       const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
       const d=await r.json(); if(!r.ok||!d.id) return null;
       const blk=document.getElementById('pora-kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų porų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       btn.textContent='Gauti atsakymą →';
       return '/klausk?s='+d.id;
     })():null });
@@ -6468,7 +6468,7 @@ async function poraCardBlob(){
 }
 async function poraShareCard(){
   const url='https://www.delnaskaitymas.lt/pora';
-  const text='Mūsų porų suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
+  const text='Mūsų poros suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
   try{
     const blob=await poraCardBlob(), file=new File([blob],'poru-suderinamumas.jpg',{type:'image/jpeg'});
     if(navigator.share){
@@ -6688,7 +6688,7 @@ async function loadResultOffers(){
   if(pora){
     if(d.bundleGift&&d.bundleGift.status==='active'){
       pora.href=d.bundleGift.link;
-      pora.querySelector('b').textContent='Jūsų porų analizė jau apmokėta — pradėti →';
+      pora.querySelector('b').textContent='Jūsų poros analizė jau apmokėta — pradėti →';
       pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
     } else if(d.bundle&&!pora.querySelector('.rb-deal')){
       pora.href='/pora?promo='+encodeURIComponent(d.bundle.code)+'&utm_source=app&utm_campaign=rinkinys';
