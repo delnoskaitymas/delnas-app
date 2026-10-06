@@ -122,10 +122,10 @@
   <p style="margin-top:32px"><em>Žr. taip pat: <a href="/naudojimosi-salygos">Naudojimosi sąlygas</a></em></p>
 </div>
 <script>
-// „Grįžti atgal“ — atidarius iš porų užsakymo ar dovanos (?is=pora|dovana) grąžina ten, o ne į asmeninės analizės sutikimą
+// „Grįžti atgal“ — atidarius iš porų užsakymo, dovanos, „Mano analizių“ ar klausimų (?is=…) grąžina ten, o ne į asmeninės analizės sutikimą
 (function(){
   const a=document.querySelector('a.back'); if(!a) return;
-  const is=new URLSearchParams(location.search).get('is'), back={pora:'/pora',dovana:'/dovana'}[is];
+  const is=new URLSearchParams(location.search).get('is'), back={pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano'}[is];
   if(!back) return;
   a.href=back;
   a.addEventListener('click',e=>{
