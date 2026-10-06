@@ -98,7 +98,7 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 <a class="home-back" href="/">Pradžia</a>
 <script>
 // Grįžimas į tą pradžios puslapį, iš kurio atėjo (pvz. porų dovanos nuoroda ?pora=…), kad dovana nedingtų
-document.addEventListener('DOMContentLoaded',()=>{ try{ const h=sessionStorage.getItem('delnasHome'); if(h&&/^\/(index\.html)?\?pora=[A-Za-z0-9_]+(&partneris=1)?$/.test(h)) document.querySelectorAll('a.home-back,.brand a').forEach(a=>a.setAttribute('href',h)); }catch(e){} });
+document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.getItem('delnasHome'); if(!h){ const l=JSON.parse(localStorage.getItem('delnasHome')||'null'); if(l&&l.h&&Date.now()-l.at<30*864e5) h=l.h; } if(h&&/^\/(index\.html)?\?pora=[A-Za-z0-9_]+(&partneris=1)?$/.test(h)) document.querySelectorAll('a.home-back,.brand a').forEach(a=>a.setAttribute('href',h)); }catch(e){} });
 </script>
 <div class="wrap">
   <div class="brand"><a href="/">DELNAS</a></div>

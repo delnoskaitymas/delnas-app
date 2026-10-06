@@ -5837,7 +5837,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   let sid=null;
   try{ sid=new URLSearchParams(location.search).get('pora'); }catch(e){}
   // Ne porų puslapis — pamirštame porų pradžios nuorodą („Mano analizės“ → „← Pradžia“ ves į /)
-  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){ if(!new URLSearchParams(location.search).get('mano')) try{ sessionStorage.removeItem('delnasHome'); }catch(e){} return; }
+  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){ if(!new URLSearchParams(location.search).get('mano')) try{ sessionStorage.removeItem('delnasHome'); localStorage.removeItem('delnasHome'); }catch(e){} return; }
   window._pora={ sid, nameA:'', nameB:'', stage:0, photos:[], active:false };
   const home=document.getElementById('s-home');
   const note=document.createElement('div');
@@ -5871,7 +5871,8 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       const ht=document.getElementById('home-time'), hm=document.getElementById('home-mano');
       if(ht) ht.textContent='⏱ Užtruksite tik kelias minutes';
       if(hm) hm.innerHTML='Jau darėte analizę? <b>Mano analizės</b>';
-      try{ sessionStorage.setItem('delnasHome',location.pathname+location.search); }catch(e){}
+      // Įsimenama ir localStorage — kad „Mano analizių“ nuoroda iš el. laiško (naujas skirtukas) grąžintų čia
+      try{ sessionStorage.setItem('delnasHome',location.pathname+location.search); localStorage.setItem('delnasHome',JSON.stringify({h:location.pathname+location.search,at:Date.now()})); }catch(e){}
       if(window._pora.remoteB){
         note.innerHTML='<div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div>'+
           '<div style="color:var(--gold2);font-size:14px;font-weight:600">'+poraEsc(window._pora.nameA)+' jau nufotografavo savo delnus 💞</div>'+
@@ -6270,6 +6271,8 @@ function poraNeutralResult(r){
 }
 function renderPoraResult(r){
   try{ poraNeutralResult(r); }catch(e){}
+  // Analizė baigta — „Mano analizių“ „Pradžia“ šios poros pradžios ekrano nebeprimena
+  try{ const l=JSON.parse(localStorage.getItem('delnasHome')||'null'), sid=(window._pora||{}).sid; if(l&&sid&&String(l.h).indexOf(sid)>=0) localStorage.removeItem('delnasHome'); }catch(e){}
   window._poraResult=r;
   try{ const sid=(window._pora||{}).sid||''; if(window.delnasSrcBuy&&sid&&!sid.startsWith('gp_')) window.delnasSrcBuy('pora',sid); }catch(e){}
   setTimeout(setupPoraKlausk,0);
