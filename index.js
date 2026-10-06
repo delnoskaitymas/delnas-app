@@ -4691,7 +4691,7 @@ function manoItems(email) {
     .sort((a, b) => b.createdAt - a.createdAt)
     .map(x => ({ id: x.id, name: x.name || '', createdAt: x.createdAt, expiresAt: x.expiresAt, compare: !!(x.result && x.result.palyginimas) }));
   const poros = Object.entries(loadPoraOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.status === 'done')
-    .map(([id, o]) => ({ id, nameA: o.nameA || '', nameB: o.nameB || '', createdAt: o.finishedAt || o.createdAt || 0 }))
+    .map(([id, o]) => ({ id, nameA: o.nameA || '', nameB: o.nameB || '', pct: Math.round(Number(o.result && o.result.suderinamumas)) || null, createdAt: o.finishedAt || o.createdAt || 0 }))
     .sort((a, b) => b.createdAt - a.createdAt);
   const klausimai = Object.entries(loadKlauskOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.paid)
     .map(([id, o]) => ({ id, kind: o.kind || 'asmenine', name: o.name || '', count: (o.qa || []).length, createdAt: o.paidAt || o.createdAt || 0 }))
