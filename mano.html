@@ -39,6 +39,8 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .item .act{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .item a.open{color:#140f02;background:var(--gold);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
 .item button.del{background:none;border:none;color:var(--faint);font:400 11.5px 'DM Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:0}
+.gift-line{text-align:center;font-size:13px;color:var(--muted);margin-top:14px;line-height:1.6}
+.gift-line a{color:var(--gold2);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .empty{text-align:center;color:var(--muted);font-size:14px;line-height:1.6;margin:20px 0}
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.32);margin-top:26px;line-height:1.6}
 .fine a{color:rgba(212,168,67,.6)}
@@ -118,7 +120,8 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ const h=sessionStorage.g
   <section id="v-list" class="hidden">
     <p class="lead" id="list-lead"></p>
     <div id="list"></div>
-    <a class="btn" href="/">Nauja delnų analizė</a>
+    <a class="btn" id="next-btn" href="/">Nauja delnų analizė</a>
+    <div class="gift-line">🎁 Padovanoti: <a href="/dovana?utm_source=mano">gyvenimo žemėlapį</a> · <a href="/dovana?tipas=pora&amp;utm_source=mano">porų suderinamumą</a></div>
   </section>
 
   <p class="fine">Analizės saugomos be delnų nuotraukų: 90 dienų, o išsaugotos mygtuku „Išsaugoti ir priminti“ — 12 mėn. Ištrinti gali bet kada. · <a href="/privatumo-politika?is=mano">Privatumas</a> · info@delnaskaitymas.lt</p>
@@ -175,7 +178,18 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ const h=sessionStorage.g
     const first = (cats.find(c => c[2]) || cats[0])[0];
     const tabs = h ? '<div class="tabs" id="tabs">' + cats.map(c => '<button type="button" data-cat="' + c[0] + '"' + (c[0] === first ? ' class="on"' : '') + (c[2] ? '' : ' disabled') + '>' + c[1] + ' <i>' + c[2] + '</i></button>').join('') + '</div>' : '';
     $('list').innerHTML = h ? tabs + h : '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
-    const show = c => $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; });
+    // Pagrindinis mygtukas — pagal atidarytą skirtuką (klausimams — paskutinės tos rūšies analizės klausimų blokas)
+    const nb = $('next-btn');
+    const next = c => {
+      const lastA = d.analizes[0], lastP = d.poros[0];
+      let txt = 'Nauja delnų analizė', href = '/';
+      if (c === 'pora') { txt = 'Nauja porų analizė'; href = '/pora'; }
+      else if (c === 'kl' && lastA) { txt = 'Užduoti dar 3 klausimus'; href = '/?mano=' + encodeURIComponent(lastA.id) + '&t=' + encodeURIComponent(t) + '#klausti'; }
+      else if (c === 'klp' && lastP) { txt = 'Užduoti dar 3 klausimus'; href = '/?pora=' + encodeURIComponent(lastP.id) + '&mt=' + encodeURIComponent(t) + '#klausti'; }
+      else if (c === 'klp') { txt = 'Nauja porų analizė'; href = '/pora'; }
+      nb.textContent = txt; nb.href = href;
+    };
+    const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
     show(first);
     const tb = $('tabs');
     if (tb) tb.addEventListener('click', e => {
