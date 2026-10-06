@@ -6142,7 +6142,7 @@ function poraCompareHtml(r){
   // Blokas ir pirmasis palyginimas rodomi iškart (be animacijos), tolesni — atsiranda slenkant
   const items=PORA_CMP.filter(([k])=>pc[k]).map(([k,label],i)=>{ const c=pc[k];
     return '<div class="pr-cmp'+(i?' pr-rv':'')+'"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
-  return '<div class="pr-card"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė jūsų delnų palyginimas</div>'+items+'</div>';
+  return '<div class="pr-card"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė palyginimas</div>'+items+'</div>';
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
 function poraReveal(){
