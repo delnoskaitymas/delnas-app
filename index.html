@@ -6631,7 +6631,9 @@ async function redeemGiftAndProceed(){
 })();
 // Pirmiausia — šio skirtuko kodas (sessionStorage): atidarius kelias analizes iš karto, kodai nesusimaišo
 function _promoStored(){ for(const st of [sessionStorage,localStorage]){ try{ const d=JSON.parse(st.getItem('delnasPromo')||'null'); if(d&&d.c&&Date.now()-d.at<31*864e5) return d; }catch(e){} } return null; }
-function _promoSave(d){ for(const st of [sessionStorage,localStorage]){ try{ if(d) st.setItem('delnasPromo',JSON.stringify(d)); else st.removeItem('delnasPromo'); }catch(e){} } }
+// Porų kainos kodas skirtas vienam žmogui — laikomas tik šiame skirtuke (sessionStorage), kad tame pačiame
+// telefone nesimatytų kitiems užsakymams (pvz. kitai porai) ir nebūtų pritaikytas jų mokėjimui
+function _promoSave(d){ for(const st of [sessionStorage,localStorage]){ try{ if(d&&!(d.kind==='duo'&&st===localStorage)) st.setItem('delnasPromo',JSON.stringify(d)); else st.removeItem('delnasPromo'); }catch(e){} } }
 function getPromoCode(){ const d=_promoStored(); return d&&!d.used&&(!d.exp||Date.now()<d.exp)?d.c:''; }
 function _ltTime(ts){ try{ return new Date(ts).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
 // „šiandien 18:30“ arba „rytojaus 14:30“ — be tiksinčio laikmačio
@@ -6640,12 +6642,17 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
 // Kodo patikra ir pasveikinimas pradžios ekrane
 (async function promoWelcome(){
   const d=_promoStored(); if(!d) return;
+  let inTab=false; try{ inTab=!!sessionStorage.getItem('delnasPromo'); }catch(e){}
   try{
     const q=await (await fetch('/promo/check?code='+encodeURIComponent(d.c))).json();
     if(!q||q.product!=='asmenine'){ if(!q||!q.code) _promoSave(null); return; }
     if(q.kind==='repeat'&&q.used){ _promoSave({...d,kind:'repeat',used:true}); return; }
     if(!q.valid){ _promoSave(null); return; }
+    // Porų kaina — tik atėjus per jos nuorodą šiame skirtuke; seniau įsimintą (localStorage) pamirštame
+    if(q.kind==='duo'&&!inTab){ try{ localStorage.removeItem('delnasPromo'); }catch(e){} return; }
     _promoSave({...d,kind:q.kind,pct:q.pct,exp:q.expiresAt});
+    // Porų analizės, dovanos ar rezultato nuorodoje pasiūlymas asmeninei analizei nerodomas
+    try{ const u=new URLSearchParams(location.search); if(u.get('pora')||u.get('dovana')||u.get('session_id')||u.get('mano')||u.get('kl')) return; }catch(e){}
     const home=document.getElementById('s-home'); if(!home||document.getElementById('promo-welcome')) return;
     const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
     n.innerHTML=q.kind==='duo'
