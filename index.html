@@ -5899,15 +5899,15 @@ function poraConsentTexts(){
   const L='color:#d4a843;text-decoration:underline';
   const set=(id,h)=>{ const e=document.getElementById(id); if(e) e.innerHTML=h; };
   if(window._pora&&window._pora.remoteB){
-    set('consent-intro','✋ Paprašysime nufotografuoti tavo kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
-    set('consent-age-txt','Patvirtinu, kad man yra 18 metų, ir sutinku su delnų analize ir <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
+    set('consent-intro','✋ Paprašysime nufotografuoti tavo kairįjį ir dešinįjį delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
+    set('consent-age-txt','Patvirtinu, kad man yra 18 metų, ir sutinku su delnų analize ir <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
     set('consent-wd-txt','Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo.');
     const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinku ir tęsiu ✦';
     return;
   }
-  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti jūsų kairiuosius ir dešiniuosius delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika" target="_blank" style="'+L+'">Privatumo politika</a>).');
-  set('consent-age-txt','Patvirtiname, kad mums yra 18 metų ir sutinkame su delnų analize ir su <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
-  set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
+  set('consent-intro','✋ Paprašysime paeiliui nufotografuoti jūsų kairiuosius ir dešiniuosius delnus — nuotraukos naudojamos tik jūsų porų suderinamumo AI analizei ir po jos nesaugomos (<a href="/privatumo-politika?is=pora" target="_blank" style="'+L+'">Privatumo politika</a>).');
+  set('consent-age-txt','Patvirtiname, kad mums yra 18 metų ir sutinkame su delnų analize ir su <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">Naudojimosi sąlygomis</a>.');
+  set('consent-wd-txt','Sutinkame, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandame 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos?is=pora#pora" target="_blank" style="'+L+'">5b skyrių</a>).');
   const b=document.getElementById('consent-btn'); if(b) b.textContent='Sutinkame ir tęsiame ✦';
 }
 
