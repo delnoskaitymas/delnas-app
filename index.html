@@ -1061,7 +1061,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
   <div class="pr-hero" style="text-align:center;padding:40px 16px 18px">
     <div class="pr-halo"></div>
     <div class="pora-orbs pr-orbs" style="margin-bottom:18px"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div>
-    <div class="result-subtitle" style="margin-bottom:8px;font-size:14px">Porų suderinamumas pagal delnus</div>
+    <div class="result-subtitle" style="margin-bottom:8px;font-size:14px">Poros suderinamumas pagal delnus</div>
     <div class="result-name" id="pora-names"></div>
     <div class="pora-ring">
       <svg viewBox="0 0 120 120" width="124" height="124"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,168,67,.18)" stroke-width="8"/><circle id="pora-ring-arc" cx="60" cy="60" r="52" fill="none" stroke="url(#poraGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/><defs><linearGradient id="poraGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset=".5" stop-color="#e0a930"/><stop offset="1" stop-color="#8a5a0f"/></linearGradient></defs></svg>
@@ -6314,7 +6314,7 @@ function buildPoraPdfDoc(){
   dark(); registerPdfFonts(doc);
   let y=40;
   doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED);
-  doc.text('PORŲ SUDERINAMUMAS PAGAL DELNUS', W/2, y, {align:'center'}); y+=14;
+  doc.text('POROS SUDERINAMUMAS PAGAL DELNUS', W/2, y, {align:'center'}); y+=14;
   doc.setFont('NotoSans','bold'); doc.setFontSize(26); doc.setTextColor(...GOLD2);
   doc.splitTextToSize(poraNames(), maxW).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=11; });
   y+=6; doc.setFontSize(46); doc.text((r.suderinamumas||0)+'%', W/2, y+10, {align:'center'}); y+=18;
@@ -6423,7 +6423,7 @@ async function poraCardBlob(){
   const g=x.createRadialGradient(cx,560,40,cx,560,1000); g.addColorStop(0,'#1c150a'); g.addColorStop(1,'#000'); x.fillStyle=g; x.fillRect(0,0,W,1350);
   x.strokeStyle='rgba(212,168,67,.55)'; x.lineWidth=2; x.strokeRect(40,40,W-80,1270);
   x.textAlign='center';
-  x.fillStyle='#d4a843'; x.font="600 27px 'DM Sans', sans-serif"; x.fillText('PORŲ SUDERINAMUMAS PAGAL DELNUS', cx, 120);
+  x.fillStyle='#d4a843'; x.font="600 27px 'DM Sans', sans-serif"; x.fillText('POROS SUDERINAMUMAS PAGAL DELNUS', cx, 120);
   // Du delnai (programėlės ikona), persidengę
   const src=getHeroPhotoDataUrl(), oR=78;
   if(src){
