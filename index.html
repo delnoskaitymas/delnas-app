@@ -6744,6 +6744,22 @@ async function loadCompare(){
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
+// „Mano analizės“ → „Užduoti dar 3 klausimus“ (/?mano=…#klausti arba /?pora=…#klausti):
+// atsidarius rezultatui nuslenkama iki klausimų bloko
+(function klJump(){
+  if(location.hash!=='#klausti') return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active');
+    const kl=scr&&(scr.id==='s-result'?document.querySelector('#r-extra .kl'):scr.id==='s-pora-result'?document.getElementById('pora-kl'):null);
+    if(kl&&kl.offsetParent){
+      clearInterval(iv);
+      try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+      setTimeout(()=>{ kl.classList.add('visible','in'); let y=0,e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; } window.scrollTo({top:Math.max(0,y-16),behavior:'smooth'}); },700);
+    }
+    if(++n>80) clearInterval(iv);
+  },250);
+})();
+
 // „Mano analizės“: /?mano=ID&t=NUORODA — išsaugotos analizės peržiūra
 (function manoView(){
   const p=new URLSearchParams(location.search), id=p.get('mano'), t=p.get('t');
