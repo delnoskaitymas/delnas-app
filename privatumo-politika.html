@@ -125,7 +125,7 @@
 // „Grįžti atgal“ — atidarius iš porų užsakymo, dovanos, „Mano analizių“ ar klausimų (?is=…) grąžina ten, o ne į asmeninės analizės sutikimą
 (function(){
   const a=document.querySelector('a.back'); if(!a) return;
-  const is=new URLSearchParams(location.search).get('is'), back={pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano'}[is];
+  const is=new URLSearchParams(location.search).get('is'), back=is&&({pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano',app:'/?consent=1',pay:'/',impressum:'/impressum'}[is]||'/');
   if(!back) return;
   a.href=back;
   a.addEventListener('click',e=>{
