@@ -3265,7 +3265,7 @@ function poraNeutral(t) {
 async function runCoupleAnalysis(photos, nameA, nameB) {
   let last;
   for (let attempt = 1; attempt <= 2; attempt++) {
-    try { return await runCoupleAnalysisOnce(photos, nameA, nameB); }
+    try { return await poraNeutralPass(await runCoupleAnalysisOnce(photos, nameA, nameB), nameA, nameB); }
     catch (e) {
       last = e;
       console.log(`[pora] analizė nepavyko, bandymas ${attempt}/2: ${e.message}`);
@@ -3273,6 +3273,63 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
     }
   }
   throw last;
+}
+
+// ── Lyčiai neutralios kalbos peržiūra (antras AI užklausimas) ──
+// AI kartais iš vardų „nusprendžia“ lytį („Lina linkusi“, „jaučiatės sulaikoma“, „esate pasirengę“).
+// Taisyklių (poraNeutral) visiems atvejams nepakanka, todėl visi rezultato tekstai peržiūrimi dar kartą:
+// AI grąžina TIK tuos tekstus, kuriuose rado giminę rodančių formų apie žmones, perrašytus neutraliai.
+// Bet kokios klaidos atveju paliekamas originalas — analizė dėl to niekada nenukenčia.
+function poraTextSlots(r) {
+  const slots = [];
+  const add = (get, set) => { const v = get(); if (typeof v === 'string' && v.trim()) slots.push({ text: v, set }); };
+  for (const k of PORA_RESULT_KEYS) add(() => r[k], v => { r[k] = v; });
+  if (r.palyginimai) for (const k of Object.keys(r.palyginimai)) { const c = r.palyginimai[k]; if (c) for (const f of ['a', 'b', 'isvada']) add(() => c[f], v => { c[f] = v; }); }
+  if (r.izvalgos) for (const k of Object.keys(r.izvalgos)) { const arr = r.izvalgos[k]; if (Array.isArray(arr)) arr.forEach((_, i) => add(() => arr[i], v => { arr[i] = v; })); }
+  if (Array.isArray(r.poros_bruozai)) r.poros_bruozai.forEach((_, i) => add(() => r.poros_bruozai[i], v => { r.poros_bruozai[i] = v; }));
+  if (r.sritys) for (const k of Object.keys(r.sritys)) { const d = r.sritys[k]; if (d) for (const f of ['fraze', 'aprasymas']) add(() => d[f], v => { d[f] = v; }); }
+  return slots;
+}
+async function poraNeutralPass(r, nameA, nameB) {
+  try {
+    if (!r || !process.env.ANTHROPIC_API_KEY) return r;
+    const slots = poraTextSlots(r);
+    if (!slots.length) return r;
+    const list = slots.map((s, i) => `${i}: ${s.text}`).join('\n');
+    const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — porų delnų analizės tekstai apie ${nameA || 'pirmąjį žmogų'} ir ${nameB || 'antrąjį žmogų'}. Šių žmonių LYTIS NEŽINOMA: vardai nieko nereiškia, pora gali būti bet kokia.
+
+Rask tekstus, kuriuose apie ŽMONES (apie kurį nors iš jų ar apie juos kartu, „jūs“) pavartotos giminę rodančios formos, ir perrašyk tik tuos sakinius neutraliai, išlaikydamas prasmę, toną ir „jūs“ kreipinį:
+- būdvardžiai ir dalyviai apie žmogų ar „jūs“: „linkusi/linkęs“, „jaučiasi sulaikoma/varginamas“, „jaučiatės sulaikomi“, „esate pasirengę“, „stipresni“, „rami“, „atviras“, „pavargusi“, „skirtingais“ → rašyk veiksmažodžiu, prieveiksmiu ar daiktavardžiu („mėgsta“, „labiau renkasi“, „Linai trūksta laisvės“, „Moniką vargina per greitas tempas“, „jums netrūksta pasiryžimo“, „kartu esate stipresnė pora“);
+- „vienas kitą/kito“, „viena kitos“, „vienas iš jūsų… kitas…“, „abu“, „abi“, „abiem“, „abiems“, „kito“ (apie žmogų) → „tarpusavyje“, „jūsų tarpusavio“, „savo poros“, „jums“;
+- įvardžiai „jis“, „ji“, „jo“, „jos“, „jam“, „jai“, „pats“, „pati“ apie žmogų → vardas tinkamu linksniu arba perrašytas sakinys.
+Būdvardžiai apie daiktus („linija ilga“, „ryšys stiprus“, „delnai nufotografuoti“) — taisyklingi, jų NEKEISK. Vardų nekeisk. Neperrašinėk tekstų, kuriuose giminės apie žmones nėra. Kiekvieną pataisytą tekstą grąžink VISĄ.
+
+Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}.
+
+Tekstai:
+${list}`;
+    const resp = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] })
+    }, 120000);
+    const data = await resp.json();
+    if (!data || data.error || !data.content || data.stop_reason === 'max_tokens') return r;
+    let fixes;
+    try { fixes = JSON.parse('{' + data.content.map(b => b.text || '').join('')); } catch (e) { return r; }
+    r.neutralV = 1; // peržiūra įvyko (net jei taisyti nereikėjo)
+    let n = 0;
+    for (const [k, v] of Object.entries(fixes || {})) {
+      const s = slots[Number(k)];
+      if (!s || typeof v !== 'string' || !v.trim()) continue;
+      const len = v.trim().length, orig = s.text.length;
+      if (len < orig * 0.6 || len > orig * 1.6) continue; // saugiklis — neleidžiame stipriai pakeisti teksto
+      s.set(poraNeutral(v.trim()));
+      n++;
+    }
+    console.log(`[pora] neutralios kalbos peržiūra: pataisyta tekstų ${n}`);
+  } catch (e) { console.log('[pora] neutralios kalbos peržiūra nepavyko:', e.message); }
+  return r;
 }
 
 async function runCoupleAnalysisOnce(photos, nameA, nameB) {
@@ -4606,6 +4663,19 @@ function cleanupSaved() {
 }
 setInterval(() => { cleanupSaved(); cleanupPromos(); }, 6 * 60 * 60 * 1000);
 setTimeout(() => { cleanupSaved(); cleanupPromos(); }, 30 * 1000);
+// Anksčiau atliktos porų analizės — vieną kartą peržiūrimos dėl lyčiai neutralios kalbos (po vieną, fone)
+setTimeout(async function neutralizeOldPora() {
+  try {
+    const ids = Object.entries(loadPoraOrders()).filter(([, o]) => o.status === 'done' && o.result && !o.result.neutralV).map(([id]) => id);
+    for (const id of ids) {
+      const o = loadPoraOrders()[id];
+      if (!o || !o.result || o.result.neutralV) continue;
+      const r = await poraNeutralPass(JSON.parse(JSON.stringify(o.result)), o.nameA, o.nameB);
+      if (r.neutralV) updatePoraOrder(id, { result: r }); // nepavykus — bus bandoma po kito paleidimo
+      await new Promise(res => setTimeout(res, 5000));
+    }
+  } catch (e) { console.log('[pora] senų analizių peržiūra nepavyko:', e.message); }
+}, 60 * 1000);
 
 // Išsaugoti apmokėtą analizę (serveris ima rezultatą iš savo laikinos saugyklos — klientas jo nesiunčia)
 app.post('/save-analysis', sensitiveLimiter, async (req, res) => {
