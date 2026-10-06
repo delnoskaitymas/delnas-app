@@ -276,7 +276,7 @@ body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!impo
       <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Mums yra 18 metų ir sutinkame, kad būtų analizuojamos mūsų delnų nuotraukos. Sutinkame su <a href="/naudojimosi-salygos?is=pora" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=pora" target="_blank">Privatumo politika</a>.</span></label>
       <div class="chk2" id="remind-row"><span id="remind-txt">Jei užsakymą atidėtumėte, vieną kartą priminsime. <button type="button" id="f-noremind">Nereikia</button></span></div>
-      <button type="submit" class="btn" id="pay-btn" disabled>Užsakyti — <span id="price">19,99 €</span> →</button>
+      <button type="submit" class="btn" id="pay-btn" disabled>Užsakyti — <span id="price">19,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
@@ -286,7 +286,7 @@ body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!impo
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
     <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
     <h2 class="how">Kaip tai <em>veikia</em></h2>
-    <div class="how-sub">Braukite →</div>
+    <div class="how-sub">Braukite</div>
     <div class="slides" id="slides">
       <div class="slide">
         <div class="num">01</div>
@@ -396,7 +396,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
       $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
-      $('pay-btn').innerHTML = 'Pradėti →';
+      $('pay-btn').innerHTML = 'Pradėti';
       // „Kaip tai veikia“ — dovanos atveju mokėti nereikia
       $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
       $('how1-p').textContent = 'Įrašykite abu vardus ir el. paštą. Mokėti nereikia — porų suderinamumas jums padovanotas.';
