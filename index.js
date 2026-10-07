@@ -3098,7 +3098,7 @@ const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1499', 10);
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
 const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
 // Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
-const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '180', 10);
+const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '90', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
 // Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
 const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
