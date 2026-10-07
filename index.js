@@ -4339,6 +4339,8 @@ function readJson(file, def) { try { if (fs.existsSync(file)) return JSON.parse(
 function writeJson(file, data) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(data, null, 2)); fs.renameSync(tmp, file); }
 function feedbackToken(id) { return crypto.createHmac('sha256', ADMIN_KEY).update('fb:' + id).digest('hex').slice(0, 20); }
 
+// Atsiliepimo ilgis, kuris telpa vienoje eilutėje pradžios ir /pora ekranuose (naršyklė rodo tik tokius)
+const TESTI_MAX = 60;
 app.post('/feedback', sensitiveLimiter, (req, res) => {
   try {
     const { stars, text, allowPublic, name, kind } = req.body || {};
@@ -4354,7 +4356,10 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
     const id = crypto.randomBytes(8).toString('hex');
     const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
-    const approve = item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
+    // Svetainėje rodomi tik trumpi (iki TESTI_MAX ženklų) atsiliepimai — ilgiems patvirtinimo mygtuko nėra
+    const tooLong = t.length > TESTI_MAX;
+    const approve = item.allowPublic && st >= 4 && tooLong ? `<p style="color:#8a6d1f"><em>Per ilgas rodyti svetainėje (daugiau nei ${TESTI_MAX} ženklų).</em></p>`
+      : item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
     adminDigestAdd('ratings', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
@@ -4372,6 +4377,7 @@ app.get('/feedback/approve', (req, res) => {
   const fb = readJson(FEEDBACK_FILE, { items: [] });
   const it = fb.items.find(x => x.id === id);
   if (!it || !it.allowPublic) return res.status(404).send('Atsiliepimas nerastas');
+  if ((it.text || '').length > TESTI_MAX) return res.status(400).send('Atsiliepimas per ilgas rodyti svetainėje (daugiau nei ' + TESTI_MAX + ' ženklų)');
   it.approved = true; writeJson(FEEDBACK_FILE, fb);
   res.send('<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>✓ Atsiliepimas bus rodomas svetainėje</h2><p>„' + escapeHtml(it.text) + '“ — ' + escapeHtml(it.name || '') + '</p></div>');
 });
