@@ -6806,6 +6806,7 @@ function fitPayScreen(){
   const si=document.getElementById('s-info'), tr=document.getElementById('pay-trust-row');
   if(!si||!tr||!si.classList.contains('active')) return;
   si.classList.remove('pay-t1','pay-t15','pay-t16','pay-t2'); if(window._payOY){ document.body.style.overflowY=''; window._payOY=false; }
+  const qRows=[...document.querySelectorAll('#info-qs>div')]; qRows.forEach(r=>r.style.removeProperty('padding'));
   const bottom=()=>{ let y=0,e=tr; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y+tr.offsetHeight; };
   const over=()=>bottom()>window.innerHeight-6;
   if(over()) si.classList.add('pay-t1');
@@ -6813,6 +6814,11 @@ function fitPayScreen(){
   if(over()) si.classList.add('pay-t16');
   if(over()) si.classList.add('pay-t2');
   if(over()){ document.body.style.overflowY='auto'; window._payOY=true; }
+  // Su porų kaina — likusi laisva vieta atiduodama klausimų blokui (erdvesnės eilutės), kad apačioje neliktų tuščio ploto
+  else if(si.classList.contains('pay-duo')&&qRows.length){
+    const free=window.innerHeight-6-bottom(), add=Math.min(9,Math.floor(free/qRows.length/2));
+    if(add>0){ const cur=parseFloat(getComputedStyle(qRows[0]).paddingTop)||0; qRows.forEach(r=>r.style.setProperty('padding',(cur+add)+'px 0','important')); }
+  }
 }
 (function(){
   const _go=window.go;
