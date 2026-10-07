@@ -1110,6 +1110,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
+        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti gyvenimo žemėlapį</a>
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti kitai porai</a>
       </div>
     </div>
@@ -6202,16 +6203,27 @@ async function renderDuoNext(){
   // Porų analizė daryta per nuorodą (skirtinguose telefonuose) — kiekvienas savo analizę daro savo telefone, kito eilės nesiūlome
   if(!d||d.remote) return;
   const other=duo.side==='a'?'b':'a', o=d[other], name=other==='a'?d.nameA:d.nameB;
-  if(!o||o.used||!name) return;
+  if(!o||!name) return;
+  const sr=document.getElementById('s-result'), pc=document.getElementById('r-pora-card');
+  // Abu jau atliko asmenines analizes (paskutinis žmogus) — tik grįžimas į porų rezultatą, prie bloko, iš kurio atėjo
+  if(o.used){
+    if(pc) pc.style.display='none';
+    if(sr&&!document.getElementById('duo-back')){
+      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Grįžti į poros rezultatą';
+      l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+      sr.prepend(l);
+    }
+    return;
+  }
   const f=ltForms(name), eur=c=>(c/100).toFixed(2).replace('.',',');
   box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
     '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Dabar — '+_xEsc(f.gen)+' eilė</div>'+
     '<button type="button" class="btn btn-gold" id="duo-next-btn" style="margin:0">'+_xEsc(f.gen)+' analizė — '+eur(d.price)+' €</button>'+
     '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
   // Pora analizę jau atliko — „Jums dviem“ (porų pasiūlymas) nereikalingas, jo vietoje rodoma kito eilė
-  const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none';
+  if(pc) pc.style.display='none';
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
-  const sr=document.getElementById('s-result'); if(sr) sr.classList.add('duo-mode');
+  if(sr) sr.classList.add('duo-mode');
   // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — „Dariaus eilė“: veda į porų rezultatą iškart prie kito žmogaus analizės mygtuko
   if(sr&&!document.getElementById('duo-back')){
     const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent=f.gen+' eilė';
