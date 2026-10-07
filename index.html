@@ -1592,7 +1592,7 @@ function closeSample(){ const m=document.getElementById('sample-modal'); if(m){ 
   try{
     const q=new URLSearchParams(location.search);
     if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')||q.get('ref')) return;
-    fetch('/testimonials').then(r=>r.json()).then(d=>{
+    fetch('/testimonials?kind=asmenine').then(r=>r.json()).then(d=>{
       const short=((d&&d.items)||[]).filter(x=>x.text&&x.text.length<=60);
       const el=document.getElementById('home-testi'); if(!short.length||!el) return;
       const x=short[Math.floor(Math.random()*short.length)];
@@ -1626,7 +1626,7 @@ function renderRating(boxId, kind){
     ta.placeholder=low?(you?'Ką galėtume patobulinti? (neprivaloma)':'Ką galėtume patobulinti? (neprivaloma)'):(you?'Kas jums labiausiai patiko? (neprivaloma)':'Kas labiausiai patiko? (neprivaloma)'); }));
   card.querySelector('.rate-send').addEventListener('click',async()=>{
     if(!stars) return; const btn=card.querySelector('.rate-send'); btn.disabled=true; btn.textContent='Siunčiama…';
-    const name=kind==='pora'?((window._pora||{}).nameA||''):(window.userName||window._userName||'');
+    const name=kind==='pora'?[((window._pora||{}).nameA||''),((window._pora||{}).nameB||'')].filter(Boolean).join(' ir '):(window.userName||window._userName||'');
     try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind})}); }catch(e){}
     try{ localStorage.setItem(key,'1'); }catch(e){}
     card.querySelector('.rate-stars').style.display='none'; card.querySelector('.rate-more').style.display='none'; card.querySelector('.rate-thx').style.display='block';

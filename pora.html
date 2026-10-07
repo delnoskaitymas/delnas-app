@@ -252,7 +252,22 @@ body.has-note #v-form #lead{display:none}
 body.form-view.fit #gift-note{margin-top:min(14px,calc(var(--bt,12px) * .5 + 4px))}
 body.form-view.fit .wrap{padding-bottom:calc(var(--bt,12px) * .7)}
 body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!important}
+/* Vienas trumpas patvirtintas porų atsiliepimas (kaip pradžios ekrane) */
+.pora-testi{text-align:center;font-size:12px;line-height:1.4;color:rgba(255,255,255,.62);margin:8px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pora-testi .st{color:var(--gold2,#f0d58a);letter-spacing:1px;margin-right:5px;font-size:11px}
+.pora-testi i{font-family:'Playfair Display',serif}
+.pora-testi .nm{color:rgba(255,255,255,.4)}
 </style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ try{
+  fetch('/testimonials?kind=pora').then(r=>r.json()).then(d=>{
+    const short=((d&&d.items)||[]).filter(x=>x.text&&x.text.length<=60), el=document.getElementById('pora-testi'); if(!short.length||!el) return;
+    const x=short[Math.floor(Math.random()*short.length)], esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    el.innerHTML='<span class="st">'+'★'.repeat(x.stars)+'</span><i>„'+esc(x.text)+'“</i>'+(x.name?' <span class="nm">— '+esc(x.name)+'</span>':'');
+    el.style.display='block'; window.dispatchEvent(new Event('resize'));
+  }).catch(()=>{});
+}catch(e){} });
+</script>
 </head>
 <body class="form-view">
 <div class="wrap">
@@ -282,6 +297,7 @@ body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!impo
     </form>
     <button type="button" class="how-link" id="how-open">✦ Ką gausite ir kaip tai veikia?</button>
     <a class="how-link" id="gift-link" href="/dovana?tipas=pora" style="width:fit-content;margin-top:2px">🎁 Padovanoti porai</a>
+    <div class="pora-testi" id="pora-testi" style="display:none"></div>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
     <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>

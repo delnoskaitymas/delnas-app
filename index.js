@@ -4345,7 +4345,11 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
     const st = Math.round(Number(stars));
     if (!(st >= 1 && st <= 5)) return res.status(400).json({ error: 'Pasirinkite įvertinimą' });
     const t = typeof text === 'string' ? text.trim().slice(0, 500) : '';
-    const first = typeof name === 'string' ? name.trim().split(/\s+/)[0].slice(0, 30) : '';
+    const nm = typeof name === 'string' ? name.trim() : '';
+    // Porų atsiliepimas — abu vardai („Mina ir Darius“), asmeninis — tik vardas
+    const first = kind === 'pora'
+      ? nm.split(/\s+ir\s+/i).map(x => x.split(/\s+/)[0].slice(0, 30)).filter(Boolean).slice(0, 2).join(' ir ')
+      : nm.split(/\s+/)[0].slice(0, 30);
     const fb = readJson(FEEDBACK_FILE, { items: [] });
     const id = crypto.randomBytes(8).toString('hex');
     const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
@@ -4374,7 +4378,9 @@ app.get('/feedback/approve', (req, res) => {
 
 app.get('/testimonials', (req, res) => {
   const fb = readJson(FEEDBACK_FILE, { items: [] });
-  const items = fb.items.filter(x => x.approved && x.allowPublic && x.stars >= 4 && x.text).slice(-8).reverse()
+  // ?kind=pora — porų atsiliepimai (/pora puslapiui); be jo — asmeninės analizės (pradžios ekranui)
+  const kind = req.query.kind === 'pora' ? 'pora' : 'asmenine';
+  const items = fb.items.filter(x => x.approved && x.allowPublic && x.stars >= 4 && x.text && (x.kind || 'asmenine') === kind).slice(-8).reverse()
     .map(x => ({ stars: x.stars, text: x.text, name: x.name }));
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.json({ items });
