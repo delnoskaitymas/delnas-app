@@ -1110,7 +1110,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
-        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti gyvenimo žemėlapį</a>
+        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti asmeninį gyvenimo žemėlapį</a>
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti kitai porai</a>
       </div>
     </div>
@@ -6209,7 +6209,7 @@ async function renderDuoNext(){
   if(o.used){
     if(pc) pc.style.display='none';
     if(sr&&!document.getElementById('duo-back')){
-      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Grįžti į poros rezultatą';
+      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#dovanos'; l.textContent='Grįžti į poros rezultatą';
       l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       sr.prepend(l);
     }
@@ -6805,13 +6805,18 @@ async function loadCompare(){
 
 // Grįžus iš asmeninės analizės į porų rezultatą (/?pora=…#asmenine) — iškart prie bloko su kito žmogaus analizės mygtuku
 (function duoJump(){
-  if(location.hash!=='#asmenine') return;
+  const mode=location.hash; if(mode!=='#asmenine'&&mode!=='#dovanos') return;
   let n=0; const iv=setInterval(()=>{
     const scr=document.querySelector('.screen.active'), blk=document.getElementById('pora-personal'), duo=document.getElementById('pora-duo');
     if(scr&&scr.id==='s-pora-result'&&blk&&blk.offsetParent&&(duo&&duo.children.length||n>12)){
       clearInterval(iv);
       try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-      setTimeout(()=>{ let y=0,e=blk; while(e){ y+=e.offsetTop; e=e.offsetParent; } window.scrollTo(0,Math.max(0,y-16)); },300);
+      setTimeout(()=>{
+        const top=el=>{ let y=0; while(el){ y+=el.offsetTop; el=el.offsetParent; } return y; };
+        // #asmenine — bloko viršus (kito žmogaus mygtukas); #dovanos — riba tarp šio bloko ir „Pasidalinkite ar padovanokite“ ekrano viduryje
+        const y=mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
+        window.scrollTo(0,Math.max(0,y));
+      },300);
     }
     if(++n>80) clearInterval(iv);
   },250);
