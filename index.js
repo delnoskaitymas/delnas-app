@@ -3284,7 +3284,11 @@ function poraTextSlots(r) {
   const slots = [];
   const add = (get, set) => { const v = get(); if (typeof v === 'string' && v.trim()) slots.push({ text: v, set }); };
   for (const k of PORA_RESULT_KEYS) add(() => r[k], v => { r[k] = v; });
-  if (r.palyginimai) for (const k of Object.keys(r.palyginimai)) { const c = r.palyginimai[k]; if (c) for (const f of ['a', 'b', 'isvada']) add(() => c[f], v => { c[f] = v; }); }
+  if (r.palyginimai) for (const k of Object.keys(r.palyginimai)) {
+    const c = r.palyginimai[k]; if (!c) continue;
+    for (const f of ['a', 'b']) { if (c[f] && typeof c[f] === 'object') { const o = c[f]; add(() => o.p, v => { o.p = v; }); add(() => o.r, v => { o.r = v; }); } else add(() => c[f], v => { c[f] = v; }); }
+    add(() => c.isvada, v => { c.isvada = v; });
+  }
   if (r.izvalgos) for (const k of Object.keys(r.izvalgos)) { const arr = r.izvalgos[k]; if (Array.isArray(arr)) arr.forEach((_, i) => add(() => arr[i], v => { arr[i] = v; })); }
   if (Array.isArray(r.poros_bruozai)) r.poros_bruozai.forEach((_, i) => add(() => r.poros_bruozai[i], v => { r.poros_bruozai[i] = v; }));
   if (r.sritys) for (const k of Object.keys(r.sritys)) { const d = r.sritys[k]; if (d) for (const f of ['fraze', 'aprasymas']) add(() => d[f], v => { d[f] = v; }); }
@@ -3370,11 +3374,13 @@ ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos para
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
-PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Kiekvienai:
-- a: ką matai ${gA} delnuose ir ką tai reiškia (iki 120 simbolių, pvz. Ilgos, švelniai lenktos — jausmus reiškia atvirai ir šiltai). Apie delnus ir linijas visada rašyk DAUGISKAITA (delnai, linijos), nes kiekvienas turi du delnus — niekada „delnas“, „delno“, „linija“ apie vieną žmogų.
-- b: tas pats apie ${aB} (iki 120 simbolių)
-- isvada: ką šių dviejų bruožų derinys reiškia jūsų porai ir kaip tai jaučiasi kasdien (2 sakiniai, iki 260 simbolių; vardą — tik jei būtina atskirti, ne daugiau kaip po kartą)
-- a, b ir isvada — LYČIAI NEUTRALIAI: apie žmogų NIEKADA nerašyk giminę rodančių būdvardžių ar dalyvių (KLAIDA: „tapo atsargesnė“, „ramus“, „linkęs“, „atvira“) — rašyk daiktavardžiu ar veiksmažodžiu („daugiau atsargumo“, „būdinga ramybė“, „jausmus reiškia atvirai“). Nerašyk „abu“, „abi“, „vienas kitą“, „viena kitą“ — net apie daiktus (ne „stiliai papildo vienas kitą“, o „stiliai dera tarpusavyje“); ne „abu jaučiate“, o „jaučiate“. Kiekvienas a ir b — užbaigtas sakinys, telpantis į 120 simbolių.
+PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Tai LENTELĖ — rašyk trumpai, konkrečiai ir aiškiai, BE VARDŲ (vardai jau užrašyti lentelės langelių antraštėse). Kiekvienai sričiai:
+- a: ${gA} delnai — objektas {"p":"…","r":"…"}:
+  - p (kas matosi): tik konkretūs matomi požymiai, 3–7 žodžiai, be vardo ir be srities pavadinimo kartojimo (pvz. ilgos, švelniai lenktos, prasideda tarp smiliaus ir vidurinio piršto → trumpiau: ilgos, švelniai lenktos į smilių). Apie delnus ir linijas — DAUGISKAITA.
+  - r (ką reiškia): viena aiški reikšmė, 3–8 žodžiai, be vardo (pvz. jausmus reiškia šiltai, bet apgalvotai).
+- b: tas pats apie ${aB} — {"p":"…","r":"…"}
+- isvada: VIENAS trumpas sakinys (iki 110 simbolių), BE VARDŲ, „jūs“ forma — ką šis skirtumas ar panašumas reiškia jūsų porai ir ką verta daryti (pvz. Jausmus reiškiate skirtingu tempu — verta atvirai kalbėtis, kiek laiko reikia artumui.). Nerašyk „vienas… kitas…“.
+- Visi šie laukai — LYČIAI NEUTRALIAI: jokių giminę rodančių būdvardžių ar dalyvių apie žmogų („atvira“, „ramus“, „linkęs“), jokių „abu“, „abi“, „vienas kitą“.
 
 SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — tik balas (sveikas skaičius 55–98); iš jų skaičiuojamas bendras suderinamumas.
 
@@ -3392,7 +3398,7 @@ Taip pat:
 - izvalgos: kiekvienam skyriui (traukia…patarimai) 3 trumpi sakiniai (iki 8 žodžių) „jūs“ forma, be vardų — NAUJI faktai, kurie PAPILDO skyriaus tekstą ir jo nekartoja (pvz. Jums lengva susitarti dėl svarbiausių dalykų)
 
 ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
-{"stebejimai":{"a":"...","b":"..."},"palyginimai":{"sirdies":{"a":"...","b":"...","isvada":"..."},"galvos":{"a":"...","b":"...","isvada":"..."},"gyvenimo":{"a":"...","b":"...","isvada":"..."},"forma":{"a":"...","b":"...","isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
+{"stebejimai":{"a":"...","b":"..."},"palyginimai":{"sirdies":{"a":{"p":"...","r":"..."},"b":{"p":"...","r":"..."},"isvada":"..."},"galvos":{"a":{"p":"...","r":"..."},"b":{"p":"...","r":"..."},"isvada":"..."},"gyvenimo":{"a":{"p":"...","r":"..."},"b":{"p":"...","r":"..."},"isvada":"..."},"forma":{"a":{"p":"...","r":"..."},"b":{"p":"...","r":"..."},"isvada":"..."}},"sritys":{"jausmai":{"balas":84},"bendravimas":{"balas":76},"vertybes":{"balas":88},"kasdienybe":{"balas":71},"trauka":{"balas":90},"ateitis":{"balas":80}},"poros_bruozai":["...","...","..."],"izvalgos":{"traukia":["...","...","..."],"bendravimas":["...","...","..."],"papildo":["...","...","..."],"trintis":["...","...","..."],"ateitis":["...","...","..."],"stiprybe":["...","...","..."],"patarimai":["...","...","..."]},"traukia":"...","bendravimas":"...","papildo":"...","trintis":"...","ateitis":"...","stiprybe":"...","patarimai":"..."}`
     }
   ];
   let data;
@@ -3441,9 +3447,12 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   const pal = {};
   for (const k of PORA_COMPARE_KEYS) {
     const c = rp[k];
-    if (c && typeof c.a === 'string' && typeof c.b === 'string' && c.a.trim() && c.b.trim()) {
-      pal[k] = { a: fix(c.a, 240), b: fix(c.b, 240), isvada: typeof c.isvada === 'string' ? fix(c.isvada, 420) : '' };
-    }
+    // Langelis: { p: kas matosi, r: ką reiškia } (senesnis formatas — vienas tekstas)
+    const cell = x => x && typeof x === 'object' && typeof x.p === 'string' && typeof x.r === 'string' && x.p.trim() && x.r.trim()
+      ? { p: fix(x.p, 90), r: fix(x.r, 90) }
+      : (typeof x === 'string' && x.trim() ? fix(x, 240) : null);
+    const a = c && cell(c.a), b = c && cell(c.b);
+    if (a && b) pal[k] = { a, b, isvada: typeof c.isvada === 'string' ? fix(c.isvada, 160) : '' };
   }
   if (Object.keys(pal).length) out.palyginimai = pal;
   // Įžvalgų kortelės prie kiekvieno skyriaus (kaip asmeninėje analizėje)
@@ -3816,7 +3825,7 @@ function klauskPoraContext(res) {
   const T = { traukia: 'Kas jus traukia ir sieja', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kaip jūsų savybės dera tarpusavyje', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jūsų porai' };
   const C = { sirdies: 'Širdies linijos (jausmai)', galvos: 'Galvos linijos (mąstymas)', gyvenimo: 'Gyvenimo linijos (tempas)', forma: 'Delnų forma (charakteris)' };
   let t = `Suderinamumas: ${res.suderinamumas || ''}%\nPoros bruožai: ${(res.poros_bruozai || []).join(', ')}\n\n`;
-  for (const [k, l] of Object.entries(C)) { const c = (res.palyginimai || {})[k]; if (c) t += `## ${l}\nA: ${c.a}\nB: ${c.b}\nIšvada: ${c.isvada || ''}\n\n`; }
+  for (const [k, l] of Object.entries(C)) { const c = (res.palyginimai || {})[k]; if (c) { const cs = x => x && typeof x === 'object' ? `${x.p} — ${x.r}` : x; t += `## ${l}\nA: ${cs(c.a)}\nB: ${cs(c.b)}\nIšvada: ${c.isvada || ''}\n\n`; } }
   for (const [k, l] of Object.entries(T)) if (res[k]) t += `## ${l}\n${res[k]}\n${((res.izvalgos || {})[k] || []).join('; ')}\n\n`;
   return t;
 }

@@ -183,6 +183,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .pr-cmp-ab{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pr-cmp-ab div{background:rgba(212,168,67,.06);border:.5px solid rgba(212,168,67,.25);border-radius:10px;padding:9px 10px;font-size:12.5px;line-height:1.45;color:rgba(255,255,255,.68)}
 .pr-cmp-ab small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.pr-cmp-ab .cl{display:block;margin-top:5px}.pr-cmp-ab .cl:first-of-type{margin-top:0}
+.pr-cmp-ab .cl i{display:block;font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(212,168,67,.6);margin-bottom:1px}
+.pr-cmp-ab .cl.rr{color:#e8e2d4}
 .pr-cmp-is{margin-top:9px;padding:8px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.08);border-radius:0 8px 8px 0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.68)}
 .pr-rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.25,.46,.45,.94),transform .8s cubic-bezier(.25,.46,.45,.94)}
 .pr-rv.pv{opacity:1;transform:none}
@@ -6095,6 +6098,9 @@ function poraPoll(){
 // Šešios santykių sritys ir delnų palyginimai (nauji rezultatai; seni rodomi be jų)
 const PORA_FOOTERS={traukia:'Tai, kas jus traukia, verta dažniau priminti sau ir savo porai.',bendravimas:'Geras pokalbis prasideda nuo noro išgirsti.',papildo:'Jūsų skirtumai — bendra jūsų stiprybė.',trintis:'Kiekviena trintis — galimybė geriau pažinti savo porą.',ateitis:'Bendri planai suartina labiau nei bendri žodžiai.',stiprybe:'Ši stiprybė — jūsų poros pagrindas.',patarimai:'Maži kasdieniai žingsniai kuria didelius pokyčius.'};
 const PORA_DIMS=[['jausmai','Jausmai ir artumas','Jausmai'],['bendravimas','Bendravimas','Bendravimas'],['vertybes','Vertybės ir požiūris','Vertybės'],['kasdienybe','Kasdienybė ir ritmas','Kasdienybė'],['trauka','Trauka ir aistra','Trauka'],['ateitis','Ateities planai','Ateitis']];
+// Palyginimo langelis: { p: kas matosi, r: ką reiškia } arba (senesni rezultatai) vienas tekstas
+function poraCell(x){ return x&&typeof x==='object' ? '<span class="cl"><i>Matosi</i>'+poraEsc(x.p)+'</span><span class="cl rr"><i>Reiškia</i>'+poraEsc(x.r)+'</span>' : poraEsc(x); }
+function poraCellText(x){ return x&&typeof x==='object' ? 'Matosi: '+x.p+'\nReiškia: '+x.r : String(x||''); }
 const PORA_CMP=[['sirdies','Širdies linijos · jausmai'],['galvos','Galvos linijos · mąstymas'],['gyvenimo','Gyvenimo linijos · tempas'],['forma','Delnų forma · charakteris']];
 const PORA_ICON_PATHS={
   traukia:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
@@ -6141,7 +6147,7 @@ function poraCompareHtml(r){
   const p=window._pora||{};
   // Blokas ir pirmasis palyginimas rodomi iškart (be animacijos), tolesni — atsiranda slenkant
   const items=PORA_CMP.filter(([k])=>pc[k]).map(([k,label],i)=>{ const c=pc[k];
-    return '<div class="pr-cmp'+(i?' pr-rv':'')+'"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraEsc(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraEsc(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
+    return '<div class="pr-cmp'+(i?' pr-rv':'')+'"><div class="pr-cmp-t">'+poraIcon(k,15)+label+'</div><div class="pr-cmp-ab"><div><small>'+poraEsc(p.nameA)+'</small>'+poraCell(c.a)+'</div><div><small>'+poraEsc(p.nameB)+'</small>'+poraCell(c.b)+'</div></div>'+(c.isvada?'<div class="pr-cmp-is">'+poraEsc(c.isvada)+'</div>':'')+'</div>'; }).join('');
   return '<div class="pr-card"><div class="pr-h">Jūsų delnai greta</div><div class="pr-sub">Ką parodė palyginimas</div>'+items+'</div>';
 }
 // Kortelės atsiranda slenkant; juostos ir radaras užsipildo, kai matomi
@@ -6274,7 +6280,7 @@ function poraNeutralText(t){
 function poraNeutralResult(r){
   const f=t=>typeof t==='string'?poraNeutralText(t):t;
   PORA_SECTIONS.forEach(([k])=>{ r[k]=f(r[k]); });
-  if(r.palyginimai) Object.values(r.palyginimai).forEach(c=>{ if(c){ c.a=f(c.a); c.b=f(c.b); c.isvada=f(c.isvada); } });
+  if(r.palyginimai) Object.values(r.palyginimai).forEach(c=>{ if(c){ const g=x=>x&&typeof x==='object'?{p:f(x.p),r:f(x.r)}:f(x); c.a=g(c.a); c.b=g(c.b); c.isvada=f(c.isvada); } });
   if(r.izvalgos) Object.keys(r.izvalgos).forEach(k=>{ if(Array.isArray(r.izvalgos[k])) r.izvalgos[k]=r.izvalgos[k].map(f); });
   if(Array.isArray(r.poros_bruozai)) r.poros_bruozai=r.poros_bruozai.map(f);
   if(r.sritys) Object.values(r.sritys).forEach(d=>{ if(d){ d.fraze=f(d.fraze); d.aprasymas=f(d.aprasymas); } });
@@ -6369,7 +6375,7 @@ function buildPoraPdfDoc(){
     PORA_CMP.filter(([k])=>r.palyginimai[k]).forEach(([k,label])=>{
       const c=r.palyginimai[k];
       doc.setFont('NotoSans','normal'); doc.setFontSize(11);
-      const la=doc.splitTextToSize(c.a, colW-6), lb=doc.splitTextToSize(c.b, colW-6), li=c.isvada?doc.splitTextToSize(c.isvada, maxW-6):[];
+      const sp=x=>poraCellText(x).split('\n').reduce((a,l)=>a.concat(doc.splitTextToSize(l, colW-6)),[]); const la=sp(c.a), lb=sp(c.b), li=c.isvada?doc.splitTextToSize(c.isvada, maxW-6):[];
       const boxH=Math.max(la.length,lb.length)*5.2+10, need=8+boxH+li.length*5.6+10;
       if(y+need>282){ doc.addPage(); dark(); y=30; }
       doc.setFont('NotoSans','bold'); doc.setFontSize(11.5); doc.setTextColor(...GOLD); doc.text(label.toUpperCase(), M, y); y+=4;
