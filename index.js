@@ -3562,23 +3562,57 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
       }).catch(e => console.error('[pora] admin laiško klaida:', e.message));
     }
 
-    runCoupleAnalysis(photos, s.nameA, s.nameB)
-      .then(result => { updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); console.log(`[pora] analizė baigta ${sessionId}`); })
-      .catch(err => {
-        updatePoraOrder(sessionId, { status: 'error', error: err.message });
-        console.error(`[pora] analizės klaida ${sessionId}:`, err.message);
-        mailer.sendMail({
-          from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-          to: ADMIN_EMAIL,
-          subject: '[KLAIDA] Porų analizė nepavyko',
-          html: `<div style="font-family:Georgia,serif;padding:20px"><p>Pora: ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)} (${escapeHtml(s.email)})</p><p>Klaida: ${escapeHtml(err.message)}</p><p>Stripe session: ${escapeHtml(sessionId)}</p><p>Klientas gali bandyti dar kartą ta pačia nuoroda.</p></div>`
-        }).catch(() => {});
-      });
+    runPoraJob(sessionId, photos, s);
   } catch (err) {
     console.error('/pora/start klaida:', err);
     res.status(500).json({ error: 'Nepavyko pradėti analizės' });
   }
 });
+
+// ── Porų analizės vykdymas ──
+// Nuotraukos laikinai saugomos diske, kol analizė vyksta: jei serveris perkraunamas (pvz. naujas
+// diegimas), nebaigta analizė automatiškai paleidžiama iš naujo. Baigus (ar galutinai nepavykus) —
+// nuotraukos ištrinamos. Kol vyksta — kas 20 s atnaujinamas „gyvumo“ laikas (hb).
+const PORA_RUN_DIR = path.join(SHARED_STORAGE_DIR, 'pora-run');
+function poraRunFile(id) { return path.join(PORA_RUN_DIR, id.replace(/[^A-Za-z0-9_]/g, '') + '.json'); }
+function saveRunPhotos(id, photos) { try { fs.mkdirSync(PORA_RUN_DIR, { recursive: true }); fs.writeFileSync(poraRunFile(id), JSON.stringify({ photos, at: Date.now() })); } catch (e) { console.log('[pora] nepavyko išsaugoti nuotraukų:', e.message); } }
+function loadRunPhotos(id) { try { const d = JSON.parse(fs.readFileSync(poraRunFile(id), 'utf8')); return Array.isArray(d.photos) && d.photos.length === 4 ? d.photos : null; } catch (e) { return null; } }
+function deleteRunPhotos(id) { try { fs.unlinkSync(poraRunFile(id)); } catch (e) {} }
+function runPoraJob(sessionId, photos, s) {
+  saveRunPhotos(sessionId, photos);
+  updatePoraOrder(sessionId, { hb: Date.now() });
+  const hb = setInterval(() => { try { const o = loadPoraOrders()[sessionId]; if (o && o.status === 'pending') updatePoraOrder(sessionId, { hb: Date.now() }); } catch (e) {} }, 20000);
+  runCoupleAnalysis(photos, s.nameA, s.nameB)
+    .then(result => { clearInterval(hb); deleteRunPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); console.log(`[pora] analizė baigta ${sessionId}`); })
+    .catch(err => {
+      clearInterval(hb); deleteRunPhotos(sessionId);
+      updatePoraOrder(sessionId, { status: 'error', error: err.message });
+      console.error(`[pora] analizės klaida ${sessionId}:`, err.message);
+      mailer.sendMail({
+        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+        to: ADMIN_EMAIL,
+        subject: '[KLAIDA] Porų analizė nepavyko',
+        html: `<div style="font-family:Georgia,serif;padding:20px"><p>Pora: ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)} (${escapeHtml(s.email || '')})</p><p>Klaida: ${escapeHtml(err.message)}</p><p>Stripe session: ${escapeHtml(sessionId)}</p></div>`
+      }).catch(e => console.error('[pora] klaidos laiško siuntimas nepavyko:', e.message));
+    });
+}
+// Po serverio paleidimo: nebaigtos porų analizės (senasis procesas nebeatnaujina hb) tęsiamos iš naujo.
+// Laukiama 90 s, kad diegimo metu senasis konteineris spėtų baigti darbą ir nebūtų dvigubo paleidimo.
+setTimeout(function resumePoraJobs() {
+  try {
+    const orders = loadPoraOrders();
+    for (const [id, o] of Object.entries(orders)) {
+      if (o.status !== 'pending' || Date.now() - (o.hb || o.startedAt || 0) < 60000) continue;
+      const photos = loadRunPhotos(id);
+      if (!photos) { updatePoraOrder(id, { status: 'error', error: 'Serveris perkrautas analizės metu (nuotraukų nėra)' }); continue; }
+      console.log(`[pora] tęsiama nebaigta analizė po perkrovimo: ${id}`);
+      updatePoraOrder(id, { startedAt: Date.now() });
+      runPoraJob(id, photos, { nameA: o.nameA, nameB: o.nameB, email: o.email });
+    }
+    // Pasenusios (>1 d.) laikinos nuotraukos
+    if (fs.existsSync(PORA_RUN_DIR)) for (const f of fs.readdirSync(PORA_RUN_DIR)) { const p = path.join(PORA_RUN_DIR, f); try { if (Date.now() - fs.statSync(p).mtimeMs > 864e5) fs.unlinkSync(p); } catch (e) {} }
+  } catch (e) { console.log('[pora] tęsimo po perkrovimo klaida:', e.message); }
+}, 90 * 1000);
 
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina — du vienkartiniai kodai (30 d.)
 app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
