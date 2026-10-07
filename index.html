@@ -1089,7 +1089,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
       <div class="kl-txt">Turite klausimų apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų poros analize.</div>
       <textarea class="kl-q" id="pora-kl-q" maxlength="400" rows="3" placeholder="Įrašykite savo klausimą…"></textarea>
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
-      <button type="button" class="kl-btn" id="pora-kl-btn">Užduoti 3 klausimus — 4,99 €</button>
+      <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymus — 4,99 €</button>
       <div class="kl-err" id="pora-kl-err"></div>
       <div class="kl-fine">3 klausimai už 4,99 € · atsakymus matysite naujame lange ir gausite el. paštu · Saugus mokėjimas per Stripe</div>
     </div>
@@ -3967,7 +3967,7 @@ function renderResultExtra(r){
     '<textarea class="kl-q" id="kl-q" maxlength="400" rows="3" placeholder="Įrašyk savo klausimą…"></textarea>'+
     '<div class="kl-ex" id="kl-ex"><button type="button">Ar man verta keisti darbą?</button><button type="button">Kodėl kartojasi tos pačios santykių problemos?</button><button type="button">Kaip man geriau tvarkytis su pinigais?</button></div>'+
     '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
-    '<button type="button" class="kl-btn" id="kl-btn">Užduoti 3 klausimus — 4,99 €</button>'+
+    '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymus — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
     '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
   box.innerHTML=h;
@@ -3988,7 +3988,7 @@ function renderResultExtra(r){
       const blk=document.querySelector('#r-extra .kl');
       if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
-      document.getElementById('kl-btn').textContent='Gauti atsakymą';
+      document.getElementById('kl-btn').textContent='Gauti atsakymus';
       return '/klausk?s='+dd.id;
     })():null
   });
@@ -6170,7 +6170,7 @@ function setupPoraKlausk(){
       const d=await r.json(); if(!r.ok||!d.id) return null;
       const blk=document.getElementById('pora-kl');
       if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
-      btn.textContent='Gauti atsakymą';
+      btn.textContent='Gauti atsakymus';
       return '/klausk?s='+d.id;
     })():null });
 }
