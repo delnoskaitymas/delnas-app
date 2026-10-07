@@ -1615,7 +1615,7 @@ function renderRating(boxId, kind){
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
     '<label class="rate-pub-row"><input type="checkbox" class="rate-pub"> Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)</label>'+
-    '<div class="rate-private">Šį atsiliepimą matysime tik mes — jis padės mums tobulėti.</div>'+
+    '<div class="rate-private">Šis atsiliepimas nebus skelbiamas — jis padės mums tobulėti.</div>'+
     '<button type="button" class="rate-send">Siųsti</button></div><div class="rate-thx">Ačiū už įvertinimą! ✦</div>')+'</div>';
   if(done) return;
   let stars=0; const card=box.querySelector('.rate');
