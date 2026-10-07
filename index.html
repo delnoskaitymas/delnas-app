@@ -6198,6 +6198,12 @@ async function renderDuoNext(){
   const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none';
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
   const sr=document.getElementById('s-result'); if(sr) sr.classList.add('duo-mode');
+  // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — nuslenka kartu su puslapiu, netrukdo skaityti
+  if(sr&&!document.getElementById('duo-back')){
+    const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid); l.textContent='Poros rezultatas';
+    l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+    sr.prepend(l);
+  }
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
