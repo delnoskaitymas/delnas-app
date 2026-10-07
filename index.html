@@ -6066,7 +6066,11 @@ function poraProgress(start){
       const w0=performance.now();
       for(let n=1;n<=7;n++) setTimeout(()=>{ if(!window._poraDone) activateStep(n,false,performance.now()-w0,'pls'); },(n-1)*180);
     }
-    const v=Math.min(94,Math.round(window._poraPhase===1?Math.min(20,s/4.5*20):20+74*(1-Math.exp(-(s-4.5)/35))));
+    // Pakopomis pagal tikrą trukmę (~2–3 min.): 0–1 min. 20→60 %, 1–2 min. 60→85 %, 2–3 min. 85→94 %, toliau ~1 % kas 20 s iki 97 %
+    const e=Math.max(0,s-4.5);
+    const raw=window._poraPhase===1?Math.min(20,s/4.5*20)
+      : e<=60?20+e/60*40 : e<=120?60+(e-60)/60*25 : e<=180?85+(e-120)/60*9 : 94+Math.min(3,(e-180)/20);
+    const v=Math.min(97,Math.round(raw));
     window._poraPct=v; pbar.style.width=v+'%'; pct.textContent=v+'%';
   },250);
 }
