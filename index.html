@@ -1610,7 +1610,7 @@ function renderRating(boxId, kind){
   const key='delnasRated:'+kind+':'+(kind==='pora'?((window._pora||{}).sid||''):(window._orderNumber||window._paymentRef||''));
   let done=false; try{ done=!!localStorage.getItem(key); }catch(e){}
   const you=kind==='pora';
-  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo analizę?':'Kaip vertini savo analizę?')+'</div>'+
+  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo poros suderinamumo analizę?':'Kaip vertini savo analizę?')+'</div>'+
     (done?'<div class="rate-thx" style="display:block">Ačiū už įvertinimą! ✦</div>':
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
