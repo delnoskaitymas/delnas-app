@@ -6193,11 +6193,17 @@ async function renderDuoNext(){
   box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
     '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Dabar — '+_xEsc(f.gen)+' eilė</div>'+
     '<button type="button" class="btn btn-gold" id="duo-next-btn" style="margin:0">'+_xEsc(f.gen)+' analizė — '+eur(d.price)+' €</button>'+
-    '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
+    '<a href="/?pora='+encodeURIComponent(duo.sid)+'#asmenine" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
   // Pora analizę jau atliko — „Jums dviem“ (porų pasiūlymas) nereikalingas, jo vietoje rodoma kito eilė
   const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none';
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
   const sr=document.getElementById('s-result'); if(sr) sr.classList.add('duo-mode');
+  // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — nuslenka kartu su puslapiu, netrukdo skaityti
+  if(sr&&!document.getElementById('duo-back')){
+    const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Poros rezultatas';
+    l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+    sr.prepend(l);
+  }
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
@@ -6769,6 +6775,20 @@ async function loadCompare(){
     }catch(e){ location.replace('/'); }
   };
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
+})();
+
+// Grįžus iš asmeninės analizės į porų rezultatą (/?pora=…#asmenine) — iškart prie bloko su kito žmogaus analizės mygtuku
+(function duoJump(){
+  if(location.hash!=='#asmenine') return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active'), blk=document.getElementById('pora-personal'), duo=document.getElementById('pora-duo');
+    if(scr&&scr.id==='s-pora-result'&&blk&&blk.offsetParent&&(duo&&duo.children.length||n>12)){
+      clearInterval(iv);
+      try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+      setTimeout(()=>{ let y=0,e=blk; while(e){ y+=e.offsetTop; e=e.offsetParent; } window.scrollTo(0,Math.max(0,y-16)); },300);
+    }
+    if(++n>80) clearInterval(iv);
+  },250);
 })();
 
 // „Mano analizės“ → „Užduoti dar 3 klausimus“ (/?mano=…#klausti arba /?pora=…#klausti):
