@@ -220,6 +220,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'D
 .kl-email.hidden{display:none}
 .kl-btn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 15px 'DM Sans',sans-serif;box-shadow:0 0 22px rgba(212,168,67,.3)}
 .kl-btn[disabled]{opacity:.6}
+/* Atėjus iš porų rezultato ryškus lieka tik „Dabar — … eilė“ mygtukas */
+#s-result.duo-mode #r-extra .kl-btn,#s-result.duo-mode button[onclick="shareStory()"]{background:transparent!important;border:1px solid var(--gold)!important;color:var(--gold2)!important;box-shadow:none!important}
 /* Porų rezultate pagrindinis — porų kainos mygtukas, todėl klausimų mygtukas kontūrinis */
 #pora-kl .kl-btn{background:transparent;border:1px solid var(--gold);color:var(--gold2);box-shadow:none;font-weight:700}
 .kl-err{display:none;color:#ffb3a0;font-size:12.5px;text-align:center;margin-top:8px}
@@ -6194,6 +6196,8 @@ async function renderDuoNext(){
     '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
   // Pora analizę jau atliko — „Jums dviem“ (porų pasiūlymas) nereikalingas, jo vietoje rodoma kito eilė
   const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none';
+  // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
+  const sr=document.getElementById('s-result'); if(sr) sr.classList.add('duo-mode');
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
