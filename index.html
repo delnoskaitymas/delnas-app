@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
+<script>try{ if(/[?&]pora=/.test(location.search)) document.documentElement.classList.add('pora-boot'); }catch(e){}</script>
 <script>/* Grįžus iš klausimų puslapio — nerodyti pradžios ekrano, kol neatšokta prie vietos po klausimų bloku */try{if(location.hash==="#klausk"&&/[?&](kl|pora)=/.test(location.search)){document.documentElement.classList.add("kl-boot");setTimeout(function(){document.documentElement.classList.remove("kl-boot")},7000);}}catch(e){}</script>
 <style>html.kl-boot body>*{visibility:hidden!important}</style>
 <meta charset="UTF-8">
@@ -30,6 +31,8 @@ body{min-height:100vh;min-height:100dvh;padding-top:env(safe-area-inset-top);pad
 html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .4s;display:none}
 .ss{position:absolute;border-radius:50%;background:var(--gold2);pointer-events:none}
+/* Porų nuoroda: kol tikrinamas užsakymas, asmeninės analizės pradžios tekstai nerodomi (kad nemirgėtų) */
+html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .screen{display:none;position:relative;z-index:1;min-height:100vh;min-height:100dvh;padding-bottom:48px;scroll-behavior:smooth}
 .screen.active{display:block;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
 #s-home.active{display:flex;flex-direction:column;position:relative;overflow:hidden}
@@ -5843,7 +5846,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   let sid=null;
   try{ sid=new URLSearchParams(location.search).get('pora'); }catch(e){}
   // Ne porų puslapis — pamirštame porų pradžios nuorodą („Mano analizės“ → „← Pradžia“ ves į /)
-  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){ if(!new URLSearchParams(location.search).get('mano')) try{ sessionStorage.removeItem('delnasHome'); localStorage.removeItem('delnasHome'); }catch(e){} return; }
+  if(!sid || !/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){ document.documentElement.classList.remove('pora-boot'); if(!new URLSearchParams(location.search).get('mano')) try{ sessionStorage.removeItem('delnasHome'); localStorage.removeItem('delnasHome'); }catch(e){} return; }
   window._pora={ sid, nameA:'', nameB:'', stage:0, photos:[], active:false };
   const home=document.getElementById('s-home');
   const note=document.createElement('div');
@@ -5857,11 +5860,12 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       const d=await (await fetch('/pora/check?session_id='+encodeURIComponent(sid))).json();
       if(!d.paid){
         if(attempt<6){ setTimeout(()=>check(attempt+1),2000); return; }
-        window._pora=null;
+        window._pora=null; document.documentElement.classList.remove('pora-boot');
         note.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">Porų užsakymas nerastas arba neapmokėtas.</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manote, kad tai klaida — parašykite info@delnaskaitymas.lt</div>';
         return;
       }
       Object.assign(window._pora,{ nameA:d.nameA||'Pirmasis', nameB:d.nameB||'Antrasis' });
+      setTimeout(()=>document.documentElement.classList.remove('pora-boot'),0);
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; }catch(e){}
@@ -5896,6 +5900,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
     }catch(e){
       if(attempt<6){ setTimeout(()=>check(attempt+1),2000); return; }
       note.innerHTML='<div style="color:var(--gold2);font-size:13px">Nepavyko patikrinti užsakymo. Atnaujinkite puslapį.</div>';
+      document.documentElement.classList.remove('pora-boot');
     }
   })(0);
 })();
@@ -6193,14 +6198,14 @@ async function renderDuoNext(){
   box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
     '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Dabar — '+_xEsc(f.gen)+' eilė</div>'+
     '<button type="button" class="btn btn-gold" id="duo-next-btn" style="margin:0">'+_xEsc(f.gen)+' analizė — '+eur(d.price)+' €</button>'+
-    '<a href="/?pora='+encodeURIComponent(duo.sid)+'#asmenine" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
+    '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
   // Pora analizę jau atliko — „Jums dviem“ (porų pasiūlymas) nereikalingas, jo vietoje rodoma kito eilė
   const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none';
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
   const sr=document.getElementById('s-result'); if(sr) sr.classList.add('duo-mode');
-  // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — nuslenka kartu su puslapiu, netrukdo skaityti
+  // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — „Dariaus eilė“: veda į porų rezultatą iškart prie kito žmogaus analizės mygtuko
   if(sr&&!document.getElementById('duo-back')){
-    const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Poros rezultatas';
+    const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent=f.gen+' eilė';
     l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
     sr.prepend(l);
   }
