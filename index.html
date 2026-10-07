@@ -5993,12 +5993,12 @@ async function poraCopyRemote(btn){
   poraRemoteState(true);
 }
 
-async function poraStart(){
+// keep=true — tylus pakartojimas (procentai ir ekranas nekeičiami)
+async function poraStart(keep){
   const p=window._pora;
   p.active=false;
-  go('s-pora-wait');
+  if(!keep){ go('s-pora-wait'); poraProgress(true); }
   document.getElementById('pora-wait-err').style.display='none';
-  poraProgress(true);
   const photos=(p.remoteB?[...p.photos[1]]:[...p.photos[0],...p.photos[1]]).map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
   try{
     const r=await fetch('/pora/start',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:p.sid, photos }) });
@@ -6100,7 +6100,12 @@ function poraPoll(){
     try{
       const d=await (await fetch('/pora/status?session_id='+encodeURIComponent(window._pora.sid))).json();
       if(d.status==='done' && d.result){ poraFinishProgress(()=>renderPoraResult(d.result)); return; }
-      if(d.status==='error'){ poraStopProgress(); poraShowError('Analizė nepavyko.'); return; }
+      if(d.status==='error'){
+        // Vieną kartą bandoma iš naujo automatiškai (nuotraukos dar šiame lange) — vartotojas mato tik ilgesnį laukimą
+        const p=window._pora||{}, has=p.photos&&p.photos[1]&&(p.remoteB||p.photos[0]);
+        if(has&&!window._poraAutoRetried){ window._poraAutoRetried=true; poraStart(true); return; }
+        poraStopProgress(); poraShowError('Analizė nepavyko.'); return;
+      }
     }catch(e){}
     if(Date.now()-t0>9*60*1000){ poraStopProgress(); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
     setTimeout(tick,3000);
