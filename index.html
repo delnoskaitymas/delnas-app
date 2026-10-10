@@ -307,7 +307,6 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .rate-more textarea{width:100%;min-height:70px;resize:vertical;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:10px 12px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none}
 .rate-more label{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .rate-more label input{margin-top:2px;accent-color:#d4a843}
-.rate-private{display:none;font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .rate-send{width:100%;margin-top:10px;border:none;border-radius:10px;padding:12px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#07040f;font:800 14px 'DM Sans',sans-serif;cursor:pointer}
 .rate-thx{display:none;font-family:'Playfair Display',serif;font-style:italic;color:var(--gold2);font-size:15px;margin-top:6px}
 /* Porų nuotolinis režimas */
@@ -1107,18 +1106,19 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė</a>
     </div>
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Parodykite artimiesiems, kaip derate, arba nustebinkite juos delnų analize.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
         <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti asmeninę analizę</a>
-        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti kitai porai</a>
+        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti porų suderinamumo analizę</a>
       </div>
     </div>
-    <!-- Priminimas porai po 6 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
+    <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
     <div id="pora-plan" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">✦ Po 6 mėnesių pažiūrėkite, kas pasikeitė</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Po 6 mėnesių atsiųsime vieną priminimą su <b style="color:var(--gold2)">−20 %</b> pakartotinei porų analizei.</div>
-      <button type="button" id="pora-plan-btn" class="btn" style="margin:0;background:transparent;border:1px solid var(--gold);color:var(--gold2)" onclick="poraPlanRemind()">✦ Priminti po 6 mėn.</button>
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">✦ Po 3 mėnesių pažiūrėkite, kas pasikeitė</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Po 3 mėnesių atsiųsime priminimą su <b style="color:var(--gold2)">−20 %</b> nuolaida pakartotinei poros analizei.</div>
+      <button type="button" id="pora-plan-btn" class="btn" style="margin:0;background:transparent;border:1px solid var(--gold);color:var(--gold2)" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
       <div id="pora-plan-done" style="display:none;font-size:12.5px;color:var(--gold2);line-height:1.6;padding:6px 0"></div>
       <div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:8px">Vienas laiškas. Atsisakyti galima bet kada.</div>
     </div>
@@ -1591,7 +1591,7 @@ function closeSample(){ const m=document.getElementById('sample-modal'); if(m){ 
   try{
     const q=new URLSearchParams(location.search);
     if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')||q.get('ref')) return;
-    fetch('/testimonials').then(r=>r.json()).then(d=>{
+    fetch('/testimonials?kind=asmenine').then(r=>r.json()).then(d=>{
       const short=((d&&d.items)||[]).filter(x=>x.text&&x.text.length<=60);
       const el=document.getElementById('home-testi'); if(!short.length||!el) return;
       const x=short[Math.floor(Math.random()*short.length)];
@@ -1609,23 +1609,22 @@ function renderRating(boxId, kind){
   const key='delnasRated:'+kind+':'+(kind==='pora'?((window._pora||{}).sid||''):(window._orderNumber||window._paymentRef||''));
   let done=false; try{ done=!!localStorage.getItem(key); }catch(e){}
   const you=kind==='pora';
-  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo analizę?':'Kaip vertini savo analizę?')+'</div>'+
+  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo poros suderinamumo analizę?':'Kaip vertini savo analizę?')+'</div>'+
     (done?'<div class="rate-thx" style="display:block">Ačiū už įvertinimą! ✦</div>':
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
     '<label class="rate-pub-row"><input type="checkbox" class="rate-pub"> Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)</label>'+
-    '<div class="rate-private">Šį atsiliepimą matysime tik mes — jis padės mums tobulėti.</div>'+
     '<button type="button" class="rate-send">Siųsti</button></div><div class="rate-thx">Ačiū už įvertinimą! ✦</div>')+'</div>';
   if(done) return;
   let stars=0; const card=box.querySelector('.rate');
-  const ta=card.querySelector('textarea'), pubRow=card.querySelector('.rate-pub-row'), pub=card.querySelector('.rate-pub'), priv=card.querySelector('.rate-private');
+  const ta=card.querySelector('textarea'), pubRow=card.querySelector('.rate-pub-row'), pub=card.querySelector('.rate-pub');
   card.querySelectorAll('.rate-stars button').forEach(b=>b.addEventListener('click',()=>{ stars=+b.dataset.n; card.querySelectorAll('.rate-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); card.querySelector('.rate-more').style.display='block';
     // 1–3 ★ — atsiliepimas tik mums: viešo rodymo pasirinkimo nėra
-    const low=stars<=3; pubRow.style.display=low?'none':''; priv.style.display=low?'block':'none'; if(low) pub.checked=false;
+    const low=stars<=3; pubRow.style.display=low?'none':''; if(low) pub.checked=false;
     ta.placeholder=low?(you?'Ką galėtume patobulinti? (neprivaloma)':'Ką galėtume patobulinti? (neprivaloma)'):(you?'Kas jums labiausiai patiko? (neprivaloma)':'Kas labiausiai patiko? (neprivaloma)'); }));
   card.querySelector('.rate-send').addEventListener('click',async()=>{
     if(!stars) return; const btn=card.querySelector('.rate-send'); btn.disabled=true; btn.textContent='Siunčiama…';
-    const name=kind==='pora'?((window._pora||{}).nameA||''):(window.userName||window._userName||'');
+    const name=kind==='pora'?[((window._pora||{}).nameA||''),((window._pora||{}).nameB||'')].filter(Boolean).join(' ir '):(window.userName||window._userName||'');
     try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind})}); }catch(e){}
     try{ localStorage.setItem(key,'1'); }catch(e){}
     card.querySelector('.rate-stars').style.display='none'; card.querySelector('.rate-more').style.display='none'; card.querySelector('.rate-thx').style.display='block';
@@ -6247,11 +6246,12 @@ async function loadPoraDuo(){
   if(!d||!d.price||!d.a||!d.b) return;
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
-    return o.used ? '<div style="font-size:12.5px;color:var(--gold2);padding:10px 0">✓ '+g+' analizė užsakyta</div>'
+    return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' asmeninė analizė atlikta</div>'
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' analizė — '+eur(d.price)+' €</a>'+
         '<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button></div>'; };
-  box.innerHTML='<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>'+
-    '<div style="display:flex;flex-direction:column;gap:12px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
+  const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
+  box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
+    '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
   if(fb) fb.style.display='none';
 }
@@ -6261,7 +6261,7 @@ async function poraPlanRemind(){
   try{
     const r=await fetch('/pora/reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})}); const d=await r.json();
     if(!r.ok||!d.ok) throw new Error(d.error||'');
-    btn.style.display='none'; done.textContent='✦ Priminsime po 6 mėnesių'+(d.email?' el. paštu '+d.email:'')+'.'; done.style.display='block';
+    btn.style.display='none'; done.textContent='✦ Priminsime po 3 mėnesių'+(d.email?' el. paštu '+d.email:'')+'.'; done.style.display='block';
   }catch(e){ btn.disabled=false; btn.textContent=t; alert('Nepavyko užregistruoti priminimo. Bandykite dar kartą.'); }
 }
 // Lyčiai neutrali kalba — tas pats saugiklis kaip serveryje (poraNeutral), kad būtų pataisyti

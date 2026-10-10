@@ -3098,7 +3098,7 @@ const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1499', 10);
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
 const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
 // Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
-const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '180', 10);
+const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '90', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
 // Šešios santykių sritys (0–100) — iš jų skaičiuojamas bendras suderinamumas
 const PORA_DIMENSIONS = ['jausmai', 'bendravimas', 'vertybes', 'kasdienybe', 'trauka', 'ateitis'];
@@ -4339,18 +4339,27 @@ function readJson(file, def) { try { if (fs.existsSync(file)) return JSON.parse(
 function writeJson(file, data) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(data, null, 2)); fs.renameSync(tmp, file); }
 function feedbackToken(id) { return crypto.createHmac('sha256', ADMIN_KEY).update('fb:' + id).digest('hex').slice(0, 20); }
 
+// Atsiliepimo ilgis, kuris telpa vienoje eilutėje pradžios ir /pora ekranuose (naršyklė rodo tik tokius)
+const TESTI_MAX = 60;
 app.post('/feedback', sensitiveLimiter, (req, res) => {
   try {
     const { stars, text, allowPublic, name, kind } = req.body || {};
     const st = Math.round(Number(stars));
     if (!(st >= 1 && st <= 5)) return res.status(400).json({ error: 'Pasirinkite įvertinimą' });
     const t = typeof text === 'string' ? text.trim().slice(0, 500) : '';
-    const first = typeof name === 'string' ? name.trim().split(/\s+/)[0].slice(0, 30) : '';
+    const nm = typeof name === 'string' ? name.trim() : '';
+    // Porų atsiliepimas — abu vardai („Mina ir Darius“), asmeninis — tik vardas
+    const first = kind === 'pora'
+      ? nm.split(/\s+ir\s+/i).map(x => x.split(/\s+/)[0].slice(0, 30)).filter(Boolean).slice(0, 2).join(' ir ')
+      : nm.split(/\s+/)[0].slice(0, 30);
     const fb = readJson(FEEDBACK_FILE, { items: [] });
     const id = crypto.randomBytes(8).toString('hex');
     const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
-    const approve = item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
+    // Svetainėje rodomi tik trumpi (iki TESTI_MAX ženklų) atsiliepimai — ilgiems patvirtinimo mygtuko nėra
+    const tooLong = t.length > TESTI_MAX;
+    const approve = item.allowPublic && st >= 4 && tooLong ? `<p style="color:#8a6d1f"><em>Per ilgas rodyti svetainėje (daugiau nei ${TESTI_MAX} ženklų).</em></p>`
+      : item.allowPublic && st >= 4 ? `<p><a href="${appBaseUrl()}/feedback/approve?id=${id}&t=${feedbackToken(id)}" style="display:inline-block;background:#d4a843;color:#140f02;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">✓ Rodyti šį atsiliepimą svetainėje</a></p>` : '';
     adminDigestAdd('ratings', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
@@ -4368,13 +4377,16 @@ app.get('/feedback/approve', (req, res) => {
   const fb = readJson(FEEDBACK_FILE, { items: [] });
   const it = fb.items.find(x => x.id === id);
   if (!it || !it.allowPublic) return res.status(404).send('Atsiliepimas nerastas');
+  if ((it.text || '').length > TESTI_MAX) return res.status(400).send('Atsiliepimas per ilgas rodyti svetainėje (daugiau nei ' + TESTI_MAX + ' ženklų)');
   it.approved = true; writeJson(FEEDBACK_FILE, fb);
   res.send('<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>✓ Atsiliepimas bus rodomas svetainėje</h2><p>„' + escapeHtml(it.text) + '“ — ' + escapeHtml(it.name || '') + '</p></div>');
 });
 
 app.get('/testimonials', (req, res) => {
   const fb = readJson(FEEDBACK_FILE, { items: [] });
-  const items = fb.items.filter(x => x.approved && x.allowPublic && x.stars >= 4 && x.text).slice(-8).reverse()
+  // ?kind=pora — porų atsiliepimai (/pora puslapiui); be jo — asmeninės analizės (pradžios ekranui)
+  const kind = req.query.kind === 'pora' ? 'pora' : 'asmenine';
+  const items = fb.items.filter(x => x.approved && x.allowPublic && x.stars >= 4 && x.text && (x.kind || 'asmenine') === kind).slice(-8).reverse()
     .map(x => ({ stars: x.stars, text: x.text, name: x.name }));
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.json({ items });
