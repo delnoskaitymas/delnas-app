@@ -6224,8 +6224,8 @@ async function renderDuoNext(){
   if(duo||duoPromo){ const pc0=document.getElementById('r-pora-card'); if(pc0) pc0.style.display='none'; }
   if(!duo) return;
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json(); }catch(e){ return; }
-  // Porų analizė daryta per nuorodą (skirtinguose telefonuose) — kiekvienas savo analizę daro savo telefone, kito eilės nesiūlome
-  if(!d||d.remote) return;
+  // Ir porų analizę darant per nuorodą: atėjus iš porų rezultato šiame telefone, kito eilę vis tiek siūlome
+  if(!d||!d.price) return;
   const other=duo.side==='a'?'b':'a', o=d[other], name=other==='a'?d.nameA:d.nameB;
   if(!o||!name) return;
   const sr=document.getElementById('s-result'), pc=document.getElementById('r-pora-card');
