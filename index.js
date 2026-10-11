@@ -4029,7 +4029,7 @@ app.get('/klausk/result', sensitiveLimiter, (req, res) => {
   if (!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(s)) return res.status(400).json({ error: 'Neteisinga nuoroda' });
   const o = loadKlauskOrders()[s];
   if (!o || !o.paid || o.kind === 'pora' || !o.result) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '', email: o.email || '', orderNumber: o.orderNumber || '' });
+  res.json({ result: o.result, name: o.name || '', paymentRef: o.paymentRef || '', email: o.email || '', orderNumber: o.orderNumber || '', duo: duoOfPayment(o.paymentRef) });
 });
 
 app.get('/klausk', (req, res) => {
@@ -4605,6 +4605,15 @@ function duoOfPromo(code) {
     const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('duo:'));
     const m = key && key.match(/^duo:(.+):(a|b)$/);
     return m ? { sid: m[1], side: m[2] } : null;
+  } catch (e) { return null; }
+}
+// Asmeninė analizė, apmokėta porų kainos kodu → { sid, side } (pagal mokėjimo ID)
+function duoOfPayment(ref) {
+  try {
+    if (!ref) return null;
+    const s = loadPromos();
+    const c = Object.keys(s.codes).find(k => s.codes[k].kind === 'duo' && s.codes[k].usedBy === ref);
+    return c ? duoOfPromo(c) : null;
   } catch (e) { return null; }
 }
 function promoTag(p) {
