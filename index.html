@@ -1453,6 +1453,17 @@ window.addEventListener('DOMContentLoaded',async()=>{
 // painus (žr. ekrano nuotrauką, kur rodomas "Tuščias Claude atsakymas").
 // Dabar visi šie tušti/nereikalingi blokai PASLEPIAMI, o rodomas vienas
 // aiškus, draugiškas pranešimas.
+// Praneša administratoriui (vieną kartą), kad apmokėjęs klientas pamatė
+// klaidos ekraną ir negavo analizės.
+function reportClientAnalysisError(reason){
+  if(window._clientErrorReported) return;
+  window._clientErrorReported=true;
+  try{
+    fetch('/notify-client-error',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:window.userName||window._userName||'',email:window._userEmail||'',sessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',error:String(reason||'')})
+    }).catch(()=>{});
+  }catch(e){}
+}
 function showAnalysisError(){
   const rn=document.getElementById('res-name');
   const _errName=window.userName||window._userName||'';
@@ -1523,6 +1534,7 @@ async function verifyAndProceed(sessionId){
   console.error('verifyAndProceed klaida:',e);
   go('s-result');
   setTimeout(()=>{ showAnalysisError(); },50);
+  reportClientAnalysisError('verifyAndProceed: '+(e&&e.message||''));
  }
 }
 
@@ -1749,10 +1761,11 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
    if(_navigated)return;
    _navigated=true;
    try{
-     updatePayDiag('WATCHDOG SUVEIKĖ po 220s — priverstinis perjungimas');
-     console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 220s');
+     updatePayDiag('WATCHDOG SUVEIKĖ po 320s — priverstinis perjungimas');
+     console.error('fetchResultsAndNavigate watchdog — priverstinis persijungimas po 320s');
      go('s-result');
      setTimeout(()=>{ showAnalysisError(); },50);
+     reportClientAnalysisError('Rezultatas neatkeliavo per 320 s (watchdog)');
    }catch(watchdogErr){
      // Net jei watchdog'o VIDUJE kas nors nepavyktų, bent jau pažymime tai
      // diagnostikoje, kad žinotume — problema NE tame, jog watchdog
@@ -1760,7 +1773,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
      try{ updatePayDiag('WATCHDOG KLAIDA: '+watchdogErr.message); }catch(e2){}
      console.error('watchdog klaida:',watchdogErr);
    }
- },220000);
+ },320000);
  try{
   // 1. Sėkmės animacija — pay-section (po klausimų bloku) sklandžiai išnyksta,
   // jo vietoje atsiranda auksinė varnelė + "Mokėjimas sėkmingas!"
@@ -1822,7 +1835,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         setTimeout(()=>{
           if(_navigated) return;
           const t=document.getElementById('pay-wait-text');
-          if(t) t.textContent='Atsiprašome, tai užtrunka kiek ilgiau nei įprastai – bandome dar kartą...';
+          if(t) t.textContent='Analizė dar ruošiama – tai gali užtrukti kelias minutes...';
         },15000);
         // Po dar 30s (t.y. 45s nuo pradžios): jei rezultato VIS DAR nėra,
         // rodome galutinę, ramią žinutę toje pačioje vietoje (spinner
@@ -1835,8 +1848,8 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
         setTimeout(()=>{
           if(_navigated) return;
           _showedErrorMessage=true;
-          const row=document.getElementById('pay-wait-row');
-          if(row) row.innerHTML='<span style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(212,168,67,.8);line-height:1.6">Atsiprašome, įvyko klaida. Tavo mokėjimas užregistruotas – mūsų komanda susisieks su tavimi el. paštu artimiausiu metu ir automatiškai grąžins sumokėtą sumą.</span>';
+          const t=document.getElementById('pay-wait-text');
+          if(t) t.textContent='Užtrunka ilgiau nei įprastai. Neuždaryk šio lango – rezultatas atsiras automatiškai.';
         },45000);
         // Sėkmės ekranas ("Mokėjimas sėkmingas!") turi būti rodomas LYGIAI
         // 2.5s, tada švelniai (go() fade animacija) pereiti į rezultatų
@@ -1914,7 +1927,11 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // SVARBU: tai NIEKADA nepradeda naujos analizės nuo nulio — tiesiog
     // pasiteirauja, ar originali (fone vykstanti) analizė jau baigta.
     let ad=null;
-    for(let attempt=0;attempt<20;attempt++){
+    // Laukiame pagal LAIKĄ (ne bandymų skaičių): jei serveris tuo metu
+    // persikrauna (deploy'us), analizė paleidžiama iš naujo ir gali trukti
+    // kelias minutes — 20 greitų bandymų (~1 min.) tam neužtekdavo.
+    const _pollStart=Date.now();
+    for(let attempt=0;Date.now()-_pollStart<300000;attempt++){
       updatePayDiag('analizė, bandymas #'+(attempt+1)+'...');
       try{
         const ar=await fetchWithTimeout('/analyze-palm',{
@@ -1987,6 +2004,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     console.error('[fetchResultsAndNavigate] analizė nepavyko:', finalErr);
     go('s-result');
     setTimeout(()=>{ showAnalysisError(); },50);
+    reportClientAnalysisError(finalErr);
   }
  }catch(outerErr){
   // Garantuota apsauga — kad ir kas nutiktų (net netikėta JS klaida animacijos
@@ -1996,6 +2014,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
   window._fetchResultsInProgress=false;
   go('s-result');
   setTimeout(()=>{ showAnalysisError(); },50);
+  reportClientAnalysisError('Kritinė klaida: '+(outerErr&&outerErr.message||''));
  }
 }
 
