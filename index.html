@@ -5279,7 +5279,9 @@ async function buildStory916Blob(){
 
 async function shareStory(){
   try{
-    const blob = await buildStory916Blob();
+    // Dalinamasi pačia kvadratine kortele (1080×1080) — įraše ji užima visą plotą be juodų kraštų,
+    // o istorijose Facebook/Instagram ją patys padeda per vidurį (anksčiau — 9:16 su dideliais juodais plotais)
+    const blob = await buildStoryCardBlob();
     if(!blob){ alert('Nepavyko sukurti kortelės. Bandykite dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
     const appUrl = 'https://www.delnaskaitymas.lt';
