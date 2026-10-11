@@ -1880,14 +1880,14 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('tikrinu mokėjimą (PI)...');
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._verifyDuo=vd.duo||null;}
       if(vd.email){ window._userEmail=vd.email; window.userEmail=vd.email; }
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
       const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||'')+'&bgSessionId='+encodeURIComponent(window.bgSessionId||''),{},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._verifyDuo=vd.duo||null;}
       // SVARBU: jei naršyklės sessionStorage per Stripe Checkout peradresavimą
       // "pametė" bgSessionId/orderNumber (žinoma iOS Safari problema), čia
       // juos atstatome iš PATIKIMO serverio atsakymo (Stripe metadata) —
@@ -1905,6 +1905,8 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     }
     if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
+    // Asmeninė analizė porų kaina — pora ir pusė iš serverio (jei po mokėjimo grįžta kitame skirtuke, sessionStorage tuščias)
+    try{ if(window._verifyDuo&&window._verifyDuo.sid&&!sessionStorage.getItem('delnasDuo')) sessionStorage.setItem('delnasDuo',JSON.stringify({sid:window._verifyDuo.sid,side:window._verifyDuo.side})); if(window._verifyDuo) sessionStorage.setItem('delnasDuoTab','1'); }catch(e){}
     window.palmToken=token;window.userName=userName;window._userName=userName;
 
     // 3. Siųsti analizę - nuotraukos iš visų šaltinių
@@ -6222,8 +6224,8 @@ async function renderDuoNext(){
   if(duo||duoPromo){ const pc0=document.getElementById('r-pora-card'); if(pc0) pc0.style.display='none'; }
   if(!duo) return;
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json(); }catch(e){ return; }
-  // Porų analizė daryta per nuorodą (skirtinguose telefonuose) — kiekvienas savo analizę daro savo telefone, kito eilės nesiūlome
-  if(!d||d.remote) return;
+  // Ir porų analizę darant per nuorodą: atėjus iš porų rezultato šiame telefone, kito eilę vis tiek siūlome
+  if(!d||!d.price) return;
   const other=duo.side==='a'?'b':'a', o=d[other], name=other==='a'?d.nameA:d.nameB;
   if(!o||!name) return;
   const sr=document.getElementById('s-result'), pc=document.getElementById('r-pora-card');
