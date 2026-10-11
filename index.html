@@ -6217,7 +6217,7 @@ function setupPoraKlausk(){
 // Asmeninio rezultato viršuje, jei atėjo iš porų rezultato: „Dabar — Karlės eilė“ (tame pačiame telefone)
 async function renderDuoNext(){
   const box=document.getElementById('r-duo-next'); if(!box) return; box.innerHTML='';
-  if(window._manoView||window._klView) return;
+  if(window._manoView) return;
   let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(e){}
   let duoPromo=false; try{ duoPromo=!!sessionStorage.getItem('delnasDuoTab')||(JSON.parse(sessionStorage.getItem('delnasPromo')||'null')||{}).kind==='duo'; }catch(e){}
   // Asmeninė analizė atlikta iš porų analizės (porų kaina) — pora suderinamumą jau žino, „Jums dviem“ nerodome
@@ -6232,6 +6232,11 @@ async function renderDuoNext(){
   // Abu jau atliko asmenines analizes (paskutinis žmogus) — tik grįžimas į porų rezultatą, prie bloko, iš kurio atėjo
   if(o.used){
     if(pc) pc.style.display='none';
+    // Ir ekrano apačioje — grįžimas į porų rezultatą (viršutinis mygtukas matomas tik rezultato pradžioje)
+    box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
+      '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Abiejų asmeninės analizės atliktos</div>'+
+      '<a class="btn btn-gold" href="/?pora='+encodeURIComponent(duo.sid)+'#dovanos" style="margin:0;display:block;text-decoration:none">Grįžti į poros rezultatą</a></div>';
+    if(sr) sr.classList.add('duo-mode');
     if(sr&&!document.getElementById('duo-back')){
       const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#dovanos'; l.textContent='Grįžti į poros rezultatą';
       l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
@@ -6822,6 +6827,8 @@ async function loadCompare(){
       if(d.paymentRef) window._paymentRef=d.paymentRef;
       if(d.email){ window._userEmail=window.userEmail=d.email; }
       if(d.orderNumber) window._orderNumber=d.orderNumber;
+      // Asmeninė analizė porų kaina — kito poros žmogaus eilė / grįžimas į porų rezultatą
+      try{ if(d.duo&&d.duo.sid){ sessionStorage.setItem('delnasDuo',JSON.stringify({sid:d.duo.sid,side:d.duo.side})); sessionStorage.setItem('delnasDuoTab','1'); } }catch(e){}
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(location.hash==='#klausk') setTimeout(klScrollAfter,250);
