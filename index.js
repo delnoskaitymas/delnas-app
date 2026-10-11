@@ -4098,7 +4098,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
         html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
       }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}) });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });

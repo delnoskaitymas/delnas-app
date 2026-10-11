@@ -4014,7 +4014,7 @@ function renderResultExtra(r){
 // Mokėjimo nuoroda paruošiama IŠ ANKSTO, kad paspaudus langas atsidarytų iš karto
 // (kai kurios naršyklės blokuoja langus, atidaromus po užklausos). Įrašytas klausimas
 // perduodamas klausimų puslapiui ir ten užduodamas automatiškai.
-async function klLeftOf(id){ try{ const d=await (await fetch('/klausk/check?s='+encodeURIComponent(id))).json(); return d&&d.paid&&typeof d.left==='number'?d.left:null; }catch(e){ return null; } }
+async function klLeftOf(id){ try{ const d=await (await fetch('/klausk/check?s='+encodeURIComponent(id))).json(); return d&&d.paid&&typeof d.left==='number'?Math.max(0,d.left-(d.answering?1:0)):null; }catch(e){ return null; } }
 function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
 // Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
 function klScrollAfter(ks){
@@ -4048,6 +4048,8 @@ function klRefreshLeft(kl){
   fetch('/klausk/check?s='+encodeURIComponent(ks)).then(r=>r.json()).then(d=>{
     const box=kl.querySelector('.kl-done-box'), old=box&&box.querySelector('button'); if(!old) return;
     const nb=old.cloneNode(false);
+    // Klausimas, į kurį atsakymas dar ruošiamas (grįžta nesulaukus), jau įskaičiuotas
+    if(d&&d.answering) d.left=Math.max(0,d.left-1);
     if(d&&d.paid&&d.left>0){
       nb.textContent=d.left===1?'✦ Užduoti likusį klausimą':'✦ Užduoti likusius klausimus (liko '+d.left+')';
       nb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(ks)+'#klausti'));
