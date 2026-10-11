@@ -57,6 +57,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.32);margin-top:26px;line-height:1.6}
 .hidden{display:none!important}
 a,button{-webkit-tap-highlight-color:transparent}
+@media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 </style>
 </head>
 <body>
@@ -229,7 +230,7 @@ document.getElementById('back-link').addEventListener('click', e => {
     if(!t||!/^mt_[a-f0-9]{32}$/.test(t)) return;
     const a=document.createElement('a');
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
-    a.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+    a.style.cssText="position:fixed;top:calc(10px + var(--sat,0px));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
     const add=()=>document.body.appendChild(a);
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
   }catch(e){}
