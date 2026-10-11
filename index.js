@@ -2260,17 +2260,18 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
 // žinotų, jog PROBLEMA BUVO, net jei ji galiausiai išsisprendė pati, o
 // klientas rezultatą gavo. Tai leidžia sekti tokius atvejus ir, jei jie
 // kartojasi, ieškoti gilesnės priežasties.
-function logRecoveredAfterDelay({ name, email, sessionId, orderNumber }) {
+function logRecoveredAfterDelay({ name, email, sessionId, orderNumber, afterErrorEmail }) {
   try {
     mailer.sendMail({
       from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
-      subject: `[KLAIDA] Klientas GAVO rezultatą, bet po vėlavimo/klaidos`,
+      subject: afterErrorEmail ? `[ATŠAUKTA KLAIDA] ${orderNumber || ''} klientas vis dėlto GAVO rezultatą — pinigų grąžinti nereikia` : `[KLAIDA] Klientas GAVO rezultatą, bet po vėlavimo/klaidos`,
       html: `<div style="font-family:Georgia,serif;padding:20px">
         <h2 style="color:#a07828">Analizė užtruko/rodė klaidą, bet GALIAUSIAI sėkmingai baigėsi</h2>
         <p><strong>Vardas:</strong> ${escapeHtml(name || '(nežinoma)')}</p>
         <p><strong>El. paštas:</strong> ${escapeHtml(email || '(nežinomas)')}</p>
         <p><strong>Užsakymo numeris:</strong> ${escapeHtml(orderNumber || '(nėra)')}</p>
+        ${afterErrorEmail ? `<p style="color:#1b7a3a"><strong>Anksčiau gavai klaidos laišką dėl šio užsakymo — jis nebeaktualus: klientas rezultatą gavo, pinigų grąžinti ir atsiprašyti NEREIKIA.</strong></p>` : ''}
         <p>Klientui rezultatų ekrane BUVO parodytas atsiprašymo/klaidos pranešimas (analizė užtruko ilgiau nei 45s), BET analizė vis dėlto vėliau sėkmingai baigėsi ir klientas GAVO savo rezultatą. Papildomai susisiekti su klientu NEBŪTINA — bet verta stebėti, ar tokie atvejai nesikartoja per dažnai (tai rodytų nuolatinę, o ne vienkartinę problemą).</p>
       </div>`
     }).then(() => console.log(`[logRecoveredAfterDelay] laiškas išsiųstas į ${ADMIN_EMAIL} (orderNumber=${orderNumber||'?'}, sessionId=${sessionId||'?'})`))
@@ -2278,6 +2279,23 @@ function logRecoveredAfterDelay({ name, email, sessionId, orderNumber }) {
   } catch (e) {
     console.error('[logRecoveredAfterDelay] bendra klaida:', e.message);
   }
+}
+
+const CLIENT_ERROR_EMAIL_DELAY_MS = 3 * 60 * 1000;
+const pendingClientErrors = new Map();   // užsakymas -> { timer, sent, data }
+const deliveredResultOrders = new Set(); // užsakymai, kurių rezultatą klientas gavo
+// Kviečiama, kai klientui atsidaro rezultatas (/email-result-pdf). Jei
+// klaidos laiškas dar laukia — atšaukiamas; jei jau išsiųstas — admin gauna
+// laišką, kad klientas rezultatą vis dėlto gavo (pinigų grąžinti nereikia).
+function markResultDelivered(orderNumber) {
+  if (!orderNumber) return;
+  deliveredResultOrders.add(orderNumber);
+  setTimeout(() => deliveredResultOrders.delete(orderNumber), 6 * 60 * 60 * 1000);
+  const entry = pendingClientErrors.get(orderNumber);
+  if (!entry) return;
+  pendingClientErrors.delete(orderNumber);
+  if (entry.sent) logRecoveredAfterDelay({ ...entry.data, afterErrorEmail: true });
+  else clearTimeout(entry.timer);
 }
 
 // Klientas iškviečia, kai po apmokėjimo jam parodomas klaidos ekranas
@@ -2293,7 +2311,18 @@ app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
     if (!email && !orderNumber && !sessionId) return res.status(400).json({ error: 'Trūksta duomenų' });
     const errorMessage = 'Kliento ekrane parodyta klaida: ' + String(error || 'nežinoma').slice(0, 300);
     console.log(`[notify-client-error] orderNumber=${orderNumber||'?'} sessionId=${sessionId||'?'} ${errorMessage}`);
-    logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage });
+    const key = orderNumber || sessionId;
+    if (deliveredResultOrders.has(key) || pendingClientErrors.has(key)) return res.json({ ok: true });
+    // Laiškas siunčiamas ne iškart: jei per šį laiką klientas vis dėlto
+    // gauna rezultatą (pvz. perkrauna puslapį), klaidos laiško nesiunčiame.
+    const entry = { sent: false, data: { name, email, sessionId, orderNumber } };
+    entry.timer = setTimeout(() => {
+      if (deliveredResultOrders.has(key)) { pendingClientErrors.delete(key); return; }
+      entry.sent = true;
+      logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage });
+      setTimeout(() => pendingClientErrors.delete(key), 6 * 60 * 60 * 1000);
+    }, CLIENT_ERROR_EMAIL_DELAY_MS);
+    pendingClientErrors.set(key, entry);
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-client-error] klaida:', err);
@@ -2341,6 +2370,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     // PDF laišką (pvz. dėl naršyklės atnaujinimo su tuo pačiu session_id
     // URL adrese), NEBEsiunčiame antro egzemplioriaus. Grąžiname "ok",
     // kad klientas nematytų klaidos — laiškas juk jau realiai nuėjo.
+    if (orderNumber && !isGift) markResultDelivered(orderNumber);
     if (orderNumber && sentPdfEmailsForOrder.has(orderNumber)) {
       console.log(`[email-result-pdf] praleista — laiškas šiam užsakymui (${orderNumber}) jau išsiųstas anksčiau.`);
       return res.json({ ok: true, alreadySent: true });
