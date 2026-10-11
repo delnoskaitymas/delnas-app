@@ -348,7 +348,14 @@ function savePaymentTokens(map) {
   const now = Date.now();
   let changed = false;
   for (const [id, entry] of Object.entries(map)) {
-    if (now - entry.createdAt > 2 * 60 * 60 * 1000) { delete map[id]; changed = true; }
+    if (now - entry.createdAt > 2 * 60 * 60 * 1000) { delete map[id]; changed = true; continue; }
+    // Serveris persikrovė (pvz. naujas deploy'us), kol klientas laukė
+    // analizės rezultato — atkuriame tokeną atmintyje iškart, kad kliento
+    // /analyze-palm užklausos negautų 403 „Mokėjimas nepatvirtintas“.
+    if (entry.token && !validTokens.has(entry.token)) {
+      validTokens.set(entry.token, { name: entry.name, email: entry.email, used: entry.used || false, createdAt: entry.createdAt });
+      setTimeout(() => validTokens.delete(entry.token), (entry.createdAt + 2 * 60 * 60 * 1000) - now);
+    }
   }
   if (changed) savePaymentTokens(map);
 })();
@@ -644,8 +651,17 @@ function diagnozuotiKlaida(errorMessage) {
   return null; // nežinoma/kita priežastis — rodomas tik bendras tekstas
 }
 
+// Tas pats užsakymas gali būti praneštas ir serverio, ir kliento
+// (/notify-client-error) — laišką siunčiame tik vieną kartą.
+const reportedAnalysisFailures = new Set();
 function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage }) {
   try {
+    const failKey = orderNumber || sessionId || '';
+    if (failKey) {
+      if (reportedAnalysisFailures.has(failKey)) return;
+      reportedAnalysisFailures.add(failKey);
+      setTimeout(() => reportedAnalysisFailures.delete(failKey), 6 * 60 * 60 * 1000);
+    }
     const displayName = name ? ltPhrase(name, 'voc') : 'kliente';
     const diagnoze = diagnozuotiKlaida(errorMessage);
     // Paruoštas, kopijuoti-įklijuoti tinkantis atsiprašymo laiško juodraštis
@@ -654,7 +670,7 @@ function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage 
 
 Atsiprašome — bandant paruošti jūsų asmeninę delnų analizę, mūsų sistemoje įvyko techninė klaida, ir rezultatas nebuvo sėkmingai sugeneruotas.
 
-Jau grąžinome jums sumokėtą sumą (12,99 €) — ji turėtų pasirodyti jūsų sąskaitoje per kelias darbo dienas, priklausomai nuo jūsų banko.
+Jau grąžinome jums sumokėtą sumą — ji turėtų pasirodyti jūsų sąskaitoje per kelias darbo dienas, priklausomai nuo jūsų banko.
 
 Labai atsiprašome už nepatogumus. Jei norėtumėte pabandyti dar kartą, mielai jums padėsime.
 
@@ -674,7 +690,7 @@ DELNAS komanda`;
         ${diagnoze ? `<div style="background:#fff3f3;border:1px solid #f0b8b8;border-radius:8px;padding:14px 16px;margin:16px 0"><strong style="color:#b00020">Tikėtina priežastis: ${escapeHtml(diagnoze.pavadinimas)}</strong><p style="margin:8px 0 0">${escapeHtml(diagnoze.sprendimas)}</p></div>` : ''}
         <hr style="margin:20px 0;border:none;border-top:1px solid #ddd">
         <h3 style="color:#333">Ką daryti su ŠIUO klientu (2 žingsniai):</h3>
-        <p><strong>1.</strong> Stripe Dashboard'e susirask šį mokėjimą (pagal el. paštą <strong>${escapeHtml(email || '')}</strong> arba apytikslį laiką) ir grąžink klientui <strong>12,99 €</strong>.</p>
+        <p><strong>1.</strong> Stripe Dashboard'e susirask šį mokėjimą (pagal el. paštą <strong>${escapeHtml(email || '')}</strong> arba apytikslį laiką) ir grąžink klientui <strong>sumokėtą sumą</strong>.</p>
         <p><strong>2.</strong> Nusiųsk klientui (${escapeHtml(email || '')}) atsiprašymo laišką — paruoštas juodraštis žemiau, gali kopijuoti ir įklijuoti tiesiai:</p>
         <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:8px;padding:16px;margin-top:8px;white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;color:#222">${escapeHtml(apologyDraft)}</div>
       </div>`
@@ -2263,6 +2279,27 @@ function logRecoveredAfterDelay({ name, email, sessionId, orderNumber }) {
     console.error('[logRecoveredAfterDelay] bendra klaida:', e.message);
   }
 }
+
+// Klientas iškviečia, kai po apmokėjimo jam parodomas klaidos ekranas
+// (pvz. analizė neatkeliavo per laukimo laiką ar serveris persikrovė) —
+// administratorius gauna tą patį klaidos laišką kaip ir serverio klaidų atveju.
+app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
+  try {
+    const { name, email, sessionId, orderNumber, error } = req.body;
+    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
+    if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
+    if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
+    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
+    if (!email && !orderNumber && !sessionId) return res.status(400).json({ error: 'Trūksta duomenų' });
+    const errorMessage = 'Kliento ekrane parodyta klaida: ' + String(error || 'nežinoma').slice(0, 300);
+    console.log(`[notify-client-error] orderNumber=${orderNumber||'?'} sessionId=${sessionId||'?'} ${errorMessage}`);
+    logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[notify-client-error] klaida:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => {
   try {
