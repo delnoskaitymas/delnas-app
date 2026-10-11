@@ -2639,7 +2639,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
       sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
       handlePaidAnalysis(paymentIntentId, pi.metadata, finalEmail);
-      res.json({ paid: true, token, name: finalName, email: finalEmail });
+      res.json({ paid: true, token, name: finalName, email: finalEmail, duo: duoOfPromo(pi.metadata.promo) });
     } else {
       res.json({ paid: false, status: pi.status });
     }
@@ -2665,7 +2665,7 @@ app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
       const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
       sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
       handlePaidAnalysis(session.id, session.metadata, finalEmail);
-      res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber });
+      res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber, duo: duoOfPromo(session.metadata?.promo) });
     } else {
       res.json({ paid: false });
     }
@@ -4594,6 +4594,18 @@ function duoForName(code) {
     const o = m && loadPoraOrders()[m[1]];
     return o ? ((m[2] === 'a' ? o.nameA : o.nameB) || '') : '';
   } catch (e) { return ''; }
+}
+// Porų kainos kodas → kuriai porai ir kuriai pusei jis skirtas ({ sid, side }) —
+// kad rezultato ekranas pasiūlytų kito poros žmogaus eilę net jei naršyklė
+// po mokėjimo grįžo kitame skirtuke (sessionStorage prarastas)
+function duoOfPromo(code) {
+  try {
+    if (!code) return null;
+    const s = loadPromos();
+    const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('duo:'));
+    const m = key && key.match(/^duo:(.+):(a|b)$/);
+    return m ? { sid: m[1], side: m[2] } : null;
+  } catch (e) { return null; }
 }
 function promoTag(p) {
   if (p.price) return `💞 ${PROMO_LABELS[p.kind] || 'Nuolaida'} — ${(p.price / 100).toFixed(2).replace('.', ',')} €`;

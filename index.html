@@ -1880,14 +1880,14 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('tikrinu mokėjimą (PI)...');
       const vr=await fetchWithTimeout('/verify-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:sessionId,name:userName,email:userEmail,orderNumber:window._orderNumber||''})},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._verifyDuo=vd.duo||null;}
       if(vd.email){ window._userEmail=vd.email; window.userEmail=vd.email; }
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     } else {
       updatePayDiag('tikrinu mokėjimą (session)...');
       const vr=await fetchWithTimeout('/verify-payment?session_id='+sessionId+'&orderNumber='+encodeURIComponent(window._orderNumber||'')+'&bgSessionId='+encodeURIComponent(window.bgSessionId||''),{},20000);
       const vd=await vr.json();
-      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;}
+      if(vd.paid){token=vd.token;if(vd.name) userName=vd.name;window._verifyDuo=vd.duo||null;}
       // SVARBU: jei naršyklės sessionStorage per Stripe Checkout peradresavimą
       // "pametė" bgSessionId/orderNumber (žinoma iOS Safari problema), čia
       // juos atstatome iš PATIKIMO serverio atsakymo (Stripe metadata) —
@@ -1905,6 +1905,8 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
       updatePayDiag('mokėjimas: '+(vd.paid?'patvirtintas':'NEpatvirtintas'));
     }
     if(!token){ updatePayDiag('KLAIDA: mokėjimas nepatvirtintas'); throw new Error('Mokėjimas nepatvirtintas'); }
+    // Asmeninė analizė porų kaina — pora ir pusė iš serverio (jei po mokėjimo grįžta kitame skirtuke, sessionStorage tuščias)
+    try{ if(window._verifyDuo&&window._verifyDuo.sid&&!sessionStorage.getItem('delnasDuo')) sessionStorage.setItem('delnasDuo',JSON.stringify({sid:window._verifyDuo.sid,side:window._verifyDuo.side})); if(window._verifyDuo) sessionStorage.setItem('delnasDuoTab','1'); }catch(e){}
     window.palmToken=token;window.userName=userName;window._userName=userName;
 
     // 3. Siųsti analizę - nuotraukos iš visų šaltinių
