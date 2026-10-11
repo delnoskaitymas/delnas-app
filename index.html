@@ -4006,7 +4006,7 @@ function renderResultExtra(r){
 // perduodamas klausimų puslapiui ir ten užduodamas automatiškai.
 function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
 // Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
-function klScrollAfter(){
+function klScrollAfter(ks){
   const kl=document.querySelector('#s-pora-result.active #pora-kl')||document.querySelector('#s-result.active #r-extra .kl');
   const root=document.documentElement;
   if(!kl){ root.classList.remove('kl-boot'); return; }
@@ -4018,6 +4018,17 @@ function klScrollAfter(){
     b.querySelector('button').addEventListener('click',()=>{ kl.classList.remove('kl-done'); const q=kl.querySelector('textarea'); if(q) q.focus(); });
     kl.appendChild(b);
   }
+  // Apmokėti klausimai dar neišnaudoti — siūlome užduoti likusius, o ne pirkti naujų
+  try{
+    const u=new URLSearchParams(location.search); ks=ks||u.get('kls')||u.get('kl');
+    if(ks&&/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(ks)) fetch('/klausk/check?s='+encodeURIComponent(ks)).then(r=>r.json()).then(d=>{
+      if(!d||!d.paid||!(d.left>0)) return;
+      const box=kl.querySelector('.kl-done-box'), old=box&&box.querySelector('button'); if(!old) return;
+      const nb=old.cloneNode(false); nb.textContent=d.left===1?'✦ Užduoti likusį klausimą':'✦ Užduoti likusius klausimus (liko '+d.left+')';
+      nb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(ks)+'#klausti'));
+      old.replaceWith(nb);
+    }).catch(()=>{});
+  }catch(e){}
   kl.classList.add('kl-done');
   // Suskleistas klausimų blokas — ekrano viršuje, po juo visas matosi kitas pasiūlymas
   // (vieta skaičiuojama be atsiradimo animacijos poslinkio — offsetTop, ne getBoundingClientRect)

@@ -56,6 +56,7 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
 .link{display:block;text-align:center;margin-top:16px;color:var(--gold);font-size:13.5px}
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.32);margin-top:26px;line-height:1.6}
 .hidden{display:none!important}
+a,button{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -104,7 +105,7 @@ const ltVocAll = s => String(s||'').split(' ir ').map(ltVoc).join(' ir ');
 window._klBack = '';
 document.getElementById('back-link').addEventListener('click', e => {
   e.preventDefault();
-  try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { if (typeof window.opener.klScrollAfter === 'function') window.opener.klScrollAfter(); window.opener.focus(); window.close(); } } catch (x) {}
+  try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { if (typeof window.opener.klScrollAfter === 'function') window.opener.klScrollAfter(new URLSearchParams(location.search).get('s')); window.opener.focus(); window.close(); } } catch (x) {}
   // Atidaryta iš „Mano analizių“ — grįžtame į sąrašą
   try { const mt = new URLSearchParams(location.search).get('mt'); if (mt && /^mt_[a-f0-9]{32}$/.test(mt)) { location.href = '/mano?t=' + encodeURIComponent(mt); return; } } catch (x) {}
   if (window._klBack) { location.href = window._klBack; return; }
@@ -151,7 +152,7 @@ document.getElementById('back-link').addEventListener('click', e => {
   (async function check(attempt){
     try {
       const d = await (await fetch('/klausk/check?s=' + encodeURIComponent(sid))).json();
-      window._klBack = d.poraSid ? '/?pora=' + encodeURIComponent(d.poraSid) + '#klausk' : '/?kl=' + encodeURIComponent(sid) + '#klausk';
+      window._klBack = d.poraSid ? '/?pora=' + encodeURIComponent(d.poraSid) + '&kls=' + encodeURIComponent(sid) + '#klausk' : '/?kl=' + encodeURIComponent(sid) + '#klausk';
       if (!d.paid) {
         if (attempt < 6 && !d.notfound) { setTimeout(() => check(attempt + 1), 2000); return; }
         $('lead').textContent = 'Užsakymas nerastas arba neapmokėtas.';
