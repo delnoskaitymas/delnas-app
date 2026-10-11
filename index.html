@@ -6217,6 +6217,9 @@ async function renderDuoNext(){
   const box=document.getElementById('r-duo-next'); if(!box) return; box.innerHTML='';
   if(window._manoView||window._klView) return;
   let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(e){}
+  let duoPromo=false; try{ duoPromo=!!sessionStorage.getItem('delnasDuoTab')||(JSON.parse(sessionStorage.getItem('delnasPromo')||'null')||{}).kind==='duo'; }catch(e){}
+  // Asmeninė analizė atlikta iš porų analizės (porų kaina) — pora suderinamumą jau žino, „Jums dviem“ nerodome
+  if(duo||duoPromo){ const pc0=document.getElementById('r-pora-card'); if(pc0) pc0.style.display='none'; }
   if(!duo) return;
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json(); }catch(e){ return; }
   // Porų analizė daryta per nuorodą (skirtinguose telefonuose) — kiekvienas savo analizę daro savo telefone, kito eilės nesiūlome
@@ -6730,6 +6733,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     // Porų kaina — tik atėjus per jos nuorodą šiame skirtuke; seniau įsimintą (localStorage) pamirštame
     if(q.kind==='duo'&&!inTab){ try{ localStorage.removeItem('delnasPromo'); }catch(e){} return; }
     _promoSave({...d,kind:q.kind,pct:q.pct,exp:q.expiresAt});
+    // Asmeninė analizė porų kaina — po apmokėjimo kodas nebegalioja, todėl atskiras žymeklis rezultato ekranui
+    if(q.kind==='duo'){ try{ sessionStorage.setItem('delnasDuoTab','1'); }catch(e){} }
     // Porų analizės, dovanos ar rezultato nuorodoje pasiūlymas asmeninei analizei nerodomas
     try{ const u=new URLSearchParams(location.search); if(u.get('pora')||u.get('dovana')||u.get('session_id')||u.get('mano')||u.get('kl')) return; }catch(e){}
     const home=document.getElementById('s-home'); if(!home||document.getElementById('promo-welcome')) return;
