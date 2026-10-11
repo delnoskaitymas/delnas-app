@@ -19,8 +19,11 @@
 html,body{height:100%;width:100%;position:fixed;overflow:hidden}
 #app-wrap{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 html{height:100%;height:100dvh}
-body{min-height:100vh;min-height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-:root{--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
+body{min-height:100vh;min-height:100dvh;padding-top:var(--sat);padding-bottom:env(safe-area-inset-bottom)}
+:root{--sat:0px;--sab:env(safe-area-inset-bottom)}
+/* Viršutinis „saugus plotas“ (telefono būsenos juosta) — tik kai programa atidaryta visu ekranu (pridėta prie pradžios ekrano).
+   Naršyklėse (ypač Facebook, Instagram, Messenger vidinėse) jis jau atimtas, o env() ten kartais grąžina būsenos juostos aukštį — turinys nuslinkdavo žemyn. */
+@media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 :root{
   --bg:#000000;--g2:#120b28;--g3:#1a1035;
   --gold:#d4a843;--gold2:#f0c96a;--gold3:#a07828;
@@ -390,7 +393,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .sec-lbl::after{content:'';flex:1;height:.5px;background:var(--border)}
 #s-camera{background:#000000;display:none;flex-direction:column;align-items:center;padding:0;height:100vh;height:100dvh;height:calc(var(--rvh,1vh) * 100);max-height:100vh;max-height:100dvh;max-height:calc(var(--rvh,1vh) * 100);overflow:hidden;justify-content:flex-start;box-sizing:border-box}
 #s-camera.active{display:flex;animation:fu .5s cubic-bezier(.25,.46,.45,.94) both}
-.cam-progress{display:flex;gap:10px;margin-top:max(24px,env(safe-area-inset-top));z-index:10;flex-shrink:0;align-items:center}
+.cam-progress{display:flex;gap:10px;margin-top:max(24px,var(--sat));z-index:10;flex-shrink:0;align-items:center}
 .cam-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);transition:all .3s}
 .cam-dot.inactive{opacity:0.25;transform:scale(.85)}
 .cam-title{color:var(--gold2);font-size:15px;font-weight:600;margin-top:14px;text-align:center;padding:0 24px;letter-spacing:.04em;z-index:10;flex-shrink:0;font-family:'Playfair Display',serif}
@@ -6220,7 +6223,7 @@ async function renderDuoNext(){
     if(pc) pc.style.display='none';
     if(sr&&!document.getElementById('duo-back')){
       const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#dovanos'; l.textContent='Grįžti į poros rezultatą';
-      l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+      l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       sr.prepend(l);
     }
     return;
@@ -6237,7 +6240,7 @@ async function renderDuoNext(){
   // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — „Dariaus eilė“: veda į porų rezultatą iškart prie kito žmogaus analizės mygtuko
   if(sr&&!document.getElementById('duo-back')){
     const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent=f.gen+' eilė';
-    l.style.cssText="position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+    l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
     sr.prepend(l);
   }
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
@@ -6939,7 +6942,7 @@ function fitPayScreen(){
     if(!t||!/^mt_[a-f0-9]{32}$/.test(t)) return;
     const a=document.createElement('a');
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
-    a.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+    a.style.cssText="position:fixed;top:calc(10px + var(--sat));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
     const add=()=>document.body.appendChild(a);
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
   }catch(e){}

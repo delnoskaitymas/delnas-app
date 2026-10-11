@@ -47,7 +47,7 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.32);margin-top:26px;line-height:1.6}
 .fine a{color:rgba(212,168,67,.6)}
 .hidden{display:none!important}
-.home-back{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:50;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.home-back{position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:50;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 
 /* Sąrašas: kategorijų skirtukai — greitai rasti bet kurį rezultatą */
 .tabs{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 0 10px;margin:4px 0 4px;background:linear-gradient(#000 80%,rgba(0,0,0,0));scrollbar-width:none}
@@ -92,6 +92,7 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 .tabs button{padding:11px 8px;font-size:13.5px;white-space:normal;line-height:1.25}
 @media (max-width:370px){.tabs button{font-size:12.5px;padding:10px 6px}}
 .tabs button i{font-size:13px}
+@media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 </style>
 </head>
 <body>
