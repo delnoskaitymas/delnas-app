@@ -4000,6 +4000,7 @@ function renderResultExtra(r){
       if(!d||!d.addKlausk) return null;
       const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:kref,result:window._palmResult||r})});
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
+      if(await klLeftOf(dd.id)===0) return null; // visi apmokėti klausimai jau užduoti — siūlome naujus
       const blk=document.querySelector('#r-extra .kl');
       if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
@@ -4013,6 +4014,7 @@ function renderResultExtra(r){
 // Mokėjimo nuoroda paruošiama IŠ ANKSTO, kad paspaudus langas atsidarytų iš karto
 // (kai kurios naršyklės blokuoja langus, atidaromus po užklausos). Įrašytas klausimas
 // perduodamas klausimų puslapiui ir ten užduodamas automatiškai.
+async function klLeftOf(id){ try{ const d=await (await fetch('/klausk/check?s='+encodeURIComponent(id))).json(); return d&&d.paid&&typeof d.left==='number'?Math.max(0,d.left-(d.answering?1:0)):null; }catch(e){ return null; } }
 function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
 // Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
 function klScrollAfter(ks){
@@ -4030,13 +4032,7 @@ function klScrollAfter(ks){
   // Apmokėti klausimai dar neišnaudoti — siūlome užduoti likusius, o ne pirkti naujų
   try{
     const u=new URLSearchParams(location.search); ks=ks||u.get('kls')||u.get('kl');
-    if(ks&&/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(ks)) fetch('/klausk/check?s='+encodeURIComponent(ks)).then(r=>r.json()).then(d=>{
-      if(!d||!d.paid||!(d.left>0)) return;
-      const box=kl.querySelector('.kl-done-box'), old=box&&box.querySelector('button'); if(!old) return;
-      const nb=old.cloneNode(false); nb.textContent=d.left===1?'✦ Užduoti likusį klausimą':'✦ Užduoti likusius klausimus (liko '+d.left+')';
-      nb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(ks)+'#klausti'));
-      old.replaceWith(nb);
-    }).catch(()=>{});
+    if(ks&&/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(ks)){ kl.dataset.ks=ks; klRefreshLeft(kl); }
   }catch(e){}
   kl.classList.add('kl-done');
   // Suskleistas klausimų blokas — ekrano viršuje, po juo visas matosi kitas pasiūlymas
@@ -4045,18 +4041,50 @@ function klScrollAfter(ks){
   window.scrollTo({top:Math.max(0,y-16),behavior:boot?'instant':'smooth'});
   if(boot) requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('kl-boot')));
 }
+// Klausimų bloko mygtukas pagal tai, kiek apmokėtų klausimų dar liko (/klausk/check) —
+// kai visi užduoti, vėl siūlomi nauji 3 klausimai (o ne pasenęs „liko 2“)
+function klRefreshLeft(kl){
+  const ks=kl&&kl.dataset.ks; if(!ks) return;
+  fetch('/klausk/check?s='+encodeURIComponent(ks)).then(r=>r.json()).then(d=>{
+    const box=kl.querySelector('.kl-done-box'), old=box&&box.querySelector('button'); if(!old) return;
+    const nb=old.cloneNode(false);
+    // Klausimas, į kurį atsakymas dar ruošiamas (grįžta nesulaukus), jau įskaičiuotas
+    if(d&&d.answering) d.left=Math.max(0,d.left-1);
+    if(d&&d.paid&&d.left>0){
+      nb.textContent=d.left===1?'✦ Užduoti likusį klausimą':'✦ Užduoti likusius klausimus (liko '+d.left+')';
+      nb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(ks)+'#klausti'));
+    } else {
+      if(kl._klResetPaid) kl._klResetPaid();
+      nb.textContent='✦ Užduoti dar 3 klausimus — 4,99 €';
+      nb.addEventListener('click',()=>{ kl.classList.remove('kl-done'); const q=kl.querySelector('textarea'); if(q) q.focus(); });
+    }
+    old.replaceWith(nb);
+  }).catch(()=>{});
+}
+// Grįžus į šį skirtuką (pvz. iš klausimų lango) — atnaujiname likusių klausimų skaičių
+function klRefreshAll(){ document.querySelectorAll('.kl.kl-done,#pora-kl.kl-done').forEach(k=>{ if(k.dataset.ks) klRefreshLeft(k); }); }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') klRefreshAll(); });
+window.addEventListener('pageshow',e=>{ if(e.persisted) klRefreshAll(); });
 function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
 function setupKlauskBlock(o){
   const $=id=>document.getElementById(id);
   const btn=$(o.btn), qEl=$(o.q), err=$(o.err); if(!btn||!qEl) return;
   const st={url:null,email:null,prepaid:false};
+  const blk=btn.closest('.kl'), txt0=blk&&blk.querySelector('.kl-txt')?blk.querySelector('.kl-txt').innerHTML:'', fine0=blk&&blk.querySelector('.kl-fine')?blk.querySelector('.kl-fine').textContent:'', btn0=btn.textContent;
+  // Apmokėti klausimai išnaudoti (užduoti kitame lange) — forma vėl siūlo pirkti naujus 3 klausimus
+  if(blk) blk._klResetPaid=()=>{
+    if(!st.prepaid) return; st.prepaid=false; st.noPrepaid=true; st.url=null;
+    const t=blk.querySelector('.kl-txt'); if(t) t.innerHTML=txt0; const f=blk.querySelector('.kl-fine'); if(f) f.textContent=fine0; btn.textContent=btn0;
+    const ei=o.emailEl&&$(o.emailEl); if(ei&&!valid(ei.value.trim())) ei.classList.remove('hidden');
+    prefetch();
+  };
   const ex=$(o.ex); if(ex) ex.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; qEl.value=b.textContent; err.style.display='none'; qEl.focus(); });
   qEl.addEventListener('input',()=>{ err.style.display='none'; });
   const emailOf=()=>o.emailEl?(($(o.emailEl)||{}).value||'').trim():'';
   const valid=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   async function prefetch(){
     try{
-      if(o.prepaid){ const u=await o.prepaid; if(u){ st.url=u; st.prepaid=true; return; } }
+      if(o.prepaid&&!st.noPrepaid){ const u=await o.prepaid; if(u&&!st.noPrepaid){ st.url=u; st.prepaid=true; return; } }
       const email=emailOf(); if(o.emailEl&&!valid(email)) return;
       const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o.body(email))});
       const d=await res.json(); if(res.ok&&d.url){ st.url=d.url; st.email=email; }
@@ -6207,6 +6235,7 @@ function setupPoraKlausk(){
     prepaid:/^gp_/.test(sid)?(async()=>{
       const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
       const d=await r.json(); if(!r.ok||!d.id) return null;
+      if(await klLeftOf(d.id)===0) return null;
       const blk=document.getElementById('pora-kl');
       if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
       btn.textContent='Gauti atsakymus';
@@ -6245,10 +6274,27 @@ async function renderDuoNext(){
     return;
   }
   const f=ltForms(name), eur=c=>(c/100).toFixed(2).replace('.',',');
+  // Porų analizė daryta per nuorodą (skirtinguose telefonuose): kitas žmogus analizę daro savo telefone —
+  // apačioje grįžimas į poros rezultatą ir galimybė nusiųsti kitam jo nuorodą
+  if(d.remote){
+    if(pc) pc.style.display='none';
+    box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
+      '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Jūsų poros rezultatas</div>'+
+      '<a class="btn btn-gold" href="/?pora='+encodeURIComponent(duo.sid)+'#asmenine" style="margin:0;display:block;text-decoration:none">Grįžti į poros rezultatą</a>'+
+      '<button type="button" class="pora-remote-link" id="duo-send-btn" style="margin:10px auto 0">📤 Nusiųsti '+_xEsc(f.dat||name)+' nuorodą asmeninei analizei</button></div>';
+    if(sr) sr.classList.add('duo-mode');
+    if(sr&&!document.getElementById('duo-back')){
+      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Grįžti į poros rezultatą';
+      l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+      sr.prepend(l);
+    }
+    const sb=document.getElementById('duo-send-btn'); if(sb) sb.addEventListener('click',()=>poraDuoShare(o.code,name,sb));
+    return;
+  }
   box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
     '<div style="font:600 15px \'Playfair Display\',serif;color:var(--gold2);margin-bottom:10px">💞 Dabar — '+_xEsc(f.gen)+' eilė</div>'+
     '<button type="button" class="btn btn-gold" id="duo-next-btn" style="margin:0">'+_xEsc(f.gen)+' analizė — '+eur(d.price)+' €</button>'+
-    '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į porų rezultatą</a></div>';
+    '<a href="/?pora='+encodeURIComponent(duo.sid)+'" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--gold2);text-decoration:underline;text-underline-offset:3px">Grįžti į poros rezultatą</a></div>';
   // Pora analizę jau atliko — „Jums dviem“ (porų pasiūlymas) nereikalingas, jo vietoje rodoma kito eilė
   if(pc) pc.style.display='none';
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
