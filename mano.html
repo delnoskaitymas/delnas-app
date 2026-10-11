@@ -239,6 +239,8 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
   addEventListener('load',()=>{ fit(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit); });
   try{ new MutationObserver(later).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']}); }catch(e){}
 })();
+// Grįžus naršyklės mygtuku „Atgal“ (iš klausimų puslapio) — atnaujiname sąrašą, kad neliktų pasenusių „liko N“
+window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 </script>
 <script src="/awake.js"></script>
 </body>
