@@ -268,7 +268,7 @@ function buildReminderMail(r, testPromo) {
 // Porų priminimas (po PORA_REMINDER_DAYS d.): kvietimas pakartotinei porų analizei su −REPEAT_PCT %
 function buildPoraReminderMail(r, site, testPromo) {
   const p = testPromo || createPromo({ kind: 'repeat', product: 'pora', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat-pora:' + r.sessionId });
-  const names = r.nameA && r.nameB ? `${r.nameA} ir ${r.nameB}` : '';
+  const names = r.nameA && r.nameB ? ltPhrase(`${r.nameA} ir ${r.nameB}`, 'voc') : '';
   const months = Math.round(PORA_REMINDER_DAYS / 30);
   return {
     subject: `${names ? escapeHtml(names) + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
@@ -4783,9 +4783,9 @@ function buildAbandonEmailHtml(it, p) {
   const base = appBaseUrl();
   const pora = it.kind === 'pora';
   const link = pora ? `${base}/pora?grizk=${p.code}` : `${base}/?grizk=${p.code}`;
-  const hi = pora ? 'Jūsų poros suderinamumas laukia' : `${it.name ? escapeHtml(it.name) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
+  const hi = pora ? (it.nameA && it.nameB ? `${escapeHtml(ltPhrase(it.nameA + ' ir ' + it.nameB, 'voc'))}, jūsų poros suderinamumas laukia` : 'Jūsų poros suderinamumas laukia') : `${it.name ? escapeHtml(ltPhrase(it.name, 'voc')) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
   const txt = pora
-    ? `Pastebėjome, kad nebaigėte užsakymo${it.nameA && it.nameB ? ` (${escapeHtml(it.nameA)} ir ${escapeHtml(it.nameB)})` : ''}. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`
+    ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų poros analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct} %</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti mūsų priminimų ir pasiūlymų?' : 'Nenori gauti mūsų priminimų ir pasiūlymų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
