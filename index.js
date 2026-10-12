@@ -247,14 +247,14 @@ function isReminderBlacklisted(email) {
 
 
 // Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −20 %.
-function buildReminderMail(r) {
+function buildReminderMail(r, testPromo) {
   const site = `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}`;
-  if (r.kind === 'pora') return buildPoraReminderMail(r, site);
-  const saved = r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null;
+  if (r.kind === 'pora') return buildPoraReminderMail(r, site, testPromo);
+  const saved = testPromo ? (r.savedId ? {} : null) : (r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null);
   let link = site, btn = 'Nauja delnų analizė', subtitle = 'Praėjo 3 mėnesiai nuo tavo delnų analizės';
   let body = 'Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius tavo gyvenimas pasikeitė — o su juo ir tai, ką pasakoja tavo delnai.';
   if (saved) {
-    const p = createPromo({ kind: 'repeat', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat:' + r.savedId, meta: { savedId: r.savedId } });
+    const p = testPromo || createPromo({ kind: 'repeat', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat:' + r.savedId, meta: { savedId: r.savedId } });
     link = `${site}/?kartoti=${p.code}`;
     btn = `Pažiūrėti, kas pasikeitė — −${p.pct} %`;
     body = `Delnų linijos keičiasi kartu su tavimi. Nufotografuok delnus iš naujo — parodysime, <b style="color:#f0d58a">kas pasikeitė</b> nuo ankstesnės analizės: jausmuose, mąstyme ir kasdienybėje. Pakartotinei analizei — <b style="color:#f0d58a">−${p.pct} %</b> (galioja 30 dienų).`;
@@ -266,8 +266,8 @@ function buildReminderMail(r) {
 }
 
 // Porų priminimas (po PORA_REMINDER_DAYS d.): kvietimas pakartotinei porų analizei su −REPEAT_PCT %
-function buildPoraReminderMail(r, site) {
-  const p = createPromo({ kind: 'repeat', product: 'pora', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat-pora:' + r.sessionId });
+function buildPoraReminderMail(r, site, testPromo) {
+  const p = testPromo || createPromo({ kind: 'repeat', product: 'pora', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat-pora:' + r.sessionId });
   const names = r.nameA && r.nameB ? `${r.nameA} ir ${r.nameB}` : '';
   const months = Math.round(PORA_REMINDER_DAYS / 30);
   return {
@@ -2031,7 +2031,7 @@ function rewardReferrer(refCode, paymentRef, buyerEmail) {
         from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
         to: r.email,
         subject: '🎁 Tavo kvietimu pasinaudota — dovanojame 3 klausimus',
-        html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pakvietei draugą!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Su tavo nuoroda buvo atlikta nauja delnų analizė. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai rems tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`
+        html: buildRefRewardHtml(rewardId)
       }).catch(e => console.error('[ref] atlygio laiško klaida:', e.message));
     }
     r.uses.push({ paymentRef, at: Date.now(), rewardId });
@@ -2383,7 +2383,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     try {
       if (pay && pay.metadata.bundle !== '1') {
         const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: isValidEmail(pay.email) ? pay.email : email, key: 'bundle:' + paymentRef });
-        if (!pr.usedBy && Date.now() < pr.expiresAt) poraLine = `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Sužinok, kaip derate poroje — tau už ${eur(pr.price)} vietoj ${eur(PORA_PRICE_CENTS)}:</p><a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">💞 Kaip derate poroje?</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:10px 0 22px">Kaina galioja iki ${fmtLtDate(pr.expiresAt)}</p>`;
+        if (!pr.usedBy && Date.now() < pr.expiresAt) poraLine = resultPoraLineHtml(pr);
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
     await mailer.sendMail({
@@ -2392,7 +2392,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       subject: isGift
         ? `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} dovana paruošta: gyvenimo žemėlapis pagal delnus 🎁`
         : `${name ? ltPhrase(name, 'voc') + ', tavo' : 'Tavo'} gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0">${poraLine}<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį</a></div>${EMAIL_FOOTER_HTML}</div>`,
+      html: buildResultEmailHtml({ isGift, name, orderNumber, poraLine }),
       attachments: [{
         filename: name ? `${name.replace(/\s+/g, '-')}-gyvenimo-zemelapis.pdf` : 'gyvenimo-zemelapis.pdf',
         content: pdfBase64,
@@ -3073,7 +3073,7 @@ function processGiftSchedules() {
         g.buyerReminderAt = now; changed = true;
         const card = `${appBaseUrl()}/dovana/kortele?kodas=${encodeURIComponent(g.code)}`;
         mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.buyerEmail, subject: g.recipientName ? `🎁 ${g.recipientName} dar neatidarė dovanos` : '🎁 Jūsų dovana dar neatidaryta',
-          html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${g.recipientName ? escapeHtml(g.recipientName) + ' dar' : 'Dovanos gavėjas dar'} neatidarė jūsų DELNAS dovanos (kodas <b style="color:#f0d58a">${escapeHtml(g.code)}</b>, galioja iki ${fmtLtDate(g.expiresAt)}). Gal norite priminti? Kortelę galite persiųsti dar kartą.</p><a href="${card}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovanų kortelę</a>${EMAIL_FOOTER_HTML}</div>` })
+          html: buildGiftBuyerReminderHtml(g, card) })
           .catch(e => console.error('[gift] priminimo klaida:', e.message));
       }
     }
@@ -3785,7 +3785,7 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: o.email,
       subject: `${o.nameA} ir ${o.nameB} — jūsų poros suderinamumas paruoštas 💞`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų poros suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:12px;color:rgba(245,238,216,.55);margin:6px 0 0">Užsakymo numeris: ${poraOrderNo(sessionId)}</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė</a>${EMAIL_FOOTER_HTML}</div>`,
+      html: buildPoraResultEmailHtml(o, names, sessionId),
       attachments: [{ filename: `${(o.nameA + '-ir-' + o.nameB).replace(/\s+/g, '-')}-poru-suderinamumas.pdf`, content: pdfBase64, encoding: 'base64' }]
     }).finally(() => poraEmailsInFlight.delete(sessionId));
     updatePoraOrder(sessionId, { emailSent: true });
@@ -4107,6 +4107,30 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
 
 // ═══ „Klausk“ atsakymai el. paštu — visi viename laiške ═══
 const KLAUSK_DIGEST_QUIET_MS = Number(process.env.KLAUSK_DIGEST_QUIET_MS) || 30 * 60 * 1000;
+// Klientų laiškų šablonai (naudojami ir /admin/test-laiskai)
+function resultPoraLineHtml(pr) {
+  const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
+  return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Sužinok, kaip derate poroje — tau už ${eur(pr.price)} vietoj ${eur(PORA_PRICE_CENTS)}:</p><a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">💞 Kaip derate poroje?</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:10px 0 22px">Kaina galioja iki ${fmtLtDate(pr.expiresAt)}</p>`;
+}
+function klauskPara(t) { return escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join(''); }
+function buildRefRewardHtml(rewardId) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pakvietei draugą!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Su tavo nuoroda buvo atlikta nauja delnų analizė. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai rems tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
+}
+function buildGiftBuyerReminderHtml(g, card) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${g.recipientName ? escapeHtml(g.recipientName) + ' dar' : 'Dovanos gavėjas dar'} neatidarė jūsų DELNAS dovanos (kodas <b style="color:#f0d58a">${escapeHtml(g.code)}</b>, galioja iki ${fmtLtDate(g.expiresAt)}). Gal norite priminti? Kortelę galite persiųsti dar kartą.</p><a href="${card}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovanų kortelę</a>${EMAIL_FOOTER_HTML}</div>`;
+}
+function buildKlauskDigestHtml({ pora, n, items, id, btn }) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`;
+}
+function buildPoraResultEmailHtml(o, names, sessionId) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${names} — jūsų poros suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:12px;color:rgba(245,238,216,.55);margin:6px 0 0">Užsakymo numeris: ${poraOrderNo(sessionId)}</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:18px 0 0">Norite sužinoti ir savo asmeninį gyvenimo žemėlapį?</p><a href="${appBaseUrl()}/?utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">Asmeninė delnų analizė</a>${EMAIL_FOOTER_HTML}</div>`;
+}
+function buildResultEmailHtml({ isGift, name, orderNumber, poraLine }) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><div style="text-align:center;margin:22px 0 0">${poraLine}<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį</a></div>${EMAIL_FOOTER_HTML}</div>`;
+}
+function klauskDigestItems(qa, para) {
+  return qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS'][i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
+}
 const klauskDigestSending = new Set();
 async function sendKlauskDigest(id) {
   if (klauskDigestSending.has(id)) return;
@@ -4115,8 +4139,8 @@ async function sendKlauskDigest(id) {
     const orders = loadKlauskOrders(), cur = orders[id];
     if (!cur || !cur.email || !cur.digestPending || !(cur.qa || []).length) return;
     const pora = cur.kind === 'pora', n = cur.qa.length, left = KLAUSK_MAX_QUESTIONS - n;
-    const para = t => escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join('');
-    const items = cur.qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS'][i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
+    const para = klauskPara;
+    const items = klauskDigestItems(cur.qa, para);
     const btn = left > 0 ? `Užduoti kitą klausimą (liko ${left})` : 'Peržiūrėti atsakymus svetainėje';
     // Pažymima prieš siunčiant — kad vienas atsakymas nebūtų išsiųstas du kartus
     cur.digestPending = false; cur.digestSentAt = Date.now(); cur.digestCount = n;
@@ -4125,7 +4149,7 @@ async function sendKlauskDigest(id) {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: cur.email,
       subject: `✋ ${pora ? 'Jūsų' : 'Tavo'} delnų ${n === 1 ? 'atsakymas' : 'atsakymai'}${n > 1 ? ` (${n})` : ''}${cur.name ? ' — ' + cur.name : ''}`,
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`
+      html: buildKlauskDigestHtml({ pora, n, items, id, btn })
     });
     console.log(`[klausk] suvestinė (${n} atsak.) išsiųsta į ${cur.email}`);
   } catch (e) {
@@ -4493,6 +4517,45 @@ app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
   } catch (e) {}
   res.status(204).end();
 });
+// Testiniai laiškai: visi klientų laiškų pavyzdžiai su „[TESTAS]“ temoje į nurodytą adresą.
+// /admin/test-laiskai?key=ADMIN_KEY&to=el@pastas.lt — tikrų nuolaidų kodų nekuria, duomenų nekeičia, adreso neišsaugo.
+app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
+  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+  const to = String(req.query.to || '').trim();
+  if (!isValidEmail(to)) return res.status(400).send('Nurodykite el. paštą: &to=vardas@pastas.lt');
+  const now = Date.now(), name = 'Monika', nameA = 'Nora', nameB = 'Linas';
+  const fake = (o) => ({ code: 'TESTAS', usedBy: null, expiresAt: now + DAY_MS, ...o });
+  const qa = [
+    { q: 'Ar man verta keisti darbą?', a: 'Tai pavyzdinis atsakymas.\nTikras atsakymas remiasi delnų analize.' },
+    { q: 'Kaip man geriau tvarkytis su pinigais?', a: 'Tai pavyzdinis atsakymas.' }
+  ];
+  const giftBase = { code: 'TEST-0000', kind: 'asmenine', fromName: 'Tomas', recipientName: 'Ieva', message: 'Su gimtadieniu! ✨', klausk: true, createdAt: now, expiresAt: now + 365 * DAY_MS };
+  const list = [];
+  const add = (label, build) => { try { list.push({ label, ...build() }); } catch (e) { list.push({ label, error: e.message }); } };
+  add('Neužbaigtas užsakymas (asmeninė)', () => ({ subject: `Tavo gyvenimo žemėlapis laukia — −${BACK_PCT} % 24 valandoms`, html: buildAbandonEmailHtml({ kind: 'asmenine', name, email: to }, fake({ pct: BACK_PCT })) }));
+  add('Neužbaigtas užsakymas (porų)', () => ({ subject: `Jūsų poros suderinamumas laukia — −${BACK_PCT} % 24 valandoms`, html: buildAbandonEmailHtml({ kind: 'pora', nameA, nameB, email: to }, fake({ pct: BACK_PCT })) }));
+  add('Asmeninės analizės rezultatas', () => ({ subject: `${ltPhrase(name, 'voc')}, tavo gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`, html: buildResultEmailHtml({ isGift: false, name, orderNumber: 'DLN-000000', poraLine: resultPoraLineHtml(fake({ price: PORA_BUNDLE_CENTS, expiresAt: now + 30 * DAY_MS })) }) }));
+  add('Porų analizės rezultatas', () => ({ subject: `${nameA} ir ${nameB} — jūsų poros suderinamumas paruoštas 💞`, html: buildPoraResultEmailHtml({ nameA, nameB, result: { suderinamumas: 78 } }, `${nameA} ir ${nameB}`, 'cs_test_0000') }));
+  add('Atsakymai į klausimus', () => ({ subject: `✋ Tavo delnų atsakymai (${qa.length}) — ${name}`, html: buildKlauskDigestHtml({ pora: false, n: qa.length, items: klauskDigestItems(qa, klauskPara), id: 'cs_test_0000', btn: `Užduoti kitą klausimą (liko ${KLAUSK_MAX_QUESTIONS - qa.length})` }) }));
+  add('Priminimas po 3 mėn. (asmeninė, su palyginimu)', () => buildReminderMail({ name, email: to, savedId: 'TEST' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
+  add('Priminimas po 3 mėn. (asmeninė, be išsaugotos analizės)', () => buildReminderMail({ name, email: to }, fake({ pct: REPEAT_PCT })));
+  add('Priminimas po 3 mėn. (porų)', () => buildReminderMail({ kind: 'pora', nameA, nameB, email: to, sessionId: 'cs_test_0000' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
+  add('Dovanos kortelė pirkėjui', () => ({ subject: '🎁 Jūsų DELNAS dovanų kuponas', html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to }) }));
+  add('Dovana gavėjui', () => ({ subject: '🎁 Tomas tau dovanoja DELNAS gyvenimo žemėlapį', html: buildGiftRecipientEmailHtml({ ...giftBase, recipientEmail: to }) }));
+  add('Dovana neatidaryta (pirkėjui)', () => ({ subject: '🎁 Ieva dar neatidarė dovanos', html: buildGiftBuyerReminderHtml(giftBase, `${appBaseUrl()}/dovana/kortele?kodas=${giftBase.code}`) }));
+  add('Kvietimo atlygis', () => ({ subject: '🎁 Tavo kvietimu pasinaudota — dovanojame 3 klausimus', html: buildRefRewardHtml('kp_test') }));
+  const results = [];
+  for (const m of list) {
+    if (m.error) { results.push(`✗ ${escapeHtml(m.label)} — ${escapeHtml(m.error)}`); continue; }
+    try {
+      await mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to, subject: '[TESTAS] ' + m.subject, html: m.html });
+      results.push(`✓ ${escapeHtml(m.label)}`);
+    } catch (e) { results.push(`✗ ${escapeHtml(m.label)} — ${escapeHtml(e.message)}`); }
+  }
+  console.log(`[test-laiskai] išsiųsta ${results.filter(r => r.startsWith('✓')).length}/${results.length}`);
+  res.send(`<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Testiniai laiškai</title></head><body style="background:#000;color:#e8e2d4;font-family:-apple-system,sans-serif;padding:24px;line-height:1.7"><h2 style="color:#d4a843">Testiniai laiškai — ${escapeHtml(to)}</h2><p>${results.join('<br>')}</p><p style="color:rgba(232,226,212,.6);font-size:13px">Laiškuose nuorodos ir kodai yra pavyzdiniai (TESTAS) ir neveikia. Rezultatų laiškai siunčiami be PDF priedo.</p></body></html>`);
+});
+
 app.get('/admin/stats', (req, res) => {
   if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
   const st = _statsBuf || readJson(STATS_FILE, { days: {} });
