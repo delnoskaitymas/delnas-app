@@ -268,7 +268,7 @@ function buildReminderMail(r, testPromo) {
 // Porų priminimas (po PORA_REMINDER_DAYS d.): kvietimas pakartotinei porų analizei su −REPEAT_PCT %
 function buildPoraReminderMail(r, site, testPromo) {
   const p = testPromo || createPromo({ kind: 'repeat', product: 'pora', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat-pora:' + r.sessionId });
-  const names = r.nameA && r.nameB ? `${r.nameA} ir ${r.nameB}` : '';
+  const names = r.nameA && r.nameB ? ltPhrase(`${r.nameA} ir ${r.nameB}`, 'voc') : '';
   const months = Math.round(PORA_REMINDER_DAYS / 30);
   return {
     subject: `${names ? escapeHtml(names) + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
@@ -4783,7 +4783,7 @@ function buildAbandonEmailHtml(it, p) {
   const base = appBaseUrl();
   const pora = it.kind === 'pora';
   const link = pora ? `${base}/pora?grizk=${p.code}` : `${base}/?grizk=${p.code}`;
-  const hi = pora ? (it.nameA && it.nameB ? `${escapeHtml(it.nameA)} ir ${escapeHtml(it.nameB)}, jūsų poros suderinamumas laukia` : 'Jūsų poros suderinamumas laukia') : `${it.name ? escapeHtml(it.name) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
+  const hi = pora ? (it.nameA && it.nameB ? `${escapeHtml(ltPhrase(it.nameA + ' ir ' + it.nameB, 'voc'))}, jūsų poros suderinamumas laukia` : 'Jūsų poros suderinamumas laukia') : `${it.name ? escapeHtml(ltPhrase(it.name, 'voc')) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
   const txt = pora
     ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų poros analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct} % nuolaidą</b> — ji galioja 24 valandas.`;
