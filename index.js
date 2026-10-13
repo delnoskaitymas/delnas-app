@@ -149,6 +149,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Kol svetainė bandoma ir tvarkoma — Google ir kitos paieškos sistemos jos nerodo (antraštė visiems atsakymams).
+// Kai bus galima rodyti paieškoje: Railway Variables → SITE_INDEXING=1 (nuorodų peržiūros Messenger / Facebook veikia bet kuriuo atveju).
+const SITE_INDEXING = process.env.SITE_INDEXING === '1';
+app.use((req, res, next) => {
+  if (!SITE_INDEXING) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 // Dovanos nuoroda (/?dovana=… arba /pora?dovana=…) — nuorodos peržiūra Messenger / WhatsApp / Facebook
 // rodo, kad tai dovana (kitaip — bendras puslapio aprašymas iš <!--og--> bloko)
 function sendHtmlWithOg(res, file, title, desc) {
@@ -170,6 +178,8 @@ app.use((req, res, next) => {
 
 // Paieškos sistemoms
 app.get('/robots.txt', (req, res) => {
+  // Kol SITE_INDEXING neįjungtas — puslapių nedraudžiame nuskaityti, kad Google pamatytų „noindex“ ir jų nerodytų
+  if (!SITE_INDEXING) return res.type('text/plain').send('User-agent: *\nAllow: /\n');
   res.type('text/plain').send(['User-agent: *', 'Allow: /', 'Disallow: /mano', 'Disallow: /klausk', 'Disallow: /admin', 'Disallow: /dovana/kortele', 'Disallow: /kodas', '', 'Sitemap: https://www.delnaskaitymas.lt/sitemap.xml', ''].join('\n'));
 });
 app.get('/sitemap.xml', (req, res) => {
