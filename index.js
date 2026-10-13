@@ -2620,6 +2620,8 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: q.total,
       currency: q.currency,
+      // Rodoma Stripe kvite ir mokėjimo išraše vietoj „Payment to …“
+      description: 'DELNAS — Gyvenimo žemėlapis' + (q.bump ? ' + 3 klausimai' : '') + (q.bundle ? ' + Porų suderinamumas' : ''),
       metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
