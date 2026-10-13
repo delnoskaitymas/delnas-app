@@ -4,6 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Naudojimosi sąlygos — DELNAS</title>
+<!--og-->
+<meta name="description" content="DELNAS paslaugos naudojimosi sąlygos.">
+<link rel="canonical" href="https://www.delnaskaitymas.lt/naudojimosi-salygos">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DELNAS">
+<meta property="og:locale" content="lt_LT">
+<meta property="og:url" content="https://www.delnaskaitymas.lt/naudojimosi-salygos">
+<meta property="og:title" content="Naudojimosi sąlygos — DELNAS">
+<meta property="og:description" content="DELNAS paslaugos naudojimosi sąlygos.">
+<meta property="og:image" content="https://www.delnaskaitymas.lt/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Naudojimosi sąlygos — DELNAS">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Naudojimosi sąlygos — DELNAS">
+<meta name="twitter:description" content="DELNAS paslaugos naudojimosi sąlygos.">
+<meta name="twitter:image" content="https://www.delnaskaitymas.lt/img/og.jpg"><!--/og-->
 <style>
   *{box-sizing:border-box}
   body{margin:0;background:#000000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;line-height:1.7;padding:0}
@@ -158,7 +175,7 @@
 // „Grįžti atgal“ — atidarius iš porų užsakymo, dovanos, „Mano analizių“ ar klausimų (?is=…) grąžina ten, o ne į asmeninės analizės sutikimą
 (function(){
   const a=document.querySelector('a.back'); if(!a) return;
-  const is=new URLSearchParams(location.search).get('is'), back=is&&({pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano',app:'/?consent=1',pay:'/',impressum:'/impressum'}[is]||'/');
+  const is=new URLSearchParams(location.search).get('is'), back=is&&({pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano',app:'/?consent=1',pay:'/'}[is]||'/');
   if(!back) return;
   a.href=back;
   a.addEventListener('click',e=>{

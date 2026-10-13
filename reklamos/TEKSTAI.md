@@ -422,10 +422,14 @@ Naudok du laukus — **šaltinis** ir **kampanija** (lentelėje jie rodomi kaip 
 | Asmeninė analizė | `asmenine` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=asmenine` |
 | Porų suderinamumas | `pora` | `https://www.delnaskaitymas.lt/pora?utm_source=facebook&utm_campaign=pora` |
 | Dovanos (visus metus) | `dovanos` | `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=dovanos` |
-| Kalėdos | `kaledos` | `https://www.delnaskaitymas.lt/dovana?utm_source=facebook&utm_campaign=kaledos` |
+| Kalėdos | `kaledos` | `https://www.delnaskaitymas.lt/dovana?sezonas=kaledos&utm_source=facebook&utm_campaign=kaledos` |
+| Valentino dienos dovana | `valentinas` | `https://www.delnaskaitymas.lt/dovana?sezonas=valentinas&utm_source=instagram&utm_campaign=valentinas` |
+| Motinos dienos dovana | `mama` | `https://www.delnaskaitymas.lt/dovana?sezonas=mama&utm_source=facebook&utm_campaign=mama` |
 | Naujieji metai | `metai` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=metai` |
 | Valentino diena | `valentinas` | `https://www.delnaskaitymas.lt/pora?utm_source=instagram&utm_campaign=valentinas` |
 | Draugės / vakarėliai (14, 15, 32–36, video „draugėms“) | `draugems` | `https://www.delnaskaitymas.lt/?utm_source=facebook&utm_campaign=draugems` |
+
+Su `sezonas=…` dovanų formoje šventinė dovana („Kalėdinė dovana?“ ir pan.) jau pažymėta — pirkėjas gali ją nuimti. Be jo šventės juostelė rodoma, bet nepažymėta.
 
 Pakeisk `facebook` į `instagram`, `tiktok` ar `bio` pagal tai, kur dedi nuorodą. Meta Ads Manager'yje tą patį gali įrašyti laukelyje **„URL parameters“**: `utm_source=facebook&utm_campaign=kaledos`.
 
@@ -479,12 +483,14 @@ Aprašymas: *Kiekviena gavom savo analizę ir palyginom 😂 Kuri jūsų kompani
 | Sek. | Vaizdas | Tekstas |
 |---|---|---|
 | 0–2 | Tu su telefonu | „Kalėdoms mamai radau neįprastą dovaną 🎄“ |
-| 2–10 | Pildai dovanos formą: vardas, palinkėjimas | „Įrašau palinkėjimą…“ |
-| 10–15 | Pažymi „Išsiųsti gavėjui nurodytą dieną“ → gruodžio 24 | „…ir ji gaus ją Kūčių rytą el. paštu“ |
-| 15–22 | Dovanų kortelė su QR | „Atsidarys ir pamatys savo gyvenimo žemėlapį“ |
+| 2–10 | Pažymi „Kalėdinė dovana?“, pildai vardą ir palinkėjimą | „Įrašau palinkėjimą…“ |
+| 10–15 | Pažymi „Išsiųsti gavėjui nurodytą dieną“ → gruodžio 24, įrašai mamos el. paštą | „…ir ji gaus ją Kūčių rytą el. paštu“ |
+| 15–22 | Dovanų kortelė su QR (tokią pat ji pamatys laiške) | „Atsidarys ir pamatys savo gyvenimo žemėlapį“ |
 | 22–26 | Tekstas | „Nuoroda — bio 🎁“ |
 
-Nuoroda: `/dovana?utm_source=tiktok&utm_campaign=kaledos`
+Nuoroda: `/dovana?sezonas=kaledos&utm_source=tiktok&utm_campaign=kaledos` (su `sezonas=kaledos` — „Kalėdinė dovana“ formoje jau pažymėta)
+
+> Pastaba: dovanų kuponą galima nusiųsti ir per Messenger ar WhatsApp — verta parodyti ir tai (antras video variantas: „Nusiunčiau mamai per Messenger“).
 
 **6. „Paklausiau savo delnų: ar keisti darbą?“ („Klausk savo delnų“)**
 | Sek. | Vaizdas | Tekstas |
