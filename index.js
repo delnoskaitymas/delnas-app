@@ -2945,9 +2945,9 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   <div style="font-size:26px;margin-bottom:6px">✓</div>
   <div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">Dovana užsakyta</div>
   <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead}${kl} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.).</p>
-  <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b> · galioja iki ${fmtLtDate(gift.expiresAt)}</p>
+  <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}</p>
   <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atsisiųsti dovanų kortelę</a>
-  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kortelę ar kodą galite persiųsti bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
+  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kortelę ar kodą gali persiųsti bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
   ${EMAIL_FOOTER_HTML}
 </div>`;
 }
@@ -2976,12 +2976,12 @@ function buildGiftEmailHtml(gift) {
       Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas</a>, tada ${pora ? 'nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
-      Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
+      Dovanų kortelę gali atsisiųsti, atsispausdinti arba persiųsti:<br>
       <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kortelę</a>
     </div>
   </div>
   <div style="max-width:520px;margin:18px auto 0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;text-align:center">
-    Šį laišką gavote, nes įsigijote DELNAS dovanų kuponą. Persiųskite jį tam, kam dovanojate, arba atsisiųskite kortelę.
+    Šį laišką gavai, nes įsigijai DELNAS dovanų kuponą. Persiųsk jį tam, kam dovanoji, arba atsisiųsk kortelę.
     Kodas vienkartinis. Pramoginio pobūdžio paslauga, 18+.
   </div>
   ${EMAIL_FOOTER_HTML}
@@ -3032,7 +3032,7 @@ function buildGiftRecipientEmailHtml(gift) {
     ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kortelė')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
       : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : '')}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną</a></div>
-    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
+    ${img ? '' : `<div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>`}
   </div>
   <div style="max-width:520px;margin:16px auto 0;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.6;color:#888;text-align:center">${from ? `Šį laišką ${pora ? 'gavote, nes ' + from + ' jums' : 'gavai, nes ' + from + ' tau'} padovanojo ${pora ? 'DELNAS porų suderinamumą' : 'DELNAS gyvenimo žemėlapį'}.` : `Šį laišką ${pora ? 'gavote, nes jums' : 'gavai, nes tau'} buvo padovanotas ${pora ? 'DELNAS porų suderinamumas' : 'DELNAS gyvenimo žemėlapis'}.`} Pramoginio pobūdžio paslauga, 18+.</div>
   ${EMAIL_FOOTER_HTML}
@@ -4163,7 +4163,7 @@ function giftRecipientReminderSubject(g) {
 }
 function giftBuyerSubject(gift) {
   const v = vocPrefix(gift.fromName), t = gift.recipientEmail ? 'DELNAS dovana užsakyta' : 'DELNAS dovanų kuponas';
-  return `🎁 ${v ? v + 'jūsų' : 'Jūsų'} ${t}`;
+  return `🎁 ${v ? v + 'tavo' : 'Tavo'} ${t}`;
 }
 function refRewardSubject(name) {
   const v = vocPrefix(name);
