@@ -2976,7 +2976,7 @@ function buildGiftEmailHtml(gift) {
       Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas</a>, tada ${pora ? 'nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
-      Kortelė su QR kodu spausdinimui ar persiuntimui:<br>
+      Dovanų kortelę gali atsisiųsti, atsispausdinti arba persiųsti:<br>
       <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kortelę</a>
     </div>
   </div>
