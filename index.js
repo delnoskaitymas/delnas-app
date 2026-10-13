@@ -3084,14 +3084,12 @@ function processGiftSchedules() {
           })
           .catch(e => { console.error('[gift] gavėjo laiško klaida:', e.message); const st2 = loadGiftStore(); if (st2.codes[g.code]) { delete st2.codes[g.code].recipientSentAt; saveGiftStore(st2); } });
       }
-      // 2) Priminimas pirkėjui: neatidaryta po 30 d. (skaičiuojant nuo išsiuntimo gavėjui, jei toks buvo)
-      const startTs = g.recipientSentAt || g.createdAt;
-      if (giftStatus(g) === 'active' && g.buyerEmail && !g.buyerReminderAt && startTs && now - startTs > 30 * 864e5 && (!g.sendAt || g.recipientSentAt)) {
-        g.buyerReminderAt = now; changed = true;
-        const card = `${appBaseUrl()}/dovana/kortele?kodas=${encodeURIComponent(g.code)}`;
-        mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.buyerEmail, subject: giftBuyerReminderSubject(g),
-          html: buildGiftBuyerReminderHtml(g, card) })
-          .catch(e => console.error('[gift] priminimo klaida:', e.message));
+      // 2) Neatidaryta po 30 d. — vienas priminimas pačiam gavėjui (jei dovana buvo išsiųsta el. paštu).
+      // Pirkėjui priminimas nesiunčiamas — kad gavėjas nebūtų spaudžiamas atlikti analizę.
+      if (giftStatus(g) === 'active' && !g.buyerReminderAt && !g.recipientReminderAt && g.recipientEmail && g.recipientSentAt && now - g.recipientSentAt > 30 * 864e5) {
+        g.recipientReminderAt = now; changed = true;
+        mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.recipientEmail, subject: giftRecipientReminderSubject(g), html: buildGiftRecipientReminderHtml(g) })
+          .catch(e => console.error('[gift] gavėjo priminimo klaida:', e.message));
       }
     }
     if (changed) saveGiftStore(store);
@@ -4144,9 +4142,9 @@ function giftRecipientSubject(g) {
   const t = pora ? 'jums padovanotas DELNAS porų suderinamumas' : 'tau padovanotas DELNAS gyvenimo žemėlapis';
   return `🎁 ${v ? v + t : capFirst(t)}`;
 }
-function giftBuyerReminderSubject(g) {
-  const v = vocPrefix(g.fromName);
-  return g.recipientName ? `🎁 ${v}${g.recipientName} dar neatidarė dovanos` : `🎁 ${v ? v + 'jūsų' : 'Jūsų'} dovana dar neatidaryta`;
+function giftRecipientReminderSubject(g) {
+  const v = vocPrefix(g.recipientName), w = g.kind === 'pora' ? 'jūsų' : 'tavo';
+  return `🎁 ${v ? v + w : capFirst(w)} dovana dar laukia`;
 }
 function giftBuyerSubject(gift) {
   const v = vocPrefix(gift.fromName), t = gift.recipientEmail ? 'DELNAS dovana užsakyta' : 'DELNAS dovanų kuponas';
@@ -4165,8 +4163,11 @@ function klauskPara(t) { return escapeHtml(t).split(/\n+/).filter(Boolean).map(x
 function buildRefRewardHtml(rewardId) {
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pasidalijai!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Su tavo nuoroda buvo atlikta nauja delnų analizė. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
 }
-function buildGiftBuyerReminderHtml(g, card) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${g.recipientName ? escapeHtml(g.recipientName) + ' dar neatidarė jūsų DELNAS dovanos' : 'Jūsų DELNAS dovana dar neatidaryta'}. Gal norite priminti? Kortelę galite persiųsti dar kartą.</p><a href="${card}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovanų kortelę</a><div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(g.code)}</b><br>Galioja iki ${fmtLtDate(g.expiresAt)}</div>${EMAIL_FOOTER_HTML}</div>`;
+function buildGiftRecipientReminderHtml(g) {
+  const pora = g.kind === 'pora', from = g.fromName ? escapeHtml(g.fromName) : '';
+  const what = pora ? 'porų suderinamumą pagal poros delnus' : 'asmeninį Gyvenimo žemėlapį pagal delnus';
+  const txt = from ? `${from} ${pora ? 'jums' : 'tau'} padovanojo ${what}.` : (pora ? 'Jums padovanotas porų suderinamumas pagal poros delnus.' : 'Tau padovanotas asmeninis Gyvenimo žemėlapis pagal delnus.');
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${txt} ${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</p><a href="${giftRedeemLink(g)}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovaną</a><div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(g.code)}</b><br>Galioja iki ${fmtLtDate(g.expiresAt)}</div><div style="margin-top:14px;font-family:Arial,sans-serif;font-size:11.5px;color:#888">Tai vienintelis priminimas apie šią dovaną.</div>${EMAIL_FOOTER_HTML}</div>`;
 }
 function buildKlauskDigestHtml({ pora, n, items, id, btn }) {
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : n >= KLAUSK_MAX_QUESTIONS ? (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`) : (pora ? `Jūsų klausimai ir atsakymai (${n})` : `Tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`;
@@ -4611,7 +4612,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Priminimas po 3 mėn. (porų)', () => buildReminderMail({ kind: 'pora', nameA, nameB, email: to, sessionId: 'cs_test_0000' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
   add('Dovanos kortelė pirkėjui', () => ({ subject: giftBuyerSubject(giftBase), html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to }) }));
   add('Dovana gavėjui', () => ({ subject: giftRecipientSubject(giftBase), html: buildGiftRecipientEmailHtml({ ...giftBase, recipientEmail: to }) }));
-  add('Dovana neatidaryta (pirkėjui)', () => ({ subject: giftBuyerReminderSubject(giftBase), html: buildGiftBuyerReminderHtml(giftBase, `${appBaseUrl()}/dovana/kortele?kodas=${giftBase.code}`) }));
+  add('Dovana neatidaryta (gavėjui)', () => ({ subject: giftRecipientReminderSubject(giftBase), html: buildGiftRecipientReminderHtml(giftBase) }));
   add('Kvietimo atlygis', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test') }));
   const results = [];
   for (const m of list) {
