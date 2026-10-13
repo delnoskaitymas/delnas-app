@@ -355,7 +355,7 @@ body.form-view.tight #v-form .trust{display:none}
       <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui nurodytą dieną</span></label>
       <div class="sched-hint">Po apmokėjimo dovanos kuponą galėsi nusiųsti per Messenger, WhatsApp ar kitur. Arba pažymėk, ir išsiųsime jį el. paštu nurodytą dieną.</div>
       <div class="sched hidden" id="sched">
-        <label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="ieva@pastas.lt" inputmode="email" autocomplete="off">
+        <label for="f-to-email">Gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="dovana bus išsiųsta čia" inputmode="email" autocomplete="off">
         <label for="f-y">Kada išsiųsti <span class="opt">(Lietuvos laiku)</span></label>
         <div class="dt"><select id="f-y" aria-label="Metai"></select><span>–</span><select id="f-m" aria-label="Mėnuo"></select><span>–</span><select id="f-d" aria-label="Diena"></select><select id="f-h" aria-label="Valanda"></select></div>
         <div class="dt-note">Išsiunčiama pasirinktą valandą, gali vėluoti iki 5&nbsp;min.</div>
@@ -495,8 +495,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   // ---------- 1. Forma ----------
   function validForm(){
     const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-    // Siunčiant gavėjui — užtenka gavėjo el. pašto ir datos; kitaip — reikia pirkėjo el. pašto
-    if ($('f-sched') && $('f-sched').checked) return $('f-ok').checked && em($('f-to-email').value.trim()) && !!$('f-date').value;
+    // Pirkėjo el. paštas reikalingas visada; siunčiant gavėjui — dar ir gavėjo el. paštas bei data
+    if ($('f-sched') && $('f-sched').checked) return $('f-ok').checked && em($('f-email').value.trim()) && em($('f-to-email').value.trim()) && !!$('f-date').value;
     return $('f-ok').checked && em($('f-email').value.trim());
   }
   function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
@@ -565,7 +565,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   $('f-sched').addEventListener('change', () => {
     const on = $('f-sched').checked;
     $('sched').classList.toggle('hidden', !on);
-    $('buyer-wrap').classList.toggle('hidden', on); // siunčiant gavėjui savo el. pašto rašyti nereikia
+    // Abu el. paštai: gavėjo — dovanai, pirkėjo — kortelei / patvirtinimui
+    $('f-email').placeholder = on ? 'patvirtinimas bus išsiųstas čia' : 'kortelė bus išsiųsta čia';
     document.body.classList.toggle('sched-on', on);
     refreshBtn();
   });
@@ -627,7 +628,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ kind, season: seasonOn ? season : '', promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-sched').checked ? '' : $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, season: seasonOn ? season : '', promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
