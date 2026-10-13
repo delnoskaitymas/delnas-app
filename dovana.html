@@ -521,7 +521,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     chkMail('f-email', 'Įrašyk savo el. paštą', 'Patikrink savo el. paštą');
     if (!$('f-ok').checked) { $('f-ok').closest('label').classList.add('bad'); miss.push('Pažymėk sutikimą su sąlygomis'); }
     const err = $('form-err');
-    err.textContent = miss[0] || ''; err.dataset.hint = '1'; err.style.display = miss.length ? 'block' : 'none';
+    // Kai trūksta kelių dalykų — bendras pranešimas (visi jie paryškinti raudonai)
+    err.textContent = miss.length > 1 ? 'Užpildyk tai, kas pažymėta raudonai' : (miss[0] || ''); err.dataset.hint = '1'; err.style.display = miss.length ? 'block' : 'none';
   }
   ['f-ok','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
