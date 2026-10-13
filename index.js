@@ -199,6 +199,18 @@ function saveReminders(reminders) {
   try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
 }
 
+// Kada kokiam adresui paskutinį kartą išsiųstas priminimas — kad asmeninės ir porų
+// analizės priminimai tam pačiam žmogui neateitų tą pačią savaitę
+const REMINDER_SENT_FILE = path.join(SHARED_STORAGE_DIR, 'reminder-sent.json');
+const REMINDER_GAP_MS = 7 * 24 * 60 * 60 * 1000;
+function loadReminderSent() {
+  try { if (fs.existsSync(REMINDER_SENT_FILE)) return JSON.parse(fs.readFileSync(REMINDER_SENT_FILE, 'utf8')) || {}; } catch(e) {}
+  return {};
+}
+function saveReminderSent(m) {
+  try { fs.writeFileSync(REMINDER_SENT_FILE, JSON.stringify(m)); } catch(e) {}
+}
+
 // --- Panaudotų užsakymo numerių saugykla (patvari, ne tik atmintyje) ---
 // ANKSČIAU susidūrimo patikra generateOrderNumber() viduje tikrindavo TIK
 // šiuo metu aktyvius (pendingOrders) užsakymus atmintyje — po serverio
@@ -280,11 +292,19 @@ setInterval(async () => {
   const reminders = loadReminders();
   const now = Date.now();
   const remaining = [];
+  const sent = loadReminderSent();
+  let changed = false;
   for (const r of reminders) {
     if (now >= r.sendAt) {
       if (isReminderBlacklisted(r.email)) {
         console.log(`Priminimas praleistas (unsubscribe): ${r.email}`);
         continue; // pašalinamas iš sąrašo, laiškas nesiunčiamas
+      }
+      const key = String(r.email || '').toLowerCase(), last = sent[key];
+      if (last && now - last < REMINDER_GAP_MS) {
+        // Šiam adresui priminimas jau išsiųstas šią savaitę — šis atidedamas
+        r.sendAt = last + REMINDER_GAP_MS; remaining.push(r); changed = true;
+        continue;
       }
       try {
         await mailer.sendMail({
@@ -293,6 +313,7 @@ setInterval(async () => {
           ...buildReminderMail(r)
         });
         console.log(`Priminimas išsiųstas: ${r.email}`);
+        sent[key] = now; changed = true;
       } catch(e) {
         console.error(`Priminimo klaida ${r.email}:`, e.message);
         remaining.push(r);
@@ -301,7 +322,11 @@ setInterval(async () => {
       remaining.push(r);
     }
   }
-  if (remaining.length !== reminders.length) saveReminders(remaining);
+  if (changed || remaining.length !== reminders.length) saveReminders(remaining);
+  if (changed) {
+    for (const k of Object.keys(sent)) if (now - sent[k] > 30 * 24 * 60 * 60 * 1000) delete sent[k];
+    saveReminderSent(sent);
+  }
 }, 60 * 60 * 1000);
 
 // --- Token sistema ---
@@ -2330,21 +2355,6 @@ app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
   }
 });
 
-app.post('/notify-recovered-after-error', sensitiveLimiter, async (req, res) => {
-  try {
-    const { name, email, sessionId, orderNumber } = req.body;
-    if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
-    if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
-    if (sessionId && (typeof sessionId !== 'string' || sessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas sessionId' });
-    if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
-    logRecoveredAfterDelay({ name, email, sessionId, orderNumber });
-    res.json({ ok: true });
-  } catch (err) {
-    console.error('[notify-recovered-after-error] klaida:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Klientas iškviečia šį endpoint'ą TIKSLIAI TADA, kai atsidaro rezultato
 // ekranas — PDF (sugeneruotas kliento pusėje, tas pats, kaip "Atsisiųsti
 // PDF" mygtukas) išsiunčiamas į vartotojo el. paštą iš
@@ -2766,7 +2776,14 @@ function scheduleReminderFor(rawEmail, name, savedId) {
   // aukščiau faile), tiksliai taip, kaip vartotojui rodoma UI.
   const reminders = loadReminders();
   const ex = reminders.find(r => r.kind !== 'pora' && (r.email || '').toLowerCase() === email);
-  if (ex) { if (savedId && ex.savedId !== savedId) { ex.savedId = savedId; saveReminders(reminders); } return 'exists'; }
+  if (ex) {
+    // Nauja analizė (ar naujas paspaudimas „Primink“) — 3 mėnesiai skaičiuojami nuo jos, ne nuo ankstesnės
+    if (savedId) ex.savedId = savedId;
+    if (name) ex.name = name;
+    ex.sendAt = Date.now() + (90 * 24 * 60 * 60 * 1000);
+    saveReminders(reminders);
+    return 'exists';
+  }
   reminders.push({ email, name: name || '', ...(savedId ? { savedId } : {}), sendAt: Date.now() + (90 * 24 * 60 * 60 * 1000), createdAt: Date.now() });
   saveReminders(reminders);
   return 'ok';
@@ -3714,7 +3731,10 @@ app.post('/pora/reminder', sensitiveLimiter, (req, res) => {
     if (i !== -1) { bl.splice(i, 1); saveReminderBlacklist(bl); }
     const rem = loadReminders();
     if (rem.some(r => r.kind === 'pora' && r.sessionId === sessionId)) return res.json({ ok: true, exists: true, email });
-    rem.push({ kind: 'pora', sessionId, email, nameA: o.nameA || '', nameB: o.nameB || '', sendAt: Date.now() + PORA_REMINDER_DAYS * DAY_MS, createdAt: Date.now() });
+    // Vienam el. paštui — vienas porų priminimas: nauja porų analizė atnaujina esamą (data skaičiuojama nuo jos)
+    const entry = { kind: 'pora', sessionId, email, nameA: o.nameA || '', nameB: o.nameB || '', sendAt: Date.now() + PORA_REMINDER_DAYS * DAY_MS, createdAt: Date.now() };
+    const pi = rem.findIndex(r => r.kind === 'pora' && String(r.email || '').toLowerCase() === email);
+    if (pi !== -1) rem[pi] = entry; else rem.push(entry);
     saveReminders(rem);
     statInc('pora_reminder');
     res.json({ ok: true, email });
