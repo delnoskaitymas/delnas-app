@@ -5842,7 +5842,7 @@ function proceedToPayment(){
   if(!name||!emOk){
     if(!name) document.getElementById('o-name').style.boxShadow='0 0 0 2px #ff7b7b';
     if(!emOk) document.getElementById('o-email').style.boxShadow='0 0 0 2px #ff7b7b';
-    if(err){err.textContent=!name?'Įrašyk savo vardą':(email?'Patikrink el. pašto adresą':'Įrašyk savo el. paštą');err.style.display='block';}
+    if(err){err.textContent=!name&&!emOk?'Įrašyk vardą ir el. paštą':!name?'Įrašyk savo vardą':(email?'Patikrink el. pašto adresą':'Įrašyk savo el. paštą');err.style.display='block';}
     return;
   }
   if(err) err.style.display='none';
