@@ -152,7 +152,9 @@ a{color:var(--gold)}
 .btn{display:block;width:100%;margin-top:18px;border:none;border-radius:16px;padding:15px;cursor:pointer;
   background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:500 16px 'DM Sans',sans-serif;
   box-shadow:0 0 24px rgba(212,168,67,.3)}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn[disabled],.btn.off{opacity:.45;cursor:not-allowed}
+.bad{border-color:#ff7b7b!important;box-shadow:0 0 0 1px #ff7b7b}
+.chk.bad{box-shadow:none;color:#ff9b8a}
 .btn.ghost{background:transparent;border:1px solid rgba(212,168,67,.45);color:var(--gold2);box-shadow:none;margin-top:10px}
 .err{display:none;color:#ff7b7b;font-size:12.5px;margin-top:10px;text-align:center}
 .trust{text-align:center;font-size:11px;color:var(--faint);margin-top:12px;line-height:1.6}
@@ -320,6 +322,7 @@ body.form-view.tight.sched-on #form-h1 em{margin-left:.25em}
 body.form-view.tight.sched-on .dt-note{display:none}
 body.form-view.tight #v-form label[for=f-ok]{margin-top:7px}
 body.form-view.tight #pay-btn{margin-top:8px;padding-top:11px;padding-bottom:11px}
+body.form-view.tight #form-err{margin-top:6px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
 body.form-view.tight #v-form .trust{display:none}
 </style>
@@ -366,7 +369,7 @@ body.form-view.tight #v-form .trust{display:none}
         <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
-      <button type="submit" class="btn" id="pay-btn" disabled>Apmokėti <span id="price">12,99 €</span></button>
+      <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">12,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
@@ -493,13 +496,33 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   let current = null; // rodomo kupono duomenys
 
   // ---------- 1. Forma ----------
+  const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   function validForm(){
-    const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
     // Pirkėjo el. paštas reikalingas visada; siunčiant gavėjui — dar ir gavėjo el. paštas bei data
     if ($('f-sched') && $('f-sched').checked) return $('f-ok').checked && em($('f-email').value.trim()) && em($('f-to-email').value.trim()) && !!$('f-date').value;
     return $('f-ok').checked && em($('f-email').value.trim());
   }
-  function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
+  // Mygtukas neužrakinamas (kad paspaudus būtų galima parodyti, ko trūksta) — tik pritemdomas
+  function refreshBtn(){
+    const ok = validForm();
+    $('pay-btn').classList.toggle('off', !ok);
+    ['f-email','f-to-email'].forEach(id => { if ($(id).classList.contains('bad') && em($(id).value.trim())) $(id).classList.remove('bad'); });
+    if ($('f-ok').checked) $('f-ok').closest('label').classList.remove('bad');
+    if (ok && $('form-err').dataset.hint) { $('form-err').style.display = 'none'; delete $('form-err').dataset.hint; }
+  }
+  // Paspaudus neužpildytą formą — paryškinami trūkstami laukai ir parodoma, ko trūksta
+  function showMissing(){
+    const miss = [];
+    const chkMail = (id, empty, wrong) => { const v = $(id).value.trim(); if (!em(v)) { $(id).classList.add('bad'); miss.push(v ? wrong : empty); } };
+    if ($('f-sched').checked) {
+      chkMail('f-to-email', 'Įrašyk dovanos gavėjo el. paštą', 'Patikrink dovanos gavėjo el. paštą');
+      if (!$('f-date').value) miss.push('Pasirink, kada išsiųsti');
+    }
+    chkMail('f-email', 'Įrašyk savo el. paštą', 'Patikrink savo el. paštą');
+    if (!$('f-ok').checked) { $('f-ok').closest('label').classList.add('bad'); miss.push('Pažymėk sutikimą su sąlygomis'); }
+    const err = $('form-err');
+    err.textContent = miss[0] || ''; err.dataset.hint = '1'; err.style.display = miss.length ? 'block' : 'none';
+  }
   ['f-ok','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-msg').addEventListener('input', () => { $('msg-count').textContent = $('f-msg').value.length; });
@@ -623,7 +646,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
   $('gift-form').addEventListener('submit', async e => {
     e.preventDefault();
-    if (!validForm()) return;
+    if (!validForm()) { showMissing(); return; }
     const err = $('form-err'); err.style.display = 'none';
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {

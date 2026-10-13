@@ -572,7 +572,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <input type="checkbox" id="consent-withdrawal" onchange="checkConsentBtn()" style="margin-top:2px;width:17px;height:17px;flex-shrink:0;-webkit-appearance:none;appearance:none;cursor:pointer;border:none;border-radius:4px;position:relative">
       <span id="consent-wd-txt" style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">Sutinku, kad analizė prasidėtų iš karto po nuotraukų pateikimo — todėl prarandu 14 dienų atsisakymo teisę (žr. <a href="/naudojimosi-salygos?is=app#4" target="_blank" style="color:#d4a843;text-decoration:underline">4 skyrių</a>).</span>
     </label>
-    <button id="consent-btn" onclick="acceptConsentAndStart()" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.4);opacity:.4;transition:opacity .2s">Sutinku ir tęsiu ✦</button>
+    <button id="consent-btn" onclick="acceptConsentAndStart()" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.4);opacity:.4;transition:opacity .2s">Sutinku ir tęsiu ✦</button>
+    <div id="consent-err" style="display:none;color:#ff9b8a;font-size:12.5px;text-align:center;margin-top:10px"></div>
   </div>
 </div>
 
@@ -843,7 +844,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
     <!-- Mygtukas -->
-    <button id="order-btn" onclick="proceedToPayment()" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Tęsti</button>
+    <button id="order-btn" onclick="proceedToPayment()" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Tęsti</button>
     <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 </div>
@@ -2174,16 +2175,23 @@ function checkConsentBtn(){
   const btn=document.getElementById('consent-btn');
   if(!cb||!cw||!btn) return;
   const ok=cb.checked&&cw.checked;
-  btn.disabled=!ok;
+  // Mygtukas neužrakinamas — pritemdomas; paspaudus be varnelių parodoma, ko trūksta
   btn.style.opacity=ok?'1':'.4';
   btn.style.cursor=ok?'pointer':'not-allowed';
+  [cb,cw].forEach(x=>{ if(x.checked) x.style.boxShadow=''; });
+  const er=document.getElementById('consent-err'); if(ok&&er) er.style.display='none';
 }
 
 function acceptConsentAndStart(){
-  if(!(window._pora&&window._pora.active)) track('start');
   const cb=document.getElementById('consent-age');
   const cw=document.getElementById('consent-withdrawal');
-  if((cb && !cb.checked) || (cw && !cw.checked)) return; // apsauga — be abiejų patvirtinimų netęsiame
+  if((cb && !cb.checked) || (cw && !cw.checked)){ // be abiejų patvirtinimų netęsiame — parodome, ko trūksta
+    [cb,cw].forEach(x=>{ if(x&&!x.checked) x.style.boxShadow='0 0 0 2px #ff7b7b'; });
+    const er=document.getElementById('consent-err');
+    if(er){ er.textContent=(cb&&!cb.checked)&&(cw&&!cw.checked)?'Reikia pažymėti abu langelius':'Reikia pažymėti ir šį langelį'; er.style.display='block'; }
+    return;
+  }
+  if(!(window._pora&&window._pora.active)) track('start');
   try{ sessionStorage.setItem('delnasConsentGiven','1'); }catch(e){}
   const m=document.getElementById('consent-modal');
   if(m) m.style.display='none';
@@ -5801,10 +5809,13 @@ function checkOrderForm(){
   const e=document.getElementById('o-email');
   const btn=document.getElementById('order-btn');
   if(!n||!e||!btn) return;
-  const ok=n.value.trim().length>0&&e.value.trim().includes('@');
-  btn.disabled=!ok;
+  const ok=n.value.trim().length>0&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value.trim());
+  // Mygtukas neužrakinamas — pritemdomas; paspaudus parodoma, ko trūksta (proceedToPayment)
   btn.style.opacity=ok?'1':'.45';
   btn.style.cursor=ok?'pointer':'not-allowed';
+  if(n.value.trim()) n.style.boxShadow='';
+  if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value.trim())) e.style.boxShadow='';
+  const er=document.getElementById('order-err'); if(ok&&er) er.style.display='none';
 }
 
 function initOrderScreen(){
@@ -5827,8 +5838,11 @@ function proceedToPayment(){
   const name=document.getElementById('o-name').value.trim();
   const email=document.getElementById('o-email').value.trim();
   const err=document.getElementById('order-err');
-  if(!name||!email||!email.includes('@')){
-    if(err){err.textContent='Užpildyk abu laukelius';err.style.display='block';}
+  const emOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!name||!emOk){
+    if(!name) document.getElementById('o-name').style.boxShadow='0 0 0 2px #ff7b7b';
+    if(!emOk) document.getElementById('o-email').style.boxShadow='0 0 0 2px #ff7b7b';
+    if(err){err.textContent=!name?'Įrašyk savo vardą':(email?'Patikrink el. pašto adresą':'Įrašyk savo el. paštą');err.style.display='block';}
     return;
   }
   if(err) err.style.display='none';

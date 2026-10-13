@@ -157,7 +157,9 @@ a{color:var(--gold)}
 .btn{display:block;width:100%;margin-top:18px;border:none;border-radius:16px;padding:15px;cursor:pointer;
   background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:500 16px 'DM Sans',sans-serif;
   box-shadow:0 0 24px rgba(212,168,67,.3)}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn[disabled],.btn.off{opacity:.45;cursor:not-allowed}
+.bad{border-color:#ff7b7b!important;box-shadow:0 0 0 1px #ff7b7b}
+.chk.bad{box-shadow:none;color:#ff9b8a}
 .btn.ghost{background:transparent;border:1px solid rgba(212,168,67,.45);color:var(--gold2);box-shadow:none;margin-top:10px}
 .err{display:none;color:#ff7b7b;font-size:12.5px;margin-top:10px;text-align:center}
 .trust{text-align:center;font-size:11px;color:var(--faint);margin-top:12px;line-height:1.6}
@@ -291,7 +293,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
       <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Mums yra 18 metų ir sutinkame, kad būtų analizuojamos mūsų delnų nuotraukos. Sutinkame su <a href="/naudojimosi-salygos?is=pora" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=pora" target="_blank">Privatumo politika</a>.</span></label>
       <div class="chk2" id="remind-row"><span id="remind-txt">Jei užsakymą atidėtumėte, vieną kartą priminsime. <button type="button" id="f-noremind">Nereikia</button></span></div>
-      <button type="submit" class="btn" id="pay-btn" disabled>Užsakyti — <span id="price">19,99 €</span></button>
+      <button type="submit" class="btn off" id="pay-btn">Užsakyti — <span id="price">19,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
@@ -355,11 +357,29 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
 (function(){
   const $ = id => document.getElementById(id);
+  const em = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   function validForm(){
-    return $('f-ok').checked && $('f-a').value.trim().length > 0 && $('f-b').value.trim().length > 0 &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('f-email').value.trim());
+    return $('f-ok').checked && $('f-a').value.trim().length > 0 && $('f-b').value.trim().length > 0 && em($('f-email').value.trim());
   }
-  function refreshBtn(){ $('pay-btn').disabled = !validForm(); }
+  // Mygtukas neužrakinamas (kad paspaudus būtų galima parodyti, ko trūksta) — tik pritemdomas
+  function refreshBtn(){
+    const ok = validForm();
+    $('pay-btn').classList.toggle('off', !ok);
+    ['f-a','f-b'].forEach(id => { if ($(id).value.trim()) $(id).classList.remove('bad'); });
+    if (em($('f-email').value.trim())) $('f-email').classList.remove('bad');
+    if ($('f-ok').checked) $('f-ok').closest('label').classList.remove('bad');
+    if (ok && $('form-err').dataset.hint) { $('form-err').style.display = 'none'; delete $('form-err').dataset.hint; }
+  }
+  function showMissing(){
+    const miss = [];
+    if (!$('f-a').value.trim()) { $('f-a').classList.add('bad'); miss.push('Įrašyk savo vardą'); }
+    if (!$('f-b').value.trim()) { $('f-b').classList.add('bad'); miss.push('Įrašyk partnerio (-ės) vardą'); }
+    const v = $('f-email').value.trim();
+    if (!em(v)) { $('f-email').classList.add('bad'); miss.push(v ? 'Patikrink savo el. paštą' : 'Įrašyk savo el. paštą'); }
+    if (!$('f-ok').checked) { $('f-ok').closest('label').classList.add('bad'); miss.push('Pažymėk sutikimą su sąlygomis'); }
+    const err = $('form-err');
+    err.textContent = miss[0] || ''; err.dataset.hint = '1'; err.style.display = miss.length ? 'block' : 'none';
+  }
   ['f-a','f-b','f-email'].forEach(id => $(id).addEventListener('input', refreshBtn));
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-noremind').addEventListener('click', () => { window._noRemind = true; $('remind-txt').textContent = '✓ Gerai, priminimo nesiųsime.'; });
@@ -422,7 +442,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
   $('pora-form').addEventListener('submit', async e => {
     e.preventDefault();
-    if (!validForm()) return;
+    if (!validForm()) { showMissing(); return; }
     const err = $('form-err'); err.style.display = 'none';
     const btn = $('pay-btn'), label = btn.innerHTML; btn.disabled = true;
     if (window._giftCode) {
