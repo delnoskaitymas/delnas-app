@@ -4124,7 +4124,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
 });
 
 // ═══ „Klausk“ atsakymai el. paštu — visi viename laiške ═══
-const KLAUSK_DIGEST_QUIET_MS = Number(process.env.KLAUSK_DIGEST_QUIET_MS) || 30 * 60 * 1000;
+const KLAUSK_DIGEST_QUIET_MS = Number(process.env.KLAUSK_DIGEST_QUIET_MS) || 3 * 60 * 60 * 1000;
 // Laiškų temos su kreipiniu (vardai šauksmininku)
 function vocPrefix(n) { const v = ltPhrase(String(n || '').trim(), 'voc'); return v ? v + ', ' : ''; }
 function capFirst(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
