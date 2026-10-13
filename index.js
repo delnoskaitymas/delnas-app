@@ -142,7 +142,40 @@ app.use((req, res, next) => {
   if ((p.endsWith('.json') && p !== '/manifest.json') || p.startsWith('/analysis-sessions')) {
     return res.status(404).send('Not found');
   }
+  // Vidiniai failai ir kol kas neviešinamas Impressum — ne lankytojams
+  if (/^\/(impressum(\.html)?|index\.js|readme\.md|railway\.toml)$/.test(p) || /^\/node_modules(\/|$)/.test(p)) {
+    return res.status(404).send('Not found');
+  }
   next();
+});
+
+// Dovanos nuoroda (/?dovana=… arba /pora?dovana=…) — nuorodos peržiūra Messenger / WhatsApp / Facebook
+// rodo, kad tai dovana (kitaip — bendras puslapio aprašymas iš <!--og--> bloko)
+function sendHtmlWithOg(res, file, title, desc) {
+  let h = fs.readFileSync(path.join(__dirname, file), 'utf8');
+  const t = escapeHtml(title), d = escapeHtml(desc);
+  h = h.replace(/(<meta (?:property="og:title"|name="twitter:title"|property="og:image:alt") content=")[^"]*/g, '$1' + t)
+       .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*/g, '$1' + d);
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.type('html').send(h);
+}
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || typeof req.query.dovana !== 'string') return next();
+  if (req.path === '/' || req.path === '/index.html')
+    return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.');
+  if (req.path === '/pora')
+    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanota porų suderinamumo analizė pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.');
+  next();
+});
+
+// Paieškos sistemoms
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(['User-agent: *', 'Allow: /', 'Disallow: /mano', 'Disallow: /klausk', 'Disallow: /admin', 'Disallow: /dovana/kortele', 'Disallow: /kodas', '', 'Sitemap: https://www.delnaskaitymas.lt/sitemap.xml', ''].join('\n'));
+});
+app.get('/sitemap.xml', (req, res) => {
+  const urls = ['/', '/pora', '/dovana', '/naudojimosi-salygos', '/privatumo-politika'];
+  res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    urls.map(u => `  <url><loc>https://www.delnaskaitymas.lt${u}</loc></url>`).join('\n') + '\n</urlset>\n');
 });
 
 app.use(express.static(path.join(__dirname, '.'), {
