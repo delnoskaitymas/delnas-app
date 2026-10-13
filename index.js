@@ -3004,22 +3004,33 @@ function giftPublicInfo(gift) {
 // Data Vilniaus laiku (YYYY-MM-DD) ir valanda
 function ltDate(ts) { return new Date(ts).toLocaleDateString('sv-SE', { timeZone: 'Europe/Vilnius' }); }
 function ltHour(ts) { return parseInt(new Date(ts).toLocaleString('en-GB', { timeZone: 'Europe/Vilnius', hour: '2-digit', hour12: false }), 10); }
+
+// Šventės užrašas — tik jei pirkėjas pats pažymėjo šventinę dovaną (dovana.html)
 const SEASON_LABELS = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
+// Dovanų kortelės paveikslėlis (sugeneruotas pirkėjo naršyklėje po apmokėjimo) — rodomas laiške gavėjui
+const GIFT_CARD_DIR = path.join(SHARED_STORAGE_DIR, 'gift-cards');
+function giftCardImgUrl(gift) {
+  if (!gift.cardImg || !/^[a-f0-9]{24}$/.test(gift.cardImg)) return '';
+  try { if (!fs.existsSync(path.join(GIFT_CARD_DIR, gift.cardImg + '.jpg'))) return ''; } catch (e) { return ''; }
+  return `${appBaseUrl()}/dovana/kortele-img/${gift.cardImg}.jpg`;
+}
 
 // Laiškas dovanos GAVĖJUI (siunčiamas nurodytą dieną)
 function buildGiftRecipientEmailHtml(gift) {
   const link = giftRedeemLink(gift), pora = gift.kind === 'pora';
   const to = gift.recipientName ? escapeHtml(ltPhrase(gift.recipientName, 'dat')) : (pora ? 'Jums' : 'Tau');
   const from = gift.fromName ? escapeHtml(gift.fromName) : '';
+  const img = giftCardImgUrl(gift);
   return `<div style="background:#0a0a0a;padding:28px 12px;font-family:Georgia,serif">
   <div style="max-width:520px;margin:0 auto;background:#000;border:1px solid rgba(212,168,67,.45);border-radius:18px;padding:34px 26px;text-align:center;color:#fff">
     <div style="font-size:15px;letter-spacing:.32em;color:#d4a843;font-weight:bold">DELNAS</div>
-    ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:14px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
-    <div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>
-    <div style="font-size:17px;color:rgba(255,255,255,.8)">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
-    <div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>
-    ${gift.klausk ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
-    ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
+    ${gift.season && SEASON_LABELS[gift.season] && !img ? `<div style="margin-top:14px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
+    ${img ? '' : `<div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>`}
+    <div style="font-size:17px;color:rgba(255,255,255,.8)${img ? ';margin-top:18px' : ''}">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
+    ${img ? '' : `<div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>`}
+    ${gift.klausk && !img ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
+    ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kortelė')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
+      : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : '')}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną</a></div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>
   </div>
@@ -3077,7 +3088,9 @@ function processGiftSchedules() {
       if (giftStatus(g) === 'void') continue;
       // 1) Siuntimas gavėjui nurodytą dieną ir valandą (Lietuvos laiku; senesni kuponai — 8 val.)
       const sendHour = Number.isInteger(g.sendHour) ? g.sendHour : 8;
-      if (g.recipientEmail && !g.recipientSentAt && g.sendAt && (g.sendAt < today || (g.sendAt === today && ltHour(now) >= sendHour))) {
+      // Jei siunčiama iškart po pirkimo — iki 2 min. palaukiama kortelės paveikslėlio (įkeliamas iš pirkėjo naršyklės)
+      const imgWait = !g.cardImg && g.createdAt && now - g.createdAt < 2 * 60 * 1000;
+      if (g.recipientEmail && !g.recipientSentAt && g.sendAt && !imgWait && (g.sendAt < today || (g.sendAt === today && ltHour(now) >= sendHour))) {
         g.recipientSentAt = now; changed = true;
         mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: g.recipientEmail, subject: giftRecipientSubject(g), html: buildGiftRecipientEmailHtml(g) })
           .then(() => {
@@ -4363,7 +4376,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
     if (isNew) {
       statInc('gift_paid');
       if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
-      if (gift.recipientEmail) setTimeout(processGiftSchedules, 3000);
+      if (gift.recipientEmail) setTimeout(processGiftSchedules, 2 * 60 * 1000 + 5000);
       // Pirkėjui — dovanų kortelė el. paštu
       if (gift.buyerEmail) {
         mailer.sendMail({
@@ -4389,11 +4402,45 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
           <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`
       }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
     }
-    res.json({ paid: true, ...giftPublicInfo(gift), link: giftRedeemLink(gift) });
+    res.json({ paid: true, ...giftPublicInfo(gift), link: giftRedeemLink(gift), needCardImg: !!(gift.recipientEmail && !gift.recipientSentAt && !gift.cardImg) });
   } catch (err) {
     console.error('/gift/confirm klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patvirtinti mokėjimo' });
   }
+});
+
+// Dovanų kortelės paveikslėlis laiškui gavėjui: įkelia pirkėjo naršyklė iškart po apmokėjimo
+// (tik su Stripe sesijos ID, tik vieną kartą ir tik kol laiškas gavėjui dar neišsiųstas).
+app.post('/gift/card-image', sensitiveLimiter, (req, res) => {
+  try {
+    const { sessionId, image } = req.body || {};
+    if (typeof sessionId !== 'string' || !sessionId.startsWith('cs_') || sessionId.length > 200) return res.status(400).json({ error: 'Neteisinga užklausa' });
+    const m = typeof image === 'string' && image.match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/);
+    if (!m || m[1].length > 4_000_000) return res.status(400).json({ error: 'Neteisingas paveikslėlis' });
+    const buf = Buffer.from(m[1], 'base64');
+    if (buf.length < 1000 || buf[0] !== 0xFF || buf[1] !== 0xD8) return res.status(400).json({ error: 'Neteisingas paveikslėlis' });
+    const store = loadGiftStore();
+    const gift = Object.values(store.codes).find(g => g.sessionId === sessionId);
+    if (!gift || !gift.recipientEmail || gift.recipientSentAt || gift.cardImg) return res.json({ ok: true, skipped: true });
+    const token = crypto.randomBytes(12).toString('hex');
+    fs.mkdirSync(GIFT_CARD_DIR, { recursive: true });
+    fs.writeFileSync(path.join(GIFT_CARD_DIR, token + '.jpg'), buf);
+    gift.cardImg = token;
+    saveGiftStore(store);
+    setTimeout(processGiftSchedules, 1000);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('/gift/card-image klaida:', e.message);
+    res.status(500).json({ error: 'Nepavyko išsaugoti' });
+  }
+});
+app.get('/dovana/kortele-img/:file', (req, res) => {
+  const m = String(req.params.file || '').match(/^([a-f0-9]{24})\.jpg$/);
+  if (!m) return res.status(404).end();
+  const f = path.join(GIFT_CARD_DIR, m[1] + '.jpg');
+  if (!fs.existsSync(f)) return res.status(404).end();
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.type('jpg').sendFile(f);
 });
 
 // Viešai grąžinama TIK tai, kas matoma dovanų kortelėje (be pirkėjo el. pašto).

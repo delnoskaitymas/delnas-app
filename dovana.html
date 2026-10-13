@@ -217,6 +217,8 @@ body.sched-on .sched-hint{display:none}
 .dt-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.4}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
+.season-tag.pick{cursor:pointer;background:transparent;color:var(--gold2);border:1px solid rgba(212,168,67,.6);text-transform:none;letter-spacing:.02em;font-size:13px;padding:4px 12px;-webkit-tap-highlight-color:transparent;user-select:none}
+.season-tag.pick.on{background:linear-gradient(125deg,#fff0c4,#e0a930);color:#140f02;border-color:transparent}
 .gcard .season{font:italic 400 19px 'Playfair Display',serif;color:var(--gold2);margin-top:10px;min-height:0}
 .gcard .season:empty{display:none}
 /* Dovanos tipo pasirinkimas: asmeninė / porų */
@@ -517,9 +519,22 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     return '';
   }
   const season = currentSeason();
+  // Šventinė dovana — tik jei pirkėjas pats pažymi (gal dovanoja gimtadieniui). Atėjus per ?sezonas= nuorodą — pažymėta iš karto.
+  let seasonOn = !!(season && params.get('sezonas') === season);
+  const defMsg = $('f-msg').placeholder;
+  function paintSeason(){
+    const t = $('season-tag');
+    t.textContent = (seasonOn ? '✓ ' : '○ ') + SEASONS[season].tag;
+    t.classList.toggle('on', seasonOn);
+    t.setAttribute('aria-pressed', seasonOn ? 'true' : 'false');
+    $('f-msg').placeholder = seasonOn ? SEASONS[season].msg : defMsg;
+  }
   if (season) {
-    $('season-tag').textContent = SEASONS[season].tag; $('season-tag').classList.remove('hidden');
-    $('f-msg').placeholder = SEASONS[season].msg;
+    const t = $('season-tag');
+    t.classList.remove('hidden'); t.classList.add('pick'); t.setAttribute('role', 'button'); t.tabIndex = 0;
+    t.addEventListener('click', () => { seasonOn = !seasonOn; paintSeason(); });
+    t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seasonOn = !seasonOn; paintSeason(); } });
+    paintSeason();
   }
   // Planuotas siuntimas gavėjui
   const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
@@ -609,7 +624,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const btn = $('pay-btn'); btn.disabled = true; btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/gift/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ kind, season, promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-sched').checked ? '' : $('f-email').value.trim(), fromName: $('f-from').value.trim(),
+        body: JSON.stringify({ kind, season: seasonOn ? season : '', promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-sched').checked ? '' : $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
@@ -655,6 +670,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('c-code').textContent = g.code;
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
     const pora = g.kind === 'pora';
+    // Šventės užrašas — tik jei pirkėjas pats pažymėjo šventinę dovaną
     const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
     $('c-season').textContent = SL[g.season] || '';
     $('c-what').innerHTML = (pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus') + (g.klausk ? '<span class="what-kl">+ 3 ' + (pora ? 'klausimai porai' : 'asmeniniai klausimai') + '</span>' : '');
@@ -790,7 +806,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       try {
         const r = await fetch('/gift/confirm?session_id=' + encodeURIComponent(sessionId));
         const d = await r.json();
-        if (d.paid) { if (window.delnasSrcBuy) window.delnasSrcBuy('dovana', sessionId); history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); return; }
+        if (d.paid) { if (window.delnasSrcBuy) window.delnasSrcBuy('dovana', sessionId); history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); if (d.needCardImg) uploadCardImg(sessionId); return; }
         if (r.status === 400) break;
       } catch (e) {}
       $('wait-txt').textContent = 'Laukiame mokėjimo patvirtinimo…';
@@ -798,6 +814,17 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     }
     $('error-txt').innerHTML = 'Mokėjimo patvirtinti kol kas nepavyko. Jei pinigai nuskaičiuoti — kortelė atkeliaus el. paštu, arba parašyk mums: <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a>';
     show('v-error');
+  }
+  // Planuotas siuntimas gavėjui: kortelės paveikslėlis įkeliamas į serverį ir rodomas laiške gavėjui
+  async function uploadCardImg(sessionId){
+    for (let i = 0; i < 2; i++) {
+      try {
+        await new Promise(r => setTimeout(r, 700));
+        const c = await cardCanvas();
+        const r = await fetch('/gift/card-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, image: c.toDataURL('image/jpeg', 0.86) }) });
+        if (r.ok) return;
+      } catch (e) {}
+    }
   }
   async function openCard(code){
     show('v-wait'); $('wait-txt').textContent = 'Įkeliama kortelė…';
