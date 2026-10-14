@@ -1991,16 +1991,39 @@ Be precise and objective — do not round everything to convenient default numbe
 // ANALYSIS_DAILY_CAP per parą (Lietuvos laiku). Viršijus ribą foninė analizė
 // tiesiog nepaleidžiama: apmokėjusiam klientui analizė vis tiek atliekama per
 // /analyze-palm (tik palaukti tenka ilgiau). Pasiekus dienos ribą — laiškas adminui.
+// IP adresai, iš kurių per paskutines 24 val. buvo apmokėta (ar panaudotas
+// dovanų kuponas): jiems ribos laisvesnės (pvz., šeima per tą patį Wi-Fi).
+const PAID_IP_TTL = 24 * 60 * 60 * 1000;
+const paidIps = new Map();
+function markPaidIp(req) {
+  try {
+    const now = Date.now();
+    if (paidIps.size > 5000) for (const [ip, t] of paidIps) if (now - t > PAID_IP_TTL) paidIps.delete(ip);
+    if (req.ip) paidIps.set(req.ip, now);
+  } catch (e) {}
+}
+function isPaidIp(ip) { const t = paidIps.get(ip); return !!t && Date.now() - t < PAID_IP_TTL; }
+
 const startAnalysisLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: parseInt(process.env.START_ANALYSIS_PER_HOUR || '5', 10),
+  max: (req) => isPaidIp(req.ip) ? parseInt(process.env.START_ANALYSIS_PER_HOUR_PAID || '30', 10) : parseInt(process.env.START_ANALYSIS_PER_HOUR || '5', 10),
   standardHeaders: true,
+  legacyHeaders: false,
+  message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
+});
+// Neapmokėjusiam IP — ne daugiau kaip START_ANALYSIS_PER_DAY per 24 val.
+const startAnalysisDailyLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: parseInt(process.env.START_ANALYSIS_PER_DAY || '100', 10),
+  skip: (req) => isPaidIp(req.ip),
+  standardHeaders: false,
   legacyHeaders: false,
   message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
 });
 const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '300', 10);
 const _analysisDaily = { day: '', count: 0, notified: false };
-function analysisDailyCapReached() {
+function analysisDailyCapReached(req) {
+  if (isPaidIp(req.ip)) return false; // apmokėjusiųjų analizės į dienos ribą neskaičiuojamos
   const today = ltDate(Date.now());
   if (_analysisDaily.day !== today) { _analysisDaily.day = today; _analysisDaily.count = 0; _analysisDaily.notified = false; }
   if (_analysisDaily.count < ANALYSIS_DAILY_CAP) { _analysisDaily.count++; return false; }
@@ -2019,7 +2042,7 @@ function analysisDailyCapReached() {
   return true;
 }
 
-app.post('/start-analysis', startAnalysisLimiter, async (req, res) => {
+app.post('/start-analysis', startAnalysisLimiter, startAnalysisDailyLimiter, async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
     console.log(`[start-analysis] gauta sessionId=${sessionId||'(nėra)'} photos=${photos?photos.length:0}`);
@@ -2033,7 +2056,7 @@ app.post('/start-analysis', startAnalysisLimiter, async (req, res) => {
       return res.json({ started: true, sessionId });
     }
 
-    if (analysisDailyCapReached()) return res.status(429).json({ started: false, error: 'Dienos riba pasiekta' });
+    if (analysisDailyCapReached(req)) return res.status(429).json({ started: false, error: 'Dienos riba pasiekta' });
 
     const newEntry = {
       status: 'pending',
@@ -2751,6 +2774,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
       sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
       handlePaidAnalysis(paymentIntentId, pi.metadata, finalEmail);
+      markPaidIp(req);
       res.json({ paid: true, token, name: finalName, email: finalEmail, duo: duoOfPromo(pi.metadata.promo) });
     } else {
       res.json({ paid: false, status: pi.status });
@@ -2777,6 +2801,7 @@ app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
       const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
       sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
       handlePaidAnalysis(session.id, session.metadata, finalEmail);
+      markPaidIp(req);
       res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber, duo: duoOfPromo(session.metadata?.promo) });
     } else {
       res.json({ paid: false });
@@ -4620,6 +4645,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
       // pirmo kvietimo) — grąžiname tą patį tokeną; kitu atveju — atmetame.
       if (bgSessionId && gift.redeemedBgSessionId && bgSessionId === gift.redeemedBgSessionId) {
         const token = getOrCreateTokenForPayment('gift:' + code, name || gift.redeemedName || '', email || gift.redeemedEmail || '');
+        markPaidIp(req);
         return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: email || gift.redeemedEmail || '', gift: true });
       }
       return res.status(409).json({ paid: false, status, error: 'Šis dovanos kodas jau panaudotas' });
@@ -4655,6 +4681,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
         <p><strong>Gavėjas:</strong> ${escapeHtml(name || '—')} (${escapeHtml(email || '—')})</p>
         <p><strong>Pirko:</strong> ${escapeHtml(gift.buyerEmail || '—')}</p></div>`
     }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
+    markPaidIp(req);
     res.json({ paid: true, token, name: name || '', email: email || '', gift: true });
   } catch (err) {
     console.error('/redeem-gift klaida:', err);
