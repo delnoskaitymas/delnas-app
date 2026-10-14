@@ -2011,7 +2011,16 @@ const startAnalysisLimiter = rateLimit({
   legacyHeaders: false,
   message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
 });
-const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '100', 10);
+// Neapmokėjusiam IP — ne daugiau kaip START_ANALYSIS_PER_DAY per 24 val.
+const startAnalysisDailyLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: parseInt(process.env.START_ANALYSIS_PER_DAY || '100', 10),
+  skip: (req) => isPaidIp(req.ip),
+  standardHeaders: false,
+  legacyHeaders: false,
+  message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
+});
+const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '300', 10);
 const _analysisDaily = { day: '', count: 0, notified: false };
 function analysisDailyCapReached(req) {
   if (isPaidIp(req.ip)) return false; // apmokėjusiųjų analizės į dienos ribą neskaičiuojamos
@@ -2033,7 +2042,7 @@ function analysisDailyCapReached(req) {
   return true;
 }
 
-app.post('/start-analysis', startAnalysisLimiter, async (req, res) => {
+app.post('/start-analysis', startAnalysisLimiter, startAnalysisDailyLimiter, async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
     console.log(`[start-analysis] gauta sessionId=${sessionId||'(nėra)'} photos=${photos?photos.length:0}`);
