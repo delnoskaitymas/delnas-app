@@ -85,7 +85,12 @@ if (process.env.STRIPE_SECRET_KEY) {
 // X-Forwarded-For antraštę. Be šio nustatymo, express-rate-limit meta klaidą
 // "ERR_ERL_UNEXPECTED_X_FORWARDED_FOR" ir negali teisingai atpažinti IP.
 app.set('trust proxy', 1);
-app.use(cors());
+// CORS: naršyklėje užklausas į serverį leidžiama siųsti tik iš mūsų svetainės
+// (pačios svetainės užklausos — tos pačios kilmės — CORS neliečia). Papildomus
+// adresus galima nurodyti Railway kintamajame CORS_ORIGINS (per kablelį).
+const CORS_ORIGINS = ['https://www.delnaskaitymas.lt', 'https://delnaskaitymas.lt']
+  .concat(String(process.env.CORS_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean));
+app.use(cors({ origin: CORS_ORIGINS }));
 // --- Saugumo HTTP antraštės ---
 // PASTABA: contentSecurityPolicy/crossOriginEmbedderPolicy/crossOriginResourcePolicy
 // SĄMONINGAI išjungti, kad nesulaužytų esamo puslapio (jis naudoja daug inline
@@ -203,7 +208,12 @@ app.use(express.static(path.join(__dirname, '.'), {
 // klaidinantis "mirusio kodo" likutis. Pašalinta (2026-08). Apmokėjimo
 // patvirtinimas šiuo metu vyksta per /verify-payment-intent ir
 // /verify-payment, kuriuos klientas iškviečia grįžęs po apmokėjimo.
-app.use(express.json({ limit: '50mb' }));
+// Užklausų dydžio riba: didelės (iki 50 MB) leidžiamos tik ten, kur siunčiamos
+// nuotraukos, PDF ar kortelės paveikslėlis; visur kitur — iki 1 MB.
+const LARGE_BODY_PATHS = new Set(['/validate-palm', '/start-analysis', '/analyze-palm', '/pora/start', '/pora/save-first', '/gift/card-image', '/email-result-pdf', '/pora/email-pdf']);
+const jsonLarge = express.json({ limit: '50mb' });
+const jsonSmall = express.json({ limit: '1mb' });
+app.use((req, res, next) => (LARGE_BODY_PATHS.has(req.path) ? jsonLarge : jsonSmall)(req, res, next));
 
 // --- Patvari saugykla (Railway Volume, jei sumontuotas) ---
 // Jei SHARED_STORAGE_DIR aplinkos kintamasis nenustatytas, failai saugomi
@@ -1975,7 +1985,41 @@ Be precise and objective — do not round everything to convenient default numbe
 });
 
 // --- ENDPOINT: Paleisti foninę analizę ---
-app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
+// --- Neapmokėtų analizių ribos ---
+// Foninė analizė paleidžiama dar prieš apmokėjimą, todėl ribojame, kiek jų
+// galima paleisti: iš vieno IP — START_ANALYSIS_PER_HOUR per valandą, iš viso —
+// ANALYSIS_DAILY_CAP per parą (Lietuvos laiku). Viršijus ribą foninė analizė
+// tiesiog nepaleidžiama: apmokėjusiam klientui analizė vis tiek atliekama per
+// /analyze-palm (tik palaukti tenka ilgiau). Pasiekus dienos ribą — laiškas adminui.
+const startAnalysisLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: parseInt(process.env.START_ANALYSIS_PER_HOUR || '5', 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
+});
+const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '300', 10);
+const _analysisDaily = { day: '', count: 0, notified: false };
+function analysisDailyCapReached() {
+  const today = ltDate(Date.now());
+  if (_analysisDaily.day !== today) { _analysisDaily.day = today; _analysisDaily.count = 0; _analysisDaily.notified = false; }
+  if (_analysisDaily.count < ANALYSIS_DAILY_CAP) { _analysisDaily.count++; return false; }
+  if (!_analysisDaily.notified) {
+    _analysisDaily.notified = true;
+    console.error(`[start-analysis] pasiekta dienos riba (${ANALYSIS_DAILY_CAP}) — foninės analizės iki vidurnakčio nepaleidžiamos`);
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `[DELNAS] Pasiekta neapmokėtų analizių dienos riba (${ANALYSIS_DAILY_CAP})`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Pasiekta dienos riba</h2>
+        <p>Šiandien paleista ${ANALYSIS_DAILY_CAP} neapmokėtų analizių. Iki vidurnakčio (Lietuvos laiku) naujos analizės prieš apmokėjimą nebepaleidžiamos — apmokėję klientai analizę vis tiek gauna, tik ji pradedama po apmokėjimo.</p>
+        <p>Jei tai tikri lankytojai (pvz., po reklamos), ribą galima padidinti Railway kintamuoju <b>ANALYSIS_DAILY_CAP</b>. Jei ne — galbūt kažkas piktnaudžiauja; patikrink Anthropic išlaidas.</p></div>`
+    }).catch(e => console.error('[start-analysis] dienos ribos laiško klaida:', e.message));
+  }
+  return true;
+}
+
+app.post('/start-analysis', startAnalysisLimiter, async (req, res) => {
   try {
     const { photos, sessionId } = req.body;
     console.log(`[start-analysis] gauta sessionId=${sessionId||'(nėra)'} photos=${photos?photos.length:0}`);
@@ -1988,6 +2032,8 @@ app.post('/start-analysis', sensitiveLimiter, async (req, res) => {
       console.log(`[start-analysis] sessionId=${sessionId} JAU YRA cache (dublikatas), grąžinam started:true be naujo paleidimo`);
       return res.json({ started: true, sessionId });
     }
+
+    if (analysisDailyCapReached()) return res.status(429).json({ started: false, error: 'Dienos riba pasiekta' });
 
     const newEntry = {
       status: 'pending',
