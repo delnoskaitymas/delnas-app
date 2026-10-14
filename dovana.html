@@ -381,8 +381,8 @@ body.form-view.tight #v-form .trust{display:none}
       </div>
       <div id="buyer-wrap">
         <label for="f-email">Tavo el. paštas</label>
-        <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
-        <div class="sched-hint">Kortelę taip pat rasi ekrane po apmokėjimo ir galėsi ją nusiųsti per Messenger, WhatsApp ar kitur.</div>
+        <input type="email" id="f-email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
+        <div class="sched-hint">Kuponą taip pat rasi ekrane po apmokėjimo ir galėsi jį nusiųsti per Messenger, WhatsApp ar kitur.</div>
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">12,99 €</span></button>
@@ -606,7 +606,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const on = $('f-sched').checked;
     $('sched').classList.toggle('hidden', !on);
     // Abu el. paštai: gavėjo — dovanai, pirkėjo — kortelei / patvirtinimui
-    $('f-email').placeholder = on ? 'patvirtinimas bus išsiųstas čia' : 'kortelė bus išsiųsta čia';
+    $('f-email').placeholder = on ? 'patvirtinimas bus išsiųstas čia' : 'kuponas bus išsiųstas čia';
     document.body.classList.toggle('sched-on', on);
     refreshBtn();
   });
