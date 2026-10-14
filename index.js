@@ -4672,6 +4672,7 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
         <p><strong>Gavėjas:</strong> ${escapeHtml(name || '—')} (${escapeHtml(email || '—')})</p>
         <p><strong>Pirko:</strong> ${escapeHtml(gift.buyerEmail || '—')}</p></div>`
     }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
+    markPaidIp(req);
     res.json({ paid: true, token, name: name || '', email: email || '', gift: true });
   } catch (err) {
     console.error('/redeem-gift klaida:', err);
