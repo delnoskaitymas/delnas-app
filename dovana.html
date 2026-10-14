@@ -225,7 +225,7 @@ body.card-view #v-card{margin:auto 0}
 .sched-chk input{width:20px!important;height:20px!important;margin-top:0!important}
 @media (max-height:700px){ .sched-chk{margin-top:8px!important;font-size:14px!important} #v-form textarea{height:40px;min-height:40px} #v-form .trust{display:none} }
 .sched{margin-top:4px}
-.sched-hint{margin:4px 0 0 30px;font-size:11.5px;line-height:1.4;color:var(--muted)}
+.sched-hint{margin:4px 0 0 2px;font-size:11.5px;line-height:1.4;color:var(--muted)}
 body.sched-on .sched-hint{display:none}
 /* Siuntimo data ir valanda: metai – mėnuo – diena, valanda (Lietuvos laiku) */
 .dt{display:grid;grid-template-columns:1.35fr auto 1fr auto 1fr 1.3fr;gap:6px;align-items:center}
@@ -372,7 +372,6 @@ body.form-view.tight #v-form .trust{display:none}
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
       <label class="chk sched-chk" for="f-sched"><input type="checkbox" id="f-sched"><span>📅 Išsiųsti gavėjui el. paštu pasirinktą dieną</span></label>
-      <div class="sched-hint">Po apmokėjimo kuponą galėsi nusiųsti per Messenger, WhatsApp ar kitur. Jei nori, kad išsiųstume mes, pažymėk ir įrašyk gavėjo el. paštą bei dieną.</div>
       <div class="sched hidden" id="sched">
         <label for="f-to-email">Dovanos gavėjo el. paštas</label><input type="email" id="f-to-email" maxlength="254" placeholder="dovana bus išsiųsta čia" inputmode="email" autocomplete="off">
         <label for="f-y">Kada išsiųsti <span class="opt">(Lietuvos laiku)</span></label>
@@ -383,6 +382,7 @@ body.form-view.tight #v-form .trust{display:none}
       <div id="buyer-wrap">
         <label for="f-email">Tavo el. paštas</label>
         <input type="email" id="f-email" maxlength="254" placeholder="kortelė bus išsiųsta čia" autocomplete="email" inputmode="email">
+        <div class="sched-hint">Kortelę taip pat rasi ekrane po apmokėjimo ir galėsi ją nusiųsti per Messenger, WhatsApp ar kitur.</div>
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">12,99 €</span></button>
