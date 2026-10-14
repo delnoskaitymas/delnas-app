@@ -2011,7 +2011,7 @@ const startAnalysisLimiter = rateLimit({
   legacyHeaders: false,
   message: { started: false, error: 'Per daug bandymų. Pabandyk vėliau.' }
 });
-const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '300', 10);
+const ANALYSIS_DAILY_CAP = parseInt(process.env.ANALYSIS_DAILY_CAP || '100', 10);
 const _analysisDaily = { day: '', count: 0, notified: false };
 function analysisDailyCapReached(req) {
   if (isPaidIp(req.ip)) return false; // apmokėjusiųjų analizės į dienos ribą neskaičiuojamos
