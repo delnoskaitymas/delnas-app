@@ -228,6 +228,14 @@ if (process.env.SHARED_STORAGE_DIR) {
   console.warn(`[STARTUP ĮSPĖJIMAS] SHARED_STORAGE_DIR NENUSTATYTAS — naudojama efemerinė __dirname saugykla (${SHARED_STORAGE_DIR}). reminders.json/reminder-blacklist.json BUS IŠTRINTI kito deploy'inimo metu. Nustatykite SHARED_STORAGE_DIR aplinkos kintamąjį Railway Variables skiltyje.`);
 }
 
+// Saugus failo įrašymas: pirma į laikiną failą, tada pervadinama. Jei serveris
+// persikrauna įrašymo metu, senas failas lieka sveikas (nesugadintas pusiau įrašytas).
+function writeFileSafe(file, data) {
+  const tmp = file + '.tmp';
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, file);
+}
+
 // --- Priminimų saugykla ---
 const REMINDERS_FILE = path.join(SHARED_STORAGE_DIR, 'reminders.json');
 
@@ -239,7 +247,7 @@ function loadReminders() {
 }
 
 function saveReminders(reminders) {
-  try { fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
+  try { writeFileSafe(REMINDERS_FILE, JSON.stringify(reminders, null, 2)); } catch(e) {}
 }
 
 // Kada kokiam adresui paskutinį kartą išsiųstas priminimas — kad asmeninės ir porų
@@ -251,7 +259,7 @@ function loadReminderSent() {
   return {};
 }
 function saveReminderSent(m) {
-  try { fs.writeFileSync(REMINDER_SENT_FILE, JSON.stringify(m)); } catch(e) {}
+  try { writeFileSafe(REMINDER_SENT_FILE, JSON.stringify(m)); } catch(e) {}
 }
 
 // --- Panaudotų užsakymo numerių saugykla (patvari, ne tik atmintyje) ---
@@ -272,7 +280,7 @@ function loadUsedOrderNumbers() {
 }
 
 function saveUsedOrderNumbers(set) {
-  try { fs.writeFileSync(USED_ORDER_NUMBERS_FILE, JSON.stringify([...set])); } catch(e) {}
+  try { writeFileSafe(USED_ORDER_NUMBERS_FILE, JSON.stringify([...set])); } catch(e) {}
 }
 
 const usedOrderNumbers = loadUsedOrderNumbers();
@@ -291,7 +299,7 @@ function loadReminderBlacklist() {
 }
 
 function saveReminderBlacklist(list) {
-  try { fs.writeFileSync(REMINDER_BLACKLIST_FILE, JSON.stringify(list, null, 2)); } catch(e) {}
+  try { writeFileSafe(REMINDER_BLACKLIST_FILE, JSON.stringify(list, null, 2)); } catch(e) {}
 }
 
 
@@ -406,7 +414,7 @@ function loadPaymentTokens() {
 }
 
 function savePaymentTokens(map) {
-  try { fs.writeFileSync(PAYMENT_TOKENS_FILE, JSON.stringify(map, null, 2)); } catch(e) {}
+  try { writeFileSafe(PAYMENT_TOKENS_FILE, JSON.stringify(map, null, 2)); } catch(e) {}
 }
 
 // Paleidimo metu išvalome pasenusius (>2h) įrašus — jų galiojimas jau
@@ -510,7 +518,7 @@ function analysisSessionFilePath(sessionId) {
 function saveAnalysisSessionToDisk(sessionId, entry) {
   try {
     ensureAnalysisSessionsDir();
-    fs.writeFileSync(analysisSessionFilePath(sessionId), JSON.stringify(entry));
+    writeFileSafe(analysisSessionFilePath(sessionId), JSON.stringify(entry));
   } catch(e) {
     console.error(`[saveAnalysisSessionToDisk] sessionId=${sessionId} klaida:`, e.message);
   }
@@ -532,6 +540,8 @@ const analysisCache = new Map();
 (function restoreAnalysisSessionsOnStartup() {
   try {
     ensureAnalysisSessionsDir();
+    // Likęs laikinas failas (serveris persikrovė įrašymo metu) — ištriname, kad nuotraukos neliktų.
+    for (const f of fs.readdirSync(ANALYSIS_SESSIONS_DIR)) if (f.endsWith('.tmp')) { try { fs.unlinkSync(path.join(ANALYSIS_SESSIONS_DIR, f)); } catch (e) {} }
     const files = fs.readdirSync(ANALYSIS_SESSIONS_DIR).filter(f => f.endsWith('.json'));
     const now = Date.now();
     let restoredCount = 0, resumedCount = 0;
@@ -608,7 +618,7 @@ function loadPendingOrdersFromDisk() {
 }
 
 function savePendingOrdersToDisk(map) {
-  try { fs.writeFileSync(PENDING_ORDERS_FILE, JSON.stringify(Object.fromEntries(map), null, 2)); } catch(e) {}
+  try { writeFileSafe(PENDING_ORDERS_FILE, JSON.stringify(Object.fromEntries(map), null, 2)); } catch(e) {}
 }
 
 const pendingOrders = loadPendingOrdersFromDisk();
@@ -3723,7 +3733,7 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
 // nuotraukos ištrinamos. Kol vyksta — kas 20 s atnaujinamas „gyvumo“ laikas (hb).
 const PORA_RUN_DIR = path.join(SHARED_STORAGE_DIR, 'pora-run');
 function poraRunFile(id) { return path.join(PORA_RUN_DIR, id.replace(/[^A-Za-z0-9_]/g, '') + '.json'); }
-function saveRunPhotos(id, photos) { try { fs.mkdirSync(PORA_RUN_DIR, { recursive: true }); fs.writeFileSync(poraRunFile(id), JSON.stringify({ photos, at: Date.now() })); } catch (e) { console.log('[pora] nepavyko išsaugoti nuotraukų:', e.message); } }
+function saveRunPhotos(id, photos) { try { fs.mkdirSync(PORA_RUN_DIR, { recursive: true }); writeFileSafe(poraRunFile(id), JSON.stringify({ photos, at: Date.now() })); } catch (e) { console.log('[pora] nepavyko išsaugoti nuotraukų:', e.message); } }
 function loadRunPhotos(id) { try { const d = JSON.parse(fs.readFileSync(poraRunFile(id), 'utf8')); return Array.isArray(d.photos) && d.photos.length === 4 ? d.photos : null; } catch (e) { return null; } }
 function deleteRunPhotos(id) { try { fs.unlinkSync(poraRunFile(id)); } catch (e) {} }
 function runPoraJob(sessionId, photos, s) {
