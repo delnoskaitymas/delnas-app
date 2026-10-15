@@ -710,7 +710,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
   function renderCard(g, opts){
     current = g;
-    $('c-to').textContent = '🎁 ' + (g.recipientName ? ltPhrase(g.recipientName, 'dat') : 'Tau');
+    $('c-to').textContent = '🎁 ' + (g.recipientName ? ltPhrase(g.recipientName, 'dat') : (g.kind === 'pora' ? 'Jums' : 'Tau'));
     $('c-msg').textContent = g.message ? '„' + g.message + '“' : '';
     // Palinkėjimo dydis pagal ilgį: trumpas — didelis, ilgas — mažesnis
     const ml = (g.message || '').length;
