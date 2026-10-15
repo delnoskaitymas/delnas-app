@@ -6998,10 +6998,10 @@ function fitPayScreen(){
 // Peržiūra: /?sezonas=kaledos|metai|valentinas|mama
 (function seasonLine(){
   const SEASONS={
-    kaledos:{ic:'🎄',html:'Kalėdoms — <b>padovanok delnų analizę</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
+    kaledos:{ic:'🎄',html:'Kalėdoms — <b>padovanok gyvenimo žemėlapį</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
     metai:{ic:'✨',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',start:true},
     valentinas:{ic:'💞',html:'Valentino dienai — <b>sužinokite, kaip derate</b>',href:'/pora?utm_source=app&utm_campaign=valentinas'},
-    mama:{ic:'🌷',html:'Motinos dienai — <b>padovanok mamai delnų analizę</b>',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'}
+    mama:{ic:'🌷',html:'Motinos dienai — <b>padovanok mamai gyvenimo žemėlapį</b>',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'}
   };
   function current(){
     const q=new URLSearchParams(location.search);
@@ -7022,7 +7022,7 @@ function fitPayScreen(){
     if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')) return;
     const k=current(), s=SEASONS[k]; if(!s) return;
     const a=document.getElementById('season-line'); if(!a) return;
-    a.innerHTML='<span>'+s.ic+'</span><span>'+s.html+'</span>';
+    a.innerHTML='<span>'+s.ic+'\u00a0 '+s.html+'</span>';
     if(s.start){ a.href='#'; a.addEventListener('click',e=>{ e.preventDefault(); if(typeof startApp==='function') startApp(); }); }
     else a.href=s.href;
     a.style.display='';
