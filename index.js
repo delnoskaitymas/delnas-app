@@ -5346,11 +5346,19 @@ app.get('/naudojimosi-salygos', (req, res) => {
 // esančio konkretaus maršruto. Jei jis būtų registruotas ANKSČIAU, jis
 // perimtų visas vėlesnes užklausas pirmiau, nei jos pasiektų savo
 // tikruosius apdorotojus.
+// Programa (index.html) atidaroma tik pradžios adresu ir dalinimosi nuorodomis /shared/…;
+// kiti nežinomi adresai — „Puslapis nerastas“ (404), kad paieškos sistemos jų nelaikytų pasikartojančiu turiniu.
+const NOT_FOUND_HTML = `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Puslapis nerastas — DELNAS</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#07040f;color:#f5eed8;font-family:Georgia,serif;text-align:center;padding:24px;box-sizing:border-box}
+.b{max-width:360px}.l{letter-spacing:.35em;color:#d4a843;font-size:14px;margin-bottom:28px}h1{font-weight:400;font-size:26px;margin:0 0 12px}p{font:15px/1.6 Arial,sans-serif;color:rgba(245,238,216,.7);margin:0 0 28px}
+a{display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font:800 15px Arial,sans-serif}</style></head>
+<body><div class="b"><div class="l">DELNAS</div><h1>Puslapis nerastas</h1><p>Tokio puslapio nėra. Gal nuoroda pasikeitė ar buvo nukopijuota ne visa.</p><a href="/">Grįžti į pradžią</a></div></body></html>`;
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'index.html'));
+  if (req.path === '/' || /^\/shared\/[A-Za-z0-9_-]+\/?$/.test(req.path)) return res.sendFile(path.join(__dirname, 'index.html'));
+  res.status(404).type('html').send(NOT_FOUND_HTML);
 });
 
 const PORT = process.env.PORT || 3000;
