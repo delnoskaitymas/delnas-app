@@ -3077,8 +3077,8 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead}${kl} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.).</p>
   <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}</p>
   ${giftReceiptHtml(gift)}
-  <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atsisiųsti dovanų kortelę</a>
-  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kortelę ar kodą gali persiųsti bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
+  <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atsisiųsti dovanų kuponą</a>
+  <p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;margin:18px 0 0">Jei laiškas su dovana nepasiektų adresato ar nepavyktų atidaryti pašto, kuponą ar kodą gali persiųsti bet kuriuo kitu būdu. Dovaną galima atidaryti įvedus kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#d4a843">www.delnaskaitymas.lt/kodas</a>.</p>
   ${EMAIL_FOOTER_HTML}
 </div>`;
 }
@@ -3107,13 +3107,13 @@ function buildGiftEmailHtml(gift) {
       Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas</a>, tada ${pora ? 'nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
     </div>
     <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
-      Dovanų kortelę gali atsisiųsti, atsispausdinti arba persiųsti:<br>
-      <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kortelę</a>
+      Dovanų kuponą gali atsisiųsti, atsispausdinti arba persiųsti:<br>
+      <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kuponą</a>
     </div>
   </div>
   ${gift.amount ? `<div style="max-width:520px;margin:18px auto 0">${giftReceiptHtml(gift)}</div>` : ''}
   <div style="max-width:520px;margin:18px auto 0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;text-align:center">
-    Šį laišką gavai, nes įsigijai DELNAS dovanų kuponą. Gavėjui nusiųsk dovanų kortelę (mygtukas aukščiau) — šiame laiške nurodyta kaina.
+    Šį laišką gavai, nes įsigijai DELNAS dovanų kuponą. Gavėjui nusiųsk dovanų kuponą (mygtukas aukščiau) — šiame laiške nurodyta kaina.
     Kodas vienkartinis. Pramoginio pobūdžio paslauga, 18+.
   </div>
   ${EMAIL_FOOTER_HTML}
@@ -3161,7 +3161,7 @@ function buildGiftRecipientEmailHtml(gift) {
     <div style="font-size:17px;color:rgba(255,255,255,.8)${img ? ';margin-top:18px' : ''}">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
     ${img ? '' : `<div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>`}
     ${gift.klausk && !img ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
-    ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kortelė')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
+    ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kuponas')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
       : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : '')}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną</a></div>
     ${img ? '' : `<div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>`}
@@ -4813,7 +4813,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Priminimas po 3 mėn. (asmeninė, su palyginimu)', () => buildReminderMail({ name, email: to, savedId: 'TEST' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
   add('Priminimas po 3 mėn. (asmeninė, be išsaugotos analizės)', () => buildReminderMail({ name, email: to }, fake({ pct: REPEAT_PCT })));
   add('Priminimas po 3 mėn. (porų)', () => buildReminderMail({ kind: 'pora', nameA, nameB, email: to, sessionId: 'cs_test_0000' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
-  add('Dovanos kortelė pirkėjui', () => ({ subject: giftBuyerSubject(giftBase), html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to }) }));
+  add('Dovanų kuponas pirkėjui', () => ({ subject: giftBuyerSubject(giftBase), html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to }) }));
   add('Dovana užsakyta (pirkėjui, kai siunčiame gavėjui)', () => ({ subject: giftBuyerSubject({ ...giftBase, recipientEmail: to }), html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to, recipientEmail: to, sendAt: ltDate(now + 7 * DAY_MS), sendHour: 9 }) }));
   add('Dovana gavėjui', () => ({ subject: giftRecipientSubject(giftBase), html: buildGiftRecipientEmailHtml({ ...giftBase, recipientEmail: to }) }));
   add('Dovana neatidaryta (gavėjui)', () => ({ subject: giftRecipientReminderSubject(giftBase), html: buildGiftRecipientReminderHtml(giftBase) }));
@@ -4837,13 +4837,13 @@ function adminCouponsHtml(key, created) {
   const store = loadGiftStore();
   const list = Object.values(store.codes).filter(g => g.admin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const st = { active: 'galioja', redeemed: 'panaudotas', expired: 'nebegalioja', void: 'anuliuotas' };
-  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kortelė</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}</td></tr>`;
+  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}</td></tr>`;
   const k = encodeURIComponent(key);
   return `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Nemokami kuponai — DELNAS</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}h1{font-size:20px}form{background:#f6f2e6;border:1px solid #e2d6b0;border-radius:10px;padding:14px;margin:12px 0 20px}label{display:block;margin:8px 0 4px;font-size:13px;color:#555}select,input{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;max-width:320px;box-sizing:border-box}button{margin-top:12px;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:#c98a1f;color:#fff;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #eee;padding:7px 6px;text-align:left;vertical-align:top}.new{background:#eef8ee;border:1px solid #bfe3bf;border-radius:10px;padding:12px;margin-bottom:16px}.new b{font-family:monospace;font-size:16px}.new a{word-break:break-all}</style></head><body>
 <h1>🎁 Nemokami dovanų kuponai</h1>
-<p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Abiejuose kuponuose — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kortelę (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kortelė“.</p>
-${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kortelė</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
+<p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Abiejuose kuponuose — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kuponą (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kuponas“.</p>
+${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
 <form method="post" action="/admin/kuponai?key=${k}">
 <label>Analizė</label><select name="tipas"><option value="asmenine">Asmeninė analizė (+3 klausimai)</option><option value="pora">Porų analizė (+3 klausimai porai)</option></select>
 <label>Kiek kuponų (1–20)</label><input name="kiek" type="number" min="1" max="20" value="1">
