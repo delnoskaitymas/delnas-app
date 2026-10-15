@@ -1008,7 +1008,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
         <div class="ref-note" id="ref-note" style="display:none">Draugai su tavo nuoroda gaus <b>−20 %</b>, o tu už kiekvieną pirkusį draugą — <b>3 klausimus dovanų</b>.</div>
       </div>
 
-      <div class="rb-sec">🎁 Padovanok</div>
+      <div class="rb-sec" id="rb-gift-sec">🎁 Padovanok</div>
       <div class="rb-gifts">
         <a href="/dovana?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-gift"><span class="rb-gi">🎁</span><b>Gyvenimo žemėlapis</b><small>asmeninė analizė + 3 klausimai</small><em>Padovanoti</em></a>
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-gift"><span class="rb-gi">💞</span><b>Porų suderinamumas</b><small>analizė porai + 3 klausimai</small><em>Padovanoti</em></a>
@@ -7006,6 +7006,9 @@ function fitPayScreen(){
   function current(){
     const q=new URLSearchParams(location.search);
     const o=q.get('sezonas'); if(SEASONS[o]) return o;
+    return byDate();
+  }
+  function byDate(){
     let d; try{ d=new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Vilnius'})); }catch(e){ d=new Date(); }
     const m=d.getMonth()+1, day=d.getDate(), y=d.getFullYear();
     if((m===11&&day>=15)||(m===12&&day<=24)) return 'kaledos';
@@ -7016,6 +7019,21 @@ function fitPayScreen(){
     if((m===4&&day>=20)||(m===5&&day<=mday)) return 'mama';
     return '';
   }
+  // Šventiniu laikotarpiu — rezultatų ekranų dovanų nuorodose šventė iš karto pažymėta, antraštė šventinė
+  try{
+    const k=byDate(), G={kaledos:'🎄 Padovanok Kalėdoms',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
+    if(G[k]){
+      const sec=document.getElementById('rb-gift-sec'); if(sec) sec.textContent=G[k];
+      document.querySelectorAll('a[href^="/dovana"]').forEach(a=>{
+        const h=a.getAttribute('href'); if(h.indexOf('sezonas=')>=0) return;
+        const pora=h.indexOf('tipas=pora')>=0;
+        if(k==='mama'&&pora) return; // Motinos dienai — tik asmeninė dovana
+        let nh=h.replace('/dovana?','/dovana?sezonas='+k+'&');
+        if(!pora&&nh.indexOf('tipas=')<0) nh=nh.replace('sezonas='+k+'&','sezonas='+k+'&tipas=asmenine&');
+        a.setAttribute('href',nh);
+      });
+    }
+  }catch(e){}
   try{
     const q=new URLSearchParams(location.search);
     // Ne pradžios ekrano lankytojams (porų nuoroda, dovana, rezultatas, „Mano analizės“) — nerodoma
