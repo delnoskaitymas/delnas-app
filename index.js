@@ -3297,12 +3297,24 @@ function cleanupGiftStore() {
     for (const [code, g] of Object.entries(store.codes)) {
       const end = g.redeemedAt || g.voidAt || g.expiresAt;
       if (end && end < cutoff) {
+        // Kartu ištrinamas ir gavėjui siųstas kupono paveikslėlis (jame — vardai ir palinkėjimas)
+        if (g.cardImg) { try { fs.unlinkSync(path.join(GIFT_CARD_DIR, String(g.cardImg).replace(/[^a-f0-9]/g, '') + '.jpg')); } catch (e) {} }
         delete store.codes[code];
         if (store.bySession[g.sessionId] === code) delete store.bySession[g.sessionId];
         changed = true;
       }
     }
     if (changed) { saveGiftStore(store); console.log('[gift] išvalyti seni kuponų įrašai'); }
+    // Paveikslėliai be kupono įrašo (pvz. likę po klaidos) — ištrinami po 2 dienų
+    try {
+      if (fs.existsSync(GIFT_CARD_DIR)) {
+        const used = new Set(Object.values(store.codes).map(g => g.cardImg).filter(Boolean));
+        for (const f of fs.readdirSync(GIFT_CARD_DIR)) {
+          const fp = path.join(GIFT_CARD_DIR, f);
+          if (!used.has(f.replace(/\.jpg$/, '')) && Date.now() - fs.statSync(fp).mtimeMs > 2 * 864e5) fs.unlinkSync(fp);
+        }
+      }
+    } catch (e) {}
   } catch (e) { console.error('[gift] valymo klaida:', e.message); }
 }
 cleanupGiftStore();
