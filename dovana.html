@@ -557,7 +557,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   };
   function currentSeason(){
     const o = params.get('sezonas'); if (SEASONS[o]) return o;
-    const d = new Date(), m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
+    // Data — Lietuvos laiku (kaip ir pradžios ekrane)
+    let d; try { d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Vilnius' })); } catch (e) { d = new Date(); }
+    const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
     if (m === 2 && day <= 14) return 'valentinas';
     if (m === 12 && day <= 24) return 'kaledos';
     // Motinos diena Lietuvoje — pirmasis gegužės sekmadienis; tema nuo balandžio 20 d.
