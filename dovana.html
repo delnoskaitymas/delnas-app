@@ -6,21 +6,21 @@
 <meta name="theme-color" content="#000000">
 <title>DELNAS — Dovanų kuponas</title>
 <!--og-->
-<meta name="description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kortelę gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
+<meta name="description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kuponą gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
 <link rel="canonical" href="https://www.delnaskaitymas.lt/dovana">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="DELNAS">
 <meta property="og:locale" content="lt_LT">
 <meta property="og:url" content="https://www.delnaskaitymas.lt/dovana">
 <meta property="og:title" content="Padovanok gyvenimo žemėlapį — DELNAS">
-<meta property="og:description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kortelę gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
+<meta property="og:description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kuponą gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
 <meta property="og:image" content="https://www.delnaskaitymas.lt/img/og-dovana.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Padovanok gyvenimo žemėlapį — DELNAS">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Padovanok gyvenimo žemėlapį — DELNAS">
-<meta name="twitter:description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kortelę gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
+<meta name="twitter:description" content="Dovanų kuponas: asmeninė delnų analizė ir 3 asmeniniai klausimai. Kuponą gali nusiųsti per Messenger, WhatsApp ar el. paštu.">
 <meta name="twitter:image" content="https://www.delnaskaitymas.lt/img/og-dovana.jpg"><!--/og-->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
@@ -356,7 +356,7 @@ body.form-view.tight #v-form .trust{display:none}
       <div class="season-tag hidden" id="promo-tag"></div>
       <h1 id="form-h1">Padovanok<br><em>gyvenimo žemėlapį</em></h1>
     </div>
-    <p class="lead sm" id="form-lead">Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.</p>
+    <p class="lead sm" id="form-lead">Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Asmeninė analizė<small id="k-asm-p">12,99 €</small></button>
@@ -427,7 +427,7 @@ body.form-view.tight #v-form .trust{display:none}
   <!-- 3. KORTELĖ (po apmokėjimo arba iš el. laiško nuorodos) -->
   <section id="v-card" class="hidden">
     <h1 id="card-title">Dovana <em>paruošta!</em></h1>
-    <p class="lead" id="card-lead">Kortelė jau tavo el. pašte. Atsisiųsk ar iškart nusiųsk tam, kam dovanoji.</p>
+    <p class="lead" id="card-lead">Kuponas jau tavo el. pašte. Atsisiųsk ar iškart nusiųsk tam, kam dovanoji.</p>
     <div id="card-stage"><div id="card-scale">
       <div class="gcard" id="gcard">
         <div class="gh"></div>
@@ -452,7 +452,7 @@ body.form-view.tight #v-form .trust{display:none}
     </div></div>
     <div class="redeemed hidden" id="c-redeemed">Šis kuponas jau panaudotas.</div>
     <div class="actions" id="card-actions">
-      <button class="btn" id="dl-png">Atsisiųsti kortelę</button>
+      <button class="btn" id="dl-png">Atsisiųsti kuponą</button>
       <button class="btn ghost" id="dl-pdf">Atsisiųsti PDF</button>
       <button class="btn ghost" id="share">Išsiųsti dovaną</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
@@ -467,7 +467,7 @@ body.form-view.tight #v-form .trust{display:none}
       <div class="hero"><i></i></div>
       <h1>Turi <em>dovanų kodą?</em></h1>
     </div>
-    <p class="lead sm">Įvesk kodą iš dovanų kortelės — ir atskleisk savo gyvenimo žemėlapį.</p>
+    <p class="lead sm">Įvesk kodą iš dovanų kupono — ir atskleisk savo gyvenimo žemėlapį.</p>
     <form class="card-form" id="redeem-form" novalidate>
       <label for="r-code">Dovanos kodas</label>
       <input type="text" id="r-code" class="code-in" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -633,7 +633,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
     $('form-h1').innerHTML = pora ? 'Padovanok<br><em>porų suderinamumą</em>' : 'Padovanok<br><em>gyvenimo žemėlapį</em>';
     $('kind-inc').textContent = pora ? '✦ Į dovanos kainą įeina ir 3 klausimai porai' : '✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai';
-    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kortelė su kodu — iškart į tavo el. paštą.';
+    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'pvz. Ieva ir Tomas' : 'pvz. Ieva';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia <em>poros suderinamumą</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
     $('s3-p').textContent = pora ? 'Pora nufotografuoja delnus — paeiliui viename telefone arba per nuorodą, jei nėra kartu — ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
@@ -730,8 +730,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('c-qr').innerHTML = '';
     if (window.QRCode) new QRCode($('c-qr'), { text: link, width: 208, height: 208, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
     if (opts && opts.fromEmail) {
-      $('card-title').innerHTML = 'Tavo <em>dovanų kortelė</em>';
-      $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk ją tam, kam dovanoji.';
+      $('card-title').innerHTML = 'Tavo <em>dovanų kuponas</em>';
+      $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk jį tam, kam dovanoji.';
     }
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
@@ -783,7 +783,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     try {
       const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click();
     }
-    catch (e) { alert('Nepavyko paruošti kortelės. Pabandyk dar kartą.'); }
+    catch (e) { alert('Nepavyko paruošti kupono. Pabandyk dar kartą.'); }
     b.textContent = t;
   });
   $('dl-pdf').addEventListener('click', async () => {
@@ -861,7 +861,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('wait-txt').textContent = 'Laukiame mokėjimo patvirtinimo…';
       await new Promise(r => setTimeout(r, 2500));
     }
-    $('error-txt').innerHTML = 'Mokėjimo patvirtinti kol kas nepavyko. Jei pinigai nuskaičiuoti — kortelė atkeliaus el. paštu, arba parašyk mums: <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a>';
+    $('error-txt').innerHTML = 'Mokėjimo patvirtinti kol kas nepavyko. Jei pinigai nuskaičiuoti — kuponas atkeliaus el. paštu, arba parašyk mums: <a href="mailto:info@delnaskaitymas.lt">info@delnaskaitymas.lt</a>';
     show('v-error');
   }
   // Planuotas siuntimas gavėjui: kortelės paveikslėlis įkeliamas į serverį ir rodomas laiške gavėjui
@@ -876,7 +876,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     }
   }
   async function openCard(code){
-    show('v-wait'); $('wait-txt').textContent = 'Įkeliama kortelė…';
+    show('v-wait'); $('wait-txt').textContent = 'Įkeliamas kuponas…';
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
       if (d.status === 'not_found') throw 0;
