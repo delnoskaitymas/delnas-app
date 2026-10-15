@@ -4837,20 +4837,20 @@ function adminCouponsHtml(key, created) {
   const store = loadGiftStore();
   const list = Object.values(store.codes).filter(g => g.admin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const st = { active: 'galioja', redeemed: 'panaudotas', expired: 'nebegalioja', void: 'anuliuotas' };
-  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px">${escapeHtml(g.code)}</b></td><td>${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}</td><td>${escapeHtml(g.note || '')}</td><td>${fmtLtDate(g.createdAt)}</td><td>${st[giftStatus(g)] || ''}</td><td><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kortelė</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td></tr>`;
+  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kortelė</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}</td></tr>`;
   const k = encodeURIComponent(key);
   return `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Nemokami kuponai — DELNAS</title>
-<style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}h1{font-size:20px}form{background:#f6f2e6;border:1px solid #e2d6b0;border-radius:10px;padding:14px;margin:12px 0 20px}label{display:block;margin:8px 0 4px;font-size:13px;color:#555}select,input{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;max-width:320px;box-sizing:border-box}button{margin-top:12px;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:#c98a1f;color:#fff;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #eee;padding:7px 6px;text-align:left;vertical-align:top}.new{background:#eef8ee;border:1px solid #bfe3bf;border-radius:10px;padding:12px;margin-bottom:16px}.new b{font-family:monospace;font-size:16px}</style></head><body>
+<style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}h1{font-size:20px}form{background:#f6f2e6;border:1px solid #e2d6b0;border-radius:10px;padding:14px;margin:12px 0 20px}label{display:block;margin:8px 0 4px;font-size:13px;color:#555}select,input{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;max-width:320px;box-sizing:border-box}button{margin-top:12px;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:#c98a1f;color:#fff;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #eee;padding:7px 6px;text-align:left;vertical-align:top}.new{background:#eef8ee;border:1px solid #bfe3bf;border-radius:10px;padding:12px;margin-bottom:16px}.new b{font-family:monospace;font-size:16px}.new a{word-break:break-all}</style></head><body>
 <h1>🎁 Nemokami dovanų kuponai</h1>
-<p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Asmeninės analizės kupone — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kortelę (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kortelė“.</p>
+<p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Abiejuose kuponuose — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kortelę (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kortelė“.</p>
 ${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kortelė</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
 <form method="post" action="/admin/kuponai?key=${k}">
-<label>Analizė</label><select name="tipas"><option value="asmenine">Asmeninė analizė (+3 klausimai)</option><option value="pora">Porų analizė</option></select>
+<label>Analizė</label><select name="tipas"><option value="asmenine">Asmeninė analizė (+3 klausimai)</option><option value="pora">Porų analizė (+3 klausimai porai)</option></select>
 <label>Kiek kuponų (1–20)</label><input name="kiek" type="number" min="1" max="20" value="1">
 <label>Pastaba sau (pvz. „Loterija FB, lapkritis“)</label><input name="pastaba" maxlength="80">
 <br><button type="submit">Sukurti kuponus</button></form>
 <h2 style="font-size:16px">Išduoti nemokami kuponai</h2>
-${list.length ? `<table><tr><th>Kodas</th><th>Tipas</th><th>Pastaba</th><th>Sukurtas</th><th>Būsena</th><th></th></tr>${list.map(row).join('')}</table>` : '<p style="color:#888">Dar nėra.</p>'}
+${list.length ? `<table><tr><th>Kodas</th><th>Tipas, pastaba</th><th>Sukurtas, būsena</th></tr>${list.map(row).join('')}</table>` : '<p style="color:#888">Dar nėra.</p>'}
 <p style="margin-top:20px;font-size:13px"><a href="/admin/stats?key=${k}">📊 Statistika</a></p></body></html>`;
 }
 app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
@@ -4867,7 +4867,7 @@ app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: fals
   const store = loadGiftStore(), now = Date.now(), created = [];
   for (let i = 0; i < n; i++) {
     const code = generateGiftCode(store.codes);
-    const gift = { code, sessionId: 'admin:' + code, admin: true, note, buyerEmail: '', fromName: '', recipientName: '', message: '', kind, klausk: kind === 'asmenine', recipientEmail: '', sendAt: '', season: '', amount: 0, currency: 'eur', status: 'active', createdAt: now, expiresAt: now + GIFT_VALID_DAYS * 24 * 60 * 60 * 1000 };
+    const gift = { code, sessionId: 'admin:' + code, admin: true, note, buyerEmail: '', fromName: '', recipientName: '', message: '', kind, klausk: true, recipientEmail: '', sendAt: '', season: '', amount: 0, currency: 'eur', status: 'active', createdAt: now, expiresAt: now + GIFT_VALID_DAYS * 24 * 60 * 60 * 1000 };
     store.codes[code] = gift;
     store.bySession[gift.sessionId] = code;
     created.push(gift);
