@@ -561,7 +561,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     let d; try { d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Vilnius' })); } catch (e) { d = new Date(); }
     const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
     if (m === 2 && day <= 14) return 'valentinas';
-    if (m === 12 && day <= 24) return 'kaledos';
+    if ((m === 11 && day >= 15) || (m === 12 && day <= 24)) return 'kaledos';
     // Motinos diena Lietuvoje — pirmasis gegužės sekmadienis; tema nuo balandžio 20 d.
     const may1 = new Date(y, 4, 1), mday = 1 + ((7 - may1.getDay()) % 7);
     if ((m === 4 && day >= 20) || (m === 5 && day <= mday)) return 'mama';
