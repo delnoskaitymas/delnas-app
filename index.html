@@ -7001,7 +7001,7 @@ function fitPayScreen(){
 (function seasonLine(){
   const SEASONS={
     kaledos:{ic:'🎄',btn:'Dovanoti',html:'Kalėdoms — <b>padovanok gyvenimo žemėlapį</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
-    metai:{ic:'✨',btn:'Pradėti',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',start:true},
+    metai:{ic:'✨',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',greet:true},
     valentinas:{ic:'💞',btn:'Pradėti',html:'Valentino dienai — <b>sužinokite, kaip derate</b>',href:'/pora?utm_source=app&utm_campaign=valentinas'},
     mama:{ic:'🌷',btn:'Dovanoti',html:'Motinos dienai — <b>padovanok mamai gyvenimo žemėlapį</b>',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'}
   };
@@ -7042,8 +7042,9 @@ function fitPayScreen(){
     if(q.get('pora')||q.get('dovana')||q.get('session_id')||q.get('mano')||q.get('kl')||q.get('kartoti')||q.get('grizk')) return;
     const k=current(), s=SEASONS[k]; if(!s) return;
     const a=document.getElementById('season-line'); if(!a) return;
-    a.innerHTML='<span class="sl-t">'+s.ic+'\u00a0 '+s.html+'</span><span class="sl-btn">'+s.btn+'</span>';
-    if(s.start){ a.href='#'; a.addEventListener('click',e=>{ e.preventDefault(); if(typeof startApp==='function') startApp(); }); }
+    a.innerHTML='<span class="sl-t"'+(s.btn?'':' style="text-align:center"')+'>'+s.ic+'\u00a0 '+s.html+'</span>'+(s.btn?'<span class="sl-btn">'+s.btn+'</span>':'');
+    // Sveikinimas (Naujieji metai) — be mygtuko ir nepaspaudžiamas: pradėti analizę galima didžiuoju mygtuku
+    if(s.greet){ a.removeAttribute('href'); a.style.cursor='default'; a.addEventListener('click',e=>e.preventDefault()); }
     else a.href=s.href;
     a.style.display='';
   }catch(e){}
