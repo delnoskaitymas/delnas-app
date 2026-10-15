@@ -7001,9 +7001,14 @@ function fitPayScreen(){
 (function seasonLine(){
   const SEASONS={
     kaledos:{ic:'🎄',btn:'Dovanoti',html:'Kalėdoms — <b>padovanok gyvenimo žemėlapį</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
+    kaledos_sv:{ic:'🎄',html:'<b>Jaukių šv. Kalėdų!</b>',greet:true},
     metai:{ic:'✨',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',greet:true},
+    metai_sv:{ic:'✨',html:'<b>Laimingų Naujųjų metų!</b>',greet:true},
     valentinas:{ic:'💞',btn:'Pradėti',html:'Valentino dienai — <b>sužinokite, kaip derate</b>',href:'/pora?utm_source=app&utm_campaign=valentinas'},
-    mama:{ic:'🌷',btn:'Dovanoti',html:'Motinos dienai — <b>padovanok mamai gyvenimo žemėlapį</b>',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'}
+    mama:{ic:'🌷',btn:'Dovanoti',html:'Motinos dienai — <b>padovanok mamai gyvenimo žemėlapį</b>',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'},
+    // Pačią šventės dieną — sveikinimas kartu su pasiūlymu
+    valentinas_d:{ic:'💞',btn:'Pradėti',html:'<b>Su Valentino diena!</b> Sužinokite, kaip derate',href:'/pora?utm_source=app&utm_campaign=valentinas'},
+    mama_d:{ic:'🌷',btn:'Dovanoti',html:'<b>Su Motinos diena!</b> Padovanok mamai gyvenimo žemėlapį',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'}
   };
   function current(){
     const q=new URLSearchParams(location.search);
@@ -7014,16 +7019,20 @@ function fitPayScreen(){
     let d; try{ d=new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Vilnius'})); }catch(e){ d=new Date(); }
     const m=d.getMonth()+1, day=d.getDate(), y=d.getFullYear();
     if((m===11&&day>=15)||(m===12&&day<=24)) return 'kaledos';
-    if((m===12&&day>=26)||(m===1&&day<=10)) return 'metai';
+    if(m===12&&(day===25||day===26)) return 'kaledos_sv';
+    if(m===1&&day<=2) return 'metai_sv';
+    if((m===12&&day>=27)||(m===1&&day<=10)) return 'metai';
+    if(m===2&&day===14) return 'valentinas_d';
     if(m===2&&day<=14) return 'valentinas';
     // Motinos diena — pirmasis gegužės sekmadienis; rodoma nuo balandžio 20 d.
     const may1=new Date(y,4,1), mday=1+((7-may1.getDay())%7);
+    if(m===5&&day===mday) return 'mama_d';
     if((m===4&&day>=20)||(m===5&&day<=mday)) return 'mama';
     return '';
   }
   // Šventiniu laikotarpiu — rezultatų ekranų dovanų nuorodose šventė iš karto pažymėta, antraštė šventinė
   try{
-    const k=byDate(), G={kaledos:'🎄 Padovanok Kalėdoms',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
+    const k=byDate().replace(/_d$/,''), G={kaledos:'🎄 Padovanok Kalėdoms',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
     if(G[k]){
       const sec=document.getElementById('rb-gift-sec'); if(sec) sec.textContent=G[k];
       document.querySelectorAll('a[href^="/dovana"]').forEach(a=>{
