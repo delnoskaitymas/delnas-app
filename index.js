@@ -128,6 +128,15 @@ const sensitiveLimiter = rateLimit({
   message: { error: 'Per daug užklausų. Bandykite dar kartą po kelių minučių.' }
 });
 
+// Dažnai tikrinamiems adresams (analizės būsena, kodų patikra) — laisvesnė riba, bet ne begalinė
+const pollLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.POLL_LIMIT || '1000', 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Per daug užklausų. Bandykite dar kartą po kelių minučių.' }
+});
+
 // --- Įvedimo duomenų validavimo pagalbinės funkcijos ---
 function isValidEmail(email) {
   return typeof email === 'string' && email.length > 0 && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -2163,7 +2172,7 @@ app.post('/start-analysis', startAnalysisLimiter, startAnalysisDailyLimiter, asy
 });
 
 // --- ENDPOINT: Analizės statusas ---
-app.get('/analysis-status', async (req, res) => {
+app.get('/analysis-status', pollLimiter, async (req, res) => {
   const { sessionId } = req.query;
   if (!sessionId) return res.status(400).json({ error: 'Nėra sessionId' });
   const entry = analysisCache.get(sessionId);
@@ -2948,7 +2957,7 @@ function unsubPage(title, text, extra) {
 app.get('/unsubscribe-reminder', sensitiveLimiter, (req, res) => {
   const email = (req.query.email || '').toString().trim().toLowerCase();
   const t = typeof req.query.t === 'string' ? req.query.t : '';
-  if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  if (!isValidEmail(email) || (t ? !unsubSigOk(email, t) : Date.now() >= Date.UTC(2026, 11, 1))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
   const form = `<form method="POST" action="/unsubscribe-reminder"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="t" value="${escapeHtml(t)}">${req.query.k === 'uzsakymas' ? '<input type="hidden" name="k" value="uzsakymas">' : ''}<button type="submit" class="btn">Atsisakyti laiškų</button></form>`;
   const what = req.query.k === 'uzsakymas' ? 'laiškų apie nebaigtus užsakymus' : 'DELNAS priminimų ir pasiūlymų';
   res.send(unsubPage('Atsisakyti laiškų?', `Daugiau nebegausi ${what} adresu ${escapeHtml(email)}.`, form));
@@ -2956,8 +2965,9 @@ app.get('/unsubscribe-reminder', sensitiveLimiter, (req, res) => {
 app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
   const email = String((req.body && req.body.email) || '').trim().toLowerCase();
   const t = typeof (req.body && req.body.t) === 'string' ? req.body.t : '';
-  // Senuose (iki 2026-10) laiškuose nuoroda be parašo — atsisakymas vis tiek turi veikti
-  if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  // Senuose (iki 2026-10-16) laiškuose nuoroda be parašo — veikia iki 2026-12-01, vėliau parašas privalomas
+  const legacyOk = !t && Date.now() < Date.UTC(2026, 11, 1);
+  if (!isValidEmail(email) || (t ? !unsubSigOk(email, t) : !legacyOk)) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
   try {
     if (req.body.k === 'uzsakymas') {
       addAbandonOptOut(email);
@@ -2985,7 +2995,7 @@ app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extende
 // tekstas, galintis nesutapti pasikeitus kainai dashboard'e.
 let _priceInfoCache = null;
 let _priceInfoCacheAt = 0;
-app.get('/price-info', async (req, res) => {
+app.get('/price-info', pollLimiter, async (req, res) => {
   try {
     if (_priceInfoCache && (Date.now() - _priceInfoCacheAt) < 5 * 60 * 1000) {
       return res.json(_priceInfoCache);
@@ -4080,7 +4090,7 @@ app.post('/pora/save-first', sensitiveLimiter, async (req, res) => {
   }
 });
 
-app.get('/pora/status', (req, res) => {
+app.get('/pora/status', pollLimiter, (req, res) => {
   const sessionId = req.query.session_id;
   if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ status: 'notfound' });
   const o = loadPoraOrders()[sessionId];
@@ -4926,7 +4936,7 @@ app.get('/feedback/approve', sensitiveLimiter, (req, res) => {
   res.send('<div style="font-family:sans-serif;padding:40px;text-align:center"><h2>✓ Atsiliepimas bus rodomas svetainėje</h2><p>„' + escapeHtml(it.text) + '“ — ' + escapeHtml(it.name || '') + '</p></div>');
 });
 
-app.get('/testimonials', (req, res) => {
+app.get('/testimonials', pollLimiter, (req, res) => {
   const fb = readJson(FEEDBACK_FILE, { items: [] });
   // ?kind=pora — porų atsiliepimai (/pora puslapiui); be jo — asmeninės analizės (pradžios ekranui)
   const kind = req.query.kind === 'pora' ? 'pora' : 'asmenine';
@@ -5201,7 +5211,7 @@ function cleanupPromos() {
 }
 
 // Be užklausų ribos: tik skaito, o 8 ženklų kodų atspėti praktiškai neįmanoma
-app.get('/promo/check', (req, res) => {
+app.get('/promo/check', pollLimiter, (req, res) => {
   const code = normalizePromoCode(req.query.code);
   const s = code && loadPromos();
   const p = s && s.codes[code];
