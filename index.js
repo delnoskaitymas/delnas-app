@@ -328,6 +328,16 @@ function saveReminderBlacklist(list) {
 }
 
 
+// Atsisakymas tik laiškų apie nebaigtą užsakymą — 3 mėn. priminimas, kurį žmogus užsakė pats, lieka
+const ABANDON_OPTOUT_FILE = path.join(SHARED_STORAGE_DIR, 'abandon-optout.json');
+function isAbandonOptedOut(email) {
+  return readJson(ABANDON_OPTOUT_FILE, []).includes((email || '').toLowerCase());
+}
+function addAbandonOptOut(email) {
+  const list = readJson(ABANDON_OPTOUT_FILE, []), e = (email || '').toLowerCase();
+  if (!list.includes(e)) { list.push(e); writeJson(ABANDON_OPTOUT_FILE, list); }
+}
+
 function isReminderBlacklisted(email) {
   const list = loadReminderBlacklist();
   return list.includes((email || '').toLowerCase());
@@ -2880,8 +2890,9 @@ app.get('/unsubscribe-reminder', sensitiveLimiter, (req, res) => {
   const email = (req.query.email || '').toString().trim().toLowerCase();
   const t = typeof req.query.t === 'string' ? req.query.t : '';
   if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
-  const form = `<form method="POST" action="/unsubscribe-reminder"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="t" value="${escapeHtml(t)}"><button type="submit" class="btn">Atsisakyti laiškų</button></form>`;
-  res.send(unsubPage('Atsisakyti laiškų?', `Daugiau nebegausi DELNAS priminimų ir pasiūlymų adresu ${escapeHtml(email)}.`, form));
+  const form = `<form method="POST" action="/unsubscribe-reminder"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="t" value="${escapeHtml(t)}">${req.query.k === 'uzsakymas' ? '<input type="hidden" name="k" value="uzsakymas">' : ''}<button type="submit" class="btn">Atsisakyti laiškų</button></form>`;
+  const what = req.query.k === 'uzsakymas' ? 'laiškų apie nebaigtus užsakymus' : 'DELNAS priminimų ir pasiūlymų';
+  res.send(unsubPage('Atsisakyti laiškų?', `Daugiau nebegausi ${what} adresu ${escapeHtml(email)}.`, form));
 });
 app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
   const email = String((req.body && req.body.email) || '').trim().toLowerCase();
@@ -2889,6 +2900,10 @@ app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extende
   // Senuose (iki 2026-10) laiškuose nuoroda be parašo — atsisakymas vis tiek turi veikti
   if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
   try {
+    if (req.body.k === 'uzsakymas') {
+      addAbandonOptOut(email);
+      return res.send(unsubPage('Atsisakyta', 'Daugiau laiškų apie nebaigtus užsakymus negausi.'));
+    }
     const blacklist = loadReminderBlacklist();
     if (!blacklist.includes(email)) {
       blacklist.push(email);
@@ -5211,7 +5226,7 @@ function buildAbandonEmailHtml(it, p) {
   const txt = pora
     ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų poros analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`;
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti mūsų priminimų ir pasiūlymų?' : 'Nenori gauti mūsų priminimų ir pasiūlymų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
 let _abandonRunning = false;
 async function processAbandoned() {
@@ -5225,7 +5240,7 @@ async function processAbandoned() {
       let skip = null;
       if (paidAt && paidAt >= it.createdAt - 5 * 60 * 1000) skip = 'paid';
       else if (now - it.createdAt > DAY_MS) skip = 'old';
-      else if (isReminderBlacklisted(it.email)) skip = 'unsub';
+      else if (isReminderBlacklisted(it.email) || isAbandonOptedOut(it.email)) skip = 'unsub';
       else if (s.items.some(x => x !== it && x.email === it.email && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
       else if (it.kind === 'pora' && it.ref) {
         try { const cs = await stripe.checkout.sessions.retrieve(it.ref); if (cs && cs.payment_status === 'paid') skip = 'paid'; } catch (e) {}
