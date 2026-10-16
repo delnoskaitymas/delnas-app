@@ -1353,28 +1353,15 @@ function go(id){
     doSwitch();
   }
 }
-// Telefono „atgal“ mygtukas: iš fotografavimo, vardo ir mokėjimo ekranų (dar neapmokėjus) grąžina
-// į pradžią, o ne išveda iš svetainės. Analizės metu lieka tame pačiame ekrane; po apmokėjimo — kaip anksčiau.
-const FLOW_SCREENS=['s-camera','s-order','s-info'];
-let _flowEntry=false,_flowUnwind=false;
-const _goScreen=go;
-go=function(id){
-  _goScreen(id);
-  window._curScreen=id;
-  try{
-    const prePay=!window.palmToken&&!(window._pora&&window._pora.active);
-    if(FLOW_SCREENS.includes(id)&&prePay){ if(!_flowEntry){ history.pushState(history.state,''); _flowEntry=true; } }
-    else if((id!=='s-loading'||!prePay)&&_flowEntry){ _flowEntry=false; _flowUnwind=true; history.back(); }
-  }catch(e){}
-};
-window.addEventListener('popstate',()=>{
-  if(_flowUnwind){ _flowUnwind=false; return; }
-  if(!_flowEntry) return;
-  _flowEntry=false;
-  const cur=window._curScreen;
-  if(cur==='s-loading'){ try{ history.pushState(history.state,''); _flowEntry=true; }catch(e){} return; }
-  if(FLOW_SCREENS.includes(cur)){ try{ stopCamera(); }catch(e){} go('s-home'); }
-});
+// Telefono „atgal“ mygtukas: netyčia paspaudus žmogus lieka tame pačiame ekrane — nuotraukos,
+// vardas, analizė ir rezultatas nedingsta. Apsauga atnaujinama po kito palietimo (naršyklės leidžia
+// ją sukurti tik paspaudus), todėl du „atgal“ iš eilės be palietimo išveda iš svetainės kaip įprasta.
+(function(){
+  let armed=false;
+  function arm(){ if(armed) return; try{ history.pushState(history.state,''); armed=true; }catch(e){} }
+  ['pointerup','touchend','click','keydown'].forEach(t=>window.addEventListener(t,arm,{capture:true,passive:true}));
+  window.addEventListener('popstate',()=>{ armed=false; });
+})();
 
 window.addEventListener('DOMContentLoaded',async()=>{
   // Patikrinti ar atidaryta dalinimosi nuoroda
