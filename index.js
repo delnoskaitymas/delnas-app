@@ -99,10 +99,23 @@ app.use(cors({ origin: CORS_ORIGINS }));
 // (X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security ir kt.)
 // lieka įjungtos ir nekeičia jokios esamos funkcijos.
 app.use(helmet({
-  contentSecurityPolicy: false,
+  // Tik tokios CSP taisyklės, kurios nelaužia puslapio scenarijų (Stripe, MediaPipe, šriftai):
+  // jokių įskiepių (object), svetimo <base>, svetainės įdėjimo į kitus puslapius ir formų siuntimo kitur
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      'default-src': helmet.contentSecurityPolicy.dangerouslyDisableDefaultSrc,
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'frame-ancestors': ["'self'"],
+      'form-action': ["'self'"]
+    }
+  },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: false
 }));
+// Kamera — tik pačiai svetainei; mikrofonas ir vieta nenaudojami
+app.use((req, res, next) => { res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()'); next(); });
 
 // --- Užklausų dažnio ribojimas (Rate Limiting) jautriems endpoint'ams ---
 // Apsaugo nuo botų/piktnaudžiavimo ant mokėjimo, analizės ir registracijos
@@ -125,11 +138,22 @@ function isValidName(name) {
 function isValidOrderNumber(orderNumber) {
   return typeof orderNumber === 'string' && /^DLN-\d{6}$/.test(orderNumber);
 }
+// Nuotrauka priimama tik kaip tikras JPEG / PNG / WebP paveikslėlis (pagal turinio pradžią, ne tik
+// pagal nurodytą tipą), tik base64 simboliai. Serveris nuotraukų neatidaro ir nevykdo — jos tik
+// perduodamos AI analizei ir laikinai saugomos, todėl kodas ar virusas nuotraukoje nieko negali paleisti.
+function isRealImageBase64(data) {
+  if (typeof data !== 'string' || data.length < 100 || data.length >= 12_000_000) return false;
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data)) return false;
+  const b = Buffer.from(data.slice(0, 24), 'base64');
+  if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return true;                                   // JPEG
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return true;                  // PNG
+  if (b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP') return true;   // WebP
+  return false;
+}
 function isValidPhotosArray(photos) {
   if (!Array.isArray(photos) || photos.length === 0 || photos.length > 4) return false;
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  return photos.every(p => p && typeof p.data === 'string' && p.data.length > 0 && p.data.length < 12_000_000 &&
-    (!p.type || allowedTypes.includes(p.type)));
+  return photos.every(p => p && isRealImageBase64(p.data) && (!p.type || allowedTypes.includes(p.type)));
 }
 // Apsaugo nuo HTML/turinio įterpimo (injection), kai vartotojo įvestas vardas
 // ar el. paštas patenka į siunčiamų el. laiškų HTML šabloną.
