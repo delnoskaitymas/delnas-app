@@ -830,6 +830,7 @@ function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage 
       reportedAnalysisFailures.add(failKey);
       setTimeout(() => reportedAnalysisFailures.delete(failKey), 6 * 60 * 60 * 1000);
     }
+    if (!adminAlertBudgetOk()) { console.error('[logAnalysisFailure] paros įspėjimų riba — laiškas praleistas', failKey); return; }
     _failMailTimes.push(nowF);
     const displayName = name ? ltPhrase(name, 'voc') : 'kliente';
     const diagnoze = diagnozuotiKlaida(errorMessage);
@@ -958,6 +959,16 @@ const mailer = { sendMail: (opts) => sendEmail({ ...opts, subject: String((opts 
 // nuolat nestebi, ir administratorius apie rimtą gedimą sužinotų tik
 // tada, kai (jei) kažkas parašytų skundą.
 let _lastCrashEmailAt = 0;
+// Bendras įspėjimų tau biudžetas: klaidų ir gedimų laiškų — ne daugiau kaip 40 per parą,
+// kad net ilgai besikartojanti klaida neišnaudotų dienos laiškų limito (laiškai klientams svarbesni)
+const _alertTimes = [];
+function adminAlertBudgetOk() {
+  const now = Date.now();
+  while (_alertTimes.length && now - _alertTimes[0] > 24 * 60 * 60 * 1000) _alertTimes.shift();
+  if (_alertTimes.length >= 40) return false;
+  _alertTimes.push(now);
+  return true;
+}
 function pranesApieServerioKlaida(pobudis, err) {
   try {
     const now = Date.now();
@@ -968,6 +979,7 @@ function pranesApieServerioKlaida(pobudis, err) {
       return;
     }
     _lastCrashEmailAt = now;
+    if (!adminAlertBudgetOk()) { console.error(`[pranesApieServerioKlaida] paros įspėjimų riba — ${pobudis}:`, err && err.message); return; }
     const stack = (err && err.stack) ? err.stack : String(err);
     mailer.sendMail({
       from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
@@ -5547,12 +5559,12 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
 });
 app.get('/mano/list', sensitiveLimiter, (req, res) => {
   const email = manoEmailFromToken(req.query.t);
-  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
   res.json({ email, ...manoItems(email) });
 });
 app.get('/mano/item', sensitiveLimiter, (req, res) => {
   const email = manoEmailFromToken(req.query.t);
-  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
   const it = loadSaved().items[String(req.query.id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
   res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '' });
@@ -5560,7 +5572,7 @@ app.get('/mano/item', sensitiveLimiter, (req, res) => {
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};
   const email = manoEmailFromToken(t);
-  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašykite naujos.' });
+  if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
   // Porų analizė arba klausimai su atsakymais — ištrinami, jei priklauso šiam el. paštui
   const type = (req.body || {}).type;
   if (type === 'pora' || type === 'kl') {
