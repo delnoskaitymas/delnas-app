@@ -451,13 +451,13 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(giftCode))).json();
       if (d.status === 'not_found') return giftError('Dovanos kodas nerastas');
       if (d.kind !== 'pora') { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
-      if (d.status === 'redeemed') { try { await redeemGift({ code: d.code }); } catch (e) { giftError('Šis dovanos kodas jau panaudotas'); } return; }
-      if (d.status !== 'active') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
+      // Jau pradėtas kuponas (pvz. uždarė langą prieš fotografuojant) — tęsti galima įrašius tą patį el. paštą
+      if (d.status !== 'active' && d.status !== 'redeemed') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
       window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
-      $('lead').textContent = 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
+      $('lead').textContent = d.status === 'redeemed' ? 'Šis kuponas jau pradėtas naudoti. Įrašykite tuos pačius vardus ir el. paštą ir tęskite fotografavimą.' : 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti';
       // „Kaip tai veikia“ — dovanos atveju mokėti nereikia
       $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
