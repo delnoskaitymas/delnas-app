@@ -2255,6 +2255,17 @@ app.post('/order-quote', sensitiveLimiter, async (req, res) => {
 
 // Ar mokėjime buvo pridėtas „Klausk“ priedas ir ar jau sukurtas klausimų užsakymas
 // Dovanų kuponas su įskaičiuotais klausimais: ref „gift:KODAS“ → panaudota asmeninė dovana su klausk
+// SAUGUMAS: mokėjimo nuoroda (pi_/cs_/gift:KODAS) pati savaime nėra įrodymas — dovanos kodą žino ir
+// pirkėjas. Su ja susieti duomenys (klausimai, analizė, kuponai) atiduodami tik turint to mokėjimo
+// raktą, tos pačios analizės sesiją ar klausimų nuorodą, kurią gavo pats klientas.
+function ownsPaymentRef(ref, { token, sessionId, kl } = {}) {
+  if (typeof ref !== 'string' || !ref || ref.length > 200) return false;
+  const e = loadPaymentTokens()[ref];
+  if (typeof token === 'string' && token && e && e.token && e.token.length === token.length && crypto.timingSafeEqual(Buffer.from(e.token), Buffer.from(token))) return true;
+  if (typeof sessionId === 'string' && sessionId) { const ce = analysisCache.get(sessionId); if (ce && ce.paid && ce.paymentKey === ref) return true; }
+  if (typeof kl === 'string' && /^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(kl)) { const o = loadKlauskOrders()[kl]; if (o && o.paymentRef === ref) return true; }
+  return false;
+}
 function giftKlausk(ref) {
   if (typeof ref !== 'string' || !ref.startsWith('gift:') || ref.length > 40) return null;
   const g = loadGiftStore().codes[ref.slice(5)];
@@ -2284,6 +2295,7 @@ app.post('/klausk/pora-gift', sensitiveLimiter, (req, res) => {
 app.get('/order-extras', sensitiveLimiter, async (req, res) => {
   try {
     const ref = req.query.ref;
+    if (!ownsPaymentRef(ref, { token: req.query.token, sessionId: req.query.sid, kl: req.query.kl })) return res.json({ addKlausk: false });
     const gk = giftKlausk(ref);
     if (gk) { const ex = Object.entries(loadKlauskOrders()).find(([, o]) => o.paymentRef === ref); return res.json({ addKlausk: true, gift: true, klauskId: ex ? ex[0] : null }); }
     const p = await getPaidAnalysisPayment(ref);
@@ -2297,6 +2309,7 @@ app.get('/order-extras', sensitiveLimiter, async (req, res) => {
 app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
     const gk = giftKlausk(paymentRef);
     const p = gk ? { email: gk.redeemedEmail || '', metadata: { addKlausk: '1', name: gk.redeemedName || '' } } : await getPaidAnalysisPayment(paymentRef);
     if (!p || p.metadata.addKlausk !== '1') return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
@@ -2319,6 +2332,7 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
 app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.status(403).json({ error: 'Nuoroda galima tik apmokėjusiems klientams' });
     const st = loadRefs();
     if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) {
       const c = st.byPayment[paymentRef];
@@ -2731,6 +2745,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
       if (!ce) { ce = { status: 'done', result, error: null, photos: [], name: userName, createdAt: Date.now() }; analysisCache.set(sessionId, ce); }
       if (ce.status === 'done') {
         ce.paid = true; ce.paidEmail = email || tokenEntry.email || ''; ce.paidName = userName;
+        try { const pt = loadPaymentTokens(); ce.paymentKey = Object.keys(pt).find(k => pt[k].token === token) || ''; } catch (e) {}
         saveAnalysisSessionToDisk(sessionId, ce);
         // Automatiškai į „Mano analizes“ 90 d. (paslaugos dalis); 12 mėn. ir priminimas — tik paspaudus „Išsaugoti ir priminti“
         if (isValidEmail(ce.paidEmail) && ce.result) {
@@ -4060,6 +4075,11 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
 
 // Porų dovanų kupono panaudojimas: /pora?dovana=KODAS → įvedami abu vardai ir
 // el. paštas → sukuriamas „apmokėtas“ porų užsakymas gp_… → /?pora=gp_…
+function poraGiftResume(res, id) {
+  const o = loadPoraOrders()[id];
+  if (o && o.status === 'new') return res.json({ ok: true, id });
+  return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
+}
 app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
   try {
     const { code: rawCode, nameA, nameB, email } = req.body || {};
@@ -4071,7 +4091,9 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     if (status === 'not_found') return res.status(404).json({ status, error: 'Dovanos kodas nerastas' });
     if (gift.kind !== 'pora') return res.status(409).json({ status, kind: 'asmenine', error: 'Tai asmeninės analizės kuponas' });
     // Jau panaudotas — grąžiname tą patį užsakymą (pvz. uždarė langą prieš fotografuodami)
-    if (status === 'redeemed' && gift.poraOrderId) return res.json({ ok: true, id: gift.poraOrderId });
+    // Jau panaudotas — tą patį užsakymą grąžiname tik kol nuotraukos dar nepateiktos (pvz. uždarė langą prieš
+    // fotografuodami). Vėliau kodą žinantis asmuo (pvz. pirkėjas) poros rezultato nebegauna.
+    if (status === 'redeemed' && gift.poraOrderId) return poraGiftResume(res, gift.poraOrderId);
     if (status === 'expired') return res.status(410).json({ status, error: 'Dovanos kodo galiojimas baigėsi' });
     if (status !== 'active') return res.status(410).json({ status, error: 'Dovanos kodas nebegalioja' });
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
@@ -4084,7 +4106,7 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     const fresh = loadGiftStore();
     const g = fresh.codes[code];
     if (giftStatus(g) !== 'active') {
-      if (g && g.poraOrderId) return res.json({ ok: true, id: g.poraOrderId });
+      if (g && g.poraOrderId) return poraGiftResume(res, g.poraOrderId);
       return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas' });
     }
     const id = 'gp_' + crypto.randomBytes(12).toString('hex');
@@ -5151,6 +5173,7 @@ app.get('/promo/check', (req, res) => {
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.json({});
     const p = await getPaidAnalysisPayment(paymentRef);
     if (!p) return res.json({});
     const email = isValidEmail(p.email) ? p.email : '';
