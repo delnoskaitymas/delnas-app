@@ -1,0 +1,11 @@
+{
+  "name": "example-intro-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.165 preview",
+    "check": "npx --yes hyperframes@0.8.165 check",
+    "render": "npx --yes hyperframes@0.8.165 render",
+    "publish": "npx --yes hyperframes@0.8.165 publish"
+  }
+}

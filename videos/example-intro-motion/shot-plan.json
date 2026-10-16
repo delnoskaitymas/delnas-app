@@ -1,0 +1,19 @@
+{
+  "category": "kinetic-type",
+  "duration_s": 10,
+  "fps": 30,
+  "canvas": { "width": 1920, "height": 1080, "aspect": "16:9" },
+  "style": "minimal editorial, mirrors example.com's plain white page",
+  "palette": { "bg": "#f0f0f2", "ink": "#111111", "muted": "#5b5b66", "accent": "#38488f", "card": "#ffffff" },
+  "font": "system sans stack",
+  "export": "mp4",
+  "asset_needs": [],
+  "source_note": "example.com could not be captured (outbound fetch blocked by the session network policy); page copy recreated from the public example.com page: 'Example Domain — This domain is for use in documentation examples without needing permission.'",
+  "brief": "A 10-second product intro for example.com. Hook: 'Every doc needs an example.' Build: a browser card types example.com into its address bar and the page's 'Example Domain' heading lands. Punch: three words slam in sequence — Reserved. Stable. Permission-free. Resolve: example.com wordmark lockup with the tagline 'For use in documentation examples.' Dominant motif: words snapping in on the beat with a single accent underline.",
+  "beats": [
+    { "id": "hook", "start": 0, "end": 2.4, "role": "Hook", "copy": "Every doc needs an example.", "emphasis_words": ["example."] },
+    { "id": "build", "start": 2.4, "end": 5.6, "role": "Build", "copy": "example.com / Example Domain" },
+    { "id": "punch", "start": 5.6, "end": 7.9, "role": "Punch", "copy": "Reserved. Stable. Permission-free." },
+    { "id": "resolve", "start": 7.9, "end": 10, "role": "Resolve", "copy": "example.com — For use in documentation examples." }
+  ]
+}

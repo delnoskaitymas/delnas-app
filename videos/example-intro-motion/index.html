@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg: #f0f0f2;
+        --ink: #111111;
+        --muted: #5b5b66;
+        --accent: #38488f;
+        --card: #ffffff;
+        --line: #d9d9e0;
+        --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        font-family: var(--sans);
+        color: var(--ink);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 120px 160px;
+        gap: 28px;
+      }
+      .word {
+        display: inline-block;
+      }
+
+      /* Hook */
+      .hook-line {
+        display: flex;
+        gap: 0.28em;
+        font-size: 128px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+      .hook-line .em {
+        position: relative;
+        color: var(--accent);
+      }
+      .em-underline {
+        position: absolute;
+        left: 0;
+        bottom: -18px;
+        width: 100%;
+      }
+      .underline {
+        width: 560px;
+        height: 10px;
+        border-radius: 5px;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* Build: browser card */
+      .browser {
+        width: 1280px;
+        height: 700px;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        box-shadow: 0 40px 120px rgba(17, 17, 17, 0.12);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 96px;
+        padding: 0 32px;
+        border-bottom: 2px solid var(--line);
+        background: #f7f7f9;
+      }
+      .dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--line);
+      }
+      .address {
+        flex: 1;
+        height: 56px;
+        margin-left: 18px;
+        border-radius: 28px;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        font-family: var(--mono);
+        font-size: 30px;
+        color: var(--muted);
+      }
+      .url {
+        display: block;
+        white-space: nowrap;
+        color: var(--ink);
+      }
+      .caret {
+        width: 3px;
+        height: 34px;
+        margin-left: 4px;
+        background: var(--accent);
+      }
+      .page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 140px;
+        gap: 28px;
+      }
+      .page h2 {
+        font-size: 84px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      .page p {
+        font-size: 34px;
+        line-height: 1.45;
+        color: var(--muted);
+        max-width: 900px;
+      }
+      .page .link {
+        font-size: 30px;
+        color: var(--accent);
+        text-decoration: underline;
+      }
+
+      /* Punch */
+      .punch {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .punch .word {
+        font-size: 150px;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 1.05;
+      }
+      .punch .word.em {
+        color: var(--accent);
+      }
+
+      /* Resolve */
+      .mark {
+        font-size: 176px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+      .mark .tld {
+        color: var(--accent);
+      }
+      .tagline {
+        font-size: 44px;
+        color: var(--muted);
+        letter-spacing: -0.01em;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-199x"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="10"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div data-hf-id="hf-cyer" id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0">
+        <!-- Hook -->
+        <div data-hf-id="hf-f2tz" id="s-hook" class="scene">
+          <div data-hf-id="hf-00yc" class="hook-line">
+            <span data-hf-id="hf-exmf" class="word hw">Every</span>
+            <span data-hf-id="hf-646y" class="word hw">doc</span>
+            <span data-hf-id="hf-m701" class="word hw">needs</span>
+            <span data-hf-id="hf-609v" class="word hw">an</span>
+            <span data-hf-id="hf-xwm2" class="word hw em"
+              >example.<span data-hf-id="hf-cfgo" id="hook-underline" class="underline em-underline"></span
+            ></span>
+          </div>
+        </div>
+
+        <!-- Build -->
+        <div data-hf-id="hf-jal2" id="s-build" class="scene">
+          <div data-hf-id="hf-r5zm" id="browser" class="browser">
+            <div data-hf-id="hf-6ex2" class="chrome">
+              <div data-hf-id="hf-lu65" class="dot"></div>
+              <div data-hf-id="hf-ww7l" class="dot"></div>
+              <div data-hf-id="hf-y34o" class="dot"></div>
+              <div data-hf-id="hf-ntog" class="address">
+                <span data-hf-id="hf-dgkn" id="url" class="url">https://example.com</span>
+                <span data-hf-id="hf-fir1" id="caret" class="caret"></span>
+              </div>
+            </div>
+            <div data-hf-id="hf-9tvl" class="page">
+              <h2 data-hf-id="hf-cge8" id="page-h">Example Domain</h2>
+              <p data-hf-id="hf-fbv5" id="page-p">
+                This domain is for use in documentation examples without needing permission.
+              </p>
+              <span data-hf-id="hf-i24g" id="page-link" class="link">Learn more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Punch -->
+        <div data-hf-id="hf-h0wi" id="s-punch" class="scene">
+          <div data-hf-id="hf-ovv4" class="punch">
+            <span data-hf-id="hf-9kv6" class="word pw">Reserved.</span>
+            <span data-hf-id="hf-le4r" class="word pw">Stable.</span>
+            <span data-hf-id="hf-nv1w" class="word pw em">Permission-free.</span>
+          </div>
+        </div>
+
+        <!-- Resolve -->
+        <div data-hf-id="hf-7le6" id="s-resolve" class="scene">
+          <div data-hf-id="hf-o7hs" id="mark" class="mark">example<span data-hf-id="hf-wmro" class="tld">.com</span></div>
+          <div data-hf-id="hf-ql3l" id="resolve-underline" class="underline"></div>
+          <div data-hf-id="hf-81o0" id="tagline" class="tagline">For use in documentation examples.</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Scenes start hidden; each one is revealed on its beat.
+      tl.fromTo("#s-hook", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 0);
+      tl.fromTo(["#s-build", "#s-punch", "#s-resolve"], { autoAlpha: 0 }, { autoAlpha: 0, duration: 0.01 }, 0);
+
+      // Hook 0 – 2.4s: words snap up one by one, accent underline draws.
+      tl.fromTo(
+        ".hw",
+        { autoAlpha: 0, y: 70, filter: "blur(10px)" },
+        { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.14 },
+        0.1,
+      );
+      tl.fromTo(".hw.em", { scale: 1 }, { scale: 1.08, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, 0.9);
+      tl.fromTo("#hook-underline", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "expo.out" }, 1.0);
+      tl.to("#s-hook", { autoAlpha: 0, y: -40, duration: 0.35, ease: "power2.in" }, 2.1);
+
+      // Build 2.4 – 5.6s: browser rises, URL types in, page content lands.
+      tl.fromTo("#s-build", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 2.4);
+      tl.fromTo(
+        "#browser",
+        { autoAlpha: 0, y: 120, scale: 0.94 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" },
+        2.4,
+      );
+      tl.fromTo("#url", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power1.inOut" }, 2.9);
+      tl.fromTo("#caret", { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.12, repeat: 7, yoyo: true }, 2.9);
+      tl.fromTo("#page-h", { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 3.95);
+      tl.fromTo("#page-p", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.2);
+      tl.fromTo("#page-link", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 4.45);
+      tl.to("#browser", { scale: 1.04, duration: 1.0, ease: "sine.inOut" }, 4.4);
+      tl.to("#s-build", { autoAlpha: 0, scale: 1.08, duration: 0.35, ease: "power2.in" }, 5.3);
+
+      // Punch 5.6 – 7.9s: three words slam in on the beat.
+      tl.fromTo("#s-punch", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 5.6);
+      tl.fromTo(
+        ".pw",
+        { autoAlpha: 0, x: -120, scale: 1.25 },
+        { autoAlpha: 1, x: 0, scale: 1, duration: 0.42, ease: "back.out(1.6)", stagger: 0.5 },
+        5.65,
+      );
+      tl.to("#s-punch", { autoAlpha: 0, x: 60, duration: 0.3, ease: "power2.in" }, 7.6);
+
+      // Resolve 7.9 – 10s: wordmark lockup, underline, tagline, hold.
+      tl.fromTo("#s-resolve", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 7.9);
+      tl.fromTo(
+        "#mark",
+        { autoAlpha: 0, scale: 0.86, filter: "blur(12px)" },
+        { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "expo.out" },
+        7.95,
+      );
+      tl.fromTo("#resolve-underline", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "expo.out" }, 8.35);
+      tl.fromTo("#tagline", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 8.6);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
