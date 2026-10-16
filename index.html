@@ -990,7 +990,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
-      <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Jis jau atkeliavo į tavo el. paštą PDF formatu.<br>Tai Tavo asmeninis orientyras, prie kurio visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
+      <div class="result-final-text">Šis gyvenimo žemėlapis priklauso tik tau. Jis jau atkeliavo į tavo el. paštą PDF formatu.<br>Prie jo visada galėsi sugrįžti, kai ieškosi atsakymų.</div>
     </div>
     <div id="r-extra"></div>
     <!-- Porų suderinamumas — atskiras, ryškus blokas iškart po „Klausk“ (brangiausias pasiūlymas) -->
@@ -1440,7 +1440,7 @@ function reportClientAnalysisError(reason){
 function showAnalysisError(){
   const rn=document.getElementById('res-name');
   const _errName=window.userName||window._userName||'';
-  if(rn) rn.textContent=_errName?(_errName+' — Tavo asmeninė delnų analizė'):'Tavo asmeninė delnų analizė';
+  if(rn) rn.textContent=_errName?(_errName+' — tavo asmeninė delnų analizė'):'Tavo asmeninė delnų analizė';
   // SVARBU: pirmasis .rs blokas TURI likti matomas — jame (per #r-char)
   // rodomas pats klaidos pranešimas. Anksčiau ČIA BUVO BUGAS: visi .rs
   // blokai (įskaitant PIRMĄJĮ) būdavo paslepiami PRIEŠ įrašant pranešimą
