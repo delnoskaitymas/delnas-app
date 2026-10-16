@@ -2155,7 +2155,7 @@ async function submitReminder(){
   if(!email||!email.includes('@')){if(errEl){errEl.textContent='Įveskite teisingą el. paštą.';errEl.style.display='block';}return;}
   if(errEl) errEl.style.display='none';
   try{
-    const res=await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||''})});
+    const res=await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
     if(res.ok){hideReminderModal();const done=document.getElementById('reminder-done');if(done) done.style.display='block';}
     else{if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
   }catch(e){if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
@@ -4152,7 +4152,7 @@ async function registerReminder(){
       const sv=await fetch('/save-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:window.bgSessionId,email})});
       if(sv.ok){ document.getElementById('reminder-wrap').style.display='none'; document.getElementById('reminder-done').style.display='block'; return; }
     }
-    const resp = await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name})});
+    const resp = await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,token:window.palmToken||'',sessionId:window.bgSessionId||''})});
     const data = await resp.json();
     const dn=document.getElementById('reminder-done'); if(dn) dn.textContent='✦ Laukiame tavęs po 3 mėnesių.';
     if(data.ok){
@@ -4690,7 +4690,7 @@ function sendResultPdfEmail(r){
     const dataUri = doc.output('datauristring');
     const base64 = dataUri.split(',').pop();
     fetch('/email-result-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail,name,orderNumber:window._orderNumber||'',pdfBase64:base64,gift:!!window._isGiftOrder,paymentRef:window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef')||''; }catch(e){ return ''; } })()})})
+      body:JSON.stringify({email:window._userEmail,name,token:window.palmToken||'',orderNumber:window._orderNumber||'',pdfBase64:base64,gift:!!window._isGiftOrder,paymentRef:window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef')||''; }catch(e){ return ''; } })()})})
       .then(r=>r.json()).then(d=>{
         if(!d||!d.ok) console.error('[sendResultPdfEmail] serverio klaida:',d&&d.error);
         else console.log('[sendResultPdfEmail] serveris patvirtino išsiuntimą');
