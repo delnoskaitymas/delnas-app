@@ -171,7 +171,7 @@ function sendHtmlWithOg(res, file, title, desc) {
   const t = escapeHtml(title), d = escapeHtml(desc);
   h = h.replace(/(<meta (?:property="og:title"|name="twitter:title"|property="og:image:alt") content=")[^"]*/g, '$1' + t)
        .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*/g, '$1' + d);
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(h);
 }
 app.use((req, res, next) => {
@@ -207,7 +207,7 @@ const serveStatic = express.static(path.join(__dirname, '.'), {
   redirect: false,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }
@@ -3795,7 +3795,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
 }
 
 app.get('/pora', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'pora.html'));
 });
 
@@ -4291,7 +4291,7 @@ app.get('/klausk/result', sensitiveLimiter, (req, res) => {
 });
 
 app.get('/klausk', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'klausk.html'));
 });
 
@@ -4534,17 +4534,17 @@ app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
 });
 
 app.get('/dovana', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'dovana.html'));
 });
 // Dovanos kodo įvedimas ranka (jei gavėjas neskenuoja QR) — tas pats
 // dovana.html, rodinys parenkamas pagal kelią.
 app.get('/kodas', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'dovana.html'));
 });
 app.get('/dovana/kortele', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'dovana.html'));
 });
 
@@ -5409,7 +5409,7 @@ app.post('/compare', sensitiveLimiter, async (req, res) => {
 
 // ── „Mano analizės“ puslapis: nuoroda el. paštu (be slaptažodžio) ──
 app.get('/mano', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'mano.html'));
 });
 function manoItems(email) {
@@ -5520,7 +5520,7 @@ const NOT_FOUND_HTML = `<!doctype html><html lang="lt"><head><meta charset="utf-
 a{display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font:800 15px Arial,sans-serif}</style></head>
 <body><div class="b"><div class="l">DELNAS</div><h1>Puslapis nerastas</h1><p>Tokio puslapio nėra. Gal nuoroda pasikeitė ar buvo nukopijuota ne visa.</p><a href="/">Grįžti į pradžią</a></div></body></html>`;
 app.get('*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   if (req.path === '/' || /^\/shared\/[A-Za-z0-9_-]+\/?$/.test(req.path)) return res.sendFile(path.join(__dirname, 'index.html'));
