@@ -4567,7 +4567,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   // reikalinga (nes PDF yra SAVARANKIŠKAS dokumentas, kuris keliauja
   // atskirai nuo svetainės/ToS konteksto), bet suformuluota programos
   // stiliumi, ne kaip šaltas teisinis įspėjimas.
-  const footerNote = 'Šis žemėlapis – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.';
+  const footerNote = 'Šis žemėlapis – dirbtinio intelekto pagal tradicinės chiromantijos motyvus sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.';
   const footerGap = 14;    // kvėpuojantis tarpas virš footerio
   const footerBlockH = 50; // apytikslis viso bloko aukštis (2 eilutės + mygtukas + pastaba + užsakymo nr.)
   let footerY = y + footerGap;
@@ -6522,7 +6522,7 @@ function buildPoraPdfDoc(){
   doc.link(bx, by, bw, bh, { url:'https://www.delnaskaitymas.lt' });
   doc.setFont('NotoSans','normal'); doc.setFontSize(10); doc.setTextColor(140,112,55);
   let ny=by+bh+10;
-  doc.splitTextToSize('Ši analizė – dirbtinio intelekto ir tradicinės chiromantijos sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
+  doc.splitTextToSize('Ši analizė – dirbtinio intelekto pagal tradicinės chiromantijos motyvus sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
   // Užsakymo numeris — reikalingas kreipiantis dėl pinigų grąžinimo (sąlygų 5 skyrius)
   const pon=poraOrderNumber();
   if(pon){ doc.setFontSize(9.5); doc.setTextColor(...MUTED); doc.text('Užsakymo numeris: '+pon, W/2, ny+4, {align:'center'}); }
