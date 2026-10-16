@@ -2105,13 +2105,13 @@ function hideReminderModal(){const modal=document.getElementById('reminder-modal
 async function submitReminder(){
   const emailInput=document.getElementById('reminder-email');const errEl=document.getElementById('reminder-err');
   const email=emailInput?emailInput.value.trim():'';
-  if(!email||!email.includes('@')){if(errEl){errEl.textContent='Įveskite teisingą el. paštą.';errEl.style.display='block';}return;}
+  if(!email||!email.includes('@')){if(errEl){errEl.textContent='Įrašyk teisingą el. paštą.';errEl.style.display='block';}return;}
   if(errEl) errEl.style.display='none';
   try{
     const res=await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name:window.userName||'',token:window.palmToken||'',sessionId:window.bgSessionId||''})});
     if(res.ok){hideReminderModal();const done=document.getElementById('reminder-done');if(done) done.style.display='block';}
-    else{if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
-  }catch(e){if(errEl){errEl.textContent='Klaida. Bandykite dar kartą.';errEl.style.display='block';}}
+    else{if(errEl){errEl.textContent='Klaida. Bandyk dar kartą.';errEl.style.display='block';}}
+  }catch(e){if(errEl){errEl.textContent='Klaida. Bandyk dar kartą.';errEl.style.display='block';}}
 }
 
 function submitInfo(){initiatePayment();}
@@ -3336,14 +3336,14 @@ async function finalizeRetryAfterPayment(){
       return;
     }
     if(!result||result.error){
-      alert('Įvyko klaida gaunant rezultatą. Jūsų apmokėjimas įvykdytas — parašykite mums info@delnaskaitymas.lt ir padėsime iš karto.');
+      alert('Įvyko klaida gaunant rezultatą. Tavo užsakymas neprarastas — parašyk mums info@delnaskaitymas.lt ir padėsime iš karto.');
       return;
     }
     displayResult(result);
     go('s-result');
   }catch(e){
     console.error('[finalizeRetryAfterPayment] klaida:',e);
-    alert('Įvyko klaida gaunant rezultatą. Jūsų apmokėjimas įvykdytas — parašykite mums info@delnaskaitymas.lt ir padėsime iš karto.');
+    alert('Įvyko klaida gaunant rezultatą. Tavo užsakymas neprarastas — parašyk mums info@delnaskaitymas.lt ir padėsime iš karto.');
   }
 }
 
@@ -4121,7 +4121,7 @@ async function registerReminder(){
       document.getElementById('reminder-done').style.display='block';
     }
   }catch(e){
-    alert('Klaida. Bandykite dar kartą.');
+    alert('Klaida. Bandyk dar kartą.');
   }
 }
 
@@ -4704,7 +4704,7 @@ async function sharePdfToFriend(){
     doc.save(fileName);
   }catch(e){
     console.error('[sharePdfToFriend] klaida:', e);
-    alert('Nepavyko paruošti PDF dalinimuisi. Bandykite dar kartą.');
+    alert('Nepavyko paruošti PDF dalinimuisi. Bandyk dar kartą.');
   }
 }
 
@@ -5303,7 +5303,7 @@ async function shareStory(){
     // Dalinamasi pačia kvadratine kortele (1080×1080) — įraše ji užima visą plotą be juodų kraštų,
     // o istorijose Facebook/Instagram ją patys padeda per vidurį (anksčiau — 9:16 su dideliais juodais plotais)
     const blob = await buildStoryCardBlob();
-    if(!blob){ alert('Nepavyko sukurti kortelės. Bandykite dar kartą.'); return; }
+    if(!blob){ alert('Nepavyko sukurti kortelės. Bandyk dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
     const appUrl = 'https://www.delnaskaitymas.lt';
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
@@ -5321,7 +5321,7 @@ async function shareStory(){
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }catch(e){
     console.error('[shareStory] klaida:', e);
-    alert('Nepavyko pasidalinti. Bandykite dar kartą.');
+    alert('Nepavyko pasidalinti. Bandyk dar kartą.');
   }
 }
 
