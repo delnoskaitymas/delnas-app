@@ -808,14 +808,20 @@ function diagnozuotiKlaida(errorMessage) {
 // Tas pats užsakymas gali būti praneštas ir serverio, ir kliento
 // (/notify-client-error) — laišką siunčiame tik vieną kartą.
 const reportedAnalysisFailures = new Set();
+// Klaidų laiškų tau — ne daugiau kaip 20 per valandą (kad niekas negalėtų jais išnaudoti dienos laiškų limito)
+const _failMailTimes = [];
 function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage }) {
   try {
+    const nowF = Date.now();
+    while (_failMailTimes.length && nowF - _failMailTimes[0] > 60 * 60 * 1000) _failMailTimes.shift();
+    if (_failMailTimes.length >= 20) { console.error('[logAnalysisFailure] per daug klaidų laiškų per valandą — laiškas praleistas', orderNumber || sessionId || ''); return; }
     const failKey = orderNumber || sessionId || '';
     if (failKey) {
       if (reportedAnalysisFailures.has(failKey)) return;
       reportedAnalysisFailures.add(failKey);
       setTimeout(() => reportedAnalysisFailures.delete(failKey), 6 * 60 * 60 * 1000);
     }
+    _failMailTimes.push(nowF);
     const displayName = name ? ltPhrase(name, 'voc') : 'kliente';
     const diagnoze = diagnozuotiKlaida(errorMessage);
     // Paruoštas, kopijuoti-įklijuoti tinkantis atsiprašymo laiško juodraštis
@@ -2219,7 +2225,7 @@ async function getPaidAnalysisPayment(paymentRef) {
   if (typeof paymentRef !== 'string' || paymentRef.length > 200) return null;
   if (paymentRef.startsWith('pi_')) {
     const pi = await stripe.paymentIntents.retrieve(paymentRef);
-    if (!pi || pi.status !== 'succeeded') return null;
+    if (!pi || pi.status !== 'succeeded' || !pi.metadata || !pi.metadata.priceId) return null;
     return { metadata: pi.metadata || {}, email: (pi.metadata && pi.metadata.email) || pi.receipt_email || '', amount: pi.amount_received || pi.amount || 0, created: (pi.created || 0) * 1000 };
   }
   if (paymentRef.startsWith('cs_')) {
@@ -2451,7 +2457,9 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
     pendingOrders.set(orderNumber, { name, email, createdAt: Date.now(), notified: false });
     savePendingOrdersToDisk(pendingOrders);
     // Vienas priminimas, jei mokėjimas nebus baigtas (nebent žmogus paspaudė „Nesiųsti“)
-    if (req.body.remind === true) noteAbandonCandidate({ kind: 'asmenine', email, name, orderNumber });
+    // Priminimas tik tam, kas jau nufotografavo delnus (vyksta analizė) — ne bet kokiam įrašytam adresui
+    const bgS = typeof req.body.sessionId === 'string' ? analysisCache.get(req.body.sessionId) : null;
+    if (req.body.remind === true && bgS) noteAbandonCandidate({ kind: 'asmenine', email, name, orderNumber }, req);
     console.log(`[register-order] sukurtas ${orderNumber} (${name}, ${email})`);
     res.json({ orderNumber });
   } catch (err) {
@@ -2542,6 +2550,9 @@ app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
     const errorMessage = 'Kliento ekrane parodyta klaida: ' + String(error || 'nežinoma').slice(0, 300);
     console.log(`[notify-client-error] orderNumber=${orderNumber||'?'} sessionId=${sessionId||'?'} ${errorMessage}`);
     const key = orderNumber || sessionId;
+    // Tik tikram užsakymui ar analizės sesijai — ne bet kokiam išgalvotam numeriui
+    const real = (orderNumber && pendingOrders.has(orderNumber)) || (sessionId && analysisCache.has(sessionId));
+    if (!key || !real) return res.json({ ok: true });
     if (deliveredResultOrders.has(key) || pendingClientErrors.has(key)) return res.json({ ok: true });
     // Laiškas siunčiamas ne iškart: jei per šį laiką klientas vis dėlto
     // gauna rezultatą (pvz. perkrauna puslapį), klaidos laiško nesiunčiame.
@@ -2861,6 +2872,8 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
     if (name && !isValidName(name)) return res.status(400).json({ paid: false, error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ paid: false, error: 'Neteisingas el. pašto formatas' });
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    // Tik asmeninės analizės mokėjimas (sukurtas /create-payment) — kiti mokėjimai analizės neatrakina
+    if (!pi.metadata || !pi.metadata.priceId || pi.metadata.type) return res.json({ paid: false });
     if (pi.status === 'succeeded') {
       const finalName = name || pi.metadata.name || '';
       const finalEmail = email || pi.metadata.email || '';
@@ -2884,6 +2897,8 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
 app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    // Tik asmeninės analizės užsakymas (be tipo) — dovanų, porų ar „Klausk“ mokėjimas analizės neatrakina
+    if (session.metadata && session.metadata.type) return res.json({ paid: false });
     if (session.payment_status === 'paid') {
       const finalName = session.metadata?.name || '';
       const finalEmail = session.metadata?.email || '';
@@ -3867,7 +3882,7 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`
     });
-    if (req.body.remind === true) noteAbandonCandidate({ kind: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), ref: session.id });
+    if (req.body.remind === true) noteAbandonCandidate({ kind: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), ref: session.id }, req);
     res.json({ url: session.url });
   } catch (err) {
     console.error('/pora/create-checkout klaida:', err);
@@ -5256,9 +5271,18 @@ setTimeout(processPoraEmailFallback, 60 * 1000);
 // ── Nebaigti mokėjimai: vienas priminimas su −15 % (tik pažymėjus sutikimą) ──
 function loadAbandoned() { return readJson(ABANDONED_FILE, { items: [], paid: {} }); }
 function saveAbandoned(s) { writeJson(ABANDONED_FILE, s); }
-function noteAbandonCandidate(item) {
+// Apsauga nuo laiškų siuntimo svetimiems adresams: iš vieno IP — ne daugiau kaip 3 skirtingi el. paštai per parą
+const _abandonByIp = new Map();
+function noteAbandonCandidate(item, req) {
   try {
     if (!isValidEmail(item.email)) return;
+    if (req) {
+      const ip = req.ip || '', now = Date.now(), e = item.email.toLowerCase();
+      const rec = (_abandonByIp.get(ip) || []).filter(x => now - x.at < DAY_MS);
+      if (!rec.some(x => x.e === e)) { if (rec.length >= 3) return; rec.push({ e, at: now }); }
+      _abandonByIp.set(ip, rec);
+      if (_abandonByIp.size > 5000) for (const [k, v] of _abandonByIp) if (!v.some(x => now - x.at < DAY_MS)) _abandonByIp.delete(k);
+    }
     const s = loadAbandoned(), email = item.email.toLowerCase();
     s.items = s.items.filter(x => !(x.email === email && x.kind === item.kind && !x.sentAt && !x.skip));
     s.items.push({ ...item, id: crypto.randomBytes(6).toString('hex'), email, createdAt: Date.now(), sentAt: null });
@@ -5494,7 +5518,7 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
     const items = manoItems(email);
     if (!items.analizes.length && !items.poros.length && !items.klausimai.length) return;
     const s = loadSaved();
-    if (s.lastLink[email] && Date.now() - s.lastLink[email] < 2 * 60 * 1000) return;
+    if (s.lastLink[email] && Date.now() - s.lastLink[email] < 10 * 60 * 1000) return; // ne dažniau kaip kas 10 min. vienam adresui
     const t = 'mt_' + crypto.randomBytes(16).toString('hex');
     s.tokens[t] = { email, exp: Date.now() + 7 * DAY_MS };
     s.lastLink[email] = Date.now();

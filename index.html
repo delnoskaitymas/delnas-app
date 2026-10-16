@@ -5831,7 +5831,7 @@ function proceedToPayment(){
   // ir el. paštas (dar prieš mokėjimą) — jis bus parodytas rezultato
   // ekrane ir naudojamas pranešimui į info@delnaskaitymas.lt.
   fetch('/register-order',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name,email,remind:!window._noRemind&&!(window._giftInfo&&window._giftInfo.valid&&window._giftCode&&!window._giftFailed)})}).then(r=>r.json()).then(d=>{
+    body:JSON.stringify({name,email,sessionId:window.bgSessionId||'',remind:!window._noRemind&&!(window._giftInfo&&window._giftInfo.valid&&window._giftCode&&!window._giftFailed)})}).then(r=>r.json()).then(d=>{
       if(d&&d.orderNumber) window._orderNumber=d.orderNumber;
     }).catch(e=>console.error('[register-order] klaida:',e));
   // Atnaujinti bgSessionId su vardu (analizė jau vyksta fone)
