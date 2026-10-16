@@ -4324,6 +4324,22 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// Apmokėtas „Klausk“ užsakymas: pažymimas apmokėtu, klientui laiškas su nuoroda į klausimus, tau — pranešimas
+function markKlauskPaid(id, orders, s) {
+  const o = orders[id];
+  if (!o || o.paid) return;
+  o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders); statInc('klausk_paid');
+  // Mokėjimo patvirtinimas klientui (vietoj Stripe kvito) su nuoroda į klausimus
+  if (isValidEmail(o.email)) mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: o.email, subject: klauskPaidSubject(o), html: buildKlauskPaidEmailHtml(o, id) })
+    .catch(e => console.error('[klausk] patvirtinimo laiško klaida:', e.message));
+  adminDigestAdd('sales', {
+    from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+    to: ADMIN_EMAIL,
+    subject: `Naujas „Klausk savo delnų“${o.kind === 'pora' ? ' (porai)' : ''} užsakymas — ${o.name || o.email}`,
+    html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
+  }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
+}
+
 app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
   try {
     const id = req.query.s;
@@ -4333,16 +4349,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
     if (!o.paid) {
       const s = await getPaidKlausk(id);
       if (!s) return res.json({ paid: false });
-      o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders); statInc('klausk_paid');
-      // Mokėjimo patvirtinimas klientui (vietoj Stripe kvito) su nuoroda į klausimus
-      if (isValidEmail(o.email)) mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: o.email, subject: klauskPaidSubject(o), html: buildKlauskPaidEmailHtml(o, id) })
-        .catch(e => console.error('[klausk] patvirtinimo laiško klaida:', e.message));
-      adminDigestAdd('sales', {
-        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-        to: ADMIN_EMAIL,
-        subject: `Naujas „Klausk savo delnų“${o.kind === 'pora' ? ' (porai)' : ''} užsakymas — ${o.name || o.email}`,
-        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
-      }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
+      markKlauskPaid(id, orders, s);
     }
     res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}) });
   } catch (err) {
@@ -4590,6 +4597,42 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// Apmokėtas dovanų kuponas: sukuriamas (vieną kartą), pirkėjui išsiunčiamas laiškas, tau — pranešimas.
+// Kviečiama grįžus pirkėjo naršyklei (/gift/confirm) ir automatinio tikrinimo (recoverPaidOrders).
+function finalizeGiftSession(session) {
+  const { gift, isNew } = issueGiftForSession(session);
+  if (isNew) {
+    statInc('gift_paid');
+    if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
+    if (gift.recipientEmail) setTimeout(processGiftSchedules, 2 * 60 * 1000 + 5000);
+    // Pirkėjui — dovanų kortelė el. paštu
+    if (gift.buyerEmail) {
+      mailer.sendMail({
+        from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
+        to: gift.buyerEmail,
+        subject: giftBuyerSubject(gift),
+        html: buildGiftEmailHtml(gift)
+      }).then(() => console.log(`[gift] kortelė išsiųsta ${gift.buyerEmail}`))
+        .catch(e => console.error('[gift] nepavyko išsiųsti kortelės pirkėjui:', e.message));
+    }
+    // Administratoriui — pranešimas apie pardavimą
+    adminDigestAdd('gifts', {
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `Parduotas ${gift.kind === 'pora' ? 'porų ' : ''}dovanų kuponas ${gift.code}`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Parduotas dovanų kuponas</h2>
+        <p><strong>Kodas:</strong> ${escapeHtml(gift.code)}</p>
+        <p><strong>Tipas:</strong> ${gift.kind === 'pora' ? 'Porų suderinamumas' : 'Asmeninė analizė'}</p>
+        <p><strong>Pirkėjas:</strong> ${escapeHtml(gift.buyerEmail)} (${escapeHtml(gift.fromName || '—')})</p>
+        <p><strong>Gavėjas:</strong> ${escapeHtml(gift.recipientName || '—')}</p>
+        <p><strong>Suma:</strong> ${((gift.amount || 0) / 100).toFixed(2).replace('.', ',')} €</p>
+        <p><strong>Galioja iki:</strong> ${fmtLtDate(gift.expiresAt)}</p>
+        <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`
+    }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
+  }
+  return { gift, isNew };
+}
+
 app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
   try {
     const sessionId = req.query.session_id;
@@ -4600,36 +4643,7 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
     if (!session.metadata || session.metadata.type !== 'gift') return res.status(400).json({ paid: false, error: 'Tai ne dovanų kupono užsakymas' });
     if (session.payment_status !== 'paid') return res.json({ paid: false });
 
-    const { gift, isNew } = issueGiftForSession(session);
-    if (isNew) {
-      statInc('gift_paid');
-      if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
-      if (gift.recipientEmail) setTimeout(processGiftSchedules, 2 * 60 * 1000 + 5000);
-      // Pirkėjui — dovanų kortelė el. paštu
-      if (gift.buyerEmail) {
-        mailer.sendMail({
-          from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
-          to: gift.buyerEmail,
-          subject: giftBuyerSubject(gift),
-          html: buildGiftEmailHtml(gift)
-        }).then(() => console.log(`[gift] kortelė išsiųsta ${gift.buyerEmail}`))
-          .catch(e => console.error('[gift] nepavyko išsiųsti kortelės pirkėjui:', e.message));
-      }
-      // Administratoriui — pranešimas apie pardavimą
-      adminDigestAdd('gifts', {
-        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-        to: ADMIN_EMAIL,
-        subject: `Parduotas ${gift.kind === 'pora' ? 'porų ' : ''}dovanų kuponas ${gift.code}`,
-        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Parduotas dovanų kuponas</h2>
-          <p><strong>Kodas:</strong> ${escapeHtml(gift.code)}</p>
-          <p><strong>Tipas:</strong> ${gift.kind === 'pora' ? 'Porų suderinamumas' : 'Asmeninė analizė'}</p>
-          <p><strong>Pirkėjas:</strong> ${escapeHtml(gift.buyerEmail)} (${escapeHtml(gift.fromName || '—')})</p>
-          <p><strong>Gavėjas:</strong> ${escapeHtml(gift.recipientName || '—')}</p>
-          <p><strong>Suma:</strong> ${((gift.amount || 0) / 100).toFixed(2).replace('.', ',')} €</p>
-          <p><strong>Galioja iki:</strong> ${fmtLtDate(gift.expiresAt)}</p>
-          <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`
-      }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
-    }
+    const { gift } = finalizeGiftSession(session);
     res.json({ paid: true, ...giftPublicInfo(gift), link: giftRedeemLink(gift), needCardImg: !!(gift.recipientEmail && !gift.recipientSentAt && !gift.cardImg) });
   } catch (err) {
     console.error('/gift/confirm klaida:', err);
@@ -4903,6 +4917,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Dovana gavėjui', () => ({ subject: giftRecipientSubject(giftBase), html: buildGiftRecipientEmailHtml({ ...giftBase, recipientEmail: to }) }));
   add('Dovana neatidaryta (gavėjui)', () => ({ subject: giftRecipientReminderSubject(giftBase), html: buildGiftRecipientReminderHtml(giftBase) }));
   add('Kvietimo atlygis', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test') }));
+  add('Porų analizė laukia nuotraukų (užsakovui, jei po mokėjimo langas uždarytas)', () => { const v = ltPhrase(`${nameA} ir ${nameB}`, 'voc'); return { subject: `${v}, jūsų porų analizė laukia 💞`, html: poraContinueEmailHtml(appBaseUrl() + '/pora', v) }; });
   const results = [];
   for (const m of list) {
     if (m.error) { results.push(`✗ ${escapeHtml(m.label)} — ${escapeHtml(m.error)}`); continue; }
@@ -5496,6 +5511,100 @@ app.get('*', (req, res) => {
   if (req.path === '/' || /^\/shared\/[A-Za-z0-9_-]+\/?$/.test(req.path)) return res.sendFile(path.join(__dirname, 'index.html'));
   res.status(404).type('html').send(NOT_FOUND_HTML);
 });
+
+// ═══ Apmokėti užsakymai, kurių naršyklė po mokėjimo negrįžo ═══
+// Kuponas, „Klausk“ ir kt. patvirtinami, kai pirkėjo naršyklė grįžta iš Stripe. Jei pirkėjas
+// uždaro langą ar nutrūksta ryšys, kas 10 min. serveris pats peržiūri paskutinės paros
+// apmokėjimus Stripe: kuponą sukuria ir išsiunčia, „Klausk“ nuorodą išsiunčia, porų užsakovui
+// primena nufotografuoti delnus, o apie neparodytą asmeninę analizę praneša tau.
+const PAID_RECOVERY_FILE = path.join(SHARED_STORAGE_DIR, 'paid-recovery.json');
+const RECOVERY_MIN_AGE_MS = 10 * 60 * 1000;      // pirmiausia leidžiame naršyklei grįžti pačiai
+const RECOVERY_NOTICE_AGE_MS = 60 * 60 * 1000;   // porų ir asmeninės analizės — po valandos
+let _paidRecoveryRunning = false;
+function recoveryAdminMail(subject, rows) {
+  return mailer.sendMail({
+    from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+    to: ADMIN_EMAIL,
+    subject,
+    html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${escapeHtml(subject)}</h2>${rows.map(([k, v]) => `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v || '—')}</p>`).join('')}</div>`
+  }).catch(e => console.error('[recovery] admin laiško klaida:', e.message));
+}
+function poraContinueEmailHtml(link, names) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${names ? escapeHtml(names) + ', jūsų' : 'Jūsų'} porų analizė laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Mokėjimą gavome, bet delnų nuotraukų dar nėra. Atidarykite nuorodą ir nufotografuokite abiejų delnus. Iš naujo mokėti nereikės.</p><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti porų analizę</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Jei kiltų klausimų, parašykite info@delnaskaitymas.lt</p>${EMAIL_FOOTER_HTML}</div>`;
+}
+function personalPaymentUsed(paymentId) {
+  const e = loadPaymentTokens()[paymentId];
+  return !!(e && e.used);
+}
+async function recoverPaidOrders() {
+  if (_paidRecoveryRunning || !process.env.STRIPE_SECRET_KEY) return;
+  _paidRecoveryRunning = true;
+  try {
+    const st = readJson(PAID_RECOVERY_FILE, { since: 0, done: {} });
+    const now = Date.now();
+    // Pranešimai (porų, asmeninės) — tik apie mokėjimus po šios funkcijos įjungimo
+    if (!st.since) st.since = now;
+    const gte = Math.floor((now - DAY_MS) / 1000);
+    const done = (id) => { st.done[id] = now; };
+    const personalNotice = (id, created, m, amount, how) => {
+      if (created < st.since) return done(id);
+      if (now - created < RECOVERY_NOTICE_AGE_MS) return;
+      if (!personalPaymentUsed(id)) {
+        console.log(`[recovery] apmokėta asmeninė analizė neparodyta: ${id}`);
+        recoveryAdminMail('Apmokėta asmeninė analizė, bet rezultatas neparodytas', [
+          ['Klientas', `${m.name || '—'} (${m.email || '—'})`], ['Suma', (amount / 100).toFixed(2).replace('.', ',') + ' €'],
+          ['Priedai', [m.addKlausk === '1' ? '3 klausimai' : '', m.bundle === '1' ? 'porų suderinamumas' : ''].filter(Boolean).join(', ') || 'nėra'],
+          ['Užsakymo nr.', m.orderNumber || '—'], ['Mokėjimas', `${how} ${id}`],
+          ['Ką daryti', 'Klientas greičiausiai uždarė langą po mokėjimo. Susisiek su juo arba grąžink pinigus Stripe.']
+        ]);
+      }
+      done(id);
+    };
+    for await (const s of stripe.checkout.sessions.list({ created: { gte }, limit: 100 })) {
+      if (s.payment_status !== 'paid' || st.done[s.id]) continue;
+      const created = s.created * 1000, m = s.metadata || {};
+      if (now - created < RECOVERY_MIN_AGE_MS) continue;
+      if (m.type === 'gift') {
+        const { gift, isNew } = finalizeGiftSession(s);
+        if (isNew) console.log(`[recovery] dovanų kuponas ${gift.code} sukurtas automatiškai (${s.id})`);
+        done(s.id);
+      } else if (m.type === 'klausk') {
+        const orders = loadKlauskOrders();
+        if (orders[s.id] && !orders[s.id].paid) { markKlauskPaid(s.id, orders, s); console.log(`[recovery] „Klausk“ užsakymas patvirtintas automatiškai (${s.id})`); }
+        done(s.id);
+      } else if (m.type === 'pora') {
+        if (created < st.since) { done(s.id); continue; }
+        if (now - created < RECOVERY_NOTICE_AGE_MS) continue;
+        if (!loadPoraOrders()[s.id] && isValidEmail(m.email)) {
+          const names = m.nameA && m.nameB ? ltPhrase(`${m.nameA} ir ${m.nameB}`, 'voc') : '';
+          mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: m.email, subject: `${names ? names + ', j' : 'J'}ūsų porų analizė laukia 💞`, html: poraContinueEmailHtml(`${appBaseUrl()}/?pora=${encodeURIComponent(s.id)}`, names) })
+            .catch(e => console.error('[recovery] porų laiško klaida:', e.message));
+          recoveryAdminMail('Apmokėta porų analizė be nuotraukų — užsakovui išsiųsta nuoroda', [
+            ['Pora', `${m.nameA || '—'} ir ${m.nameB || '—'}`], ['Užsakovas', m.email], ['Suma', ((s.amount_total || 0) / 100).toFixed(2).replace('.', ',') + ' €'], ['Stripe session', s.id]
+          ]);
+          console.log(`[recovery] porų užsakymas be nuotraukų — nuoroda išsiųsta (${s.id})`);
+        }
+        done(s.id);
+      } else if (!m.type) {
+        personalNotice(s.id, created, m, s.amount_total || 0, 'Checkout');
+      } else done(s.id);
+    }
+    // Asmeninė analizė, apmokėta kortele programėlėje (PaymentIntent)
+    for await (const pi of stripe.paymentIntents.list({ created: { gte }, limit: 100 })) {
+      const m = pi.metadata || {};
+      if (pi.status !== 'succeeded' || !m.priceId || m.type || st.done[pi.id]) continue;
+      personalNotice(pi.id, pi.created * 1000, m, pi.amount_received || pi.amount || 0, 'PaymentIntent');
+    }
+    for (const [id, at] of Object.entries(st.done)) if (at < now - 3 * DAY_MS) delete st.done[id];
+    writeJson(PAID_RECOVERY_FILE, st);
+  } catch (e) {
+    console.error('[recovery] klaida:', e.message);
+  } finally {
+    _paidRecoveryRunning = false;
+  }
+}
+setTimeout(recoverPaidOrders, 60 * 1000);
+setInterval(recoverPaidOrders, 10 * 60 * 1000);
 
 // Klaidos (pvz. sugadinta užklausa) — be techninių detalių lankytojui
 app.use((err, req, res, next) => {
