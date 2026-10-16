@@ -4075,10 +4075,11 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
 
 // Porų dovanų kupono panaudojimas: /pora?dovana=KODAS → įvedami abu vardai ir
 // el. paštas → sukuriamas „apmokėtas“ porų užsakymas gp_… → /?pora=gp_…
-function poraGiftResume(res, id) {
+function poraGiftResume(res, id, email) {
   const o = loadPoraOrders()[id];
-  if (o && o.status === 'new') return res.json({ ok: true, id });
-  return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
+  // Tęsti galima tik įrašius tą patį el. paštą, kurį pora nurodė panaudodama kuponą
+  if (o && o.status === 'new' && isValidEmail(email) && String(o.email || '').trim().toLowerCase() === String(email).trim().toLowerCase()) return res.json({ ok: true, id });
+  return res.status(409).json({ error: o && o.status === 'new' ? 'El. paštas nesutampa su įrašytu panaudojant kuponą. Įrašykite tą patį el. paštą.' : 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
 }
 app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
   try {
@@ -4093,7 +4094,7 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     // Jau panaudotas — grąžiname tą patį užsakymą (pvz. uždarė langą prieš fotografuodami)
     // Jau panaudotas — tą patį užsakymą grąžiname tik kol nuotraukos dar nepateiktos (pvz. uždarė langą prieš
     // fotografuodami). Vėliau kodą žinantis asmuo (pvz. pirkėjas) poros rezultato nebegauna.
-    if (status === 'redeemed' && gift.poraOrderId) return poraGiftResume(res, gift.poraOrderId);
+    if (status === 'redeemed' && gift.poraOrderId) return poraGiftResume(res, gift.poraOrderId, email);
     if (status === 'expired') return res.status(410).json({ status, error: 'Dovanos kodo galiojimas baigėsi' });
     if (status !== 'active') return res.status(410).json({ status, error: 'Dovanos kodas nebegalioja' });
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
@@ -4106,7 +4107,7 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     const fresh = loadGiftStore();
     const g = fresh.codes[code];
     if (giftStatus(g) !== 'active') {
-      if (g && g.poraOrderId) return poraGiftResume(res, g.poraOrderId);
+      if (g && g.poraOrderId) return poraGiftResume(res, g.poraOrderId, email);
       return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas' });
     }
     const id = 'gp_' + crypto.randomBytes(12).toString('hex');
