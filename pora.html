@@ -181,6 +181,7 @@ a{color:var(--gold)}
 .trust{text-align:center;font-size:11px;color:var(--faint);margin-top:12px;line-height:1.6}
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.3);margin-top:26px;line-height:1.6}
 .hidden{display:none!important}
+.season-tag{font:700 12.5px 'DM Sans',sans-serif;letter-spacing:.04em;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 14px;margin:2px auto 6px;width:fit-content}
 .status{text-align:center;color:var(--muted);font-size:14px;margin:40px 0}
 .spin{width:30px;height:30px;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold);border-radius:50%;margin:0 auto 14px;animation:sp .9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -294,6 +295,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
   <section id="v-form">
     <div class="intro">
       <div class="hero2"><div class="hero"><i></i></div><div class="hero"><i></i></div></div>
+      <div class="season-tag hidden" id="season-tag">💞 Su Valentino diena!</div>
       <h1>Ką apie jūsų porą<br><em>pasakoja delnai?</em></h1>
     </div>
     <div class="gift-note hidden" id="gift-note"></div>
@@ -423,6 +425,13 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('remind-row').classList.add('hidden');
     } catch (e) {}
   })();
+
+  // Valentino diena (vasario 1–14 d., Lietuvos laiku) — šventinė žyma virš antraštės
+  try {
+    const sz = new URLSearchParams(location.search).get('sezonas');
+    let d; try { d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Vilnius' })); } catch (e) { d = new Date(); }
+    if (sz === 'valentinas' || (d.getMonth() === 1 && d.getDate() <= 14)) $('season-tag').classList.remove('hidden');
+  } catch (e) {}
 
   // Porų dovanų kuponas: /pora?dovana=KODAS — mokėti nereikia
   const giftCode = new URLSearchParams(location.search).get('dovana');
