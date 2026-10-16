@@ -369,7 +369,7 @@ function buildPoraReminderMail(r, site, testPromo) {
   const names = r.nameA && r.nameB ? ltPhrase(`${r.nameA} ir ${r.nameB}`, 'voc') : '';
   const months = Math.round(PORA_REMINDER_DAYS / 30);
   return {
-    subject: `${names ? escapeHtml(names) + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
+    subject: `${names ? names + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
     html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${names ? escapeHtml(names) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo ${months} mėnesiai nuo jūsų poros analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Nufotografuokite delnus iš naujo ir pažiūrėkite, <b style="color:#f0d58a">kaip pasikeitė jūsų suderinamumas</b>. Pakartotinei porų analizei taikoma <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> nuolaida (kodas galioja 30 dienų).</div><div style="text-align:center;margin-bottom:20px"><a href="${site}/pora?promo=${p.code}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Pažiūrėti, kas pasikeitė (−${p.pct}&nbsp;%)</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenorite gauti mūsų priminimų ir pasiūlymų? <a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}&amp;t=${unsubSig(r.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
   };
 }
@@ -641,7 +641,7 @@ setInterval(() => {
   for (const [id, entry] of analysisCache.entries()) {
     if (now - entry.createdAt > 3 * 60 * 60 * 1000) { analysisCache.delete(id); deleteAnalysisSessionFromDisk(id); }
   }
-}, 60 * 60 * 1000);
+}, 5 * 60 * 1000); // kas 5 min. — nuotraukos ir laikini rezultatai ištrinami ne vėliau kaip po 3 val. (kaip privatumo politikoje)
 
 // --- Užsakymo numerių sistema ---
 // Kai vartotojas įveda vardą + el. paštą (dar PRIEŠ mokėjimą), sugeneruojame
@@ -2156,13 +2156,15 @@ function loadRefs() {
 }
 function saveRefs(st) { const tmp = REFS_FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(st, null, 2)); fs.renameSync(tmp, REFS_FILE); }
 // Rekomendacijų įrašai (su analizės tekstu atlygiui) saugomi 12 mėn.
-(function cleanupRefs() {
+function cleanupRefs() {
   try {
     const st = loadRefs(), cutoff = Date.now() - 365 * 864e5; let ch = false;
     for (const [c, r] of Object.entries(st.codes)) if ((r.createdAt || 0) < cutoff) { delete st.codes[c]; if (st.byPayment[r.paymentRef] === c) delete st.byPayment[r.paymentRef]; ch = true; }
     if (ch) saveRefs(st);
   } catch (e) {}
-})();
+}
+cleanupRefs();
+setInterval(cleanupRefs, 24 * 60 * 60 * 1000);
 function normalizeRefCode(c) { return typeof c === 'string' ? c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) : ''; }
 // Galiojantis kodas, kuris nepriklauso pačiam pirkėjui
 function validRef(code, email) {
@@ -2253,6 +2255,17 @@ app.post('/order-quote', sensitiveLimiter, async (req, res) => {
 
 // Ar mokėjime buvo pridėtas „Klausk“ priedas ir ar jau sukurtas klausimų užsakymas
 // Dovanų kuponas su įskaičiuotais klausimais: ref „gift:KODAS“ → panaudota asmeninė dovana su klausk
+// SAUGUMAS: mokėjimo nuoroda (pi_/cs_/gift:KODAS) pati savaime nėra įrodymas — dovanos kodą žino ir
+// pirkėjas. Su ja susieti duomenys (klausimai, analizė, kuponai) atiduodami tik turint to mokėjimo
+// raktą, tos pačios analizės sesiją ar klausimų nuorodą, kurią gavo pats klientas.
+function ownsPaymentRef(ref, { token, sessionId, kl } = {}) {
+  if (typeof ref !== 'string' || !ref || ref.length > 200) return false;
+  const e = loadPaymentTokens()[ref];
+  if (typeof token === 'string' && token && e && e.token && e.token.length === token.length && crypto.timingSafeEqual(Buffer.from(e.token), Buffer.from(token))) return true;
+  if (typeof sessionId === 'string' && sessionId) { const ce = analysisCache.get(sessionId); if (ce && ce.paid && ce.paymentKey === ref) return true; }
+  if (typeof kl === 'string' && /^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(kl)) { const o = loadKlauskOrders()[kl]; if (o && o.paymentRef === ref) return true; }
+  return false;
+}
 function giftKlausk(ref) {
   if (typeof ref !== 'string' || !ref.startsWith('gift:') || ref.length > 40) return null;
   const g = loadGiftStore().codes[ref.slice(5)];
@@ -2282,6 +2295,7 @@ app.post('/klausk/pora-gift', sensitiveLimiter, (req, res) => {
 app.get('/order-extras', sensitiveLimiter, async (req, res) => {
   try {
     const ref = req.query.ref;
+    if (!ownsPaymentRef(ref, { token: req.query.token, sessionId: req.query.sid, kl: req.query.kl })) return res.json({ addKlausk: false });
     const gk = giftKlausk(ref);
     if (gk) { const ex = Object.entries(loadKlauskOrders()).find(([, o]) => o.paymentRef === ref); return res.json({ addKlausk: true, gift: true, klauskId: ex ? ex[0] : null }); }
     const p = await getPaidAnalysisPayment(ref);
@@ -2295,6 +2309,7 @@ app.get('/order-extras', sensitiveLimiter, async (req, res) => {
 app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
     const gk = giftKlausk(paymentRef);
     const p = gk ? { email: gk.redeemedEmail || '', metadata: { addKlausk: '1', name: gk.redeemedName || '' } } : await getPaidAnalysisPayment(paymentRef);
     if (!p || p.metadata.addKlausk !== '1') return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
@@ -2317,6 +2332,7 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
 app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.status(403).json({ error: 'Nuoroda galima tik apmokėjusiems klientams' });
     const st = loadRefs();
     if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) {
       const c = st.byPayment[paymentRef];
@@ -2729,6 +2745,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
       if (!ce) { ce = { status: 'done', result, error: null, photos: [], name: userName, createdAt: Date.now() }; analysisCache.set(sessionId, ce); }
       if (ce.status === 'done') {
         ce.paid = true; ce.paidEmail = email || tokenEntry.email || ''; ce.paidName = userName;
+        try { const pt = loadPaymentTokens(); ce.paymentKey = Object.keys(pt).find(k => pt[k].token === token) || ''; } catch (e) {}
         saveAnalysisSessionToDisk(sessionId, ce);
         // Automatiškai į „Mano analizes“ 90 d. (paslaugos dalis); 12 mėn. ir priminimas — tik paspaudus „Išsaugoti ir priminti“
         if (isValidEmail(ce.paidEmail) && ce.result) {
@@ -3445,14 +3462,16 @@ function updatePoraOrder(sessionId, patch) {
   return orders[sessionId];
 }
 // Pasenusių (>90 d.) užsakymų valymas paleidimo metu
-(function cleanupPoraOrders() {
+function cleanupPoraOrders() {
   try {
     const orders = loadPoraOrders(), cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
     let changed = false;
     for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < cutoff) { delete orders[id]; changed = true; }
     if (changed) savePoraOrders(orders);
   } catch (e) {}
-})();
+}
+cleanupPoraOrders();
+setInterval(cleanupPoraOrders, 24 * 60 * 60 * 1000);
 
 function isValidKlauskId(id) {
   return typeof id === 'string' && ((id.startsWith('cs_') && id.length <= 200) || /^kp_[a-f0-9]{24}$/.test(id));
@@ -4056,6 +4075,11 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
 
 // Porų dovanų kupono panaudojimas: /pora?dovana=KODAS → įvedami abu vardai ir
 // el. paštas → sukuriamas „apmokėtas“ porų užsakymas gp_… → /?pora=gp_…
+function poraGiftResume(res, id) {
+  const o = loadPoraOrders()[id];
+  if (o && o.status === 'new') return res.json({ ok: true, id });
+  return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
+}
 app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
   try {
     const { code: rawCode, nameA, nameB, email } = req.body || {};
@@ -4067,7 +4091,9 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     if (status === 'not_found') return res.status(404).json({ status, error: 'Dovanos kodas nerastas' });
     if (gift.kind !== 'pora') return res.status(409).json({ status, kind: 'asmenine', error: 'Tai asmeninės analizės kuponas' });
     // Jau panaudotas — grąžiname tą patį užsakymą (pvz. uždarė langą prieš fotografuodami)
-    if (status === 'redeemed' && gift.poraOrderId) return res.json({ ok: true, id: gift.poraOrderId });
+    // Jau panaudotas — tą patį užsakymą grąžiname tik kol nuotraukos dar nepateiktos (pvz. uždarė langą prieš
+    // fotografuodami). Vėliau kodą žinantis asmuo (pvz. pirkėjas) poros rezultato nebegauna.
+    if (status === 'redeemed' && gift.poraOrderId) return poraGiftResume(res, gift.poraOrderId);
     if (status === 'expired') return res.status(410).json({ status, error: 'Dovanos kodo galiojimas baigėsi' });
     if (status !== 'active') return res.status(410).json({ status, error: 'Dovanos kodas nebegalioja' });
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
@@ -4080,7 +4106,7 @@ app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
     const fresh = loadGiftStore();
     const g = fresh.codes[code];
     if (giftStatus(g) !== 'active') {
-      if (g && g.poraOrderId) return res.json({ ok: true, id: g.poraOrderId });
+      if (g && g.poraOrderId) return poraGiftResume(res, g.poraOrderId);
       return res.status(409).json({ error: 'Šis dovanos kodas jau panaudotas' });
     }
     const id = 'gp_' + crypto.randomBytes(12).toString('hex');
@@ -5147,6 +5173,7 @@ app.get('/promo/check', (req, res) => {
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.json({});
     const p = await getPaidAnalysisPayment(paymentRef);
     if (!p) return res.json({});
     const email = isValidEmail(p.email) ? p.email : '';
@@ -5448,8 +5475,8 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
-      subject: '✦ Jūsų DELNAS analizės',
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Jūsų analizės</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Paspauskite mygtuką — atsidarys visos šiuo el. paštu išsaugotos jūsų analizės.</p><a href="${appBaseUrl()}/mano?t=${t}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti mano analizes</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Nuoroda galioja 7 dienas. Jei jos neprašėte — tiesiog ignoruokite šį laišką.</p>${EMAIL_FOOTER_HTML}</div>`
+      subject: '✦ Tavo DELNAS analizės',
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Tavo analizės</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Paspausk mygtuką — atsidarys visos šiuo el. paštu išsaugotos tavo analizės.</p><a href="${appBaseUrl()}/mano?t=${t}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti mano analizes</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Nuoroda galioja 7 dienas. Jei jos neprašei — tiesiog ignoruok šį laišką.</p>${EMAIL_FOOTER_HTML}</div>`
     }).catch(e => console.error('[mano] laiško klaida:', e.message));
   } catch (err) {
     console.error('/mano/link klaida:', err);

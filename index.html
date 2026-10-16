@@ -4032,9 +4032,9 @@ function renderResultExtra(r){
     body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
     prepaid:kref&&!window._manoView?(async()=>{
-      const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref))).json();
+      const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref)+'&token='+encodeURIComponent(window.palmToken||'')+'&sid='+encodeURIComponent(window.bgSessionId||'')+'&kl='+encodeURIComponent(window._klId||''))).json();
       if(!d||!d.addKlausk) return null;
-      const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:kref,result:window._palmResult||r})});
+      const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:kref,result:window._palmResult||r,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})});
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
       if(await klLeftOf(dd.id)===0) return null; // visi apmokėti klausimai jau užduoti — siūlome naujus
       const blk=document.querySelector('#r-extra .kl');
@@ -4928,7 +4928,7 @@ async function inviteFriend(){
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(payRef){
     try{
-      if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null})})).json(); if(d&&d.link) window._refLink=d; }
+      if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link) window._refLink=d; }
       if(window._refLink){ appUrl=window._refLink.link; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
     }catch(e){}
   }
@@ -6852,7 +6852,7 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
 async function loadResultOffers(){
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(!payRef||window._manoView) return;
-  let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef})})).json(); }catch(e){ return; }
+  let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); }catch(e){ return; }
   if(!d) return;
   const gifts=document.querySelector('#s-result .rb-gifts');
   if(d.once&&gifts&&!document.getElementById('rb-once')){
@@ -6904,7 +6904,7 @@ async function loadCompare(){
 (function klView(){
   const id=new URLSearchParams(location.search).get('kl');
   if(!id||!/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(id)) return;
-  window._klView=true;
+  window._klView=true; window._klId=id;
   const run=async()=>{
     try{
       const d=await (await fetch('/klausk/result?s='+encodeURIComponent(id))).json();

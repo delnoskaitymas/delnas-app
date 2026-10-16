@@ -145,7 +145,7 @@
 (function(){
   const a=document.querySelector('a.back'); if(!a) return;
   const is=new URLSearchParams(location.search).get('is'), back=is&&({pora:'/pora',dovana:'/dovana',mano:'/mano',klausk:'/mano',app:'/?consent=1',pay:'/'}[is]||'/');
-  if(!back) return;
+  if(!back){ a.href='/'; return; } // atėjus tiesiai (pvz. iš Google) — į pradžią
   a.href=back;
   a.addEventListener('click',e=>{
     e.preventDefault();
