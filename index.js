@@ -381,7 +381,7 @@ function isReminderBlacklisted(email) {
 
 // Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −20 %.
 function buildReminderMail(r, testPromo) {
-  const site = `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}`;
+  const site = `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}`;
   if (r.kind === 'pora') return buildPoraReminderMail(r, site, testPromo);
   const saved = testPromo ? (r.savedId ? {} : null) : (r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null);
   let link = site, btn = 'Nauja delnų analizė', subtitle = 'Praėjo 3 mėnesiai nuo tavo delnų analizės';
@@ -2423,8 +2423,8 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // Stripe metadata yra PATIKIMAS, serverio pusės šaltinis, nepriklausantis
       // nuo naršyklės saugyklos elgsenos.
       metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
-      success_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/`
+      success_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`
     });
     
     res.json({ url: session.url });
@@ -3117,7 +3117,7 @@ app.get('/preview-reminder-email', sensitiveLimiter, async (req, res) => {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: `${name ? ltPhrase(name, 'voc') + ', l' : 'L'}aikas naujam delnų skaitymui ✦ [PERŽIŪRA]`,
-      html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(ltPhrase(name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius daug kas galėjo pasikeisti — o kartu ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Nauja delnų analizė</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(email)}&amp;t=${unsubSig(email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
+      html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(ltPhrase(name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius daug kas galėjo pasikeisti — o kartu ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Nauja delnų analizė</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/unsubscribe-reminder?email=${encodeURIComponent(email)}&amp;t=${unsubSig(email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
     });
     res.send(`Peržiūros laiškas išsiųstas į ${email}. (Tai TIK peržiūra — jokia tikra 90 dienų eilė nepaliesta.)`);
   } catch(e) {
@@ -3194,7 +3194,7 @@ function isValidGiftText(str, max) {
   return str === undefined || str === '' || (typeof str === 'string' && str.trim().length <= max);
 }
 function appBaseUrl() {
-  const d = (process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app').replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  const d = (process.env.APP_DOMAIN || 'www.delnaskaitymas.lt').replace(/^https?:\/\//, '').replace(/\/+$/, '');
   return 'https://' + d;
 }
 function giftStatus(gift) {
@@ -4494,7 +4494,7 @@ function buildRefRewardHtml(rewardId) {
 }
 function buildGiftRecipientReminderHtml(g) {
   const pora = g.kind === 'pora', from = g.fromName ? escapeHtml(g.fromName) : '';
-  const what = pora ? 'porų suderinamumą pagal poros delnus' : 'asmeninį Gyvenimo žemėlapį pagal delnus';
+  const what = pora ? 'porų suderinamumą pagal poros delnus' : 'asmeninį gyvenimo žemėlapį pagal delnus';
   const txt = from ? `${from} ${pora ? 'jums' : 'tau'} padovanojo ${what}.` : (pora ? 'Jums padovanotas porų suderinamumas pagal poros delnus.' : 'Tau padovanotas asmeninis Gyvenimo žemėlapis pagal delnus.');
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${txt} ${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</p><a href="${giftRedeemLink(g)}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovaną</a><div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(g.code)}</b><br>Galioja iki ${fmtLtDate(g.expiresAt)}</div><div style="margin-top:14px;font-family:Arial,sans-serif;font-size:11.5px;color:#888">Tai vienintelis priminimas apie šią dovaną.</div>${EMAIL_FOOTER_HTML}</div>`;
 }
