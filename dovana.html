@@ -811,7 +811,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   });
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
-    const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis Gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai porai! 💞' : ' ir 3 asmeniniai klausimai!') : (current.kind === 'pora' ? '! 💞' : '!'));
+    const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai porai! 💞' : ' ir 3 asmeniniai klausimai!') : (current.kind === 'pora' ? '! 💞' : '!'));
     const text = '🎁 Dovana ' + (current.recipientName ? ltPhrase(current.recipientName, 'dat') : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + ltPhrase(current.fromName, 'gen') : '') + what + '\n\n👉 Atidaryk dovaną: ';
     try {
       // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.
