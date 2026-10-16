@@ -143,7 +143,9 @@ function escapeHtml(str) {
 // PAČIAME aplanke — be šio filtro juos būtų galima tiesiog atsisiųsti
 // naršykle. Leidžiamas tik manifest.json (PWA).
 app.use((req, res, next) => {
-  const p = decodeURIComponent(req.path || '').toLowerCase();
+  let p;
+  try { p = decodeURIComponent(req.path || '').toLowerCase().replace(/\/{2,}/g, '/'); }
+  catch (e) { return res.status(400).send('Bad request'); }
   if ((p.endsWith('.json') && p !== '/manifest.json') || p.startsWith('/analysis-sessions')) {
     return res.status(404).send('Not found');
   }
@@ -193,15 +195,28 @@ app.get('/sitemap.xml', (req, res) => {
     urls.map(u => `  <url><loc>https://www.delnaskaitymas.lt${u}</loc></url>`).join('\n') + '\n</urlset>\n');
 });
 
-app.use(express.static(path.join(__dirname, '.'), {
+// SAUGUMAS: lankytojams atiduodami TIK šie vieši failai (tikslus adresas, be
+// jokių variantų su „//“, %2f ar didžiosiomis raidėmis). Serverio kodas,
+// duomenų failai, nuotraukos, .git, reklamos aplankas ir visa kita — 404.
+const PUBLIC_FILES = new Set(['/index.html', '/pora.html', '/dovana.html', '/mano.html', '/klausk.html',
+  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/manifest.json']);
+const PUBLIC_IMG_RE = /^\/img\/[a-z0-9_-]+\.(jpg|png|webp)$/;
+const serveStatic = express.static(path.join(__dirname, '.'), {
+  index: false,
+  dotfiles: 'deny',
+  redirect: false,
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('index.html')) {
+    if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }
   }
-}));
+});
+app.use((req, res, next) => {
+  if ((req.method === 'GET' || req.method === 'HEAD') && (PUBLIC_FILES.has(req.path) || PUBLIC_IMG_RE.test(req.path))) return serveStatic(req, res, next);
+  next();
+});
 // PASTABA: anksčiau čia buvo "app.use('/webhook', express.raw(...))" —
 // bet joks realus Stripe webhook handler'is (app.post('/webhook', ...))
 // šiame faile NIEKADA nebuvo registruotas, tad ši eilutė buvo neveikiantis,
@@ -334,7 +349,7 @@ function buildReminderMail(r, testPromo) {
   }
   return {
     subject: `${r.name ? ltPhrase(r.name, 'voc') + ', l' : 'L'}aikas naujam delnų skaitymui ✦`,
-    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(ltPhrase(r.name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">${subtitle}</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">${body}</div><div style="text-align:center;margin-bottom:20px"><a href="${link}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">${btn}</a></div>${saved ? `<div style="text-align:center;margin-bottom:18px;font-size:12px"><a href="${site}/mano" style="color:#d4a843">Mano analizės</a></div>` : ''}<div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
+    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${r.name ? escapeHtml(ltPhrase(r.name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">${subtitle}</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">${body}</div><div style="text-align:center;margin-bottom:20px"><a href="${link}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">${btn}</a></div>${saved ? `<div style="text-align:center;margin-bottom:18px;font-size:12px"><a href="${site}/mano" style="color:#d4a843">Mano analizės</a></div>` : ''}<div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}&amp;t=${unsubSig(r.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
   };
 }
 
@@ -345,7 +360,7 @@ function buildPoraReminderMail(r, site, testPromo) {
   const months = Math.round(PORA_REMINDER_DAYS / 30);
   return {
     subject: `${names ? escapeHtml(names) + ', p' : 'P'}ažiūrėkite, kaip pasikeitė jūsų suderinamumas 💞`,
-    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${names ? escapeHtml(names) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo ${months} mėnesiai nuo jūsų poros analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Nufotografuokite delnus iš naujo ir pažiūrėkite, <b style="color:#f0d58a">kaip pasikeitė jūsų suderinamumas</b>. Pakartotinei porų analizei taikoma <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> nuolaida (kodas galioja 30 dienų).</div><div style="text-align:center;margin-bottom:20px"><a href="${site}/pora?promo=${p.code}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Pažiūrėti, kas pasikeitė (−${p.pct}&nbsp;%)</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenorite gauti mūsų priminimų ir pasiūlymų? <a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
+    html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${names ? escapeHtml(names) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo ${months} mėnesiai nuo jūsų poros analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Santykiai keičiasi, o kartu su jais — ir tai, ką rodo delnai. Nufotografuokite delnus iš naujo ir pažiūrėkite, <b style="color:#f0d58a">kaip pasikeitė jūsų suderinamumas</b>. Pakartotinei porų analizei taikoma <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> nuolaida (kodas galioja 30 dienų).</div><div style="text-align:center;margin-bottom:20px"><a href="${site}/pora?promo=${p.code}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Pažiūrėti, kas pasikeitė (−${p.pct}&nbsp;%)</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenorite gauti mūsų priminimų ir pasiūlymų? <a href="${site}/unsubscribe-reminder?email=${encodeURIComponent(r.email)}&amp;t=${unsubSig(r.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
   };
 }
 
@@ -423,32 +438,44 @@ function loadPaymentTokens() {
   return {};
 }
 
+// Panaudoto mokėjimo žymė (be asmens duomenų) saugoma 13 mėn.
+const USED_PAYMENT_KEEP_MS = 400 * 24 * 60 * 60 * 1000;
 function savePaymentTokens(map) {
   try { writeFileSafe(PAYMENT_TOKENS_FILE, JSON.stringify(map, null, 2)); } catch(e) {}
 }
 
-// Paleidimo metu išvalome pasenusius (>2h) įrašus — jų galiojimas jau
+// Paleidimo metu ir kas valandą tvarkome pasenusius (>2h) įrašus — jų galiojimas jau
 // būtų pasibaigęs, tad NEBEATKURIAME jų validTokens Map'e.
-(function cleanupPaymentTokensOnStartup() {
+function cleanupPaymentTokens() {
   const map = loadPaymentTokens();
   const now = Date.now();
   let changed = false;
   for (const [id, entry] of Object.entries(map)) {
-    if (now - entry.createdAt > 2 * 60 * 60 * 1000) { delete map[id]; changed = true; continue; }
+    if (now - entry.createdAt > 2 * 60 * 60 * 1000) {
+      // Panaudoto mokėjimo žymė lieka (be vardo ir el. pašto), kad tuo pačiu mokėjimu
+      // nebūtų galima gauti dar vienos analizės; nepanaudoti įrašai ištrinami.
+      if (entry.used && now - (entry.usedAt || entry.createdAt) < USED_PAYMENT_KEEP_MS) {
+        if (entry.name || entry.email || entry.token) { map[id] = { used: true, sessionId: entry.sessionId || '', createdAt: entry.createdAt, usedAt: entry.usedAt || entry.createdAt }; changed = true; }
+      } else { delete map[id]; changed = true; }
+      continue;
+    }
     // Serveris persikrovė (pvz. naujas deploy'us), kol klientas laukė
     // analizės rezultato — atkuriame tokeną atmintyje iškart, kad kliento
     // /analyze-palm užklausos negautų 403 „Mokėjimas nepatvirtintas“.
     if (entry.token && !validTokens.has(entry.token)) {
-      validTokens.set(entry.token, { name: entry.name, email: entry.email, used: entry.used || false, createdAt: entry.createdAt });
+      validTokens.set(entry.token, { name: entry.name, email: entry.email, used: entry.used || false, sessionId: entry.sessionId || '', pdfSent: !!entry.pdfSent, createdAt: entry.createdAt });
       setTimeout(() => validTokens.delete(entry.token), (entry.createdAt + 2 * 60 * 60 * 1000) - now);
     }
   }
   if (changed) savePaymentTokens(map);
-})();
+}
+cleanupPaymentTokens();
+setInterval(cleanupPaymentTokens, 60 * 60 * 1000);
 
-function createToken(name, email) {
+function createToken(name, email, prev) {
   const token = crypto.randomBytes(32).toString('hex');
-  validTokens.set(token, { name, email, used: false, createdAt: Date.now() });
+  // prev — ankstesnis to paties mokėjimo įrašas: panaudotas mokėjimas lieka panaudotas
+  validTokens.set(token, { name, email, used: !!(prev && prev.used), sessionId: (prev && prev.sessionId) || '', pdfSent: !!(prev && prev.pdfSent), createdAt: Date.now() });
   setTimeout(() => validTokens.delete(token), 2 * 60 * 60 * 1000);
   return token;
 }
@@ -467,8 +494,8 @@ function getOrCreateTokenForPayment(paymentId, name, email) {
       // ilgai be persikrovimo, tad paleidimo valymas jo nepagavo) — senas
       // tokenas jau būtų nebegaliojantis. Išduodame NAUJĄ, kad klientas
       // negautų "paid: true", bet realiai nenaudojamo tokeno.
-      const freshToken = createToken(name, email);
-      map[paymentId] = { token: freshToken, name, email, used: false, createdAt: Date.now() };
+      const freshToken = createToken(name, email, existing);
+      map[paymentId] = { token: freshToken, name, email, used: !!existing.used, sessionId: existing.sessionId || '', pdfSent: !!existing.pdfSent, ...(existing.usedAt ? { usedAt: existing.usedAt } : {}), createdAt: Date.now() };
       savePaymentTokens(map);
       console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} senas tokenas pasibaigęs — išduotas NAUJAS`);
       return freshToken;
@@ -477,7 +504,7 @@ function getOrCreateTokenForPayment(paymentId, name, email) {
     // tarpe persikrovė (validTokens Map atsistatė tuščias) — atkuriame jį
     // atmintyje, kad /analyze-palm jį vėl pripažintų galiojančiu.
     if (!validTokens.has(existing.token)) {
-      validTokens.set(existing.token, { name: existing.name, email: existing.email, used: existing.used || false, createdAt: existing.createdAt });
+      validTokens.set(existing.token, { name: existing.name, email: existing.email, used: existing.used || false, sessionId: existing.sessionId || '', pdfSent: !!existing.pdfSent, createdAt: existing.createdAt });
       setTimeout(() => validTokens.delete(existing.token), remaining);
     }
     console.log(`[getOrCreateTokenForPayment] paymentId=${paymentId} JAU TURI tokeną — grąžinamas TAS PATS (be naujo AI kvietimo galimybės padvigubinti)`);
@@ -492,11 +519,14 @@ function getOrCreateTokenForPayment(paymentId, name, email) {
 
 // Pažymi tokeną kaip panaudotą IR patvarioje saugykloje (ne tik atmintyje),
 // kad serverio persikrovimas po analizės nepadarytų tokeno vėl "nepanaudotu".
-function markPaymentTokenUsedPersistently(token) {
+function updatePaymentTokenPersistently(token, patch) {
   const map = loadPaymentTokens();
   for (const entry of Object.values(map)) {
-    if (entry.token === token) { entry.used = true; savePaymentTokens(map); return; }
+    if (entry.token === token) { Object.assign(entry, patch); savePaymentTokens(map); return; }
   }
+}
+function markPaymentTokenUsedPersistently(token, sessionId) {
+  updatePaymentTokenPersistently(token, { used: true, usedAt: Date.now(), sessionId: sessionId || '' });
 }
 
 // --- Foninės analizės cache ---
@@ -2490,9 +2520,16 @@ app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
 // rašo į palaikymo tarnybą.
 app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
   try {
-    const { email, name, orderNumber, pdfBase64, gift, paymentRef } = req.body;
+    const { name, orderNumber, pdfBase64, gift, paymentRef, token } = req.body;
     const isGift = gift === true;
+    // SAUGUMAS: laiškas siunčiamas tik turint apmokėtos (ar dovanų kuponu gautos) ir jau
+    // atliktos analizės raktą, vieną kartą, ir tik tam el. paštui, kuriam išduotas raktas.
+    const tokenEntry = typeof token === 'string' && token ? validTokens.get(token) : null;
+    if (!tokenEntry || !tokenEntry.used) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
+    if (tokenEntry.pdfSent || tokenEntry.pdfSending) return res.json({ ok: true, alreadySent: true });
+    const email = isValidEmail(tokenEntry.email) ? tokenEntry.email : req.body.email;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
+    if (!/^[A-Za-z0-9+/=]+$/.test(pdfBase64 || '')) return res.status(400).json({ error: 'Neteisingas PDF' });
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
     if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
@@ -2518,6 +2555,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
         if (!pr.usedBy && Date.now() < pr.expiresAt) poraLine = resultPoraLineHtml(pr);
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
+    tokenEntry.pdfSending = true;
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
@@ -2531,7 +2569,9 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
         content: pdfBase64,
         encoding: 'base64'
       }]
-    });
+    }).finally(() => { tokenEntry.pdfSending = false; });
+    tokenEntry.pdfSent = true;
+    updatePaymentTokenPersistently(token, { pdfSent: true });
     console.log(`[email-result-pdf] PDF (su užsakymo patvirtinimu) išsiųstas į ${email}`);
     res.json({ ok: true });
   } catch (err) {
@@ -2554,8 +2594,10 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
 
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
-    // Leisti pakartotinį kvietimą jei yra sessionId cache arba photos
-    if (tokenEntry.used && !sessionId && (!photos || photos.length === 0)) {
+    // Vienas apmokėjimas — viena analizė. Po sėkmingos analizės tuo pačiu raktu galima
+    // tik vėl gauti TĄ PAČIĄ analizę (tas pats sessionId), o ne daryti naują.
+    // (Nauja nuotrauka leidžiama, kol analizė dar nepavyko, pvz. nuotrauka atmesta.)
+    if (tokenEntry.used && (!sessionId || (tokenEntry.sessionId ? sessionId !== tokenEntry.sessionId : (photos && photos.length > 0)))) {
       return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
     }
 
@@ -2668,7 +2710,8 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     }
 
     tokenEntry.used = true;
-    markPaymentTokenUsedPersistently(token);
+    if (sessionId && !tokenEntry.sessionId) tokenEntry.sessionId = sessionId;
+    markPaymentTokenUsedPersistently(token, tokenEntry.sessionId);
     if (userName) result.userName = userName;
     // Pažymime analizę kaip apmokėtą — tik tada ją galima išsaugoti „Mano analizėse“ ar palyginti
     if (sessionId) {
@@ -2819,14 +2862,32 @@ app.get('/stripe-key', (req, res) => {
 // Pašalina laukiantį (dar neišsiųstą) priminimą IR įtraukia el. paštą į
 // "nebenoriu gauti" sąrašą, kad ateityje pakartotinis "Primink man"
 // paspaudimas šio adreso vėl automatiškai neužregistruotų.
-app.get('/unsubscribe-reminder', (req, res) => {
+// Atsisakymo nuorodos parašas — kad kito žmogaus vardu atsisakyti nebūtų galima
+function unsubSig(email) {
+  const key = 'unsub:' + (process.env.UNSUB_SECRET || process.env.STRIPE_SECRET_KEY || ADMIN_KEY);
+  return crypto.createHmac('sha256', key).update(String(email || '').trim().toLowerCase()).digest('hex').slice(0, 24);
+}
+function unsubSigOk(email, t) {
+  if (typeof t !== 'string' || t.length !== 24) return false;
+  return crypto.timingSafeEqual(Buffer.from(t), Buffer.from(unsubSig(email)));
+}
+function unsubPage(title, text, extra) {
+  return `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex"><title>${title} — DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center;box-sizing:border-box}.box{max-width:400px;width:100%}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}.btn{width:100%;background:#000;border:1px solid rgba(212,168,67,.4);border-radius:10px;padding:15px;color:#d4a843;font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;margin-top:22px}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p>${extra || ''}<p style="margin-top:24px"><a href="/">Grįžti į DELNAS</a></p></div></body></html>`;
+}
+// GET tik parodo patvirtinimo mygtuką — pašto apsaugos sistemos, pačios atidarančios
+// nuorodas laiškuose, negali atsisakyti už žmogų. Atsisakoma paspaudus mygtuką (POST).
+app.get('/unsubscribe-reminder', sensitiveLimiter, (req, res) => {
   const email = (req.query.email || '').toString().trim().toLowerCase();
-  const page = (title, text, extra) => `<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title} — DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:'DM Sans',-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center;box-sizing:border-box}.box{max-width:400px;width:100%}h1{font-family:Georgia,serif;color:#f0c96a;font-size:22px;margin-bottom:12px}p{font-size:14px;color:rgba(232,226,212,.8);line-height:1.6}a{color:#d4a843}</style></head><body><div class="box"><div style="font-size:26px;margin-bottom:14px;color:#d4a843">✦</div><h1>${title}</h1><p>${text}</p>${extra || ''}<p style="margin-top:24px"><a href="/">Grįžti į DELNAS</a></p></div></body></html>`;
-
-  if (!isValidEmail(email)) {
-    return res.status(400).send(page('Klaida', 'Netinkamas el. pašto adresas nuorodoje.'));
-  }
-
+  const t = typeof req.query.t === 'string' ? req.query.t : '';
+  if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  const form = `<form method="POST" action="/unsubscribe-reminder"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="t" value="${escapeHtml(t)}"><button type="submit" class="btn">Atsisakyti laiškų</button></form>`;
+  res.send(unsubPage('Atsisakyti laiškų?', `Daugiau nebegausi DELNAS priminimų ir pasiūlymų adresu ${escapeHtml(email)}.`, form));
+});
+app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
+  const email = String((req.body && req.body.email) || '').trim().toLowerCase();
+  const t = typeof (req.body && req.body.t) === 'string' ? req.body.t : '';
+  // Senuose (iki 2026-10) laiškuose nuoroda be parašo — atsisakymas vis tiek turi veikti
+  if (!isValidEmail(email) || (t && !unsubSigOk(email, t))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
   try {
     const blacklist = loadReminderBlacklist();
     if (!blacklist.includes(email)) {
@@ -2836,12 +2897,11 @@ app.get('/unsubscribe-reminder', (req, res) => {
     const reminders = loadReminders();
     const filtered = reminders.filter(r => r.email.toLowerCase() !== email);
     if (filtered.length !== reminders.length) saveReminders(filtered);
-    const resubEmail = escapeHtml(email).replace(/'/g, "\\'");
-    const resubButton = `<button id="resub-btn" onclick="reSubscribe()" style="width:100%;background:#000000;border:1px solid rgba(212,168,67,.4);border-radius:10px;padding:15px;color:#d4a843;font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;margin-top:22px">✦ Primink man</button><div id="resub-msg" style="margin-top:12px;font-size:13px;color:rgba(232,226,212,.6);min-height:18px"></div><script>function reSubscribe(){var btn=document.getElementById('resub-btn'),msg=document.getElementById('resub-msg');btn.disabled=true;btn.style.opacity='.6';fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'${resubEmail}'})}).then(function(r){return r.json();}).then(function(){btn.textContent='✓ Vėl užregistruota';msg.textContent='Priminimą gausi po 3 mėnesių.';}).catch(function(){msg.textContent='Nepavyko. Pabandyk dar kartą.';btn.disabled=false;btn.style.opacity='1';});}</script>`;
-    res.send(page('Atsisakyta', 'Daugiau šių priminimo laiškų negausi. Jei persigalvosi, tiesiog vėl paspausk „Primink man":', resubButton));
+    const resub = t ? `<button id="resub-btn" class="btn" data-e="${escapeHtml(email)}" data-t="${escapeHtml(t)}">✦ Primink man</button><div id="resub-msg" style="margin-top:12px;font-size:13px;color:rgba(232,226,212,.6);min-height:18px"></div><script>document.getElementById('resub-btn').onclick=function(){var btn=this,msg=document.getElementById('resub-msg');btn.disabled=true;btn.style.opacity='.6';fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:btn.dataset.e,ut:btn.dataset.t})}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(){btn.textContent='✓ Vėl užregistruota';msg.textContent='Priminimą gausi po 3 mėnesių.';}).catch(function(){msg.textContent='Nepavyko. Pabandyk dar kartą.';btn.disabled=false;btn.style.opacity='1';});};</script>` : '';
+    res.send(unsubPage('Atsisakyta', 'Daugiau šių laiškų negausi.' + (t ? ' Jei persigalvosi, tiesiog vėl paspausk „Primink man“:' : ''), resub));
   } catch (e) {
     console.error('/unsubscribe-reminder klaida:', e.message);
-    res.status(500).send(page('Klaida', 'Nepavyko apdoroti prašymo. Parašyk mums: info@delnaskaitymas.lt'));
+    res.status(500).send(unsubPage('Klaida', 'Nepavyko apdoroti prašymo. Parašyk mums: info@delnaskaitymas.lt'));
   }
 });
 
@@ -2927,6 +2987,12 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // todėl "Vardas@Gmail.com" ir "vardas@gmail.com" būtų buvę traktuojami
     // kaip du skirtingi adresai (rizika gauti du priminimo laiškus).
     const email = (req.body.email || '').toString().trim().toLowerCase();
+    // SAUGUMAS: priminimą gali užsisakyti tik ką tik analizę gavęs klientas (mokėjimo raktas
+    // arba apmokėta analizė) arba pats adreso savininkas iš atsisakymo puslapio (parašas ut)
+    const { token, sessionId, ut } = req.body;
+    const te = typeof token === 'string' && token ? validTokens.get(token) : null;
+    const ce = typeof sessionId === 'string' && sessionId ? analysisCache.get(sessionId) : null;
+    if (!((te && te.used) || (ce && ce.paid) || unsubSigOk(email, ut))) return res.status(403).json({ error: 'Priminimą galima užsakyti tik rezultato ekrane.' });
 
     // SVARBU: jei vartotojas anksčiau paspaudė "Nebenoriu gauti šių
     // priminimų" nuorodą, bet DABAR SĄMONINGAI, SAVO NORU vėl paspaudžia
@@ -2967,7 +3033,7 @@ app.get('/preview-reminder-email', sensitiveLimiter, async (req, res) => {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: `${name ? ltPhrase(name, 'voc') + ', l' : 'L'}aikas naujam delnų skaitymui ✦ [PERŽIŪRA]`,
-      html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(ltPhrase(name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius daug kas galėjo pasikeisti — o kartu ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Nauja delnų analizė</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
+      html: `<div style="background:#07040f;color:#f5eed8;font-family:Georgia,serif;padding:40px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:24px"><div style="font-size:28px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:22px;font-weight:700;color:#d4a843;margin-bottom:8px">${name ? escapeHtml(ltPhrase(name, 'voc')) + ', atėjo laikas' : 'Atėjo laikas'}</div><div style="font-size:14px;color:rgba(245,238,216,.6)">Praėjo 3 mėnesiai nuo tavo delnų analizės</div></div><div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;font-size:14px;line-height:1.8;color:rgba(245,238,216,.85)">Delnų linijos keičiasi kartu su tavimi. Per 3 mėnesius daug kas galėjo pasikeisti — o kartu ir tai, ką pasakoja tavo delnai.</div><div style="text-align:center;margin-bottom:20px"><a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}" style="background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000000;text-decoration:none;padding:14px 32px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.02em;display:inline-block;box-shadow:0 4px 20px rgba(212,168,67,.4)">Nauja delnų analizė</a></div><div style="text-align:center;padding-top:16px;border-top:1px solid rgba(212,168,67,.15);font-size:12px;line-height:1.7;color:rgba(245,238,216,.5)">Nenori gauti mūsų priminimų ir pasiūlymų? <a href="https://${process.env.APP_DOMAIN || 'delnas-app-production.up.railway.app'}/unsubscribe-reminder?email=${encodeURIComponent(email)}&amp;t=${unsubSig(email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></div>${EMAIL_FOOTER_HTML}</div>`
     });
     res.send(`Peržiūros laiškas išsiųstas į ${email}. (Tai TIK peržiūra — jokia tikra 90 dienų eilė nepaliesta.)`);
   } catch(e) {
@@ -4712,6 +4778,11 @@ const STATS_FILE = path.join(SHARED_STORAGE_DIR, 'stats.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || crypto.createHash('sha256').update('delnas-admin:' + (process.env.STRIPE_SECRET_KEY || 'dev')).digest('hex').slice(0, 24);
 function readJson(file, def) { try { if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) {} return def; }
 function writeJson(file, data) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(data, null, 2)); fs.renameSync(tmp, file); }
+function isAdminKey(k) {
+  if (typeof k !== 'string' || !k) return false;
+  const a = crypto.createHash('sha256').update(k).digest(), b = crypto.createHash('sha256').update(ADMIN_KEY).digest();
+  return crypto.timingSafeEqual(a, b);
+}
 function feedbackToken(id) { return crypto.createHmac('sha256', ADMIN_KEY).update('fb:' + id).digest('hex').slice(0, 20); }
 
 // Atsiliepimo ilgis, kuris telpa vienoje eilutėje pradžios ir /pora ekranuose (naršyklė rodo tik tokius)
@@ -4746,7 +4817,7 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
 });
 
 // Patvirtinimas iš administratoriaus laiško (rodomi tik patvirtinti atsiliepimai)
-app.get('/feedback/approve', (req, res) => {
+app.get('/feedback/approve', sensitiveLimiter, (req, res) => {
   const { id, t } = req.query;
   if (typeof id !== 'string' || typeof t !== 'string' || t !== feedbackToken(id)) return res.status(403).send('Neteisinga nuoroda');
   const fb = readJson(FEEDBACK_FILE, { items: [] });
@@ -4804,7 +4875,7 @@ app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
 // Testiniai laiškai: visi klientų laiškų pavyzdžiai su „[TESTAS]“ temoje į nurodytą adresą.
 // /admin/test-laiskai?key=ADMIN_KEY&to=el@pastas.lt — tikrų nuolaidų kodų nekuria, duomenų nekeičia, adreso neišsaugo.
 app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
-  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   const to = String(req.query.to || '').trim();
   if (!isValidEmail(to)) return res.status(400).send('Nurodykite el. paštą: &to=vardas@pastas.lt');
   const now = Date.now(), name = 'Monika', nameA = 'Nora', nameB = 'Linas';
@@ -4869,12 +4940,12 @@ ${list.length ? `<table><tr><th>Kodas</th><th>Tipas, pastaba</th><th>Sukurtas, b
 <p style="margin-top:20px;font-size:13px"><a href="/admin/stats?key=${k}">📊 Statistika</a></p></body></html>`;
 }
 app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
-  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   res.setHeader('Cache-Control', 'no-store');
   res.type('html').send(adminCouponsHtml(req.query.key));
 });
 app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: false, limit: '10kb' }), (req, res) => {
-  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   const b = req.body || {};
   const kind = b.tipas === 'pora' ? 'pora' : 'asmenine';
   const n = Math.max(1, Math.min(20, parseInt(b.kiek, 10) || 1));
@@ -4894,8 +4965,8 @@ app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: fals
   res.type('html').send(adminCouponsHtml(req.query.key, created));
 });
 
-app.get('/admin/stats', (req, res) => {
-  if (req.query.key !== ADMIN_KEY) return res.status(403).send('Neteisingas raktas');
+app.get('/admin/stats', sensitiveLimiter, (req, res) => {
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   const st = _statsBuf || readJson(STATS_FILE, { days: {} });
   const days = Object.keys(st.days).sort().reverse().slice(0, 60);
   const fb = readJson(FEEDBACK_FILE, { items: [] }).items;
@@ -5125,7 +5196,7 @@ function buildAbandonEmailHtml(it, p) {
   const txt = pora
     ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų poros analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`;
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti mūsų priminimų ir pasiūlymų?' : 'Nenori gauti mūsų priminimų ir pasiūlymų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti mūsų priminimų ir pasiūlymų?' : 'Nenori gauti mūsų priminimų ir pasiūlymų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
 let _abandonRunning = false;
 async function processAbandoned() {
@@ -5424,6 +5495,14 @@ app.get('*', (req, res) => {
   res.setHeader('Expires', '0');
   if (req.path === '/' || /^\/shared\/[A-Za-z0-9_-]+\/?$/.test(req.path)) return res.sendFile(path.join(__dirname, 'index.html'));
   res.status(404).type('html').send(NOT_FOUND_HTML);
+});
+
+// Klaidos (pvz. sugadinta užklausa) — be techninių detalių lankytojui
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+  if (status >= 500) console.error('[klaida]', req.method, req.path, err.message);
+  if (res.headersSent) return next(err);
+  res.status(status).json({ error: status === 413 ? 'Per didelė užklausa' : (status >= 500 ? 'Serverio klaida' : 'Neteisinga užklausa') });
 });
 
 const PORT = process.env.PORT || 3000;
