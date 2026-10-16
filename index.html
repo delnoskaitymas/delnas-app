@@ -1365,18 +1365,6 @@ function go(id){
 
 window.addEventListener('DOMContentLoaded',async()=>{
   // Patikrinti ar atidaryta dalinimosi nuoroda
-  const params=new URLSearchParams(window.location.search);
-  const sharedData=params.get('shared');
-  if(sharedData){
-    try{
-      const result=JSON.parse(decodeURIComponent(escape(atob(sharedData))));
-      if(result){
-        go('s-result');
-        displayResult(result);
-        return;
-      }
-    }catch(e){console.error('Share parse error:',e);}
-  }
   // Paslėpti naršyklės juostą
   document.documentElement.style.height="100vh";
   document.body.style.height="100vh";
@@ -1388,52 +1376,8 @@ window.addEventListener('DOMContentLoaded',async()=>{
     setTimeout(()=>window.scrollTo(0,1),600);
   }
   requestWakeLock();
-  // Patikrinti ar tai shared nuoroda
-  const sharedMatch = window.location.pathname.match(/^\/shared\/([A-Za-z0-9_-]+)$/);
-  if(sharedMatch){
-    const token = sharedMatch[1];
-    let result = null;
-    // 1) NAUJAS, patikimas būdas — rezultatas užkoduotas TIESIOG pačiame
-    // URL (base64url), visiškai nepriklausomas nuo jokios serverio
-    // saugyklos ar Volume. Visada veiks, nesvarbu kiek kartų programa
-    // buvo deploy'inta.
-    try{
-      const b64 = token.replace(/-/g,'+').replace(/_/g,'/');
-      const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
-      result = JSON.parse(decodeURIComponent(escape(atob(padded))));
-    }catch(e){ /* ne naujo formato tokenas — bandysime senąjį būdą žemiau */ }
-    // 2) SENAS būdas (atgalinis suderinamumas su anksčiau išsiųstomis
-    // trumpomis nuorodomis, kurios rėmėsi serverio faile saugomu ID) —
-    // naudojamas TIK jei (1) nepavyko.
-    if(!result && /^[a-f0-9]+$/.test(token)){
-      try{
-        const resp = await fetch('/shared-result/'+token);
-        if(resp.ok) result = await resp.json();
-      }catch(e){}
-    }
-    if(result){
-      // Rodyti rezultatų ekraną tiesiai
-      go('s-result');
-      displayResult(result);
-      // Paslėpti mokėjimo ir kitus mygtukus
-      const payBtn=document.getElementById('sticky-pay');if(payBtn)payBtn.style.display='none';
-      // Pridėti "Shared" ženkliuką
-      const hero=document.getElementById('result-hero');
-      if(hero){const badge=document.createElement('div');badge.style.cssText='font-size:11px;color:rgba(212,168,67,.6);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px';badge.textContent='✦ Pasidalinta analizė';hero.prepend(badge);}
-      return;
-    }
-    // Jei nerasta — vietoj šiurkštaus naršyklės alert() rodome gražų,
-    // prekės ženklo stiliaus pranešimą pradžios ekrane ir iškart
-    // kviečiame pačiam pasidaryti savo analizę.
-    go('s-home');
-    const homeScreen = document.getElementById('s-home');
-    if(homeScreen){
-      const notice = document.createElement('div');
-      notice.style.cssText = 'margin:16px 16px 0;padding:14px 16px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-family:\'DM Sans\',sans-serif';
-      notice.innerHTML = '<div style="color:var(--gold2);font-size:13px;font-weight:600;margin-bottom:4px">Ši analizė nebegalioja arba nerasta</div><div style="color:var(--muted);font-size:12px">Bet gali lengvai sužinoti savo — pradėk žemiau ⬇</div>';
-      homeScreen.prepend(notice);
-    }
-  }
+  // Senos dalinimosi nuorodos (/shared/…) nebenaudojamos — rezultatas iš nuorodos nerodomas
+  // (kitaip bet kas galėtų sukurti nuorodą su savo tekstu ar kodu mūsų svetainėje)
 
   fetch('/stripe-key').then(r=>r.json()).then(d=>{window._stripeKey=d.key;}).catch(()=>{});
   refreshPayQuote();
@@ -3885,7 +3829,15 @@ function renderInsights(containerId, insights){
   // "vieną po kitos" efektą) tvarko IŠIMTINAI initScrollReveal().
 }
 
+// Analizės tekstuose HTML ženklų būti negali — pašaliname (apsauga, jei kas nors įterptų kodą)
+function cleanResultText(v){
+  if(typeof v==='string') return v.replace(/[<>]/g,'').replace(/"/g,'”');
+  if(Array.isArray(v)) return v.map(cleanResultText);
+  if(v&&typeof v==='object'){ for(const k of Object.keys(v)) v[k]=cleanResultText(v[k]); return v; }
+  return v;
+}
 function displayResult(r){
+  try{ cleanResultText(r); }catch(e){}
   console.log('displayResult called, r=',r?JSON.stringify(r).substring(0,200):'NULL');
   window._palmResult=r;window._shareUrl=null;
   if(!r||typeof r!=='object'){
@@ -6442,6 +6394,7 @@ function poraNeutralResult(r){
   return r;
 }
 function renderPoraResult(r){
+  try{ cleanResultText(r); }catch(e){}
   try{ poraNeutralResult(r); }catch(e){}
   // Analizė baigta — „Mano analizių“ „Pradžia“ šios poros pradžios ekrano nebeprimena
   try{ const l=JSON.parse(localStorage.getItem('delnasHome')||'null'), sid=(window._pora||{}).sid; if(l&&sid&&String(l.h).indexOf(sid)>=0) localStorage.removeItem('delnasHome'); }catch(e){}
