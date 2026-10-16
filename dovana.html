@@ -486,7 +486,7 @@ body.form-view.tight #v-form .trust{display:none}
   <p class="fine">Pramoginio pobūdžio paslauga, skirta 18+ · <a href="/naudojimosi-salygos?is=dovana">Sąlygos</a> · <a href="/privatumo-politika?is=dovana">Privatumas</a> · info@delnaskaitymas.lt</p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
 <script>
 // Vardų linksniavimas: kiekvienas žodis (išskyrus „ir“) linksniuojamas pagal galūnę; nežinoma galūnė paliekama kaip įvesta
 function ltForms(name){
@@ -747,8 +747,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     if (libsP) return libsP;
     const load = src => new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
     libsP = Promise.all([
-      window.html2canvas ? 0 : load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-      window.jspdf ? 0 : load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+      window.html2canvas ? 0 : load('/vendor/html2canvas.min.js'),
+      window.jspdf ? 0 : load('/vendor/jspdf.umd.min.js')
     ]);
     return libsP;
   }

@@ -1152,7 +1152,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 
 <script src="/src.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/vendor/jspdf.umd.min.js"></script>
 
 <script>
 const sb=document.getElementById('stars');
@@ -5433,7 +5433,7 @@ async function shareSection(){
     if(!window.html2canvas){
       await new Promise((res,rej)=>{
         const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.src='/vendor/html2canvas.min.js';
         s.onload=res;s.onerror=rej;document.head.appendChild(s);
       });
     }

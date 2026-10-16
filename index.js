@@ -94,7 +94,7 @@ app.use(cors({ origin: CORS_ORIGINS }));
 // --- Saugumo HTTP antraštės ---
 // PASTABA: contentSecurityPolicy/crossOriginEmbedderPolicy/crossOriginResourcePolicy
 // SĄMONINGAI išjungti, kad nesulaužytų esamo puslapio (jis naudoja daug inline
-// <script>/<style>, bei kviečia išorinius CDN resursus — Stripe.js, cdnjs,
+// <script>/<style>, bei kviečia išorinius CDN resursus — Stripe.js,
 // MediaPipe WASM/modelį, Google Fonts). Visos KITOS helmet saugumo antraštės
 // (X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security ir kt.)
 // lieka įjungtos ir nekeičia jokios esamos funkcijos.
@@ -223,7 +223,9 @@ app.get('/sitemap.xml', (req, res) => {
 // jokių variantų su „//“, %2f ar didžiosiomis raidėmis). Serverio kodas,
 // duomenų failai, nuotraukos, .git, reklamos aplankas ir visa kita — 404.
 const PUBLIC_FILES = new Set(['/index.html', '/pora.html', '/dovana.html', '/mano.html', '/klausk.html',
-  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/manifest.json']);
+  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/manifest.json',
+  // PDF, paveikslėlio ir QR bibliotekos — iš mūsų serverio (ne iš svetimo CDN), versijos užfiksuotos
+  '/vendor/jspdf.umd.min.js', '/vendor/html2canvas.min.js', '/vendor/qrcode.min.js']);
 const PUBLIC_IMG_RE = /^\/img\/[a-z0-9_-]+\.(jpg|png|webp)$/;
 const serveStatic = express.static(path.join(__dirname, '.'), {
   index: false,
@@ -930,7 +932,8 @@ async function sendEmail({ from, to, subject, html, attachments }) {
 // Suderinamumo sluoksnis — kad NEREIKĖTŲ perrašinėti kiekvieno
 // mailer.sendMail({...}) iškvietimo žemiau, "mailer" objektas paliekamas
 // su ta pačia .sendMail() sąsaja, bet viduje naudoja sendEmail() (Resend).
-const mailer = { sendMail: (opts) => sendEmail(opts) };
+// Temoje negali būti eilučių lūžių (apsauga nuo laiško antraščių klastojimo per vardą ar kitą įvestį)
+const mailer = { sendMail: (opts) => sendEmail({ ...opts, subject: String((opts && opts.subject) || '').replace(/[\r\n]+/g, ' ').slice(0, 300) }) };
 
 // --- BENDRAS SAUGIKLIS (2026-09-26): jei serveryje įvyktų BET KOKIA kita,
 // nenumatyta klaida (ne tik delnų analizėje — bet kur visame serveryje),
@@ -2579,7 +2582,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     if (tokenEntry.pdfSent || tokenEntry.pdfSending) return res.json({ ok: true, alreadySent: true });
     const email = isValidEmail(tokenEntry.email) ? tokenEntry.email : req.body.email;
     if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. paštas' });
-    if (!/^[A-Za-z0-9+/=]+$/.test(pdfBase64 || '')) return res.status(400).json({ error: 'Neteisingas PDF' });
+    if (!/^JVBERi0[A-Za-z0-9+/=]+$/.test(pdfBase64 || '')) return res.status(400).json({ error: 'Neteisingas PDF' }); // tik tikras PDF (%PDF-)
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
     if (typeof pdfBase64 !== 'string' || pdfBase64.length === 0 || pdfBase64.length > 15_000_000) {
@@ -4076,7 +4079,7 @@ app.post('/pora/email-pdf', sensitiveLimiter, async (req, res) => {
   try {
     const { sessionId, pdfBase64 } = req.body || {};
     if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
-    if (typeof pdfBase64 !== 'string' || !pdfBase64.length || pdfBase64.length > 15_000_000 || !/^[A-Za-z0-9+/=]+$/.test(pdfBase64)) return res.status(400).json({ error: 'Neteisingas PDF' });
+    if (typeof pdfBase64 !== 'string' || !pdfBase64.length || pdfBase64.length > 15_000_000 || !/^JVBERi0[A-Za-z0-9+/=]+$/.test(pdfBase64)) return res.status(400).json({ error: 'Neteisingas PDF' });
     const o = loadPoraOrders()[sessionId];
     if (!o || o.status !== 'done' || !isValidEmail(o.email)) return res.status(400).json({ error: 'Rezultatas dar neparuoštas' });
     if (o.emailSent || poraEmailsInFlight.has(sessionId)) return res.json({ ok: true, alreadySent: true });
