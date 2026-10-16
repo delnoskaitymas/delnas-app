@@ -1553,12 +1553,17 @@ async function toggleKlauskBump(on){
   if(q) [window._googlePayPR,window._applePayPR].forEach(pr=>{ try{ if(pr) pr.update({total:{label:'Gyvenimo žemėlapis',amount:q.total}}); }catch(e){} });
 }
 // Draugo pasveikinimas pradžios ekrane
-(function refWelcome(){
-  if(!getRefCode()) return;
+(async function refWelcome(){
+  const rc=getRefCode(); if(!rc) return;
+  // Pasveikinimas rodomas tik tikram draugo kodui (patikrina serveris); netinkamas kodas pamirštamas
+  let pct=20;
+  try{ const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:rc})})).json();
+    if(!q||!q.refCode){ if(q&&q.total){ try{ localStorage.removeItem('delnasRef'); }catch(e){} } return; }
+    if(q.refPct) pct=q.refPct; }catch(e){ return; }
   const show=()=>{ const home=document.getElementById('s-home'); if(!home||document.getElementById('ref-welcome')) return;
     const n=document.createElement('div'); n.id='ref-welcome';
     n.style.cssText="margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;color:var(--gold2)";
-    n.innerHTML='🎁 Tau dovanojama <b>−20 %</b> asmeninei delnų analizei'; home.prepend(n); };
+    n.innerHTML='🎁 Tau dovanojama <b>−'+pct+' %</b> asmeninei delnų analizei'; home.prepend(n); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
 })();
 
@@ -5902,7 +5907,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
     try{
       const d=await (await fetch('/pora/check?session_id='+encodeURIComponent(sid))).json();
       if(!d.paid){
-        if(attempt<6){ setTimeout(()=>check(attempt+1),2000); return; }
+        if(attempt<6&&!sid.startsWith('gp_')){ setTimeout(()=>check(attempt+1),2000); return; } // dovanos užsakymas Stripe nelaukia
         window._pora=null; document.documentElement.classList.remove('pora-boot');
         note.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">Porų užsakymas nerastas arba neapmokėtas.</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manote, kad tai klaida — parašykite info@delnaskaitymas.lt</div>';
         return;
