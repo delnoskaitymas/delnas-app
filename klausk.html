@@ -237,7 +237,7 @@ document.getElementById('back-link').addEventListener('click', e => {
       if (!r.ok) throw new Error(d.error || 'Nepavyko gauti atsakymo');
       $('wait').classList.add('hidden');
       const el = card({ q: d.q, a: d.a }, true);
-      left = d.left; q.value = ''; upd(); refresh();
+      left = d.left; q.value = ''; $('go').disabled = false; upd(); refresh();
       setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 80);
     } catch (ex) {
       $('wait').classList.add('hidden'); $('ask-wrap').classList.remove('hidden');
