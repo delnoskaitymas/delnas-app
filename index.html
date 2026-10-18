@@ -1527,8 +1527,17 @@ async function verifyAndProceed(sessionId){
   }catch(e){}
 })();
 function getRefCode(){
-  try{ const d=JSON.parse(localStorage.getItem('delnasRef')||'null'); if(d&&d.c&&Date.now()-d.at<30*864e5) return d.c; }catch(e){}
+  try{ const d=JSON.parse(localStorage.getItem('delnasRef')||'null'); if(d&&d.c&&Date.now()-d.at<30*864e5&&!isOwnRef(d.c)) return d.c; }catch(e){}
   return '';
+}
+// Savo pasidalintas kodas šiame telefone neveikia sau (serveris jo vis tiek nepritaiko) — „−20 %“ nerodome
+function isOwnRef(c){ try{ return (JSON.parse(localStorage.getItem('delnasOwnRef')||'[]')||[]).includes(c); }catch(e){ return false; } }
+function rememberOwnRef(link){
+  try{ const c=String(new URL(link,location.origin).searchParams.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12); if(c.length<5) return;
+    const a=JSON.parse(localStorage.getItem('delnasOwnRef')||'[]')||[]; if(!a.includes(c)){ a.push(c); localStorage.setItem('delnasOwnRef',JSON.stringify(a.slice(-10))); }
+    const d=JSON.parse(localStorage.getItem('delnasRef')||'null'); if(d&&d.c===c) localStorage.removeItem('delnasRef');
+    const w=document.getElementById('ref-welcome'); if(w) w.remove();
+  }catch(e){}
 }
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
 async function refreshPayQuote(){
@@ -4887,7 +4896,7 @@ async function inviteFriend(){
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(payRef){
     try{
-      if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link) window._refLink=d; }
+      if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
       if(window._refLink){ appUrl=window._refLink.link; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
     }catch(e){}
   }
