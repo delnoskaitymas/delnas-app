@@ -4894,7 +4894,7 @@ async function inviteFriend(){
   let text = 'Ką slepia tavo delnai?';
   // Apmokėjusiam klientui — asmeninė draugo nuoroda (draugas gauna nuolaidą)
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
-  if(payRef){
+  if(payRef||window._refLink){
     try{
       if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
       if(window._refLink){ appUrl=window._refLink.link; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
@@ -6940,6 +6940,9 @@ async function loadCompare(){
       window.userName=window._userName=d.name||'';
       if(d.email){ window._userEmail=window.userEmail=d.email; }
       if(d.orderNumber) window._orderNumber=d.orderNumber;
+      // Savo draugo nuoroda: telefone pažymima kaip sava, „Pakviesti draugus“ dalija ją
+      (d.ownRefs||[]).forEach(c=>rememberOwnRef('/?ref='+c));
+      if(d.refLink&&d.refLink.link) window._refLink=d.refLink;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
     }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }

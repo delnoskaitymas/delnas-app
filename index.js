@@ -5553,17 +5553,23 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
     if (!res.headersSent) res.status(500).json({ error: 'Nepavyko išsiųsti nuorodos' });
   }
 });
+// Šio el. pašto draugo nuorodų kodai — telefone jie pažymimi kaip savi (savo „−10 %“ užrašas nerodomas)
+function ownRefCodes(email) {
+  const e = String(email || '').toLowerCase(); if (!e) return [];
+  return Object.entries(loadRefs().codes).filter(([, r]) => r && String(r.email || '').toLowerCase() === e).map(([c]) => c).slice(0, 10);
+}
 app.get('/mano/list', sensitiveLimiter, (req, res) => {
   const email = manoEmailFromToken(req.query.t);
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
-  res.json({ email, ...manoItems(email) });
+  res.json({ email, ...manoItems(email), ownRefs: ownRefCodes(email) });
 });
 app.get('/mano/item', sensitiveLimiter, (req, res) => {
   const email = manoEmailFromToken(req.query.t);
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
   const it = loadSaved().items[String(req.query.id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
-  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '' });
+  const own = ownRefCodes(email);
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};
