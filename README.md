@@ -117,7 +117,7 @@ PORT = 3000
 - **Porų analizė po asmeninės:** rezultato ekrane („Jums dviem“) asmeninės analizės pirkėjas mato porų analizę už `PORA_BUNDLE_CENTS` (numatyta 1799 = 17,99 €), nuoroda galioja 30 d. (Mokėjimo ekrane papildomo porų pasiūlymo nebėra.)
 - **Pasiūlymas po analizės:** rezultato ekrane „🎁 Padovanok“ — −20 % (`ONCE_DISCOUNT_PCT`) 24 val., rodoma ramiai („galioja iki rytojaus 14:30“), be tiksinčio laikmačio.
 - **Mano analizės (/mano):** „Išsaugoti ir priminti“ rezultato ekrane išsaugo analizę (be nuotraukų, 12 mėn.). Nuoroda į visas analizes siunčiama el. paštu (7 d.), analizę galima ištrinti.
-- **Kas pasikeitė per 3 mėn.:** išsaugojusiems priminimo laiške — nuoroda su −20 % (`REPEAT_DISCOUNT_PCT`, 30 d.); naujame rezultate — blokas „Kas pasikeitė“ (palyginimas su ankstesne analize).
+- **Kas pasikeitė per 3 mėn.:** išsaugojusiems priminimo laiške — nuoroda su −10 % (`REPEAT_DISCOUNT_PCT`, 30 d.); naujame rezultate — blokas „Kas pasikeitė“ (palyginimas su ankstesne analize).
 - **Kameros užuominos:** fotografuojant rodoma „Per tamsu“, „Per šviesu“, „Laikyk telefoną ramiai“, „Įkelk visą delną“, „Ištiesk pirštus“ (skaičiuojama telefone).
 - **Apple Pay / Google Pay:** jau įdiegti. Stripe → Settings → Payment methods įjunk Apple Pay ir Google Pay; Settings → Payment method domains pridėk `www.delnaskaitymas.lt` ir `delnaskaitymas.lt`.
 

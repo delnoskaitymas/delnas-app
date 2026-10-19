@@ -383,7 +383,7 @@ function isReminderBlacklisted(email) {
 }
 
 
-// Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −20 %.
+// Priminimo laiškas po 3 mėn. Jei analizė buvo išsaugota — kvietimas pasidaryti naują su palyginimu ir −10 %.
 function buildReminderMail(r, testPromo) {
   const site = `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}`;
   if (r.kind === 'pora') return buildPoraReminderMail(r, site, testPromo);
@@ -5125,7 +5125,7 @@ ${fb.slice(-30).reverse().map(x => `<tr><td>${new Date(x.createdAt).toISOString(
 // ─ back:   −15 % 24 val. — laiške apie nebaigtą mokėjimą (tik su sutikimu)
 // ─ once:   −20 % dovanai artimam žmogui, 24 val. po apmokėtos analizės
 // ─ bundle: porų analizė už rinkinio kainą tam, kas jau pirko asmeninę
-// ─ repeat: −20 % pakartotinei analizei su palyginimu (priminimo laiške po 3 mėn.)
+// ─ repeat: −10 % pakartotinei analizei su palyginimu (priminimo laiške po 3 mėn.)
 // Suma visada skaičiuojama serveryje; kodas vienkartinis.
 // ═══════════════════════════════════════════════════════════════════
 const PROMOS_FILE = path.join(SHARED_STORAGE_DIR, 'promos.json');
@@ -5133,7 +5133,7 @@ const ABANDONED_FILE = path.join(SHARED_STORAGE_DIR, 'abandoned.json');
 const SAVED_FILE = path.join(SHARED_STORAGE_DIR, 'saved-analyses.json');
 const BACK_PCT = parseInt(process.env.BACK_DISCOUNT_PCT || '15', 10);
 const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '20', 10);
-const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '20', 10);
+const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '10', 10);
 const ABANDON_DELAY_MS = parseInt(process.env.ABANDON_DELAY_MIN || '60', 10) * 60 * 1000;
 const SAVED_DAYS = 365;
 // Be sutikimo apmokėta analizė „Mano analizėse“ saugoma tik tiek, kiek reikia paslaugai (vėl atsidaryti rezultatą)
