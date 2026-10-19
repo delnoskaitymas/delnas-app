@@ -177,6 +177,16 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       d = await r.json();
       if (!r.ok) return showAsk(d.error || 'Nuoroda nebegalioja — paprašyk naujos.');
     } catch (e) { return showAsk('Nepavyko užkrauti. Pabandyk dar kartą.'); }
+    // Savo draugo nuorodų kodai — šiame telefone savo „−10 %“ užrašas pradžios ekrane nerodomas
+    try {
+      const own = (d.ownRefs || []).filter(c => /^[A-Z0-9]{5,12}$/.test(c));
+      if (own.length) {
+        const a = JSON.parse(localStorage.getItem('delnasOwnRef') || '[]') || [];
+        own.forEach(c => { if (!a.includes(c)) a.push(c); });
+        localStorage.setItem('delnasOwnRef', JSON.stringify(a.slice(-10)));
+        const r = JSON.parse(localStorage.getItem('delnasRef') || 'null'); if (r && own.includes(r.c)) localStorage.removeItem('delnasRef');
+      }
+    } catch (e) {}
     $('v-list').classList.remove('hidden'); $('v-ask').classList.add('hidden'); document.body.classList.add('list-view');
     $('list-lead').textContent = d.email;
     let h = '';
