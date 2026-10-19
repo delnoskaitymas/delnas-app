@@ -4016,6 +4016,12 @@ setTimeout(function resumePoraJobs() {
 }, 90 * 1000);
 
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina — du vienkartiniai kodai (30 d.)
+function poraBuyerHasPersonal(sessionId, o) {
+  try {
+    if (o && o.gift) { const g = loadGiftStore().codes[o.gift]; if (g && g.bundle) return true; }
+    return Object.values(loadPromos().codes).some(p => p && p.kind === 'bundle' && p.usedBy === sessionId);
+  } catch (e) { return false; }
+}
 app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
   try {
     const sessionId = req.body && req.body.sessionId;
@@ -4027,8 +4033,10 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     const a = mk('a'), b = mk('b');
     let base = null;
     base = PERSONAL_PRICE_CENTS;
-    const pub = p => ({ code: p.code, used: !!p.usedBy, expiresAt: p.expiresAt });
-    res.json({ price: PORA_DUO_CENTS, base, a: pub(a), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt) });
+    // Porų analizė užsakyta po asmeninės (rinkinio kaina ar rinkinio kuponas) — pirkėjas (A) asmeninę analizę jau turi
+    const pub = (p, own) => ({ code: own ? '' : p.code, used: own || !!p.usedBy, expiresAt: p.expiresAt });
+    const ownA = poraBuyerHasPersonal(sessionId, o);
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt) });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
     res.json({});
