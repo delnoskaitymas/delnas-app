@@ -4097,13 +4097,16 @@ function setupKlauskBlock(o){
     }catch(e){}
   }
   prefetch();
+  // Grįžus iš klausimų lango: jei įrašytas klausimas jau perduotas (klausimų puslapis juodraštį paėmė) — laukelis išvalomas
+  const clearSent=()=>{ if(document.visibilityState!=='visible'||!st.sentQ) return; let pending=false; try{ pending=!!localStorage.getItem('delnasKlDraft'); }catch(e){} if(pending) return; if(qEl.value.trim()===st.sentQ){ qEl.value=''; qEl.dispatchEvent(new Event('input',{bubbles:true})); } st.sentQ=null; };
+  document.addEventListener('visibilitychange',clearSent); window.addEventListener('pageshow',clearSent); window.addEventListener('focus',clearSent);
   btn.addEventListener('click',async()=>{
     err.style.display='none';
     const q=qEl.value.trim();
     if(q.length<5){ err.textContent='Įrašyk savo klausimą — bent kelis žodžius.'; err.style.display='block'; qEl.focus(); return; }
     const email=emailOf();
     if(o.emailEl&&!st.prepaid&&!valid(email)){ const i=$(o.emailEl); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
-    klDraftSave(q);
+    klDraftSave(q); st.sentQ=q;
     if(st.url&&(st.prepaid||!o.emailEl||st.email===email)){ klOpen(st.url); return; }
     // Nuoroda dar neparuošta (arba pakeistas el. paštas) — atidarome langą iš karto ir nukreipiame, kai gausime nuorodą
     const w=window.open('','_blank');
