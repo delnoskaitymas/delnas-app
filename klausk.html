@@ -107,7 +107,7 @@ a,button{-webkit-tap-highlight-color:transparent}
   </div>
   <!-- Kol laukiama atsakymo — vietoj klausimo laukelio -->
   <div class="qa wait hidden" id="wait"><div class="lbl" id="wait-lbl"></div><div class="q" id="wait-q"></div>
-    <div class="think"><div class="orb"></div><span id="think-txt">Ruošiamas atsakymas pagal tavo delnų analizę… tai užtrunka apie 20–40 sekundžių</span></div></div>
+    <div class="think"><div class="orb"></div><span id="think-txt">Ruošiamas atsakymas… tai užtrunka apie 20–40 sekundžių</span></div></div>
 
   <div id="all-done" class="hidden">
     <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
@@ -188,7 +188,6 @@ document.getElementById('back-link').addEventListener('click', e => {
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
         $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
-        $('think-txt').textContent = 'Ruošiamas atsakymas pagal jūsų poros analizę… tai užtrunka apie 20–40 sekundžių';
         $('fine').innerHTML = 'Atsakymus pagal jūsų poros suderinamumo analizę sugeneruoja dirbtinis intelektas. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
       } else {
