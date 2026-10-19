@@ -2198,11 +2198,11 @@ app.get('/analysis-status', pollLimiter, async (req, res) => {
 // --- Checkout sesija Revolut/Klarna ---
 // ═══════════════════════════════════════════════════════════════════
 // PASIŪLYMAS PRIE MOKĖJIMO („Klausk savo delnų“ su nuolaida) IR
-// REKOMENDACIJŲ PROGRAMA (draugo nuoroda: −20 % draugui, 3 klausimai kvietėjui)
+// REKOMENDACIJŲ PROGRAMA (draugo nuoroda: −10 % draugui, 3 klausimai kvietėjui)
 // ═══════════════════════════════════════════════════════════════════
 // Suma VISADA skaičiuojama serveryje — klientas siunčia tik pasirinkimus.
 const KLAUSK_BUMP_CENTS = parseInt(process.env.KLAUSK_BUMP_CENTS || '299', 10);
-const REF_DISCOUNT_PCT = parseInt(process.env.REF_DISCOUNT_PCT || '20', 10);
+const REF_DISCOUNT_PCT = parseInt(process.env.REF_DISCOUNT_PCT || '10', 10);
 const REF_MAX_REWARDS = 5;
 const REFS_FILE = path.join(SHARED_STORAGE_DIR, 'refs.json');
 function loadRefs() {
