@@ -773,7 +773,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
         <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent)"></div>
         <div style="display:flex;align-items:center;justify-content:center;min-height:34px">
           <!-- Kaina -->
-          <span id="price-promo" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">12,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
+          <span id="price-promo" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">14,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
         </div>
       </div>
     </div>
@@ -6317,7 +6317,7 @@ async function renderDuoNext(){
 }
 async function poraDuoShare(code,name,btn){
   const url=location.origin+'/?promo='+encodeURIComponent(code), f=ltForms(name||'');
-  const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (11,99 €). Nufotografuok delnus čia:';
+  const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (12,99 €). Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
