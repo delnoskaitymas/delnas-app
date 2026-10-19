@@ -342,6 +342,16 @@ body.form-view.tight #form-err{margin-top:6px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
 body.form-view.tight #v-form .trust{display:none}
 </style>
+<script>
+// Atėjus iš rezultato ekrano — adresas grįžti išsaugomas skirtuke (iki puslapis išvalo adreso parametrus; Stripe grąžina be jų)
+(function(){ const K='delnasGiftBack';
+  try{
+    const p=new URLSearchParams(location.search), g=p.get('grizti'), c=p.get('utm_campaign');
+    if(g&&/^\/\?(pora|kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
+    else if(c==='rezultatas'||c==='pora') sessionStorage.setItem(K,JSON.stringify({b:'',at:Date.now()}));
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -389,6 +399,8 @@ body.form-view.tight #v-form .trust{display:none}
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
+    <a class="how-link back-res hidden" href="/" style="width:fit-content">Grįžti į rezultatą</a>
+    <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
     <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
@@ -458,6 +470,8 @@ body.form-view.tight #v-form .trust{display:none}
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
     <a id="c-link" href="#" class="hidden"></a>
+    <a class="btn ghost back-res hidden" href="/" style="text-align:center;text-decoration:none;margin-top:10px">Grįžti į rezultatą</a>
+    <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
     <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
 
@@ -952,6 +966,24 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   // Išdėstymas gali pasikeisti ir be DOM pakeitimų (pvz., įsikėlus šriftams) — sekamas formos dydis
   try{ const ro=new ResizeObserver(later); ['v-form','v-redeem'].forEach(id=>{ const e=document.getElementById(id); if(e) ro.observe(e); }); }catch(e){}
   window.fitHeader=fit;
+})();
+</script>
+<script>
+// Atėjus iš rezultato ekrano — po pirkimo mygtukas „Grįžti į rezultatą“ (adresas išsaugomas skirtuke, nes Stripe grąžina be jo)
+(function(){
+  const K='delnasGiftBack';
+  let d=null; try{ d=JSON.parse(sessionStorage.getItem(K)||'null'); }catch(e){}
+  if(!d||Date.now()-d.at>6*3600e3) return;
+  document.querySelectorAll('.back-res').forEach(btn=>{
+    btn.classList.remove('hidden');
+    btn.addEventListener('click',e=>{
+      e.preventDefault();
+      if(d.b){ location.href=d.b; return; }
+      try{ if(window.opener&&!window.opener.closed){ window.opener.focus(); } }catch(x){}
+      try{ window.close(); }catch(x){}
+      setTimeout(()=>{ btn.classList.add('hidden'); const n=btn.nextElementSibling; if(n&&n.classList.contains('back-res-note')) n.classList.remove('hidden'); },400);
+    });
+  });
 })();
 </script>
 <script src="/awake.js"></script>

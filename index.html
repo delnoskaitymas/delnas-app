@@ -6901,6 +6901,30 @@ async function loadCompare(){
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
+// Dovanų ir porų analizės nuorodos rezultato ekranuose: perduodamas adresas grįžti į tą pačią vietą (prie dovanų bloko), jei rezultatą galima atidaryti iš naujo
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('a[href^="/dovana"],a[href^="/pora"]'); if(!a) return;
+  const scr=a.closest('#s-result,#s-pora-result'); if(!scr) return;
+  const q=new URLSearchParams(location.search); let back='';
+  if(scr.id==='s-pora-result'&&window._pora&&window._pora.sid) back='/?pora='+encodeURIComponent(window._pora.sid)+'#dovanos';
+  else if(q.get('kl')||(q.get('mano')&&q.get('t'))) back=location.pathname+location.search+'#dovanos';
+  const h=a.getAttribute('href').replace(/[?&]grizti=[^&#]*/,'');
+  a.setAttribute('href',back?h+(h.includes('?')?'&':'?')+'grizti='+encodeURIComponent(back):h);
+},true);
+// Asmeninis rezultatas (/?kl=… ar /?mano=…) su #dovanos — grįžus iš dovanų puslapio nuslenkama prie dovanų bloko
+(function giftJump(){
+  if(location.hash!=='#dovanos') return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active'), g=document.querySelector('#s-result .rb-gifts');
+    if(scr&&scr.id==='s-result'&&g&&g.offsetParent){
+      clearInterval(iv);
+      try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+      setTimeout(()=>{ let y=0,el=g; while(el){ y+=el.offsetTop; el=el.offsetParent; } window.scrollTo(0,Math.max(0,y-Math.round(window.innerHeight*0.4))); },400);
+    }
+    if(++n>80) clearInterval(iv);
+  },250);
+})();
+
 // Grįžus iš asmeninės analizės į porų rezultatą (/?pora=…#asmenine) — iškart prie bloko su kito žmogaus analizės mygtuku
 (function duoJump(){
   const mode=location.hash; if(mode!=='#asmenine'&&mode!=='#dovanos') return;
