@@ -172,6 +172,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .rb-pora{display:block;padding:14px 14px 12px;border:1px solid var(--gold);border-radius:12px;background:rgba(212,168,67,.1);box-shadow:0 0 14px rgba(212,168,67,.18);text-decoration:none;font-family:'DM Sans',sans-serif}
 .rb-pora b{display:block;font-size:15px;font-weight:800;color:var(--gold2);margin-bottom:5px}
 .rb-pora small{display:block;font-size:11.5px;line-height:1.5;color:var(--muted)}
+.rb-pora .rb-pora-note{display:block;margin-top:8px;font-size:11px;line-height:1.45;color:var(--muted);opacity:.8}
 .rb-pora .rb-pora-go{display:block;margin-top:12px;padding:11px;border:1px solid var(--gold);border-radius:10px;color:var(--gold2);font-size:14px;font-weight:700}
 /* Porų rezultatas — vizualas */
 .pr-hero{position:relative;overflow:hidden}
@@ -998,7 +999,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <!-- Porų suderinamumas — atskiras, ryškus blokas iškart po „Klausk“ (brangiausias pasiūlymas) -->
     <div class="rs rs-std rs-reveal" id="r-pora-card" style="text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">💞 Jums dviem</div>
-      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje?</b><small>Palyginami jūsų delnai: kas jus traukia, kaip bendraujate, kaip jūsų savybės dera tarpusavyje — su suderinamumo įverčiu procentais.</small><span class="rb-pora-go">Sužinoti, kaip derate</span></a>
+      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje?</b><small>Kas jus iš tikrųjų sieja? Delnai parodys, kur sutariate be žodžių, kur slypi trintis ir kiek procentų jūsų savybės dera tarpusavyje.</small><span class="rb-pora-note">Nesate kartu? Nusiųskite nuorodą — delnus galima nufotografuoti ir kitame telefone, o rezultatą matysite abu</span><span class="rb-pora-go">Sužinoti, kaip derate</span></a>
     </div>
     <!-- Pasidalink ir padovanok -->
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);box-shadow:0 4px 16px rgba(0,0,0,.4);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
@@ -6841,12 +6842,14 @@ async function loadResultOffers(){
       pora.href=d.bundleGift.link;
       pora.querySelector('b').textContent='Jūsų poros analizė jau apmokėta — pradėti';
       pora.querySelector('.rb-pora-go').textContent='Pradėti porų analizę';
+      const pn=pora.querySelector('.rb-pora-note'); if(pn) pn.remove();
       pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
     } else if(d.bundle&&!pora.querySelector('.rb-deal')){
       pora.href='/pora?promo='+encodeURIComponent(d.bundle.code)+'&utm_source=app&utm_campaign=rinkinys';
       const s=document.createElement('span'); s.className='rb-deal';
       s.innerHTML='Tau — <b>'+_eur(d.bundle.price)+' €</b> <s>'+_eur(d.poraPrice)+' €</s>';
       pora.querySelector('b').after(s);
+      const pn=pora.querySelector('.rb-pora-note'); if(pn) pn.textContent+=' · kaina galioja 30 d.';
     }
   }
 }
