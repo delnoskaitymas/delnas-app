@@ -75,7 +75,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 - Tavo delnai jau žino
 
 ### Aprašymas (Description)
-- Asmeninė AI chiromantijos analizė · 12,99 €
+- Asmeninė AI chiromantijos analizė · 14,99 €
 - 14 dienų pinigų grąžinimo garantija
 
 ### Mygtukas (CTA)
@@ -95,7 +95,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 7. PDF Tiesiai Į El. Paštą
 8. 14 d. Pinigų Grąžinimas
 9. 7 Skyrių Asmeninė Analizė
-10. Tik 12,99 €
+10. Tik 14,99 €
 
 **Aprašymai (≤90 simb.)**
 1. Nufotografuok abu delnus ir gauk asmeninį gyvenimo žemėlapį per kelias minutes.

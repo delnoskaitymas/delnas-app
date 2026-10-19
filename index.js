@@ -68,6 +68,10 @@ const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1T
 // atskaitos taško). Kai būsite pasiruošę pradėti akciją, pakeiskite šią
 // konstantą į STRIPE_PRICE_ID_PROMO.
 const ACTIVE_PRICE_ID = STRIPE_PRICE_ID_REGULAR;
+// Asmeninės analizės kaina (centais) — imama iš čia, ne iš Stripe Price objekto (kaip ir porų analizės).
+// Pakeisti galima Railway kintamuoju PERSONAL_PRICE_CENTS (pvz. 1499 = 14,99 €); Stripe nieko keisti nereikia.
+const PERSONAL_PRICE_CENTS = parseInt(process.env.PERSONAL_PRICE_CENTS || '1499', 10);
+const personalPrice = () => ({ unit_amount: PERSONAL_PRICE_CENTS, currency: 'eur' });
 
 // Paleidimo diagnostika: įspėja, jei Stripe rakto rėžimas (test/live)
 // neatitinka to, kas įprastai tikimasi — padeda greitai pastebėti būtent
@@ -752,12 +756,10 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
 
-    // Suma gaunama TIESIOGIAI iš Stripe (ne hardcoded skaičius), kad
-    // pasikeitus ACTIVE_PRICE_ID (pvz. pakeitus kainą), šis administracinis
-    // laiškas VISADA rodytų teisingą, faktiškai taikomą sumą.
+    // Suma — ta pati, kuri taikoma mokant (PERSONAL_PRICE_CENTS).
     let amountDisplay = 'žr. Stripe';
     try {
-      const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+      const activePrice = personalPrice();
       amountDisplay = (activePrice.unit_amount / 100).toFixed(2).replace('.', ',') + ' €';
     } catch (priceErr) {
       console.error('[sendPaymentSuccessEmails] nepavyko gauti kainos iš Stripe:', priceErr.message);
@@ -2228,7 +2230,7 @@ function validRef(code, email) {
   return c;
 }
 async function computeOrderAmount({ ref, addKlausk, email, promo, bundle }) {
-  const activePrice = await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+  const activePrice = personalPrice();
   const base = activePrice.unit_amount, currency = activePrice.currency;
   let refCode = validRef(ref, email);
   const refDiscount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
@@ -2416,8 +2418,8 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
 
     const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, bundle: !!req.body.bundle });
-    // Be nuolaidos ir priedų — kaip anksčiau (Stripe kaina); kitu atveju — apskaičiuotos eilutės
-    const lineItems = (!q.discount && !q.bump && !q.bundle) ? [{ price: ACTIVE_PRICE_ID, quantity: 1 }] : [
+    // Apskaičiuotos eilutės (kaina — PERSONAL_PRICE_CENTS, su nuolaida ir priedais)
+    const lineItems = [
       { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (${q.promoCode ? 'nuolaida' : `draugo nuolaida −${REF_DISCOUNT_PCT} %`})` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
       ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'Klausk savo delnų — 3 klausimai' } }, quantity: 1 }] : []),
       ...(q.bundle ? [{ price_data: { currency: q.currency, unit_amount: q.bundle, product_data: { name: 'Porų suderinamumas (rinkinio kaina)' } }, quantity: 1 }] : [])
@@ -2866,8 +2868,7 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     const { name, email } = req.body;
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
-    // Suma imama TIESIOGIAI iš Stripe Price objekto (ne kietai įrašyta), kad
-    // kaina visada sutaptų su Product catalog įrašu (ACTIVE_PRICE_ID).
+    // Suma — computeOrderAmount (PERSONAL_PRICE_CENTS su nuolaidomis ir priedais).
     const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, bundle: !!req.body.bundle });
     const paymentIntent = await stripe.paymentIntents.create({
       amount: q.total,
@@ -3012,16 +3013,11 @@ app.get('/price-info', pollLimiter, async (req, res) => {
     if (_priceInfoCache && (Date.now() - _priceInfoCacheAt) < 5 * 60 * 1000) {
       return res.json(_priceInfoCache);
     }
-    const [promo, regular] = await Promise.all([
-      stripe.prices.retrieve(STRIPE_PRICE_ID_PROMO),
-      stripe.prices.retrieve(STRIPE_PRICE_ID_REGULAR)
-    ]);
-    const activePrice = ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO ? promo : regular;
+    const activePrice = personalPrice();
     _priceInfoCache = {
-      promo: { amount: promo.unit_amount, currency: promo.currency },
-      regular: { amount: regular.unit_amount, currency: regular.currency },
+      regular: { amount: activePrice.unit_amount, currency: activePrice.currency },
       active: { amount: activePrice.unit_amount, currency: activePrice.currency },
-      isPromoActive: ACTIVE_PRICE_ID === STRIPE_PRICE_ID_PROMO,
+      isPromoActive: false,
       pora: { amount: PORA_PRICE_CENTS, currency: 'eur' },
       giftKlausk: GIFT_KLAUSK_CENTS,
       giftKlauskPora: GIFT_KLAUSK_PORA_CENTS
@@ -3486,18 +3482,18 @@ setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 // PORŲ SUDERINAMUMAS (/pora)
 // ═══════════════════════════════════════════════════════════════════
 // Eiga: /pora puslapyje įvedami abu vardai ir el. paštas → Stripe Checkout
-// (19,99 €) → grįžtama į /?pora=SESSION_ID → app porų režimu nufotografuoja
+// (22,99 €) → grįžtama į /?pora=SESSION_ID → app porų režimu nufotografuoja
 // abiejų partnerių delnus (po 2) → /pora/start paleidžia analizę → rezultatas
 // saugomas SHARED_STORAGE_DIR/pora-orders.json (vienas užsakymas = viena
 // analizė; grįžus ta pačia nuoroda rodomas tas pats rezultatas).
 const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
-const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '1999', 10);
+const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '2299', 10);
 // Dovanų kupone visada įskaičiuoti 3 „Klausk savo delnų“ klausimai — prie dovanos kainos pridedama
 const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
 // Porų dovanoje klausimai — nemokamas priedas (kaina lieka iki 20 €)
 const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
-const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1499', 10);
+const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1799', 10);
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
 const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
 // Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
@@ -4030,7 +4026,7 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     const mk = side => createPromo({ kind: 'duo', product: 'asmenine', price: PORA_DUO_CENTS, ttlMs: 30 * DAY_MS, email, key: 'duo:' + sessionId + ':' + side });
     const a = mk('a'), b = mk('b');
     let base = null;
-    try { base = (await stripe.prices.retrieve(ACTIVE_PRICE_ID)).unit_amount; } catch (e) {}
+    base = PERSONAL_PRICE_CENTS;
     const pub = p => ({ code: p.code, used: !!p.usedBy, expiresAt: p.expiresAt });
     res.json({ price: PORA_DUO_CENTS, base, a: pub(a), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt) });
   } catch (err) {
@@ -4657,7 +4653,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!isValidGiftText(fromName, 60) || !isValidGiftText(recipientName, 60)) return res.status(400).json({ error: 'Vardas per ilgas' });
     if (!isValidGiftText(message, 300)) return res.status(400).json({ error: 'Palinkėjimas per ilgas (iki 300 simbolių)' });
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
-    const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : await stripe.prices.retrieve(ACTIVE_PRICE_ID);
+    const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : personalPrice();
     // −20 % pasiūlymas po analizės (24 val.)
     const pr = getValidPromo(req.body && req.body.promo, 'dovana');
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;

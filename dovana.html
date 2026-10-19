@@ -359,8 +359,8 @@ body.form-view.tight #v-form .trust{display:none}
     <p class="lead sm" id="form-lead">Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
-        <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Asmeninė analizė<small id="k-asm-p">12,99 €</small></button>
-        <button type="button" id="k-pora" role="radio" aria-checked="false">💞 Porų analizė<small id="k-pora-p">19,99 €</small></button>
+        <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Asmeninė analizė<small id="k-asm-p">16,99 €</small></button>
+        <button type="button" id="k-pora" role="radio" aria-checked="false">💞 Porų analizė<small id="k-pora-p">22,99 €</small></button>
       </div>
       <div class="kind-inc" id="kind-inc">✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai</div>
       <div class="row2">
@@ -385,7 +385,7 @@ body.form-view.tight #v-form .trust{display:none}
         <div class="sched-hint">Apmokėjus dovanų kuponas iš karto atsiras tavo ekrane ir ateis į tavo el. paštą. Galėsi jį nusiųsti gavėjui per Messenger, WhatsApp ar kitu būdu.</div>
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
-      <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">12,99 €</span></button>
+      <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">16,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe · 14 d. grąžinimo garantija</div>
     </form>
@@ -621,7 +621,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
   // Dovanos tipas: asmeninė analizė arba porų suderinamumas (?tipas=pora)
   const eur = c => (c/100).toFixed(2).replace('.', ',') + ' €';
-  const cents = { asmenine: 1299, pora: 1999 };
+  const cents = { asmenine: 1499, pora: 2299 };
   const klauskC = { asmenine: 200, pora: 0 }; // dovanoje visada 3 klausimai: asmeninėje +2 €, porų — nemokamai
   let promo = null; // −20 % pasiūlymas po analizės (?promo=KODAS, 24 val.) — taikomas analizės kainai
   const priceHtml = k => promo ? eur(Math.round(cents[k] * (100 - promo.pct) / 100) + klauskC[k]) + ' <s style="opacity:.55;font-weight:400">' + eur(cents[k] + klauskC[k]) + '</s>' : eur(cents[k] + klauskC[k]);

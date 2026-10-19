@@ -76,12 +76,13 @@ PORT = 3000
 
 ## Porų suderinamumas
 
-- Puslapis `delnaskaitymas.lt/pora`: abiejų partnerių vardai, užsakovo el. paštas, mokėjimas per Stripe Checkout (19,99 €).
+- Puslapis `delnaskaitymas.lt/pora`: abiejų partnerių vardai, užsakovo el. paštas, mokėjimas per Stripe Checkout (22,99 €).
 - Po mokėjimo grįžtama į `/?pora=SESSION_ID`: pirmiausia vienas, tada kitas partneris nufotografuoja abu delnus, AI palygina visus 4 delnus.
 - Rezultatas (suderinamumo % ir 7 skyriai) rodomas ekrane, PDF išsiunčiamas užsakovui, tau atkeliauja pranešimas „Nauja porų analizė“.
 - Tą pačią nuorodą atidarius vėl — rodomas tas pats rezultatas (naujo AI kvietimo nėra).
 - Užsakymai saugomi `SHARED_STORAGE_DIR/pora-orders.json` 90 dienų; nuotraukos nesaugomos.
-- Kainą galima pakeisti Railway kintamuoju `PORA_PRICE_CENTS` (pvz. `1999` = 19,99 €); atskiro Stripe produkto kurti nereikia.
+- Kainą galima pakeisti Railway kintamuoju `PORA_PRICE_CENTS` (pvz. `2299` = 22,99 €); atskiro Stripe produkto kurti nereikia.
+- Asmeninės analizės kaina — Railway kintamasis `PERSONAL_PRICE_CENTS` (numatyta `1499` = 14,99 €); Stripe Price objekto keisti nereikia.
 
 ## Klausk savo delnų
 
@@ -113,7 +114,7 @@ PORT = 3000
 ## Daugiau pajamų ir patogumo
 
 - **Nebaigtas mokėjimas:** užsakymo formoje (ir /pora) — eilutė „Jei užsakymo nebaigsi, atsiųsime vieną priminimą. Nesiųsti“ (nuolaida minima tik pačiame laiške) (be varnelės; „Nesiųsti“ — atsisakymas). Jei per ~1 val. neapmokėta, išsiunčiamas vienas laiškas su kodu (galioja 24 val., ne dažniau kaip kartą per 30 d.). Laiko tarpą galima keisti kintamuoju `ABANDON_DELAY_MIN` (numatyta 60), nuolaidą — `BACK_DISCOUNT_PCT` (15).
-- **Porų analizė po asmeninės:** rezultato ekrane („Jums dviem“) asmeninės analizės pirkėjas mato porų analizę už `PORA_BUNDLE_CENTS` (numatyta 1499 = 14,99 €), nuoroda galioja 30 d. (Mokėjimo ekrane papildomo porų pasiūlymo nebėra.)
+- **Porų analizė po asmeninės:** rezultato ekrane („Jums dviem“) asmeninės analizės pirkėjas mato porų analizę už `PORA_BUNDLE_CENTS` (numatyta 1799 = 17,99 €), nuoroda galioja 30 d. (Mokėjimo ekrane papildomo porų pasiūlymo nebėra.)
 - **Pasiūlymas po analizės:** rezultato ekrane „🎁 Padovanok“ — −20 % (`ONCE_DISCOUNT_PCT`) 24 val., rodoma ramiai („galioja iki rytojaus 14:30“), be tiksinčio laikmačio.
 - **Mano analizės (/mano):** „Išsaugoti ir priminti“ rezultato ekrane išsaugo analizę (be nuotraukų, 12 mėn.). Nuoroda į visas analizes siunčiama el. paštu (7 d.), analizę galima ištrinti.
 - **Kas pasikeitė per 3 mėn.:** išsaugojusiems priminimo laiške — nuoroda su −20 % (`REPEAT_DISCOUNT_PCT`, 30 d.); naujame rezultate — blokas „Kas pasikeitė“ (palyginimas su ankstesne analize).
