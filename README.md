@@ -95,7 +95,7 @@ PORT = 3000
 
 - Mokėjimo ekrane langelis „Pridėti 3 asmeninius klausimus — 2,99 €“ (`KLAUSK_BUMP_CENTS`, numatyta 299). Suma visada skaičiuojama serveryje (`/order-quote`), Apple/Google Pay lange atnaujinama.
 - Rezultato ekrane, jei priedas apmokėtas — „✓ Tavo 3 klausimai jau apmokėti“ (sukuriamas `kp_…` klausimų užsakymas).
-- „Pakviesti draugus išbandyti“ apmokėjusiam klientui dalija asmeninę nuorodą `/?ref=KODAS`: draugas gauna −20 % (`REF_DISCOUNT_PCT`), kvietėjas už kiekvieną apmokėtą draugo pirkimą — 3 klausimus el. paštu (iki 5 kartų).
+- „Pakviesti draugus išbandyti“ apmokėjusiam klientui dalija asmeninę nuorodą `/?ref=KODAS`: draugas gauna −10 % (`REF_DISCOUNT_PCT`), kvietėjas už kiekvieną apmokėtą draugo pirkimą — 3 klausimus el. paštu (iki 5 kartų).
 - Įrašai — `SHARED_STORAGE_DIR/refs.json` (12 mėn.).
 
 ## Įvertinimai, atsiliepimai ir statistika
