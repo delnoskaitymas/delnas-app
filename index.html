@@ -6317,7 +6317,7 @@ async function renderDuoNext(){
 }
 async function poraDuoShare(code,name,btn){
   const url=location.origin+'/?promo='+encodeURIComponent(code), f=ltForms(name||'');
-  const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (11,99 €). Nufotografuok delnus čia:';
+  const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (12,99 €). Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }

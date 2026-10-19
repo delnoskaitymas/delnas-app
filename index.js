@@ -3495,7 +3495,7 @@ const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
 const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1799', 10);
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
-const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
+const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1299', 10);
 // Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
 const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '90', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
