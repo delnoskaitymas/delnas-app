@@ -6840,6 +6840,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
         : '💞 Porų kaina — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
       : q.kind==='repeat'
       ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
+      : q.kind==='remind'
+      ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — pažiūrėk, ką delnai rodo dabar'
       : '⏳ Tavo <b>−'+q.pct+' %</b> nuolaida galioja iki '+_ltTime(q.expiresAt);
     const rw=document.getElementById('ref-welcome'); if(rw) rw.remove();
     home.prepend(n);
