@@ -2639,7 +2639,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     try {
       if (pay && pay.metadata.bundle !== '1') {
         const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: isValidEmail(pay.email) ? pay.email : email, key: 'bundle:' + paymentRef });
-        if (!pr.usedBy && Date.now() < pr.expiresAt) poraLine = resultPoraLineHtml(pr);
+        if (!pr.usedBy && Date.now() < pr.expiresAt && !recentDone(isValidEmail(pay.email) ? pay.email : email, 'pora')) poraLine = resultPoraLineHtml(pr);
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
     tokenEntry.pdfSending = true;
@@ -2797,6 +2797,7 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     }
 
     tokenEntry.used = true;
+    markRecentDone(tokenEntry.email, 'asm');
     if (sessionId && !tokenEntry.sessionId) tokenEntry.sessionId = sessionId;
     markPaymentTokenUsedPersistently(token, tokenEntry.sessionId);
     if (userName) result.userName = userName;
@@ -3519,6 +3520,7 @@ function updatePoraOrder(sessionId, patch) {
   const orders = loadPoraOrders();
   orders[sessionId] = { ...(orders[sessionId] || {}), ...patch };
   savePoraOrders(orders);
+  if (patch && patch.status === 'done') markRecentDone(orders[sessionId].email, 'pora');
   return orders[sessionId];
 }
 // Pasenusių (>90 d.) užsakymų valymas paleidimo metu
@@ -4016,6 +4018,28 @@ setTimeout(function resumePoraJobs() {
 }, 90 * 1000);
 
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina — du vienkartiniai kodai (30 d.)
+// Kas atlikta šio apsilankymo metu (kitame telefone ar laiške taip pat) — kad nesiūlytume tos pačios analizės dar kartą.
+// Laikoma tik užkoduota el. pašto žymė (HMAC, ne adresas) ir laikas; ištrinama po 6 val.
+const RECENT_DONE_FILE = path.join(SHARED_STORAGE_DIR, 'recent-done.json');
+const RECENT_DONE_MS = 6 * 60 * 60 * 1000;
+function recentKey(email) {
+  const key = 'recent:' + (process.env.UNSUB_SECRET || process.env.STRIPE_SECRET_KEY || ADMIN_KEY);
+  return crypto.createHmac('sha256', key).update(String(email || '').trim().toLowerCase()).digest('hex').slice(0, 32);
+}
+function loadRecentDone() {
+  let m = {}; try { if (fs.existsSync(RECENT_DONE_FILE)) m = JSON.parse(fs.readFileSync(RECENT_DONE_FILE, 'utf8')) || {}; } catch (e) {}
+  const now = Date.now(); for (const [k, v] of Object.entries(m)) if (!v || Math.max(v.asm || 0, v.pora || 0) < now - RECENT_DONE_MS) delete m[k];
+  return m;
+}
+function markRecentDone(email, kind) {
+  if (!isValidEmail(email)) return;
+  try { const m = loadRecentDone(), k = recentKey(email); m[k] = { ...(m[k] || {}), [kind]: Date.now() }; writeFileSafe(RECENT_DONE_FILE, JSON.stringify(m)); } catch (e) {}
+}
+function recentDone(email, kind) {
+  if (!isValidEmail(email)) return false;
+  const v = loadRecentDone()[recentKey(email)];
+  return !!(v && v[kind] && Date.now() - v[kind] < RECENT_DONE_MS);
+}
 function poraBuyerHasPersonal(sessionId, o) {
   try {
     if (o && o.gift) { const g = loadGiftStore().codes[o.gift]; if (g && g.bundle) return true; }
@@ -4035,7 +4059,7 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     base = PERSONAL_PRICE_CENTS;
     // Porų analizė užsakyta po asmeninės (rinkinio kaina ar rinkinio kuponas) — pirkėjas (A) asmeninę analizę jau turi
     const pub = (p, own) => ({ code: own ? '' : p.code, used: own || !!p.usedBy, expiresAt: p.expiresAt });
-    const ownA = poraBuyerHasPersonal(sessionId, o);
+    const ownA = poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm');
     res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt) });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
@@ -4527,6 +4551,8 @@ function poraDuoEmailOffer(o, sessionId) {
     const st = loadPromos();
     for (const side of ['a', 'b']) { const c = st.byKey['duo:' + sessionId + ':' + side]; used[side] = !!(c && st.codes[c] && st.codes[c].usedBy); }
   } catch (e) {}
+  // Pirkėjas (A) asmeninę analizę jau turi: užsakyta kartu ar atlikta šio apsilankymo metu
+  if (!used.a && (poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm'))) used.a = true;
   if (used.a && used.b) return '';
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
   const link = `${appBaseUrl()}/?pora=${encodeURIComponent(sessionId)}&amp;utm_source=email&amp;utm_campaign=pora#asmenine`;
@@ -4544,7 +4570,7 @@ function payReceiptHtml({ item, amount, at, orderNo, orderLabel }) {
   return `<div style="margin:0 auto 20px;max-width:380px;border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;text-align:left"><div style="font-size:11px;letter-spacing:.14em;color:#d4a843;font-weight:bold;margin-bottom:6px">MOKĖJIMO PATVIRTINIMAS</div><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%">${row('Paslauga', escapeHtml(item))}${row('Suma', '<b>' + eur(amount || 0) + '</b>')}${row('Apmokėta', ltDate(at || Date.now()))}${orderNo ? row(orderLabel || 'Užsakymo nr.', escapeHtml(orderNo)) : ''}${row('Pardavėjas', 'DELNAS, www.delnaskaitymas.lt')}</table></div>`;
 }
 function buildPoraResultEmailHtml(o, names, sessionId) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${escapeHtml(ltPhrase(o.nameA + ' ir ' + o.nameB, 'voc'))}, jūsų poros suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:0 0 6px">Rezultatą taip pat galėsite atsidaryti svetainės skiltyje <a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=pora" style="color:#d4a843">„Mano analizės“</a>.</p>${!o.gift && o.amount ? `<div style="margin-top:16px">${payReceiptHtml({ item: 'Porų suderinamumas', amount: o.amount, at: o.startedAt || o.createdAt, orderNo: poraOrderNo(sessionId) })}</div>` : `<p style="font-size:12px;color:rgba(245,238,216,.55);margin:6px 0 0">Užsakymo numeris: ${poraOrderNo(sessionId)}</p>`}${poraDuoEmailOffer(o, sessionId)}${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${o.gift ? 'Jūsų dovana paruošta!' : 'Mokėjimas gautas, ačiū!'}</div><div style="font-size:15px;color:rgba(245,238,216,.85);margin-bottom:6px">${escapeHtml(ltPhrase(o.nameA + ' ir ' + o.nameB, 'voc'))}, jūsų poros suderinamumas paruoštas.</div><div style="font-size:34px;font-weight:700;color:#f0c96a;margin:14px 0 18px">${o.result.suderinamumas}%</div><p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);margin:0 0 6px">Pridėtame PDF faile rasite visą analizę.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);margin:0 0 6px">Rezultatą taip pat galėsite atsidaryti svetainės skiltyje <a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=pora" style="color:#d4a843">„Mano analizės“</a>.</p>${!o.gift && o.amount ? `<div style="margin-top:16px">${payReceiptHtml({ item: 'Porų suderinamumas', amount: o.amount, at: o.startedAt || o.createdAt, orderNo: poraOrderNo(sessionId) })}</div>` : `<p style="font-size:12px;color:rgba(245,238,216,.55);margin:6px 0 0">Užsakymo numeris: ${poraOrderNo(sessionId)}</p>`}${poraDuoEmailOffer(o, sessionId)}<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">Patiko? Padovanokite ir artimiesiems:</p><a href="${appBaseUrl()}/dovana?tipas=pora&amp;utm_source=email&amp;utm_campaign=pora" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanoti porų analizę</a>${EMAIL_FOOTER_HTML}</div>`;
 }
 function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt }) {
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto"><div style="text-align:center;margin-bottom:22px"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:15px;color:rgba(245,238,216,.85)">Tavo asmeninis gyvenimo žemėlapis paruoštas!</div></div>${receipt || ''}${!receipt && orderNumber ? `<div style="text-align:center;margin-bottom:20px"><p style="font-size:14px;line-height:1.4;margin:0 0 5px">Tavo užsakymo numeris:</p><p style="font-size:18px;font-weight:700;color:#d4a843;letter-spacing:.05em;margin:0">${escapeHtml(orderNumber)}</p></div>` : ''}<p style="font-size:14px;line-height:1.7;color:rgba(245,238,216,.8);text-align:center;margin:0 0 4px">Pridėtame PDF faile rasi pilną savo gyvenimo žemėlapį.</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.7);text-align:center;margin:6px 0 0">Rezultatą taip pat galėsi atsidaryti svetainės skiltyje <a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">„Mano analizės“</a>.</p><div style="text-align:center;margin:22px 0 0">${poraLine}<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 10px">Patiko? Padovanok ir artimam žmogui:</p><a href="${appBaseUrl()}/dovana?utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">🎁 Padovanok gyvenimo žemėlapį</a></div>${EMAIL_FOOTER_HTML}</div>`;
@@ -5255,7 +5281,7 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
       bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
     }
     // Porų analizė jau užsakyta kartu su šia analize (rinkinio kaina ar rinkinio kuponu) — jos nebesiūlome
-    const hasPora = !!(bundle && bundle.usedBy) || !!(bundleGift && bundleGift.status === 'redeemed');
+    const hasPora = !!(bundle && bundle.usedBy) || !!(bundleGift && bundleGift.status === 'redeemed') || recentDone(email, 'pora');
     res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle && !bundle.usedBy ? promoPublic(bundle) : null, bundleGift, poraPrice: PORA_PRICE_CENTS, hasPora });
   } catch (err) {
     console.error('/promo/offers klaida:', err);
