@@ -1583,6 +1583,14 @@ async function toggleKlauskBump(on){
 })();
 
 // ═══ Statistika (be slapukų): kiekvienas įvykis siunčiamas vieną kartą per sesiją ═══
+// Paspaudimai: mokėjimas, klausimų pirkimas, pasiūlymai rezultate (tik bendri skaičiai)
+document.addEventListener('click',e=>{
+  const c=s=>e.target.closest&&e.target.closest(s);
+  if(c('#s-info #pay-btn, #pm-apple-btn, #pm-google-btn')) track('pay_click');
+  else if(c('#kl-btn, #pora-kl-btn')) track('klausk_checkout');
+  else if(c('#s-result .rb-pora')) track('res_pora_click');
+  else if(c('#s-result a[href^="/dovana"], #s-pora-result a[href^="/dovana"]')) track('res_gift_click');
+},true);
 function track(e){
   try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(err){}
   try{ const body=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([body],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}); }catch(err){}

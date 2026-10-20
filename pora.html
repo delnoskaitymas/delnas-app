@@ -575,5 +575,10 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   });
 })();
 </script>
+<script>
+// Statistika (be slapukų): įvykis siunčiamas vieną kartą per sesiją
+function delnasEv(e){ try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); const b=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([b],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body:b,keepalive:true}); }catch(x){} }
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#pay-btn')) delnasEv('pora_checkout'); },true);
+</script>
 </body>
 </html>

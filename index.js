@@ -3346,14 +3346,15 @@ function adminDigestAdd(cat, mail) {
 function digestFunnelHtml() {
   try {
     const st = _statsBuf || readJson(STATS_FILE, { days: {} }), day = st.days[new Date().toISOString().slice(0, 10)] || {};
-    const asm = [['home', 'Atidarė svetainę'], ['start', 'Pradėjo (kamera)'], ['photos', 'Nufotografavo delnus'], ['order', 'Užsakymo forma'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo'], ['result', 'Gavo rezultatą']];
-    const pora = [['pora_view', 'Atidarė porų puslapį'], ['pora_paid', 'Apmokėjo'], ['pora_start', 'Pradėjo fotografuoti'], ['pora_first', 'Pirmas nufotografuotas'], ['pora_remote', 'Siuntė nuorodą antrajam'], ['pora_photos', 'Abu nufotografuoti'], ['pora_result', 'Gavo rezultatą']];
-    const extra = [['dovana_view', 'Atidarė dovanų puslapį'], ['gift_paid', 'Pirko dovaną'], ['klausk_paid', 'Pirko klausimus']];
-    if (!asm.concat(pora, extra).some(([k]) => day[k])) return '';
+    const asm = [['home', 'Atidarė svetainę'], ['start', 'Pradėjo (kamera)'], ['photos', 'Nufotografavo delnus'], ['order', 'Užsakymo forma'], ['pay_view', 'Mokėjimo ekranas'], ['pay_click', 'Paspaudė mokėti'], ['paid', 'Apmokėjo'], ['result', 'Gavo rezultatą']];
+    const pora = [['pora_view', 'Atidarė porų puslapį'], ['pora_checkout', 'Paspaudė užsakyti'], ['pora_paid', 'Apmokėjo'], ['pora_start', 'Pradėjo fotografuoti'], ['pora_first', 'Pirmas nufotografuotas'], ['pora_remote', 'Siuntė nuorodą antrajam'], ['pora_photos', 'Abu nufotografuoti'], ['pora_result', 'Gavo rezultatą']];
+    const gift = [['dovana_view', 'Atidarė dovanų puslapį'], ['dovana_asm', 'Žiūrėjo: gyvenimo žemėlapio dovana'], ['dovana_pora', 'Žiūrėjo: porų suderinamumo dovana'], ['gift_checkout_asm', 'Paspaudė mokėti: gyvenimo žemėlapis'], ['gift_checkout_pora', 'Paspaudė mokėti: porų suderinamumas'], ['gift_paid_asm', 'Pirko: gyvenimo žemėlapį'], ['gift_paid_pora', 'Pirko: porų suderinamumą'], ['kodas_view', 'Atidarė dovanos kodo įvedimą']];
+    const extra = [['res_pora_click', 'Rezultate paspaudė „Jums dviem“'], ['res_gift_click', 'Rezultate paspaudė dovaną'], ['klausk_checkout', 'Paspaudė pirkti klausimus'], ['klausk_paid', 'Pirko klausimus'], ['klausk_view', 'Atidarė klausimų puslapį'], ['mano_view', 'Atidarė „Mano analizės“']];
+    if (!asm.concat(pora, gift, extra).some(([k]) => day[k])) return '';
     const td = 'padding:4px 10px;border-bottom:1px solid #eee';
     const tbl = (list, base) => { const b0 = day[base] || 0; return `<table style="border-collapse:collapse;font:13px Arial,sans-serif;width:100%">${list.map(([k, l]) => `<tr><td style="${td}">${l}</td><td style="${td};text-align:right"><b>${day[k] || 0}</b></td><td style="${td};text-align:right;color:#8a6d1f">${base && b0 ? Math.round((day[k] || 0) / b0 * 100) + '%' : ''}</td></tr>`).join('')}</table>`; };
     const h3 = t => `<h3 style="font:600 14px Arial,sans-serif;color:#5a4410;margin:14px 0 4px">${t}</h3>`;
-    return `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Šiandienos kelias</h2><div style="font:12px Arial,sans-serif;color:#777;margin-bottom:6px">Kiek žmonių pasiekė kiekvieną žingsnį (procentai — nuo pirmo žingsnio). Visa statistika: /admin/stats</div>${h3('Asmeninė analizė')}${tbl(asm, 'home')}${h3('Porų analizė')}${tbl(pora, 'pora_view')}${h3('Dovanos ir klausimai')}${tbl(extra, '')}`;
+    return `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Šiandienos kelias</h2><div style="font:12px Arial,sans-serif;color:#777;margin-bottom:6px">Kiek žmonių pasiekė kiekvieną žingsnį (procentai — nuo pirmo žingsnio). Visa statistika: /admin/stats</div>${h3('Asmeninė analizė')}${tbl(asm, 'home')}${h3('Porų analizė')}${tbl(pora, 'pora_view')}${h3('Dovanos')}${tbl(gift, '')}${h3('Klausimai ir pasiūlymai rezultate')}${tbl(extra, '')}`;
   } catch (e) { return ''; }
 }
 function adminDigestHtml(items) {
@@ -4752,7 +4753,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
 function finalizeGiftSession(session) {
   const { gift, isNew } = issueGiftForSession(session);
   if (isNew) {
-    statInc('gift_paid');
+    statInc('gift_paid'); statInc(gift && gift.kind === 'pora' ? 'gift_paid_pora' : 'gift_paid_asm');
     if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
     if (gift.recipientEmail) setTimeout(processGiftSchedules, 2 * 60 * 1000 + 5000);
     // Pirkėjui — dovanų kortelė el. paštu
@@ -5003,7 +5004,7 @@ app.get('/testimonials', pollLimiter, (req, res) => {
 });
 
 // Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
-const STAT_EVENTS = ['home', 'start', 'photos', 'order', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result'];
+const STAT_EVENTS = ['home', 'start', 'photos', 'order', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result', 'pay_click', 'pora_checkout', 'dovana_asm', 'dovana_pora', 'gift_checkout_asm', 'gift_checkout_pora', 'gift_paid_asm', 'gift_paid_pora', 'kodas_view', 'klausk_view', 'klausk_checkout', 'res_pora_click', 'res_gift_click', 'mano_view'];
 let _statsBuf = null, _statsTimer = null;
 function statInc(ev) {
   if (!STAT_EVENTS.includes(ev)) return;
@@ -5031,7 +5032,7 @@ function statSrc(src, field) {
 app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    if (['home', 'start', 'photos', 'order', 'pay_view', 'result', 'pora_view', 'dovana_view', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result'].includes(b.e)) statInc(b.e);
+    if (['home', 'start', 'photos', 'order', 'pay_view', 'result', 'pora_view', 'dovana_view', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result', 'pay_click', 'pora_checkout', 'dovana_asm', 'dovana_pora', 'gift_checkout_asm', 'gift_checkout_pora', 'kodas_view', 'klausk_view', 'klausk_checkout', 'res_pora_click', 'res_gift_click', 'mano_view'].includes(b.e)) statInc(b.e);
     else if ((b.e === 'src_visit' || b.e === 'src_buy') && typeof b.s === 'string') statSrc(b.s, b.e === 'src_visit' ? 'v' : (['asmenine', 'pora', 'dovana'].includes(b.k) ? b.k : 'kita'));
   } catch (e) {}
   res.status(204).end();
@@ -5140,6 +5141,7 @@ app.get('/admin/stats', sensitiveLimiter, (req, res) => {
   const groups = [
     ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['order', 'Užsakymo forma'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
     ['Porų analizės kelias', [['pora_view', 'Atidarė /pora'], ['pora_paid', 'Apmokėjo'], ['pora_start', 'Pradėjo fotografuoti'], ['pora_first', 'Pirmas nufotografuotas'], ['pora_remote', 'Siuntė nuorodą antrajam'], ['pora_photos', 'Abu nufotografuoti'], ['pora_result', 'Gavo rezultatą']]],
+    ['Pirkimai ir pasiūlymai', [['pay_click', 'Asm.: paspaudė mokėti'], ['pora_checkout', 'Porų: paspaudė užsakyti'], ['dovana_asm', 'Dovana: asm. forma'], ['dovana_pora', 'Dovana: porų forma'], ['gift_checkout_asm', 'Dovana asm.: mokėti'], ['gift_checkout_pora', 'Dovana porų: mokėti'], ['gift_paid_asm', 'Dovana asm.: pirko'], ['gift_paid_pora', 'Dovana porų: pirko'], ['kodas_view', '/kodas'], ['klausk_view', 'Klausimų puslapis'], ['klausk_checkout', 'Klausimai: mokėti'], ['res_pora_click', 'Rezultate: „Jums dviem“'], ['res_gift_click', 'Rezultate: dovana'], ['mano_view', '„Mano analizės“']]],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
     ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];
