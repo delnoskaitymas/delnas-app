@@ -403,7 +403,7 @@ function buildReminderMail(r, testPromo) {
     const p = testPromo || createPromo({ kind: 'repeat', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat:' + r.savedId, meta: { savedId: r.savedId } });
     link = `${site}/?kartoti=${p.code}`;
     btn = `Pamatyti, kas pasikeitė (−${p.pct}&nbsp;%)`;
-    body = `Per tris mėnesius nutinka daug: sprendimai, pokyčiai, nauji žmonės. Visa tai palieka pėdsaką ir delnų linijose. Nufotografuok delnus iš naujo ir pamatysi naują gyvenimo žemėlapį šalia ankstesniojo: <b style="color:#f0d58a">kas sustiprėjo, kas nurimo ir kur dabar link judi</b>. Pakartotinei analizei — <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> (galioja 30 dienų).`;
+    body = `Per tris mėnesius nutinka daug: sprendimai, pokyčiai, nauji žmonės. Visa tai palieka pėdsaką ir delnų linijose. Nufotografuok delnus iš naujo ir sužinosi, kas pasikeitė nuo ankstesnės analizės: <b style="color:#f0d58a">kas sustiprėjo, kas nurimo ir kur dabar link judi</b>. Pakartotinei analizei — <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> (galioja 30 dienų).`;
   }
   return {
     subject: `${r.name ? ltPhrase(r.name, 'voc') + ', k' : 'K'}as pasikeitė per 3 mėnesius? ✦`,
