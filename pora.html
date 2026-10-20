@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
     <form class="card-form" id="pora-form" novalidate>
       <div class="row2">
         <label for="f-a">Tavo vardas</label>
-        <label for="f-b">Partnerio (-ės) vardas</label>
+        <label for="f-b">Antrosios pusės vardas</label>
         <input type="text" id="f-a" maxlength="40" placeholder="pvz. Monika" autocomplete="given-name">
         <input type="text" id="f-b" maxlength="40" placeholder="pvz. Tomas" autocomplete="off">
       </div>
@@ -403,7 +403,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   function showMissing(){
     const miss = [];
     if (!$('f-a').value.trim()) { $('f-a').classList.add('bad'); miss.push('Įrašyk savo vardą'); }
-    if (!$('f-b').value.trim()) { $('f-b').classList.add('bad'); miss.push('Įrašyk partnerio (-ės) vardą'); }
+    if (!$('f-b').value.trim()) { $('f-b').classList.add('bad'); miss.push('Įrašyk antrosios pusės vardą'); }
     const v = $('f-email').value.trim();
     if (!em(v)) { $('f-email').classList.add('bad'); miss.push(v ? 'Patikrink savo el. paštą' : 'Įrašyk savo el. paštą'); }
     if (!$('f-ok').checked) { $('f-ok').closest('label').classList.add('bad'); miss.push('Pažymėk sutikimą su sąlygomis'); }

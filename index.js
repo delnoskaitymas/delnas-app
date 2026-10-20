@@ -116,7 +116,9 @@ app.use(helmet({
     }
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: false
+  crossOriginResourcePolicy: false,
+  // Ankstesnis puslapis perduodamas tik tarp šios svetainės puslapių (grįžimo mygtukams), kitoms svetainėms — niekada
+  referrerPolicy: { policy: 'same-origin' }
 }));
 // Kamera — tik pačiai svetainei; mikrofonas ir vieta nenaudojami
 app.use((req, res, next) => { res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()'); next(); });
@@ -5033,7 +5035,7 @@ function statSrc(src, field) {
   clearTimeout(_statsTimer);
   _statsTimer = setTimeout(() => { try { writeJson(STATS_FILE, _statsBuf); } catch (e) {} }, 2000);
 }
-app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
+app.post('/ev', pollLimiter, express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (['home', 'start', 'photos', 'order', 'pay_view', 'result', 'pora_view', 'dovana_view', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result', 'pay_click', 'pora_checkout', 'dovana_asm', 'dovana_pora', 'gift_checkout_asm', 'gift_checkout_pora', 'kodas_view', 'klausk_view', 'klausk_checkout', 'res_pora_click', 'res_gift_click', 'mano_view', 'share_card', 'invite', 'pora_share_card', 'pora_duo_send'].includes(b.e)) statInc(b.e);
@@ -5055,7 +5057,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   ];
   // &sezonas=kaledos|valentinas|mama — dovanų laiškai su šventės užrašu
   const tSeason = ['kaledos', 'valentinas', 'mama'].includes(req.query.sezonas) ? req.query.sezonas : '';
-  const giftBase = { code: 'TEST-0000', kind: tSeason === 'valentinas' ? 'pora' : 'asmenine', fromName: 'Tomas', recipientName: tSeason === 'valentinas' ? 'Ieva ir Tomas' : 'Ieva', message: tSeason === 'kaledos' ? 'Linksmų Kalėdų! ✨' : tSeason === 'mama' ? 'Su Motinos diena! 🌷' : tSeason === 'valentinas' ? 'Su Valentino diena! 💞' : 'Su gimtadieniu! ✨', season: tSeason, klausk: true, amount: tSeason === 'valentinas' ? 1999 : 1499, createdAt: now, expiresAt: now + 365 * DAY_MS };
+  const giftBase = { code: 'TEST-0000', kind: tSeason === 'valentinas' ? 'pora' : 'asmenine', fromName: 'Tomas', recipientName: tSeason === 'valentinas' ? 'Ieva ir Tomas' : 'Ieva', message: tSeason === 'kaledos' ? 'Linksmų Kalėdų! ✨' : tSeason === 'mama' ? 'Su Motinos diena! 🌷' : tSeason === 'valentinas' ? 'Su Valentino diena! 💞' : 'Su gimtadieniu! ✨', season: tSeason, klausk: true, amount: tSeason === 'valentinas' ? PORA_PRICE_CENTS + GIFT_KLAUSK_PORA_CENTS : PERSONAL_PRICE_CENTS + GIFT_KLAUSK_CENTS, createdAt: now, expiresAt: now + 365 * DAY_MS };
   const list = [];
   const add = (label, build) => { try { list.push({ label, ...build() }); } catch (e) { list.push({ label, error: e.message }); } };
   add('Neužbaigtas užsakymas (asmeninė)', () => ({ subject: abandonSubject({ kind: 'asmenine', name }, { pct: BACK_PCT }), html: buildAbandonEmailHtml({ kind: 'asmenine', name, email: to }, fake({ pct: BACK_PCT })) }));
@@ -5112,7 +5114,10 @@ ${list.length ? `<table><tr><th>Kodas</th><th>Tipas, pastaba</th><th>Sukurtas, b
 app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   res.setHeader('Cache-Control', 'no-store');
-  res.type('html').send(adminCouponsHtml(req.query.key));
+  // Ką tik sukurti kuponai (po peradresavimo) — kad perkrovus puslapį jie nebūtų kuriami dar kartą
+  const store = loadGiftStore();
+  const created = String(req.query.sukurta || '').split(',').slice(0, 20).map(c => store.codes[c]).filter(g => g && g.admin);
+  res.type('html').send(adminCouponsHtml(req.query.key, created));
 });
 app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: false, limit: '10kb' }), (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
@@ -5131,8 +5136,9 @@ app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: fals
   }
   saveGiftStore(store);
   console.log(`[admin] sukurta nemokamų kuponų: ${n} (${kind})${note ? ' — ' + note : ''}`);
+  // Peradresuojame į GET (perkrovus puslapį forma nebesiunčiama dar kartą)
   res.setHeader('Cache-Control', 'no-store');
-  res.type('html').send(adminCouponsHtml(req.query.key, created));
+  res.redirect(303, '/admin/kuponai?key=' + encodeURIComponent(req.query.key) + '&sukurta=' + created.map(g => encodeURIComponent(g.code)).join(','));
 });
 
 app.get('/admin/stats', sensitiveLimiter, (req, res) => {
@@ -5148,7 +5154,7 @@ app.get('/admin/stats', sensitiveLimiter, (req, res) => {
     ['Pirkimai ir pasiūlymai', [['pay_click', 'Asm.: paspaudė mokėti'], ['pora_checkout', 'Porų: paspaudė užsakyti'], ['dovana_asm', 'Dovana: asm. forma'], ['dovana_pora', 'Dovana: porų forma'], ['gift_checkout_asm', 'Dovana asm.: mokėti'], ['gift_checkout_pora', 'Dovana porų: mokėti'], ['gift_paid_asm', 'Dovana asm.: pirko'], ['gift_paid_pora', 'Dovana porų: pirko'], ['kodas_view', '/kodas'], ['klausk_view', 'Klausimų puslapis'], ['klausk_checkout', 'Klausimai: mokėti'], ['res_pora_click', 'Rezultate: „Jums dviem“'], ['res_gift_click', 'Rezultate: dovana'], ['mano_view', '„Mano analizės“']]],
     ['Dalinimasis', [['share_card', 'Stiprybių kortelė'], ['pora_share_card', 'Porų kortelė'], ['invite', 'Pakvietė draugus'], ['ref_paid', 'Draugai pirko'], ['pora_duo_send', 'Nusiuntė antrajai pusei']]],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
-    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
+    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −' + ONCE_PCT + ' %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];
   const allCols = groups.flatMap(g => g[1]);
   const sum = {}; days.forEach(d => allCols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
