@@ -3256,7 +3256,6 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
 }
 
 function buildGiftEmailHtml(gift) {
-  const link = giftRedeemLink(gift);
   const pora = gift.kind === 'pora';
   const cardLink = `${appBaseUrl()}/dovana/kortele?kodas=${encodeURIComponent(gift.code)}`;
   const to = gift.recipientName ? escapeHtml(ltPhrase(gift.recipientName, 'dat')) : 'Tau';
@@ -3274,18 +3273,14 @@ function buildGiftEmailHtml(gift) {
     ${gift.fromName ? `<div style="margin-top:10px;font-size:14px;color:rgba(255,255,255,.6)">— nuo ${escapeHtml(ltPhrase(gift.fromName, 'gen'))}</div>` : ''}
     <div style="margin:28px auto 6px;display:inline-block;border:1px dashed rgba(212,168,67,.7);border-radius:10px;padding:12px 22px;font-family:'Courier New',monospace;font-size:24px;letter-spacing:.18em;color:#f0d58a">${escapeHtml(gift.code)}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
-    <div style="margin-top:26px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">${pora ? 'Sužinoti, kaip derate poroje' : 'Atskleisti savo žemėlapį'}</a></div>
-    <div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">
-      Kaip panaudoti: paspausk mygtuką aukščiau arba įvesk kodą adresu <a href="${appBaseUrl()}/kodas" style="color:#f5d061;font-weight:bold;text-decoration:underline">www.delnaskaitymas.lt/kodas</a>, tada ${pora ? 'nufotografuokite savo delnus' : 'nufotografuok abu delnus'} — mokėti nereikės.
+    <div style="margin-top:26px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.7)">
+      Atsisiųsk dovanų kuponą ir perduok jį gavėjui — atsispausdintą arba per Messenger, WhatsApp ar el. paštu. Kupone kainos nėra.
     </div>
-    <div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,.6)">
-      Dovanų kuponą gali atsisiųsti, atsispausdinti arba persiųsti:<br>
-      <a href="${cardLink}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:bold">⬇ Atsisiųsti dovanų kuponą</a>
-    </div>
+    <div style="margin-top:14px"><a href="${cardLink}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atsisiųsti dovanų kuponą</a></div>
   </div>
   ${gift.amount ? `<div style="max-width:520px;margin:18px auto 0">${giftReceiptHtml(gift)}</div>` : ''}
   <div style="max-width:520px;margin:18px auto 0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#888;text-align:center">
-    Šį laišką gavai, nes įsigijai DELNAS dovanų kuponą. Gavėjui nusiųsk dovanų kuponą (mygtukas aukščiau) — šiame laiške nurodyta kaina.
+    Šį laišką gavai, nes įsigijai DELNAS dovanų kuponą. Šio laiško gavėjui nepersiųsk — jame nurodyta kaina. Gavėjui siųsk atsisiųstą dovanų kuponą.
     Kodas vienkartinis. Pramoginio pobūdžio paslauga, 18+.
   </div>
   ${EMAIL_FOOTER_HTML}
