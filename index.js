@@ -392,6 +392,13 @@ function buildReminderMail(r, testPromo) {
   const saved = testPromo ? (r.savedId ? {} : null) : (r.savedId && typeof loadSaved === 'function' ? loadSaved().items[r.savedId] : null);
   let link = site, btn = 'Pažiūrėti, ką delnai rodo dabar', subtitle = 'Tavo delnai gali papasakoti, kas pasikeitė';
   let body = 'Per tris mėnesius nutinka daug: sprendimai, pokyčiai, nauji žmonės. Visa tai palieka pėdsaką ir delnų linijose. Nufotografuok delnus iš naujo ir pažiūrėk, ką tavo gyvenimo žemėlapis rodo dabar.';
+  if (!saved) {
+    // Analizė nebuvo išsaugota (palyginti nėra su kuo) — tas pats kvietimas ir ta pati nuolaida naujai analizei
+    const p = testPromo || createPromo({ kind: 'remind', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'remind:' + String(r.email || '').toLowerCase() + ':' + (r.createdAt || '') });
+    link = `${site}/?promo=${p.code}`;
+    btn = `Pažiūrėti, ką delnai rodo dabar (−${p.pct}&nbsp;%)`;
+    body = `Per tris mėnesius nutinka daug: sprendimai, pokyčiai, nauji žmonės. Visa tai palieka pėdsaką ir delnų linijose. Nufotografuok delnus iš naujo ir pamatysi, <b style="color:#f0d58a">ką tavo gyvenimo žemėlapis rodo dabar ir kur link judi</b>. Naujai analizei — <b style="color:#f0d58a">−${p.pct}&nbsp;%</b> (galioja 30 dienų).`;
+  }
   if (saved) {
     const p = testPromo || createPromo({ kind: 'repeat', product: 'asmenine', pct: REPEAT_PCT, ttlMs: 30 * DAY_MS, email: r.email, key: 'repeat:' + r.savedId, meta: { savedId: r.savedId } });
     link = `${site}/?kartoti=${p.code}`;
@@ -5010,7 +5017,7 @@ app.get('/testimonials', pollLimiter, (req, res) => {
 });
 
 // Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
-const STAT_EVENTS = ['home', 'start', 'photos', 'order', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result', 'pay_click', 'pora_checkout', 'dovana_asm', 'dovana_pora', 'gift_checkout_asm', 'gift_checkout_pora', 'gift_paid_asm', 'gift_paid_pora', 'kodas_view', 'klausk_view', 'klausk_checkout', 'res_pora_click', 'res_gift_click', 'mano_view', 'share_card', 'invite', 'pora_share_card', 'pora_duo_send'];
+const STAT_EVENTS = ['home', 'start', 'photos', 'order', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'promo_remind', 'pora_reminder', 'pora_start', 'pora_first', 'pora_remote', 'pora_photos', 'pora_result', 'pay_click', 'pora_checkout', 'dovana_asm', 'dovana_pora', 'gift_checkout_asm', 'gift_checkout_pora', 'gift_paid_asm', 'gift_paid_pora', 'kodas_view', 'klausk_view', 'klausk_checkout', 'res_pora_click', 'res_gift_click', 'mano_view', 'share_card', 'invite', 'pora_share_card', 'pora_duo_send'];
 let _statsBuf = null, _statsTimer = null;
 function statInc(ev) {
   if (!STAT_EVENTS.includes(ev)) return;
@@ -5154,7 +5161,7 @@ app.get('/admin/stats', sensitiveLimiter, (req, res) => {
     ['Pirkimai ir pasiūlymai', [['pay_click', 'Asm.: paspaudė mokėti'], ['pora_checkout', 'Porų: paspaudė užsakyti'], ['dovana_asm', 'Dovana: asm. forma'], ['dovana_pora', 'Dovana: porų forma'], ['gift_checkout_asm', 'Dovana asm.: mokėti'], ['gift_checkout_pora', 'Dovana porų: mokėti'], ['gift_paid_asm', 'Dovana asm.: pirko'], ['gift_paid_pora', 'Dovana porų: pirko'], ['kodas_view', '/kodas'], ['klausk_view', 'Klausimų puslapis'], ['klausk_checkout', 'Klausimai: mokėti'], ['res_pora_click', 'Rezultate: „Jums dviem“'], ['res_gift_click', 'Rezultate: dovana'], ['mano_view', '„Mano analizės“']]],
     ['Dalinimasis', [['share_card', 'Stiprybių kortelė'], ['pora_share_card', 'Porų kortelė'], ['invite', 'Pakvietė draugus'], ['ref_paid', 'Draugai pirko'], ['pora_duo_send', 'Nusiuntė antrajai pusei']]],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
-    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −' + ONCE_PCT + ' %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
+    ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −' + ONCE_PCT + ' %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['promo_remind', 'Pakartojo (be išsaugotos)'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];
   const allCols = groups.flatMap(g => g[1]);
   const sum = {}; days.forEach(d => allCols.forEach(([k]) => { sum[k] = (sum[k] || 0) + (st.days[d][k] || 0); }));
@@ -5269,7 +5276,7 @@ function duoOfPayment(ref) {
 }
 function promoTag(p) {
   if (p.price) return `💞 ${PROMO_LABELS[p.kind] || 'Nuolaida'} — ${(p.price / 100).toFixed(2).replace('.', ',')} €`;
-  return p.kind === 'repeat' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`;
+  return p.kind === 'repeat' || p.kind === 'remind' ? `✦ Pakartotinė analizė −${p.pct} %` : `⏳ Tavo nuolaida −${p.pct} %`;
 }
 function cleanupPromos() {
   try {
