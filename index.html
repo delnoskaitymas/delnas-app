@@ -6914,22 +6914,24 @@ async function loadCompare(){
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
-// Grįžimas į ankstesnį žingsnį: kamera → pradžia, vardas ir el. paštas → kamera (nufotografuoti iš naujo), mokėjimas → vardas ir el. paštas
-(function stepBack(){
-  const css=document.createElement('style');
-  css.textContent=".scr-back{position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:30;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}#s-info .scr-back{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px))}";
-  document.head.appendChild(css);
-  const add=(id,fn,show)=>{ const scr=document.getElementById(id); if(!scr||scr.querySelector('.scr-back')) return;
-    const b=document.createElement('button'); b.type='button'; b.className='scr-back'; b.textContent='Grįžti';
-    b.addEventListener('click',fn); if(getComputedStyle(scr).position==='static') scr.style.position='relative'; scr.appendChild(b);
-    if(show) new MutationObserver(()=>{ b.style.display=show()?'':'none'; }).observe(scr,{attributes:true,attributeFilter:['class']}); };
-  const init=()=>{
-    // Po apmokėjimo nuotraukas reikia pakartoti — grįžimo nerodome
-    add('s-camera',()=>{ try{ stopCamera(); }catch(e){} go('s-home'); },()=>!window._postPaymentRetry);
-    add('s-order',()=>{ try{ stopCamera(); }catch(e){} startApp(); });
-    add('s-info',()=>{ go('s-order'); try{ initOrderScreen(); }catch(e){} },()=>!window._paymentRef&&!window._postPaymentRetry);
-  };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+// Rezultatas, atidarytas per nuorodą (laiške, klausimų ar porų puslapyje) — „Į pradžią“ viršuje kairėje.
+// Fotografavimo, užsakymo, mokėjimo ir analizės ekranuose grįžimo mygtukų nėra.
+(function resultHome(){
+  const q=new URLSearchParams(location.search);
+  if(!q.get('pora')&&!q.get('kl')) return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active');
+    if(scr&&(scr.id==='s-result'||scr.id==='s-pora-result')){
+      clearInterval(iv);
+      if(document.getElementById('duo-back')||document.getElementById('mano-back')||document.getElementById('res-home')) return;
+      const a=document.createElement('a'); a.id='res-home'; a.href='/'; a.textContent='Į pradžią';
+      a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+      scr.prepend(a);
+      // Vėliau atsiradus „Grįžti į poros rezultatą“ / „… eilė“ — paliekame tik jį
+      const t=setInterval(()=>{ if(document.getElementById('duo-back')){ a.remove(); clearInterval(t); } },500); setTimeout(()=>clearInterval(t),15000);
+    }
+    if(++n>120) clearInterval(iv);
+  },250);
 })();
 // Dovanų ir porų analizės nuorodos rezultato ekranuose: perduodamas adresas grįžti į tą pačią vietą (prie dovanų bloko), jei rezultatą galima atidaryti iš naujo
 document.addEventListener('click',e=>{
