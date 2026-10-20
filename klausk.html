@@ -261,5 +261,10 @@ document.getElementById('back-link').addEventListener('click', e => {
 })();
 </script>
 <script src="/awake.js"></script>
+<script>
+// Statistika (be slapukų): įvykis siunčiamas vieną kartą per sesiją
+function delnasEv(e){ try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); const b=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([b],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body:b,keepalive:true}); }catch(x){} }
+delnasEv('klausk_view');
+</script>
 </body>
 </html>

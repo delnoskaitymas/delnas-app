@@ -992,5 +992,18 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 })();
 </script>
 <script src="/awake.js"></script>
+<script>
+// Statistika (be slapukų): įvykis siunčiamas vieną kartą per sesiją
+function delnasEv(e){ try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); const b=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([b],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body:b,keepalive:true}); }catch(x){} }
+(function(){
+  const isPora=()=>{ const b=document.getElementById('k-pora'); return !!(b&&b.classList.contains('on')); };
+  if(location.pathname==='/kodas') delnasEv('kodas_view');
+  const seen=()=>{ const f=document.getElementById('v-form'); if(f&&!f.classList.contains('hidden')) delnasEv(isPora()?'dovana_pora':'dovana_asm'); };
+  setTimeout(seen,800);
+  document.addEventListener('click',e=>{ const c=s=>e.target.closest&&e.target.closest(s);
+    if(c('#k-asm, #k-pora')) setTimeout(seen,50);
+    else if(c('#pay-btn')) delnasEv(isPora()?'gift_checkout_pora':'gift_checkout_asm'); },true);
+})();
+</script>
 </body>
 </html>
