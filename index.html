@@ -1238,6 +1238,8 @@ setInterval(()=>{
 
 function go(id){
   if(id==='s-order') track('order');
+  // Porų analizės kelias: pirmas nufotografuotas, nuoroda antrajam, abu nufotografuoti, rezultatas
+  const _pe={'s-pora-next':'pora_first','s-pora-remote':'pora_remote','s-pora-wait':'pora_photos','s-pora-result':'pora_result'}[id]; if(_pe) track(_pe);
   if(id==='s-info'&&typeof applyGiftMode==='function') applyGiftMode();
   if(id==='s-home'){
     setTimeout(()=>{
@@ -2181,7 +2183,7 @@ function acceptConsentAndStart(){
     if(er){ er.textContent=(cb&&!cb.checked)&&(cw&&!cw.checked)?'Reikia pažymėti abu langelius':'Reikia pažymėti ir šį langelį'; er.style.display='block'; }
     return;
   }
-  if(!(window._pora&&window._pora.active)) track('start');
+  track(window._pora&&window._pora.active?'pora_start':'start');
   try{ sessionStorage.setItem('delnasConsentGiven','1'); }catch(e){}
   const m=document.getElementById('consent-modal');
   if(m) m.style.display='none';
