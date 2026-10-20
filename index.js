@@ -3346,7 +3346,7 @@ function adminDigestAdd(cat, mail) {
 function digestFunnelHtml() {
   try {
     const st = _statsBuf || readJson(STATS_FILE, { days: {} }), day = st.days[new Date().toISOString().slice(0, 10)] || {};
-    const steps = [['home', 'Atidarė svetainę'], ['start', 'Pradėjo (kamera)'], ['photos', 'Nufotografavo delnus'], ['order', 'Vardas ir el. paštas'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']];
+    const steps = [['home', 'Atidarė svetainę'], ['start', 'Pradėjo (kamera)'], ['photos', 'Nufotografavo delnus'], ['order', 'Užsakymo forma'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']];
     const extra = [['pora_view', 'Atidarė porų puslapį'], ['pora_paid', 'Apmokėjo porų analizę'], ['dovana_view', 'Atidarė dovanų puslapį'], ['gift_paid', 'Pirko dovaną'], ['klausk_paid', 'Pirko klausimus']];
     if (!steps.concat(extra).some(([k]) => day[k])) return '';
     const td = 'padding:4px 10px;border-bottom:1px solid #eee', first = day.home || 0;
@@ -5137,7 +5137,7 @@ app.get('/admin/stats', sensitiveLimiter, (req, res) => {
   const avg = fb.length ? (fb.reduce((a, x) => a + x.stars, 0) / fb.length).toFixed(2) : '—';
   // Trys siauresnės lentelės — kad viskas matytųsi be slinkimo į šoną
   const groups = [
-    ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['order', 'Vardas ir el. paštas'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
+    ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['order', 'Užsakymo forma'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
     ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];
