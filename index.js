@@ -5254,7 +5254,9 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
     } else {
       bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
     }
-    res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle && !bundle.usedBy ? promoPublic(bundle) : null, bundleGift, poraPrice: PORA_PRICE_CENTS });
+    // Porų analizė jau užsakyta kartu su šia analize (rinkinio kaina ar rinkinio kuponu) — jos nebesiūlome
+    const hasPora = !!(bundle && bundle.usedBy) || !!(bundleGift && bundleGift.status === 'redeemed');
+    res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle && !bundle.usedBy ? promoPublic(bundle) : null, bundleGift, poraPrice: PORA_PRICE_CENTS, hasPora });
   } catch (err) {
     console.error('/promo/offers klaida:', err);
     res.json({});

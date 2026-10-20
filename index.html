@@ -3853,7 +3853,12 @@ function cleanResultText(v){
   if(v&&typeof v==='object'){ for(const k of Object.keys(v)) v[k]=cleanResultText(v[k]); return v; }
   return v;
 }
+// Kas atlikta šio apsilankymo metu (šiame telefone, per paskutines 6 val.) — rezultato ekrane nesiūlome to paties dar kartą.
+// Ankstesnės dienos analizės nesvarbios; asmeninė analizė poros kaina (duo) skaičiuojama serverio pusėje.
+function markDone(k){ try{ const d=JSON.parse(localStorage.getItem('delnasDone')||'{}')||{}; d[k]=Date.now(); localStorage.setItem('delnasDone',JSON.stringify(d)); }catch(e){} }
+function recentDone(k){ try{ const d=JSON.parse(localStorage.getItem('delnasDone')||'{}')||{}; return !!d[k]&&Date.now()-d[k]<6*3600e3; }catch(e){ return false; } }
 function displayResult(r){
+  try{ if(r&&typeof r==='object'&&!window._manoView&&!sessionStorage.getItem('delnasDuo')) markDone('asm'); }catch(e){}
   try{ cleanResultText(r); }catch(e){}
   console.log('displayResult called, r=',r?JSON.stringify(r).substring(0,200):'NULL');
   window._palmResult=r;window._shareUrl=null;
@@ -6339,7 +6344,11 @@ async function loadPoraDuo(){
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' analizė — '+eur(d.price)+' €</a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
         (d.remote?'':'<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button>')+'</div>'; };
+  // Pirkėjas (A) asmeninę analizę atliko šio apsilankymo metu šiame telefone
+  if(recentDone('asm')&&!d.a.used) d.a={...d.a,used:true,code:''};
   const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
+  // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
+  if(both){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
   box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
     '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
@@ -6416,6 +6425,7 @@ function poraNeutralResult(r){
   return r;
 }
 function renderPoraResult(r){
+  markDone('pora');
   try{ cleanResultText(r); }catch(e){}
   try{ poraNeutralResult(r); }catch(e){}
   // Analizė baigta — „Mano analizių“ „Pradžia“ šios poros pradžios ekrano nebeprimena
@@ -6825,6 +6835,7 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
 
 // Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
 async function loadResultOffers(){
+  if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(!payRef||window._manoView) return;
   let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); }catch(e){ return; }
@@ -6836,7 +6847,9 @@ async function loadResultOffers(){
     gifts.parentNode.insertBefore(b,gifts);
     gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' %'; });
   }
-  const pora=document.querySelector('#s-result .rb-pora');
+  // Porų analizė jau atlikta ar užsakyta — „Jums dviem“ nebesiūlome
+  if(d.hasPora||recentDone('pora')){ d.hasPora=true; const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
+  const pora=d.hasPora?null:document.querySelector('#s-result .rb-pora');
   if(pora){
     if(d.bundleGift&&d.bundleGift.status==='active'){
       pora.href=d.bundleGift.link;
@@ -6901,6 +6914,25 @@ async function loadCompare(){
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
+// Rezultatas, atidarytas per nuorodą (laiške, klausimų ar porų puslapyje) — „Į pradžią“ viršuje kairėje.
+// Fotografavimo, užsakymo, mokėjimo ir analizės ekranuose grįžimo mygtukų nėra.
+(function resultHome(){
+  const q=new URLSearchParams(location.search);
+  if(!q.get('pora')&&!q.get('kl')) return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active');
+    if(scr&&(scr.id==='s-result'||scr.id==='s-pora-result')){
+      clearInterval(iv);
+      if(document.getElementById('duo-back')||document.getElementById('mano-back')||document.getElementById('res-home')) return;
+      const a=document.createElement('a'); a.id='res-home'; a.href='/'; a.textContent='Į pradžią';
+      a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
+      scr.prepend(a);
+      // Vėliau atsiradus „Grįžti į poros rezultatą“ / „… eilė“ — paliekame tik jį
+      const t=setInterval(()=>{ if(document.getElementById('duo-back')){ a.remove(); clearInterval(t); } },500); setTimeout(()=>clearInterval(t),15000);
+    }
+    if(++n>120) clearInterval(iv);
+  },250);
+})();
 // Dovanų ir porų analizės nuorodos rezultato ekranuose: perduodamas adresas grįžti į tą pačią vietą (prie dovanų bloko), jei rezultatą galima atidaryti iš naujo
 document.addEventListener('click',e=>{
   const a=e.target.closest&&e.target.closest('a[href^="/dovana"],a[href^="/pora"]'); if(!a) return;
@@ -6930,13 +6962,15 @@ document.addEventListener('click',e=>{
   const mode=location.hash; if(mode!=='#asmenine'&&mode!=='#dovanos') return;
   let n=0; const iv=setInterval(()=>{
     const scr=document.querySelector('.screen.active'), blk=document.getElementById('pora-personal'), duo=document.getElementById('pora-duo');
-    if(scr&&scr.id==='s-pora-result'&&blk&&blk.offsetParent&&(duo&&duo.children.length||n>12)){
+    if(scr&&scr.id==='s-pora-result'&&blk&&(blk.offsetParent&&duo&&duo.children.length||n>12)){
       clearInterval(iv);
       try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
       setTimeout(()=>{
         const top=el=>{ let y=0; while(el){ y+=el.offsetTop; el=el.offsetParent; } return y; };
         // #asmenine — bloko viršus (kito žmogaus mygtukas); #dovanos — riba tarp šio bloko ir „Pasidalinkite ar padovanokite“ ekrano viduryje
-        const y=mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
+        // Asmeninių analizių blokas paslėptas (abu jau atliko) — tiesiai prie „Pasidalinkite ar padovanokite“
+        const gb=blk.nextElementSibling;
+        const y=!blk.offsetParent&&gb ? top(gb)-16 : mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
         window.scrollTo(0,Math.max(0,y));
       },300);
     }
@@ -6977,6 +7011,7 @@ document.addEventListener('click',e=>{
       if(d.refLink&&d.refLink.link) window._refLink=d.refLink;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
+      if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
     }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
   };
   if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
