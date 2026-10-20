@@ -3342,6 +3342,19 @@ function adminDigestAdd(cat, mail) {
   } catch (e) { console.error('[digest] įrašymo klaida:', e.message); }
   return Promise.resolve();
 }
+// Vakarinėje suvestinėje — šiandienos kelias (bendri skaičiai, be asmens duomenų): kiek žmonių pasiekė kiekvieną žingsnį
+function digestFunnelHtml() {
+  try {
+    const st = _statsBuf || readJson(STATS_FILE, { days: {} }), day = st.days[new Date().toISOString().slice(0, 10)] || {};
+    const steps = [['home', 'Atidarė svetainę'], ['start', 'Pradėjo (kamera)'], ['photos', 'Nufotografavo delnus'], ['order', 'Vardas ir el. paštas'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']];
+    const extra = [['pora_view', 'Atidarė porų puslapį'], ['pora_paid', 'Apmokėjo porų analizę'], ['dovana_view', 'Atidarė dovanų puslapį'], ['gift_paid', 'Pirko dovaną'], ['klausk_paid', 'Pirko klausimus']];
+    if (!steps.concat(extra).some(([k]) => day[k])) return '';
+    const td = 'padding:4px 10px;border-bottom:1px solid #eee', first = day.home || 0;
+    const rows = steps.map(([k, l]) => `<tr><td style="${td}">${l}</td><td style="${td};text-align:right"><b>${day[k] || 0}</b></td><td style="${td};text-align:right;color:#8a6d1f">${first ? Math.round((day[k] || 0) / first * 100) + '%' : ''}</td></tr>`).join('')
+      + extra.map(([k, l]) => `<tr><td style="${td};color:#555">${l}</td><td style="${td};text-align:right">${day[k] || 0}</td><td style="${td}"></td></tr>`).join('');
+    return `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Šiandienos kelias</h2><div style="font:12px Arial,sans-serif;color:#777;margin-bottom:6px">Kiek žmonių pasiekė kiekvieną žingsnį (procentai — nuo atidariusių svetainę). Visa statistika: /admin/stats</div><table style="border-collapse:collapse;font:13px Arial,sans-serif;width:100%">${rows}</table>`;
+  } catch (e) { return ''; }
+}
 function adminDigestHtml(items) {
   const hm = ts => new Date(ts).toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   const block = it => `<div style="border:1px solid #e3d3a6;border-radius:10px;padding:2px 14px;margin:0 0 10px;background:#fffdf6"><div style="font:12px Arial,sans-serif;color:#8a6d1f;margin-top:10px">${hm(it.at)} · ${escapeHtml(it.subject)}</div>${it.html.replace(/padding:20px/, 'padding:4px 0')}</div>`;
@@ -3352,14 +3365,14 @@ function adminDigestHtml(items) {
   try { unused = Object.values(loadGiftStore().codes).filter(g => giftStatus(g) === 'active' && !g.bundle).sort((a, b) => a.createdAt - b.createdAt); } catch (e) {}
   const unusedHtml = unused.length ? `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Nepanaudotos dovanos (${unused.length})</h2><table style="border-collapse:collapse;font:13px Arial,sans-serif;width:100%">${unused.map(g => `<tr><td style="padding:5px;border-bottom:1px solid #eee"><b>${escapeHtml(g.code)}</b></td><td style="padding:5px;border-bottom:1px solid #eee">${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}</td><td style="padding:5px;border-bottom:1px solid #eee">${escapeHtml(g.buyerEmail || '—')}</td><td style="padding:5px;border-bottom:1px solid #eee">pirkta ${fmtLtDate(g.createdAt)}</td><td style="padding:5px;border-bottom:1px solid #eee">galioja iki ${fmtLtDate(g.expiresAt)}</td></tr>`).join('')}</table>` : '';
   return `<div style="font-family:Georgia,serif;max-width:640px;padding:16px"><h1 style="font-size:22px;color:#3a2c08;margin:0 0 4px">DELNAS — dienos suvestinė</h1><div style="font:13px Arial,sans-serif;color:#777">${ltDate(Date.now())} · pardavimai: ${sales.length} · dovanos: ${gifts.length} · įvertinimai: ${ratings.length}</div>
-    ${sec('Parduotos analizės ir klausimai', sales)}${sec('Dovanos: parduotos ir panaudotos', gifts)}${unusedHtml}${sec('Įvertinimai', ratings)}</div>`;
+    ${digestFunnelHtml()}${sec('Parduotos analizės ir klausimai', sales)}${sec('Dovanos: parduotos ir panaudotos', gifts)}${unusedHtml}${sec('Įvertinimai', ratings)}</div>`;
 }
 function processAdminDigest() {
   try {
     const now = Date.now(), today = ltDate(now);
     if (ltHour(now) < ADMIN_DIGEST_HOUR) return;
     const d = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' });
-    if (d.lastSent === today || !d.items.length) return;
+    if (d.lastSent === today || (!d.items.length && !digestFunnelHtml())) return;
     const items = d.items.slice();
     d.items = []; d.lastSent = today; writeJson(ADMIN_DIGEST_FILE, d);
     mailer.sendMail({ from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`, to: ADMIN_EMAIL, subject: `DELNAS suvestinė ${today} — ${items.filter(i => i.cat === 'sales').length} pardav., ${items.filter(i => i.cat === 'gifts').length} dovan., ${items.filter(i => i.cat === 'ratings').length} įvert.`, html: adminDigestHtml(items) })
@@ -4989,7 +5002,7 @@ app.get('/testimonials', pollLimiter, (req, res) => {
 });
 
 // Statistika: tik įvykių skaičiai per dieną (be IP, slapukų ar asmens duomenų)
-const STAT_EVENTS = ['home', 'start', 'photos', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder'];
+const STAT_EVENTS = ['home', 'start', 'photos', 'order', 'pay_view', 'paid', 'bump', 'ref_paid', 'result', 'klausk_paid', 'pora_view', 'pora_paid', 'dovana_view', 'gift_paid', 'feedback', 'abandon_sent', 'promo_back', 'bundle', 'promo_bundle', 'promo_once', 'saved', 'promo_repeat', 'mano', 'promo_duo', 'pora_reminder'];
 let _statsBuf = null, _statsTimer = null;
 function statInc(ev) {
   if (!STAT_EVENTS.includes(ev)) return;
@@ -5017,7 +5030,7 @@ function statSrc(src, field) {
 app.post('/ev', express.text({ type: '*/*', limit: '1kb' }), (req, res) => {
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    if (['home', 'start', 'photos', 'pay_view', 'result', 'pora_view', 'dovana_view'].includes(b.e)) statInc(b.e);
+    if (['home', 'start', 'photos', 'order', 'pay_view', 'result', 'pora_view', 'dovana_view'].includes(b.e)) statInc(b.e);
     else if ((b.e === 'src_visit' || b.e === 'src_buy') && typeof b.s === 'string') statSrc(b.s, b.e === 'src_visit' ? 'v' : (['asmenine', 'pora', 'dovana'].includes(b.k) ? b.k : 'kita'));
   } catch (e) {}
   res.status(204).end();
@@ -5124,7 +5137,7 @@ app.get('/admin/stats', sensitiveLimiter, (req, res) => {
   const avg = fb.length ? (fb.reduce((a, x) => a + x.stars, 0) / fb.length).toFixed(2) : '—';
   // Trys siauresnės lentelės — kad viskas matytųsi be slinkimo į šoną
   const groups = [
-    ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
+    ['Pagrindinis kelias', [['home', 'Atidarė'], ['start', 'Pradėjo'], ['photos', 'Nufotografavo'], ['order', 'Vardas ir el. paštas'], ['pay_view', 'Mokėjimo ekranas'], ['paid', 'Apmokėjo']], true],
     ['Papildomi pardavimai', [['bump', '+3 klausimai'], ['klausk_paid', 'Klausk'], ['ref_paid', 'Per draugą'], ['pora_view', '/pora'], ['pora_paid', 'Poros'], ['dovana_view', '/dovana'], ['gift_paid', 'Dovanos'], ['feedback', 'Įvertinimai']]],
     ['Priminimai ir pasiūlymai', [['abandon_sent', 'Priminimai (nebaigė)'], ['promo_back', 'Grįžo ir sumokėjo'], ['promo_bundle', 'Poros po analizės'], ['promo_once', 'Dovana −30 %'], ['saved', 'Išsaugojo'], ['promo_repeat', 'Pakartojo'], ['mano', 'Mano analizės'], ['bundle', 'Rinkinys'], ['promo_duo', 'Asmeninė po porų'], ['pora_reminder', 'Porų priminimai']]]
   ];

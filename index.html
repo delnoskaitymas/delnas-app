@@ -1237,6 +1237,7 @@ setInterval(()=>{
 },20000);
 
 function go(id){
+  if(id==='s-order') track('order');
   if(id==='s-info'&&typeof applyGiftMode==='function') applyGiftMode();
   if(id==='s-home'){
     setTimeout(()=>{
