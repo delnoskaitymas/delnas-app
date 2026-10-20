@@ -4909,7 +4909,8 @@ async function buildInviteCardBlob(name){
 // pavertimas nebevyksta (lygiai taip pat, kaip jau veikia "Dalintis
 // kortele" mygtukas), o tekstas išlieka.
 async function inviteFriend(){
-  let appUrl = 'https://www.delnaskaitymas.lt';
+  track('invite');
+  let appUrl = 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=kvietimas';
   const name = window.userName || '';
   // Šalia kortelės (dalinimosi tekste, ne pačiame paveikslėlyje) rodomas
   // trumpas, smalsumą keliantis klausimas + nuoroda į programą.
@@ -4919,7 +4920,7 @@ async function inviteFriend(){
   if(payRef||window._refLink){
     try{
       if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
-      if(window._refLink){ appUrl=window._refLink.link; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
+      if(window._refLink){ appUrl=window._refLink.link+(window._refLink.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
     }catch(e){}
   }
   try{
@@ -5337,13 +5338,14 @@ async function buildStory916Blob(){
 }
 
 async function shareStory(){
+  track('share_card');
   try{
     // Dalinamasi pačia kvadratine kortele (1080×1080) — įraše ji užima visą plotą be juodų kraštų,
     // o istorijose Facebook/Instagram ją patys padeda per vidurį (anksčiau — 9:16 su dideliais juodais plotais)
     const blob = await buildStoryCardBlob();
     if(!blob){ alert('Nepavyko sukurti kortelės. Bandyk dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
-    const appUrl = 'https://www.delnaskaitymas.lt';
+    const appUrl = 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=stiprybes';
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
@@ -6338,7 +6340,8 @@ async function renderDuoNext(){
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
 async function poraDuoShare(code,name,btn){
-  const url=location.origin+'/?promo='+encodeURIComponent(code), f=ltForms(name||'');
+  track('pora_duo_send');
+  const url=location.origin+'/?promo='+encodeURIComponent(code)+'&utm_source=dalinimasis&utm_campaign=antrajai-pusei', f=ltForms(name||'');
   const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (11,99 €). Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
@@ -6638,7 +6641,8 @@ async function poraCardBlob(){
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
 }
 async function poraShareCard(){
-  const url='https://www.delnaskaitymas.lt/pora';
+  track('pora_share_card');
+  const url='https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poros-kortele';
   const text='Mūsų poros suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
   try{
     const blob=await poraCardBlob(), file=new File([blob],'poru-suderinamumas.jpg',{type:'image/jpeg'});
