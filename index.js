@@ -2348,6 +2348,7 @@ app.post('/klausk/pora-gift', sensitiveLimiter, (req, res) => {
     const orders = loadKlauskOrders();
     const existing = Object.entries(orders).find(([, o]) => o.poraSid === poraSid && o.gift);
     if (existing) return res.json({ id: existing[0] });
+    if (loadKlauskUsed()['pora:' + poraSid]) return res.status(410).json({ error: 'Šio užsakymo klausimai jau panaudoti' });
     const id = 'kp_' + crypto.randomBytes(12).toString('hex');
     orders[id] = { kind: 'pora', email: po.email, name: `${po.nameA} ir ${po.nameB}`, nameA: po.nameA, nameB: po.nameB, poraSid, result: po.result, qa: [], paid: true, paidAt: Date.now(), amount: 0, gift: po.gift, createdAt: Date.now() };
     saveKlauskOrders(orders);
@@ -2381,6 +2382,7 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
     const orders = loadKlauskOrders();
     const existing = Object.entries(orders).find(([, o]) => o.paymentRef === paymentRef);
     if (existing) return res.json({ id: existing[0] });
+    if (loadKlauskUsed()[paymentRef]) return res.status(410).json({ error: 'Šio užsakymo klausimai jau panaudoti' });
     const picked = pickKlauskResult(result);
     if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
     const id = 'kp_' + crypto.randomBytes(12).toString('hex');
@@ -4290,13 +4292,23 @@ function saveKlauskOrders(o) {
   fs.renameSync(tmp, KLAUSK_ORDERS_FILE);
 }
 // Neapmokėti įrašai — 1 d., apmokėti — 90 d.
+// Ištrinto klausimų užsakymo žymė (be turinio) — tuo pačiu mokėjimu ar dovana klausimai iš naujo neatidaromi
+const KLAUSK_USED_FILE = path.join(SHARED_STORAGE_DIR, 'klausk-used.json');
+function loadKlauskUsed() { try { if (fs.existsSync(KLAUSK_USED_FILE)) return JSON.parse(fs.readFileSync(KLAUSK_USED_FILE, 'utf8')) || {}; } catch (e) {} return {}; }
 function cleanupKlauskOrders() {
   try {
     const o = loadKlauskOrders(), now = Date.now(); let changed = false;
+    const used = loadKlauskUsed(); let usedCh = false;
     for (const [id, r] of Object.entries(o)) {
       const ttl = r.paid ? 90 * 864e5 : 864e5;
-      if ((r.createdAt || 0) < now - ttl) { delete o[id]; changed = true; }
+      if ((r.createdAt || 0) < now - ttl) {
+        if (r.paid && r.paymentRef) { used[r.paymentRef] = now; usedCh = true; }
+        if (r.paid && r.poraSid && r.gift) { used['pora:' + r.poraSid] = now; usedCh = true; }
+        delete o[id]; changed = true;
+      }
     }
+    for (const [k, at] of Object.entries(used)) if (at < now - USED_PAYMENT_KEEP_MS) { delete used[k]; usedCh = true; }
+    if (usedCh) writeFileSafe(KLAUSK_USED_FILE, JSON.stringify(used));
     if (changed) saveKlauskOrders(o);
   } catch (e) {}
 }
