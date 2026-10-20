@@ -1367,6 +1367,13 @@ function go(id){
   function arm(){ if(armed) return; try{ history.pushState(history.state,''); armed=true; }catch(e){} }
   ['pointerup','touchend','click','keydown'].forEach(t=>window.addEventListener(t,arm,{capture:true,passive:true}));
   window.addEventListener('popstate',()=>{ armed=false; });
+  // „Grįžti atgal“ mygtukas: praleidžiamas apsaugos įrašas; nėra kur grįžti — langas uždaromas
+  window.delnasLeave=function(btn){
+    const prev=history.length>(armed?2:1);
+    if(prev){ armed?history.go(-2):history.back(); return; }
+    try{ window.close(); }catch(x){}
+    setTimeout(()=>{ btn.textContent='Šį langą gali uždaryti'; btn.style.pointerEvents='none'; },300);
+  };
 })();
 
 window.addEventListener('DOMContentLoaded',async()=>{
@@ -6933,7 +6940,7 @@ async function loadCompare(){
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
 
-// Rezultatas, atidarytas per nuorodą (laiške, klausimų ar porų puslapyje) — „Į pradžią“ viršuje kairėje.
+// Rezultatas, atidarytas per nuorodą (laiške, klausimų ar porų puslapyje) — „Grįžti atgal“ viršuje kairėje (ten, iš kur atėjo).
 // Fotografavimo, užsakymo, mokėjimo ir analizės ekranuose grįžimo mygtukų nėra.
 (function resultHome(){
   const q=new URLSearchParams(location.search);
@@ -6943,7 +6950,8 @@ async function loadCompare(){
     if(scr&&(scr.id==='s-result'||scr.id==='s-pora-result')){
       clearInterval(iv);
       if(document.getElementById('duo-back')||document.getElementById('mano-back')||document.getElementById('res-home')) return;
-      const a=document.createElement('a'); a.id='res-home'; a.href='/'; a.textContent='Į pradžią';
+      const a=document.createElement('a'); a.id='res-home'; a.href='/'; a.textContent='Grįžti atgal';
+      a.addEventListener('click',e=>{ e.preventDefault(); window.delnasLeave(a); });
       a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       scr.prepend(a);
       // Vėliau atsiradus „Grįžti į poros rezultatą“ / „… eilė“ — paliekame tik jį
