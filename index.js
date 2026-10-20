@@ -2797,6 +2797,8 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     }
 
     if (!result) {
+      // Mokėjimas jau panaudotas (rezultatas buvo pateiktas) — naujos analizės tuo pačiu mokėjimu nepradedame
+      if (tokenEntry.used) return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
       if (!photos || photos.length === 0) {
         console.log(`[analyze-palm] sessionId=${sessionId||'(nėra)'} -> NĖRA rezultato IR nėra nuotraukų, grąžinam 400`);
         return res.status(400).json({ error: 'Analizė dar nebaigta. Bandykite dar kartą.' });
@@ -3552,12 +3554,21 @@ function updatePoraOrder(sessionId, patch) {
   return orders[sessionId];
 }
 // Pasenusių (>90 d.) užsakymų valymas paleidimo metu
+const PORA_USED_FILE = path.join(SHARED_STORAGE_DIR, 'pora-used.json');
+function loadPoraUsed() { try { if (fs.existsSync(PORA_USED_FILE)) return JSON.parse(fs.readFileSync(PORA_USED_FILE, 'utf8')) || {}; } catch (e) {} return {}; }
 function cleanupPoraOrders() {
   try {
     const orders = loadPoraOrders(), cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
     let changed = false;
-    for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < cutoff) { delete orders[id]; changed = true; }
+    const used = loadPoraUsed(); let usedChanged = false;
+    for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < cutoff) {
+      // Atliktos analizės žymė (be asmens duomenų) lieka 13 mėn. — kad tuo pačiu mokėjimu ar kuponu nebūtų atlikta antra analizė
+      if (o.status === 'done' || o.result) { used[id] = o.finishedAt || o.createdAt || Date.now(); usedChanged = true; }
+      delete orders[id]; changed = true;
+    }
+    for (const [id, at] of Object.entries(used)) if (at < Date.now() - USED_PAYMENT_KEEP_MS) { delete used[id]; usedChanged = true; }
     if (changed) savePoraOrders(orders);
+    if (usedChanged) writeFileSafe(PORA_USED_FILE, JSON.stringify(used));
   } catch (e) {}
 }
 cleanupPoraOrders();
@@ -3967,6 +3978,8 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
       photos = [...first, ...photos];
     }
     if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
+    // Šio užsakymo analizė jau buvo atlikta (įrašas po 90 d. ištrintas, liko tik žymė)
+    if (!existing && loadPoraUsed()[sessionId]) return res.status(410).json({ error: 'Ši porų analizė jau atlikta' });
     // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo
     if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
       return res.json({ started: true, status: existing.status });
@@ -4145,6 +4158,7 @@ app.post('/pora/save-first', sensitiveLimiter, async (req, res) => {
     if (!isValidPhotosArray(photos) || photos.length !== 2) return res.status(400).json({ error: 'Reikia 2 delnų nuotraukų' });
     const existing = loadPoraOrders()[sessionId];
     if (existing && ['done', 'pending'].includes(existing.status)) return res.status(409).json({ error: 'Analizė jau vykdoma arba baigta' });
+    if (!existing && loadPoraUsed()[sessionId]) return res.status(410).json({ error: 'Ši porų analizė jau atlikta' });
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
     fs.mkdirSync(PORA_PHOTOS_DIR, { recursive: true });
