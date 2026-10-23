@@ -1126,8 +1126,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <!-- Asmeninė analizė kiekvienam — pelningiausias pasiūlymas, iškart po „Klauskite“ (porų kaina abiem — /pora/offers) -->
     <div id="pora-personal" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie jus atskirai?</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Asmeninis gyvenimo žemėlapis — 7 skyrių analizė pagal savo delnus.</div>
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie kiekvieną iš jūsų?</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Porų analizė parodė, kaip derate kartu. Asmeninis gyvenimo žemėlapis atskleis, kas laukia kiekvieno iš jūsų: kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote.</div>
       <div id="pora-duo"></div>
       <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė</a>
     </div>
@@ -6372,7 +6372,7 @@ async function loadPoraDuo(){
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
     return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' asmeninė analizė atlikta</div>'
-      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' analizė — '+eur(d.price)+' €</a>'+
+      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — '+eur(d.price)+' €</a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
         (d.remote?'':'<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button>')+'</div>'; };
   // Pirkėjas (A) asmeninę analizę atliko šio apsilankymo metu šiame telefone
