@@ -6358,7 +6358,7 @@ async function renderDuoNext(){
 async function poraDuoShare(code,name,btn){
   track('pora_duo_send');
   const url=location.origin+'/?promo='+encodeURIComponent(code)+'&utm_source=dalinimasis&utm_campaign=antrajai-pusei', f=ltForms(name||'');
-  const text=(f.voc||name)+', tau — asmeninė delnų analizė porų kaina (11,99 €). Nufotografuok delnus čia:';
+  const text=(f.voc||name)+', tau — asmeninė delnų analizė už 11,99 € vietoj 14,99 €. Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
@@ -6379,7 +6379,7 @@ async function loadPoraDuo(){
   const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
   // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
   if(both){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
-  box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Porų kaina — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
+  box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Kiekvienam — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
     '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
   if(fb) fb.style.display='none';
@@ -6850,8 +6850,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
     n.innerHTML=q.kind==='duo'
       ? (q.forName
-        ? '💞 '+_xEsc(ltForms(q.forName).voc||q.forName)+', tavo asmeninė analizė porų kaina — <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
-        : '💞 Porų kaina — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
+        ? '💞 '+_xEsc(ltForms(q.forName).voc||q.forName)+', tavo asmeninė analizė — <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
+        : '💞 Asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
       : q.kind==='repeat'
       ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
       : q.kind==='remind'
@@ -6862,7 +6862,7 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     // Porų kaina: „Karle, tavo eilė — …“
     if(q.kind==='duo'&&!q.forName){ try{ const duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null');
       if(duo){ const o=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json();
-        const nm=duo.side==='a'?o.nameA:o.nameB; if(nm) n.innerHTML='💞 '+_xEsc(ltForms(nm).voc)+', tavo eilė — asmeninė analizė porų kaina <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt); } }catch(e){} }
+        const nm=duo.side==='a'?o.nameA:o.nameB; if(nm) n.innerHTML='💞 '+_xEsc(ltForms(nm).voc)+', tavo eilė — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt); } }catch(e){} }
   }catch(e){}
 })();
 
