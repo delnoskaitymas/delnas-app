@@ -4608,9 +4608,9 @@ function poraDuoEmailOffer(o, sessionId) {
   const btn = t => `<a href="${link}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${t}</a>`;
   if (used.a || used.b) {
     const nm = used.a ? o.nameB : o.nameA, f = ltFormsObj(nm) || {};
-    return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">${escapeHtml(f.gen || nm)} asmeninis gyvenimo žemėlapis — porų kaina <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b>.</p>${btn(escapeHtml(f.gen || nm) + ' analizė')}`;
+    return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">${escapeHtml(f.gen || nm)} asmeninis gyvenimo žemėlapis — <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn(escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis')}`;
   }
-  return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">Norite sužinoti ir savo asmeninius gyvenimo žemėlapius? Kiekvienam — porų kaina <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b>.</p>${btn('Asmeninės analizės')}`;
+  return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:22px 0 4px;font-family:Georgia,serif">O ką delnai pasakoja apie kiekvieną iš jūsų?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0">Kiekvienam — po <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn('✦ Atskleisti savo gyvenimo žemėlapius')}`;
 }
 // Mokėjimo patvirtinimas laiškuose (vietoj Stripe kvito): paslauga, suma, data, užsakymo nr., pardavėjas
 function payReceiptHtml({ item, amount, at, orderNo, orderLabel }) {
@@ -5262,7 +5262,7 @@ function markPromoUsed(code, ref) {
   if (p && !p.usedBy) { p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind); }
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
-const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Porų kaina' };
+const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Tavo kaina' };
 function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
 // Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
 function duoForName(code) {
