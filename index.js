@@ -203,38 +203,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Uždara svetainė bandymų metu: Railway Variables → SITE_LOCK=<prieigos kodas>.
-// Be kodo lankytojai mato tik „Netrukus“; įvedus kodą naršyklė įsimenama 1 metams.
-// Atidarant visiems — SITE_LOCK ištrinamas.
-const SITE_LOCK = process.env.SITE_LOCK || '';
-const SITE_LOCK_COOKIE = 'delnas_prieiga';
-const siteLockToken = () => crypto.createHmac('sha256', SITE_LOCK).update('delnas-prieiga').digest('hex');
-function siteLockPage(err, back) {
-  return `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>DELNAS</title><style>html,body{height:100%}body{margin:0;background:#000;color:#e8e2d4;font-family:-apple-system,'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center}.b{max-width:340px;width:100%}h1{font-family:Georgia,serif;color:#d4a843;letter-spacing:.3em;font-size:22px;margin:0 0 14px}p{font-size:15px;line-height:1.6;color:rgba(232,226,212,.8);margin:0 0 26px}input,button{width:100%;box-sizing:border-box;border-radius:10px;padding:13px;font-size:15px;font-family:inherit}input{background:#0d0b08;border:1px solid rgba(212,168,67,.35);color:#f5eed8;text-align:center;margin-bottom:10px}button{background:#d4a843;border:0;color:#140f02;font-weight:700}.e{color:#e08a7a;font-size:13px;margin:10px 0 0}</style></head><body><div class="b"><h1>DELNAS</h1><p>Svetainė ruošiama ir netrukus atsidarys.</p><form method="post" action="/prieiga"><input type="hidden" name="atgal" value="${escapeHtml(back || '/')}"><input type="password" name="kodas" placeholder="Prieigos kodas" autocomplete="current-password" required><button type="submit">Įeiti</button>${err ? '<div class="e">Neteisingas kodas.</div>' : ''}</form></div></body></html>`;
-}
-// Railway diegimo patikra (healthcheck) — atsako ir tada, kai svetainė uždaryta (SITE_LOCK)
-app.get('/healthz', (req, res) => res.type('text').send('ok'));
-if (SITE_LOCK) {
-  app.post('/prieiga', express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
-    const k = String((req.body && req.body.kodas) || '');
-    const a = crypto.createHash('sha256').update(k).digest(), b = crypto.createHash('sha256').update(SITE_LOCK).digest();
-    const back = String((req.body && req.body.atgal) || '/');
-    const safeBack = /^\/(?![\/\\])[^\s]{0,1000}$/.test(back) ? back : '/';
-    if (!crypto.timingSafeEqual(a, b)) return res.status(401).type('html').send(siteLockPage(true, safeBack));
-    res.cookie(SITE_LOCK_COOKIE, siteLockToken(), { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 365 * 864e5 });
-    res.redirect(303, safeBack);
-  });
-  app.use((req, res, next) => {
-    // Laiškų paveikslėliai, ikonos ir administravimas (turi savo raktą) — be kodo
-    if (/^\/(img|icons)\//.test(req.path) || /\.(png|jpe?g|webp|svg|ico|woff2?)$/i.test(req.path) || req.path === '/robots.txt' || req.path === '/manifest.json' || req.path.startsWith('/admin')) return next();
-    const m = /(?:^|;\s*)delnas_prieiga=([a-f0-9]{64})/.exec(req.headers.cookie || '');
-    if (m && crypto.timingSafeEqual(Buffer.from(m[1]), Buffer.from(siteLockToken()))) return next();
-    res.setHeader('Cache-Control', 'no-store');
-    if (req.method === 'GET' && (req.accepts(['html', 'json']) === 'html')) return res.status(401).type('html').send(siteLockPage(false, req.originalUrl));
-    res.status(401).json({ error: 'Svetainė ruošiama' });
-  });
-}
-
 // Dovanos nuoroda (/?dovana=… arba /pora?dovana=…) — nuorodos peržiūra Messenger / WhatsApp / Facebook
 // rodo, kad tai dovana (kitaip — bendras puslapio aprašymas iš <!--og--> bloko)
 function sendHtmlWithOg(res, file, title, desc) {
