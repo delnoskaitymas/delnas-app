@@ -3996,9 +3996,13 @@ function renderResultExtra(r){
   const box=document.getElementById('r-extra'); if(!box) return;
   let h='';
   // Priminimas po 3 mėnesių — atskira kortelė pačiame gale (po vertinimo ir „Pasidalink“)
-  const hPlan=(window._manoView||window._klView)?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
-    '<div id="reminder-wrap"><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
-    '<div id="reminder-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
+  // Grįžus iš klausimų puslapio blokas rodomas, jei tame pačiame skirtuke žinome analizės sesiją (išsaugoti galima 3 val.)
+  const rmPrev=_remGet()||{};
+  if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
+  const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+    '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
+    '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
   renderPalmsSideBySide(r);
   if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; loadCompare(); }
@@ -4145,6 +4149,9 @@ function setupKlauskBlock(o){
   });
 }
 
+// Analizės sesija šiame skirtuke — kad grįžus iš klausimų puslapio būtų galima išsaugoti ir užregistruoti priminimą
+function _remGet(){ try{ return JSON.parse(sessionStorage.getItem('delnasRem')||'null'); }catch(e){ return null; } }
+function _remStore(v){ try{ sessionStorage.setItem('delnasRem',JSON.stringify(v)); }catch(e){} }
 async function registerReminder(){
   const email = window._userEmail || window.userEmail || window.palmEmail || '';
   const name = window._userName || window.userName || '';
@@ -4154,11 +4161,12 @@ async function registerReminder(){
   }
   try{
     // Pirmiausia — išsaugoti analizę (serveris ima rezultatą iš savo laikinos saugyklos) ir užregistruoti priminimą su palyginimu
-    if(window.bgSessionId){
-      const sv=await fetch('/save-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:window.bgSessionId,email})});
-      if(sv.ok){ document.getElementById('reminder-wrap').style.display='none'; document.getElementById('reminder-done').style.display='block'; return; }
+    const bgId=window.bgSessionId||window._klRem||'';
+    if(bgId){
+      const sv=await fetch('/save-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:bgId,email})});
+      if(sv.ok){ const rm=_remGet(); if(rm&&rm.bg===bgId){ rm.saved=true; _remStore(rm); } document.getElementById('reminder-wrap').style.display='none'; document.getElementById('reminder-done').style.display='block'; return; }
     }
-    const resp = await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,token:window.palmToken||'',sessionId:window.bgSessionId||''})});
+    const resp = await fetch('/schedule-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,token:window.palmToken||'',sessionId:bgId})});
     const data = await resp.json();
     const dn=document.getElementById('reminder-done'); if(dn) dn.textContent='✦ Laukiame tavęs po 3 mėnesių.';
     if(data.ok){
@@ -6930,6 +6938,9 @@ async function loadCompare(){
       if(d.paymentRef) window._paymentRef=d.paymentRef;
       if(d.email){ window._userEmail=window.userEmail=d.email; }
       if(d.orderNumber) window._orderNumber=d.orderNumber;
+      // Ta pati analizė, užsakyta šiame skirtuke prieš mažiau nei 3 val. — rodomas ir blokas „Po 3 mėnesių“
+      const rm=_remGet();
+      if(rm&&rm.bg&&Date.now()-rm.at<3*3600*1000&&(rm.refs||[]).some(x=>x&&(x===d.paymentRef||x===d.orderNumber))){ window._klRem=rm.bg; }
       // Asmeninė analizė porų kaina — kito poros žmogaus eilė / grįžimas į porų rezultatą
       try{ if(d.duo&&d.duo.sid){ sessionStorage.setItem('delnasDuo',JSON.stringify({sid:d.duo.sid,side:d.duo.side})); sessionStorage.setItem('delnasDuoTab','1'); } }catch(e){}
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
