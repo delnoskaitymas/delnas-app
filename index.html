@@ -4000,7 +4000,7 @@ function renderResultExtra(r){
   const rmPrev=_remGet()||{};
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
-  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Po 3 mėnesių priminsime pasidaryti naują analizę ir pamatysi, kas tavyje pasikeitė. Pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Kas tavyje pasikeis per 3 mėnesius? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
