@@ -999,7 +999,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <!-- Porų suderinamumas — atskiras, ryškus blokas iškart po „Klausk“ (brangiausias pasiūlymas) -->
     <div class="rs rs-std rs-reveal" id="r-pora-card" style="text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:10px;font-family:'Playfair Display',serif">💞 Jums dviem</div>
-      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje?</b><small>Kas jus iš tikrųjų sieja? 7 skyriai apie jūsų porą: kaip bendraujate ir sprendžiate nesutarimus, kur gali kilti trintis, kaip žiūrite į pinigus, namus ir ateitį, kokia jūsų stiprybė ir ką verta keisti. Su suderinamumo įverčiu procentais ir PDF.</small><span class="rb-pora-note">Nesate kartu? Nusiųskite nuorodą — delnus galima nufotografuoti ir kitame telefone, o rezultatą matysite abu</span><span class="rb-pora-go">Sužinoti, kaip derate</span></a>
+      <a href="/pora?utm_source=app&amp;utm_campaign=rezultatas" target="_blank" rel="noopener" class="rb-pora"><div style="display:flex;justify-content:center;margin-bottom:8px"><div class="pora-orbs xs"><div class="pora-orb"><i></i></div><div class="pora-orb"><i></i></div></div></div><b>Kaip derate poroje?</b><small>Kas jus sieja ir kur dažniausiai kyla trintis? 7 skyriai apie jūsų porą, su suderinamumo procentais ir PDF.</small><span class="rb-pora-note">Nesate kartu? Nufotografavus savo delnus, gausite nuorodą. Ją atidarius kitame telefone, galima nufotografuoti antro žmogaus delnus</span><span class="rb-pora-go">Sužinoti, kaip derate</span></a>
     </div>
     <!-- Pasidalink ir padovanok -->
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);box-shadow:0 4px 16px rgba(0,0,0,.4);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
@@ -4000,7 +4000,7 @@ function renderResultExtra(r){
   const rmPrev=_remGet()||{};
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
-  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Ši analizė 90 dienų matoma „Mano analizėse“. Paspaudus mygtuką, ją saugosime 12 mėnesių, o po 3 mėnesių priminsime pasidaryti naują — parodysime palyginimą, o pakartotinei analizei bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Kas tavyje pasikeis per 3 mėnesius? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
@@ -6896,7 +6896,7 @@ async function loadResultOffers(){
       const s=document.createElement('span'); s.className='rb-deal';
       s.innerHTML='Tau — <b>'+_eur(d.bundle.price)+' €</b> <s>'+_eur(d.poraPrice)+' €</s>';
       pora.querySelector('b').after(s);
-      const pn=pora.querySelector('.rb-pora-note'); if(pn) pn.textContent+=' · kaina galioja 30 d.';
+      const pn=pora.querySelector('.rb-pora-note'); if(pn) pn.textContent+='. Kaina galioja 30 d.';
     }
   }
 }
