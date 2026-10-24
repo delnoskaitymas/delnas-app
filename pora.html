@@ -500,7 +500,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
-      $('lead').textContent = d.status === 'redeemed' ? 'Įrašykite abu vardus ir tą patį el. paštą, kurį nurodėte anksčiau, tada nufotografuokite delnus.' : 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
+      $('lead').textContent = d.status === 'redeemed' ? 'Jūs jau pradėjote naudoti šį kuponą. Įrašykite abu vardus ir tą patį el. paštą, kurį įvedėte pirmą kartą, tada nufotografuokite delnus.' : 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti';
       // „Kaip tai veikia“ — dovanos atveju mokėti nereikia
       $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
