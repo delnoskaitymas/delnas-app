@@ -419,10 +419,11 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + ' €';
   (async () => {
     const sp = new URLSearchParams(location.search), raw = sp.get('grizk') || sp.get('promo');
-    if (!raw || sp.get('dovana')) return;
+    if (sp.get('dovana')) return;
+    if (!raw) { applyRef(); return; }
     try {
       const d = await (await fetch('/promo/check?code=' + encodeURIComponent(raw))).json();
-      if (!d.valid || d.product !== 'pora') return;
+      if (!d.valid || d.product !== 'pora') { applyRef(); return; }
       const price = d.price ? Math.min(d.price, d.poraPrice) : Math.round(d.poraPrice * (100 - d.pct) / 100);
       window._promoCode = d.code;
       $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(d.poraPrice) + '</s>';
@@ -437,6 +438,27 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('remind-row').classList.add('hidden');
     } catch (e) {}
   })();
+  // Draugo nuoroda (?ref=KODAS, įsiminta 30 d., kaip pradžios puslapyje) — −10 % porų analizei
+  async function applyRef() {
+    let c = '';
+    try {
+      const r = (new URLSearchParams(location.search).get('ref') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+      if (r.length >= 5) localStorage.setItem('delnasRef', JSON.stringify({ c: r, at: Date.now() }));
+      const own = JSON.parse(localStorage.getItem('delnasOwnRef') || '[]') || [];
+      const d = JSON.parse(localStorage.getItem('delnasRef') || 'null');
+      if (d && d.c && Date.now() - d.at < 30 * 864e5 && !own.includes(d.c)) c = d.c;
+    } catch (e) {}
+    if (!c) return;
+    try {
+      const q = await (await fetch('/order-quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: c }) })).json();
+      if (!q || !q.refCode) return;
+      const pct = q.refPct || 10, full = Math.round(parseFloat($('price').textContent.replace(',', '.')) * 100) || 2299, price = full - Math.round(full * pct / 100);
+      window._refCode = q.refCode;
+      $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(full) + '</s>';
+      $('gift-note').innerHTML = '<b>🎁 Draugo dovana −' + pct + ' %</b><span>Nuolaida pritaikyta pagal draugo nuorodą</span>';
+      $('gift-note').classList.remove('hidden'); document.body.classList.add('has-note');
+    } catch (e) {}
+  }
 
   // Valentino diena (vasario 1–14 d., Lietuvos laiku) — šventinė žyma virš antraštės
   try {
@@ -492,7 +514,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', remind: !window._noRemind }) });
+        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: window._refCode || '', remind: !window._noRemind }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       location.href = d.url;

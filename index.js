@@ -3592,6 +3592,7 @@ async function getPaidPoraSession(sessionId) {
   if (!session || !session.metadata || session.metadata.type !== 'pora') return null;
   if (session.payment_status !== 'paid') return null;
   if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
+  if (session.metadata.ref) rewardReferrer(normalizeRefCode(session.metadata.ref), session.id, session.metadata.email || session.customer_email || '');
   markEmailPaid(session.metadata.email || session.customer_email || '');
   return {
     nameA: session.metadata.nameA || '',
@@ -3925,18 +3926,23 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!nameA || !nameB || !isValidName(nameA) || !isValidName(nameB)) return res.status(400).json({ error: 'Įrašykite abu vardus' });
     const base = appBaseUrl();
     // Nuolaidos kodas: grįžimas po nebaigto mokėjimo (−15 %) arba rinkinio kaina po asmeninės analizės
-    const pr = getValidPromo(req.body.promo, 'pora');
-    const amount = pr ? promoAmount(pr, PORA_PRICE_CENTS) : PORA_PRICE_CENTS;
+    const pr0 = getValidPromo(req.body.promo, 'pora');
+    // Draugo nuoroda (−10 %) — nesumuojama su kodu, taikoma didesnė nuolaida
+    const refCode = validRef(req.body.ref, email);
+    const refAmount = refCode ? PORA_PRICE_CENTS - Math.round(PORA_PRICE_CENTS * REF_DISCOUNT_PCT / 100) : PORA_PRICE_CENTS;
+    const useRef = !!refCode && refAmount < (pr0 ? promoAmount(pr0, PORA_PRICE_CENTS) : PORA_PRICE_CENTS);
+    const pr = useRef ? null : pr0;
+    const amount = useRef ? refAmount : (pr ? promoAmount(pr, PORA_PRICE_CENTS) : PORA_PRICE_CENTS);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card', 'revolut_pay'],
       line_items: [{
-        price_data: { currency: 'eur', unit_amount: amount, product_data: { name: pr ? `DELNAS — Porų suderinamumas (${pr.kind === 'bundle' ? 'rinkinio kaina' : 'nuolaida'})` : 'DELNAS — Porų suderinamumas' } },
+        price_data: { currency: 'eur', unit_amount: amount, product_data: { name: pr ? `DELNAS — Porų suderinamumas (${pr.kind === 'bundle' ? 'rinkinio kaina' : 'nuolaida'})` : useRef ? `DELNAS — Porų suderinamumas (draugo dovana −${REF_DISCOUNT_PCT} %)` : 'DELNAS — Porų suderinamumas' } },
         quantity: 1
       }],
       locale: 'lt',
       customer_email: email,
-      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '' },
+      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`
     });
@@ -4581,7 +4587,7 @@ function resultPoraLineHtml(pr) {
 }
 function klauskPara(t) { return escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join(''); }
 function buildRefRewardHtml(rewardId) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pasidalijai!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Su tavo nuoroda buvo atlikta nauja delnų analizė. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pasidalijai!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Draugas su tavo nuoroda įsigijo delnų analizę. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
 }
 function buildGiftRecipientReminderHtml(g) {
   const pora = g.kind === 'pora', from = g.fromName ? escapeHtml(g.fromName) : '';
