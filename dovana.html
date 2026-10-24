@@ -372,7 +372,7 @@ body.form-view.tight #v-form .trust{display:none}
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Gyvenimo žemėlapis<small id="k-asm-p">16,99 €</small></button>
         <button type="button" id="k-pora" role="radio" aria-checked="false">Porų suderinamumas<small id="k-pora-p">💞 22,99 €</small></button>
       </div>
-      <div class="kind-inc" id="kind-inc">✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai</div>
+      <div class="kind-inc" id="kind-inc">✋ Į dovaną įeina ir 3 klausimai delnams</div>
       <div class="row2">
         <div><label for="f-to">Gavėjo vardas</label>
         <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ieva" autocomplete="off"></div>
@@ -649,7 +649,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('k-asm').classList.toggle('on', !pora); $('k-asm').setAttribute('aria-checked', String(!pora));
     $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
     $('form-h1').innerHTML = 'Padovanok<br><em>delnų analizę</em>';
-    $('kind-inc').textContent = pora ? '✦ Į dovanos kainą įeina ir 3 klausimai porai' : '✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai';
+    $('kind-inc').textContent = '✋ Į dovaną įeina ir 3 klausimai delnams';
     $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'pvz. Ieva ir Tomas' : 'pvz. Ieva';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia <em>poros suderinamumą</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
