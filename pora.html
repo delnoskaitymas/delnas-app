@@ -438,6 +438,15 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('remind-row').classList.add('hidden');
     } catch (e) {}
   })();
+  // Įsimintas draugo kodas (siunčiamas ir tada, kai pritaikyta kita nuolaida — kvietėjas vis tiek gauna dovaną)
+  function storedRef() {
+    try {
+      const own = JSON.parse(localStorage.getItem('delnasOwnRef') || '[]') || [];
+      const d = JSON.parse(localStorage.getItem('delnasRef') || 'null');
+      if (d && d.c && Date.now() - d.at < 30 * 864e5 && !own.includes(d.c)) return d.c;
+    } catch (e) {}
+    return '';
+  }
   // Draugo nuoroda (?ref=KODAS, įsiminta 30 d., kaip pradžios puslapyje) — −10 % porų analizei
   async function applyRef() {
     let c = '';
@@ -514,7 +523,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: window._refCode || '', remind: !window._noRemind }) });
+        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: window._refCode || storedRef(), remind: !window._noRemind }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       location.href = d.url;

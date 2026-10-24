@@ -2242,6 +2242,7 @@ async function computeOrderAmount({ ref, addKlausk, email, promo, bundle }) {
   const activePrice = personalPrice();
   const base = activePrice.unit_amount, currency = activePrice.currency;
   let refCode = validRef(ref, email);
+  const refBy = refCode; // kvietėjas gauna dovaną net jei pritaikyta kita, didesnė nuolaida
   const refDiscount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
   // Nuolaidos nesumuojamos — taikoma didesnė (draugo arba asmeninis kodas)
   const pr = getValidPromo(promo, 'asmenine');
@@ -2250,7 +2251,7 @@ async function computeOrderAmount({ ref, addKlausk, email, promo, bundle }) {
   if (promoDiscount > 0 && promoDiscount >= refDiscount) { discount = promoDiscount; promoCode = pr.code; refCode = null; discountLabel = promoTag(pr); }
   const bump = addKlausk ? KLAUSK_BUMP_CENTS : 0;
   const bundleCents = bundle ? PORA_BUNDLE_CENTS : 0;
-  return { base, discount, bump, bundle: bundleCents, total: base - discount + bump + bundleCents, currency, refCode, promoCode, promoKind: pr && promoCode ? pr.kind : null, discountLabel };
+  return { base, discount, bump, bundle: bundleCents, total: base - discount + bump + bundleCents, currency, refCode, refBy, promoCode, promoKind: pr && promoCode ? pr.kind : null, discountLabel };
 }
 // Patikrina apmokėtą asmeninės analizės mokėjimą (PaymentIntent arba Checkout)
 async function getPaidAnalysisPayment(paymentRef) {
@@ -2268,7 +2269,7 @@ async function getPaidAnalysisPayment(paymentRef) {
   return null;
 }
 // Apmokėtas užsakymas su draugo kodu → kvietėjui dovanojami 3 klausimai (vieną kartą už pirkimą)
-function rewardReferrer(refCode, paymentRef, buyerEmail) {
+function rewardReferrer(refCode, paymentRef, buyerEmail, kind) {
   try {
     const st = loadRefs(), r = st.codes[refCode];
     if (!r || !paymentRef) return;
@@ -2285,10 +2286,10 @@ function rewardReferrer(refCode, paymentRef, buyerEmail) {
         from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
         to: r.email,
         subject: refRewardSubject(r.name),
-        html: buildRefRewardHtml(rewardId)
+        html: buildRefRewardHtml(rewardId, kind)
       }).catch(e => console.error('[ref] atlygio laiško klaida:', e.message));
     }
-    r.uses.push({ paymentRef, at: Date.now(), rewardId });
+    r.uses.push({ paymentRef, at: Date.now(), rewardId, kind: kind || '' });
     saveRefs(st);
     console.log(`[ref] kodas ${refCode} panaudotas (${paymentRef})${rewardId ? ' → atlygis ' + rewardId : ''}`);
   } catch (e) { console.error('[ref] atlygio klaida:', e.message); }
@@ -2300,7 +2301,8 @@ function handlePaidAnalysis(paymentRef, metadata, email) {
     if (metadata && metadata.addKlausk === '1') statInc('bump');
     if (metadata && metadata.ref) statInc('ref_paid');
   }
-  if (metadata && metadata.ref) rewardReferrer(normalizeRefCode(metadata.ref), paymentRef, email);
+  const refBy = metadata && (metadata.refBy || metadata.ref);
+  if (refBy) rewardReferrer(normalizeRefCode(refBy), paymentRef, email, 'asmenine');
   if (metadata && metadata.promo) markPromoUsed(metadata.promo, paymentRef);
   if (metadata && metadata.bundle === '1') issueBundleGift(paymentRef, isValidEmail(email) ? email : '', metadata.name || '');
   markEmailPaid(email);
@@ -2447,7 +2449,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // duomenis (ypač iOS Safari, dėl griežtos tarpsvetaininės apsaugos).
       // Stripe metadata yra PATIKIMAS, serverio pusės šaltinis, nepriklausantis
       // nuo naršyklės saugyklos elgsenos.
-      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
+      metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', refBy: q.refBy || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
       success_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`
     });
@@ -2889,7 +2891,7 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
       currency: q.currency,
       // Rodoma Stripe kvite ir mokėjimo išraše vietoj „Payment to …“
       description: 'DELNAS — Gyvenimo žemėlapis' + (q.bump ? ' + 3 klausimai' : '') + (q.bundle ? ' + Porų suderinamumas' : ''),
-      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
+      metadata: { name: name || '', email: email || '', priceId: ACTIVE_PRICE_ID, addKlausk: q.bump ? '1' : '', ref: q.refCode || '', refBy: q.refBy || '', promo: q.promoCode || '', bundle: q.bundle ? '1' : '' },
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
     });
@@ -3592,7 +3594,8 @@ async function getPaidPoraSession(sessionId) {
   if (!session || !session.metadata || session.metadata.type !== 'pora') return null;
   if (session.payment_status !== 'paid') return null;
   if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
-  if (session.metadata.ref) rewardReferrer(normalizeRefCode(session.metadata.ref), session.id, session.metadata.email || session.customer_email || '');
+  const refBy = session.metadata.refBy || session.metadata.ref;
+  if (refBy) rewardReferrer(normalizeRefCode(refBy), session.id, session.metadata.email || session.customer_email || '', 'pora');
   markEmailPaid(session.metadata.email || session.customer_email || '');
   return {
     nameA: session.metadata.nameA || '',
@@ -3942,7 +3945,7 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       }],
       locale: 'lt',
       customer_email: email,
-      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '' },
+      metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '', refBy: refCode || '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`
     });
@@ -4586,8 +4589,8 @@ function resultPoraLineHtml(pr) {
   return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:4px 0 4px;font-family:Georgia,serif">Kiek procentų jūs derate?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Delnai atskleis, kas jus traukia, kur slypi jūsų poros stiprybė ir kas laukia ateityje.</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0 0 12px">Tau — <b style="color:#f0c96a">${eur(pr.price)}</b> <s style="opacity:.55">${eur(PORA_PRICE_CENTS)}</s> · kaina galioja iki ${fmtLtDate(pr.expiresAt)}</p><a href="${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none;margin:0 0 22px">💞 Sužinoti mūsų suderinamumą</a>`;
 }
 function klauskPara(t) { return escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join(''); }
-function buildRefRewardHtml(rewardId) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pasidalijai!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Draugas su tavo nuoroda įsigijo delnų analizę. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
+function buildRefRewardHtml(rewardId, kind) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:28px;margin-bottom:8px">🎁</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Ačiū, kad pasidalijai!</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 18px">Draugas su tavo nuoroda įsigijo ${kind === 'pora' ? 'Porų suderinamumą' : 'Gyvenimo žemėlapį'}. Dovanojame tau <b style="color:#f0d58a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${rewardId}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a>${EMAIL_FOOTER_HTML}</div>`;
 }
 function buildGiftRecipientReminderHtml(g) {
   const pora = g.kind === 'pora', from = g.fromName ? escapeHtml(g.fromName) : '';
@@ -5109,7 +5112,8 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Dovana užsakyta (pirkėjui, kai siunčiame gavėjui)', () => ({ subject: giftBuyerSubject({ ...giftBase, recipientEmail: to }), html: buildGiftEmailHtml({ ...giftBase, buyerEmail: to, recipientEmail: to, sendAt: ltDate(now + 7 * DAY_MS), sendHour: 9 }) }));
   add('Dovana gavėjui', () => ({ subject: giftRecipientSubject(giftBase), html: buildGiftRecipientEmailHtml({ ...giftBase, recipientEmail: to }) }));
   add('Dovana neatidaryta (gavėjui)', () => ({ subject: giftRecipientReminderSubject(giftBase), html: buildGiftRecipientReminderHtml(giftBase) }));
-  add('Kvietimo atlygis', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test') }));
+  add('Kvietimo atlygis', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test', 'asmenine') }));
+  add('Kvietimo atlygis (porų)', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test', 'pora') }));
   add('Porų analizė laukia nuotraukų (užsakovui, jei po mokėjimo langas uždarytas)', () => { const v = ltPhrase(`${nameA} ir ${nameB}`, 'voc'); return { subject: `${v}, jūsų porų analizė laukia 💞`, html: poraContinueEmailHtml(appBaseUrl() + '/pora', v) }; });
   const results = [];
   for (const m of list) {
