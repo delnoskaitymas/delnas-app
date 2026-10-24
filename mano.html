@@ -214,10 +214,10 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     const next = c => {
       const lastA = d.analizes[0], lastP = d.poros[0];
       let txt = 'Naujas gyvenimo žemėlapis', href = '/';
-      if (c === 'pora') { txt = 'Nauja porų analizė'; href = '/pora'; }
+      if (c === 'pora') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
       else if (c === 'kl' && lastA) { txt = 'Užduoti dar 3 klausimus'; href = '/?mano=' + encodeURIComponent(lastA.id) + '&t=' + encodeURIComponent(t) + '#klausti'; }
       else if (c === 'klp' && lastP) { txt = 'Užduoti dar 3 klausimus'; href = '/?pora=' + encodeURIComponent(lastP.id) + '&mt=' + encodeURIComponent(t) + '#klausti'; }
-      else if (c === 'klp') { txt = 'Nauja porų analizė'; href = '/pora'; }
+      else if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
       nb.textContent = txt; nb.href = href;
     };
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
