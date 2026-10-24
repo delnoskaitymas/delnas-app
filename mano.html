@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     <p class="lead" id="list-lead"></p>
     <div id="list"></div>
     <a class="btn" id="next-btn" href="/">Naujas gyvenimo žemėlapis</a>
-    <div class="gift-line">🎁 Padovanoti: <a href="/dovana?utm_source=mano">gyvenimo žemėlapį</a> · <a href="/dovana?tipas=pora&amp;utm_source=mano">porų suderinamumą</a></div>
+    <div class="gift-line">🎁 Padovanoti: <a href="/dovana?utm_source=mano">gyvenimo žemėlapį</a> · <a href="/dovana?tipas=pora&amp;utm_source=mano">porų suderinamumą</a><br><span style="opacity:.8">kartu su 3 klausimais delnams</span></div>
   </section>
 
   <p class="fine">Analizės saugomos be delnų nuotraukų: 90 dienų, o išsaugotos mygtuku „Išsaugoti ir priminti“ — 12 mėn. Ištrinti gali bet kada. · <a href="/privatumo-politika?is=mano">Privatumas</a> · info@delnaskaitymas.lt</p>
@@ -277,6 +277,8 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
   a.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:50;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none";
   a.addEventListener('click',e=>{ e.preventDefault(); if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },300); });
   document.body.appendChild(a);
+  // Senasis „Pradžia“ toje pačioje vietoje — paslinkus išlįsdavo iš po „Grįžti atgal“
+  document.querySelectorAll('a.home-back').forEach(x => x.remove());
 })();
 </script>
 <script src="/awake.js"></script>
