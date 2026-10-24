@@ -1135,8 +1135,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
-        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti asmeninę analizę</a>
-        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti porų suderinamumo analizę</a>
+        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti gyvenimo žemėlapį</a>
+        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti porų suderinamumą</a>
       </div>
     </div>
     <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
@@ -6358,7 +6358,7 @@ async function renderDuoNext(){
 async function poraDuoShare(code,name,btn){
   track('pora_duo_send');
   const url=location.origin+'/?promo='+encodeURIComponent(code)+'&utm_source=dalinimasis&utm_campaign=antrajai-pusei', f=ltForms(name||'');
-  const text=(f.voc||name)+', tau — asmeninė delnų analizė už 11,99 € vietoj 14,99 €. Nufotografuok delnus čia:';
+  const text=(f.voc||name)+', tau — gyvenimo žemėlapis pagal delnus už 11,99 € vietoj 14,99 €. Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
@@ -6370,7 +6370,7 @@ async function loadPoraDuo(){
   if(!d||!d.price||!d.a||!d.b) return;
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
-    return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' asmeninė analizė atlikta</div>'
+    return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' gyvenimo žemėlapis paruoštas</div>'
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — '+eur(d.price)+' €</a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
         (d.remote?'':'<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button>')+'</div>'; };
@@ -6850,8 +6850,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
     n.innerHTML=q.kind==='duo'
       ? (q.forName
-        ? '💞 '+_xEsc(ltForms(q.forName).voc||q.forName)+', tavo asmeninė analizė — <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
-        : '💞 Asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
+        ? '💞 '+_xEsc(ltForms(q.forName).voc||q.forName)+', tavo gyvenimo žemėlapis — <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt)
+        : '💞 Gyvenimo žemėlapis už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt))
       : q.kind==='repeat'
       ? '✦ Pakartotinė analizė <b>−'+q.pct+' %</b> — po jos parodysime, kas pasikeitė nuo praėjusio karto'
       : q.kind==='remind'
@@ -6862,7 +6862,7 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     // Porų kaina: „Karle, tavo eilė — …“
     if(q.kind==='duo'&&!q.forName){ try{ const duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null');
       if(duo){ const o=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:duo.sid})})).json();
-        const nm=duo.side==='a'?o.nameA:o.nameB; if(nm) n.innerHTML='💞 '+_xEsc(ltForms(nm).voc)+', tavo eilė — asmeninė analizė už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt); } }catch(e){} }
+        const nm=duo.side==='a'?o.nameA:o.nameB; if(nm) n.innerHTML='💞 '+_xEsc(ltForms(nm).voc)+', tavo eilė — gyvenimo žemėlapis už <b>'+(q.price/100).toFixed(2).replace('.',',')+'\u00a0€</b>, galioja iki '+_ltDay(q.expiresAt); } }catch(e){} }
   }catch(e){}
 })();
 
@@ -6886,8 +6886,8 @@ async function loadResultOffers(){
   if(pora){
     if(d.bundleGift&&d.bundleGift.status==='active'){
       pora.href=d.bundleGift.link;
-      pora.querySelector('b').textContent='Jūsų poros analizė jau apmokėta — pradėti';
-      pora.querySelector('.rb-pora-go').textContent='Pradėti porų analizę';
+      pora.querySelector('b').textContent='Jūsų porų suderinamumas jau apmokėtas';
+      pora.querySelector('.rb-pora-go').textContent='Nufotografuoti delnus';
       const pn=pora.querySelector('.rb-pora-note'); if(pn) pn.remove();
       pora.querySelector('small').innerHTML='Kai būsite kartu, nufotografuokite delnus. Kuponas <b style="color:var(--gold2);letter-spacing:.06em">'+_xEsc(d.bundleGift.code)+'</b> išsiųstas ir el. paštu.';
     } else if(d.bundle&&!pora.querySelector('.rb-deal')){

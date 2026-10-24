@@ -218,7 +218,7 @@ app.use((req, res, next) => {
   if (req.path === '/' || req.path === '/index.html')
     return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.');
   if (req.path === '/pora')
-    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanota porų suderinamumo analizė pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.');
+    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanotas porų suderinamumas pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.');
   next();
 });
 
@@ -5413,7 +5413,7 @@ function buildAbandonEmailHtml(it, p) {
   const link = pora ? `${base}/pora?grizk=${p.code}` : `${base}/?grizk=${p.code}`;
   const hi = pora ? (it.nameA && it.nameB ? `${escapeHtml(ltPhrase(it.nameA + ' ir ' + it.nameB, 'voc'))}, jūsų poros suderinamumas laukia` : 'Jūsų poros suderinamumas laukia') : `${it.name ? escapeHtml(ltPhrase(it.name, 'voc')) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
   const txt = pora
-    ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų poros analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
+    ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų porų suderinamumo liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }

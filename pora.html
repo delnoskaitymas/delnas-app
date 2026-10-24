@@ -431,7 +431,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('gift-note').innerHTML = d.kind === 'bundle'
         ? '<b>💞 Jums — rinkinio kaina ' + eur(price) + '</b><span>Kaip asmeninės analizės pirkėjui (vietoj ' + eur(d.poraPrice) + ')</span>'
         : d.kind === 'repeat'
-        ? '<b>✦ Pakartotinė porų analizė −' + d.pct + ' %</b><span>Pažiūrėkite, kaip pasikeitė jūsų suderinamumas · galioja iki ' + day + '</span>'
+        ? '<b>✦ Pakartotinis porų suderinamumas −' + d.pct + ' %</b><span>Pažiūrėkite, kaip pasikeitė jūsų suderinamumas · galioja iki ' + day + '</span>'
         : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
       $('gift-note').classList.remove('hidden'); document.body.classList.add('has-note');
       $('remind-row').classList.add('hidden');
@@ -455,7 +455,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     location.href = '/?pora=' + encodeURIComponent(d.id);
   }
   function giftError(msg){
-    $('gift-note').innerHTML = '<b>' + esc(msg) + '</b><span>Galite užsisakyti porų analizę žemiau arba parašyti info@delnaskaitymas.lt</span>';
+    $('gift-note').innerHTML = '<b>' + esc(msg) + '</b><span>Galite užsisakyti porų suderinamumą žemiau arba parašyti info@delnaskaitymas.lt</span>';
     $('gift-note').classList.remove('hidden');
   }
   if (giftCode) (async () => {
