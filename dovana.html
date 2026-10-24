@@ -370,7 +370,7 @@ body.form-view.tight #v-form .trust{display:none}
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Gyvenimo žemėlapis<small id="k-asm-p">16,99 €</small></button>
-        <button type="button" id="k-pora" role="radio" aria-checked="false">Porų suderinamumas<small id="k-pora-p">22,99 €</small></button>
+        <button type="button" id="k-pora" role="radio" aria-checked="false">Porų suderinamumas<small id="k-pora-p">💞 22,99 €</small></button>
       </div>
       <div class="kind-inc" id="kind-inc">✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai</div>
       <div class="row2">
@@ -668,7 +668,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     if (d && typeof d.giftKlauskPora === 'number') klauskC.pora = d.giftKlauskPora;
     showPrices();
   }).catch(() => {});
-  function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = prices.pora; $('price').innerHTML = prices[kind]; }
+  function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = '💞 ' + prices.pora; $('price').innerHTML = prices[kind]; }
   if (params.get('promo')) (async () => {
     try {
       const d = await (await fetch('/promo/check?code=' + encodeURIComponent(params.get('promo')))).json();
