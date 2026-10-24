@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     $('list-lead').textContent = d.email;
     let h = '';
     if (d.analizes.length) {
-      h += '<div class="sec" data-cat="asm">Asmeninės analizės</div>';
+      h += '<div class="sec" data-cat="asm">Gyvenimo žemėlapis</div>';
       h += d.analizes.map(a => '<div class="item" data-cat="asm" data-id="' + esc(a.id) + '"><div class="ic">✋</div><div class="tx"><b>' + (a.name ? esc(a.name) + ' — gyvenimo žemėlapis' : 'Gyvenimo žemėlapis') + '</b><small>' + day(a.createdAt) + (a.compare ? ' · su palyginimu' : '') + '</small></div>' +
         '<div class="act"><a class="open" href="/?mano=' + encodeURIComponent(a.id) + '&t=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     }
     // Keturi skirtukai — paspaudus rodoma būtent tai, ko reikia
     const kAsm = d.klausimai.filter(k => k.kind !== 'pora').length, kPora = d.klausimai.length - kAsm;
-    const cats = [['asm', 'Asmeninės analizės', d.analizes.length], ['pora', 'Porų suderinamumas', d.poros.length], ['kl', 'Asmeniniai klausimai', kAsm], ['klp', 'Porų klausimai', kPora]];
+    const cats = [['asm', 'Gyvenimo žemėlapis', d.analizes.length], ['pora', 'Porų suderinamumas', d.poros.length], ['kl', 'Asmeniniai klausimai', kAsm], ['klp', 'Porų klausimai', kPora]];
     const first = (cats.find(c => c[2]) || cats[0])[0];
     const tabs = h ? '<div class="tabs" id="tabs">' + cats.map(c => '<button type="button" data-cat="' + c[0] + '"' + (c[0] === first ? ' class="on"' : '') + (c[2] ? '' : ' disabled') + '>' + c[1] + ' <i>' + c[2] + '</i></button>').join('') + '</div>' : '';
     $('list').innerHTML = h ? tabs + h : '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
