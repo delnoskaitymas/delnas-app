@@ -918,7 +918,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     btn.disabled = true; btn.textContent = 'Tikrinama…';
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
-      if (d.valid) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
+      // Porų kuponas, panaudotas, bet delnai dar nenufotografuoti — porų puslapis leidžia tęsti (serveris grąžina tą patį užsakymą)
+      if (d.valid || (d.kind === 'pora' && d.status === 'redeemed')) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
       err.textContent = d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
     } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
     err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti';
