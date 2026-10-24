@@ -2972,6 +2972,9 @@ function unsubSig(email) {
   const key = 'unsub:' + (process.env.UNSUB_SECRET || process.env.STRIPE_SECRET_KEY || ADMIN_KEY);
   return crypto.createHmac('sha256', key).update(String(email || '').trim().toLowerCase()).digest('hex').slice(0, 24);
 }
+// Nuorodos be parašo arba su senu parašu (laiškai iki raktų keitimo 2026-10-23) — atsisakyti galima iki 2027-02-01
+const UNSUB_LEGACY_UNTIL = Date.UTC(2027, 1, 1);
+function unsubLinkOk(email, t) { return isValidEmail(email) && (unsubSigOk(email, t) || Date.now() < UNSUB_LEGACY_UNTIL); }
 function unsubSigOk(email, t) {
   if (typeof t !== 'string' || t.length !== 24) return false;
   return crypto.timingSafeEqual(Buffer.from(t), Buffer.from(unsubSig(email)));
@@ -2984,17 +2987,16 @@ function unsubPage(title, text, extra) {
 app.get('/unsubscribe-reminder', sensitiveLimiter, (req, res) => {
   const email = (req.query.email || '').toString().trim().toLowerCase();
   const t = typeof req.query.t === 'string' ? req.query.t : '';
-  if (!isValidEmail(email) || (t ? !unsubSigOk(email, t) : Date.now() >= Date.UTC(2026, 11, 1))) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  if (!unsubLinkOk(email, t)) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
   const form = `<form method="POST" action="/unsubscribe-reminder"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="t" value="${escapeHtml(t)}">${req.query.k === 'uzsakymas' ? '<input type="hidden" name="k" value="uzsakymas">' : ''}<button type="submit" class="btn">Atsisakyti laiškų</button></form>`;
   const what = req.query.k === 'uzsakymas' ? 'laiškų apie nebaigtus užsakymus' : 'DELNAS priminimų ir pasiūlymų';
   res.send(unsubPage('Atsisakyti laiškų?', `Daugiau nebegausi ${what} adresu ${escapeHtml(email)}.`, form));
 });
 app.post('/unsubscribe-reminder', sensitiveLimiter, express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
   const email = String((req.body && req.body.email) || '').trim().toLowerCase();
-  const t = typeof (req.body && req.body.t) === 'string' ? req.body.t : '';
-  // Senuose (iki 2026-10-16) laiškuose nuoroda be parašo — veikia iki 2026-12-01, vėliau parašas privalomas
-  const legacyOk = !t && Date.now() < Date.UTC(2026, 11, 1);
-  if (!isValidEmail(email) || (t ? !unsubSigOk(email, t) : !legacyOk)) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  let t = typeof (req.body && req.body.t) === 'string' ? req.body.t : '';
+  if (!unsubLinkOk(email, t)) return res.status(400).send(unsubPage('Klaida', 'Nuoroda neteisinga. Parašyk mums: info@delnaskaitymas.lt'));
+  if (t && !unsubSigOk(email, t)) t = '';
   try {
     if (req.body.k === 'uzsakymas') {
       addAbandonOptOut(email);
