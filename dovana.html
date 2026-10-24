@@ -245,11 +245,11 @@ input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgb
 .kind{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
 .kind-inc{text-align:center;font-size:12px;color:var(--gold2);margin:0 0 12px;line-height:1.35}
 .kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:12px 6px 11px;cursor:pointer;
-  font:600 15.5px/1.25 'DM Sans',sans-serif;transition:all .2s}
+  font:600 14px/1.25 'DM Sans',sans-serif;transition:all .2s}
 .kind button small{display:block;font-size:14px;font-weight:500;color:var(--faint);margin-top:3px}
 .kind button.on{background:rgba(212,168,67,.13);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 14px rgba(212,168,67,.18)}
 .kind button.on small{color:var(--gold)}
-@media (max-height:700px){ .kind button{padding:7px 4px;font-size:14.5px} .kind button small{display:block;margin:2px 0 0;font-size:13px} #v-form .kind{margin-bottom:5px} #v-form .kind-inc{font-size:11px;margin-bottom:8px} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
+@media (max-height:700px){ .kind button{padding:7px 4px;font-size:13.5px} .kind button small{display:block;margin:2px 0 0;font-size:13px} #v-form .kind{margin-bottom:5px} #v-form .kind-inc{font-size:11px;margin-bottom:8px} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
 .hero2{display:flex;justify-content:center}
 .hero2 .hero{margin:0 -8px!important}
 .hero2 .hero:last-child i{transform:scaleX(-1)}
@@ -370,7 +370,7 @@ body.form-view.tight #v-form .trust{display:none}
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Gyvenimo žemėlapis<small id="k-asm-p">16,99 €</small></button>
-        <button type="button" id="k-pora" role="radio" aria-checked="false">💞 Porų suderinamumas<small id="k-pora-p">22,99 €</small></button>
+        <button type="button" id="k-pora" role="radio" aria-checked="false">Porų suderinamumas<small id="k-pora-p">22,99 €</small></button>
       </div>
       <div class="kind-inc" id="kind-inc">✦ Į dovanos kainą įeina ir 3 asmeniniai klausimai</div>
       <div class="row2">
@@ -392,7 +392,7 @@ body.form-view.tight #v-form .trust{display:none}
       <div id="buyer-wrap">
         <label for="f-email">Tavo el. paštas</label>
         <input type="email" id="f-email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
-        <div class="sched-hint">Apmokėjus dovanų kuponas iš karto atsiras tavo ekrane ir ateis į tavo el. paštą. Galėsi jį nusiųsti gavėjui per Messenger, WhatsApp ar kitu būdu.</div>
+        <div class="sched-hint">Kuponą gausi iš karto ekrane ir el. paštu, o gavėjui galėsi nusiųsti kaip patogu.</div>
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą.</span></label>
       <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">16,99 €</span></button>
