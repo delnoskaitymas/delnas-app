@@ -2434,8 +2434,8 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     // Apskaičiuotos eilutės (kaina — PERSONAL_PRICE_CENTS, su nuolaida ir priedais)
     const lineItems = [
       { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (${q.promoCode ? 'nuolaida' : `draugo nuolaida −${REF_DISCOUNT_PCT} %`})` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
-      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'Klausk savo delnų — 3 klausimai' } }, quantity: 1 }] : []),
-      ...(q.bundle ? [{ price_data: { currency: q.currency, unit_amount: q.bundle, product_data: { name: 'Porų suderinamumas (rinkinio kaina)' } }, quantity: 1 }] : [])
+      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }] : []),
+      ...(q.bundle ? [{ price_data: { currency: q.currency, unit_amount: q.bundle, product_data: { name: 'DELNAS — Porų suderinamumas (kartu su Gyvenimo žemėlapiu)' } }, quantity: 1 }] : [])
     ];
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
@@ -3230,9 +3230,10 @@ function giftStatus(gift) {
   if (Date.now() > gift.expiresAt) return 'expired';
   return 'active';
 }
+// Data kaip svetainėje: „2026 m. lapkričio 22 d.“
 function fmtLtDate(ts) {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  try { return new Date(ts).toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' }); }
+  catch (e) { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 }
 
 // Pirkėjo patvirtinimas, kai dovana gavėjui bus išsiųsta nurodytą dieną (be dovanų kortelės ir panaudojimo mygtuko)
@@ -3940,7 +3941,7 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       mode: 'payment',
       payment_method_types: ['card', 'revolut_pay'],
       line_items: [{
-        price_data: { currency: 'eur', unit_amount: amount, product_data: { name: pr ? `DELNAS — Porų suderinamumas (${pr.kind === 'bundle' ? 'rinkinio kaina' : 'nuolaida'})` : useRef ? `DELNAS — Porų suderinamumas (draugo dovana −${REF_DISCOUNT_PCT} %)` : 'DELNAS — Porų suderinamumas' } },
+        price_data: { currency: 'eur', unit_amount: amount, product_data: { name: pr ? `DELNAS — Porų suderinamumas (${pr.kind === 'bundle' ? 'Gyvenimo žemėlapio pirkėjui' : 'nuolaida'})` : useRef ? `DELNAS — Porų suderinamumas (draugo dovana −${REF_DISCOUNT_PCT} %)` : 'DELNAS — Porų suderinamumas' } },
         quantity: 1
       }],
       locale: 'lt',
@@ -4764,7 +4765,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         },
         quantity: 1
       }, ...(giftKlauskCents > 0 ? [{
-        price_data: { currency: activePrice.currency, unit_amount: giftKlauskCents, product_data: { name: kind === 'pora' ? 'Klauskite savo delnų — 3 klausimai porai (dovanoje)' : 'Klausk savo delnų — 3 klausimai (dovanoje)' } },
+        price_data: { currency: activePrice.currency, unit_amount: giftKlauskCents, product_data: { name: kind === 'pora' ? 'DELNAS — Klauskite savo delnų (3 klausimai porai, dovanoje)' : 'DELNAS — Klausk savo delnų (3 klausimai, dovanoje)' } },
         quantity: 1
       }] : [])],
       locale: 'lt',
@@ -5114,7 +5115,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Dovana neatidaryta (gavėjui)', () => ({ subject: giftRecipientReminderSubject(giftBase), html: buildGiftRecipientReminderHtml(giftBase) }));
   add('Kvietimo atlygis', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test', 'asmenine') }));
   add('Kvietimo atlygis (porų)', () => ({ subject: refRewardSubject(name), html: buildRefRewardHtml('kp_test', 'pora') }));
-  add('Porų analizė laukia nuotraukų (užsakovui, jei po mokėjimo langas uždarytas)', () => { const v = ltPhrase(`${nameA} ir ${nameB}`, 'voc'); return { subject: `${v}, jūsų porų analizė laukia 💞`, html: poraContinueEmailHtml(appBaseUrl() + '/pora', v) }; });
+  add('Porų analizė laukia nuotraukų (užsakovui, jei po mokėjimo langas uždarytas)', () => { const v = ltPhrase(`${nameA} ir ${nameB}`, 'voc'); return { subject: `${v}, liko nufotografuoti delnus 💞`, html: poraContinueEmailHtml(appBaseUrl() + '/pora', v) }; });
   const results = [];
   for (const m of list) {
     if (m.error) { results.push(`✗ ${escapeHtml(m.label)} — ${escapeHtml(m.error)}`); continue; }
@@ -5427,7 +5428,7 @@ function buildAbandonEmailHtml(it, p) {
   const txt = pora
     ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų porų suderinamumo liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
     : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`;
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${ltDate(p.expiresAt)} ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${fmtLtDate(p.expiresAt)}, ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
 let _abandonRunning = false;
 async function processAbandoned() {
@@ -5752,7 +5753,7 @@ function recoveryAdminMail(subject, rows) {
   }).catch(e => console.error('[recovery] admin laiško klaida:', e.message));
 }
 function poraContinueEmailHtml(link, names) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${names ? escapeHtml(names) + ', jūsų' : 'Jūsų'} porų analizė laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Mokėjimą gavome, bet delnų nuotraukų dar nėra. Atidarykite nuorodą ir nufotografuokite abiejų delnus. Iš naujo mokėti nereikės.</p><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti porų analizę</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Jei kiltų klausimų, parašykite <a href="mailto:info@delnaskaitymas.lt" style="color:#d4a843;text-decoration:none">info@delnaskaitymas.lt</a></p>${EMAIL_FOOTER_HTML}</div>`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">💞</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${names ? escapeHtml(names) + ', l' : 'L'}iko nufotografuoti delnus</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Mokėjimą gavome, bet delnų nuotraukų dar nėra. Atidarykite nuorodą ir nufotografuokite abiejų delnus. Iš naujo mokėti nereikės.</p><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Nufotografuoti delnus</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Jei kiltų klausimų, parašykite <a href="mailto:info@delnaskaitymas.lt" style="color:#d4a843;text-decoration:none">info@delnaskaitymas.lt</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
 function personalPaymentUsed(paymentId) {
   const e = loadPaymentTokens()[paymentId];
@@ -5799,7 +5800,7 @@ async function recoverPaidOrders() {
         if (now - created < RECOVERY_NOTICE_AGE_MS) continue;
         if (!loadPoraOrders()[s.id] && isValidEmail(m.email)) {
           const names = m.nameA && m.nameB ? ltPhrase(`${m.nameA} ir ${m.nameB}`, 'voc') : '';
-          mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: m.email, subject: `${names ? names + ', j' : 'J'}ūsų porų analizė laukia 💞`, html: poraContinueEmailHtml(`${appBaseUrl()}/?pora=${encodeURIComponent(s.id)}`, names) })
+          mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: m.email, subject: `${names ? names + ', l' : 'L'}iko nufotografuoti delnus 💞`, html: poraContinueEmailHtml(`${appBaseUrl()}/?pora=${encodeURIComponent(s.id)}`, names) })
             .catch(e => console.error('[recovery] porų laiško klaida:', e.message));
           recoveryAdminMail('Apmokėta porų analizė be nuotraukų — užsakovui išsiųsta nuoroda', [
             ['Pora', `${m.nameA || '—'} ir ${m.nameB || '—'}`], ['Užsakovas', m.email], ['Suma', ((s.amount_total || 0) / 100).toFixed(2).replace('.', ',') + ' €'], ['Stripe session', s.id]
