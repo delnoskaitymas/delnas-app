@@ -366,7 +366,7 @@ body.form-view.tight #v-form .trust{display:none}
       <div class="season-tag hidden" id="promo-tag"></div>
       <h1 id="form-h1">Padovanok<br><em>delnų analizę</em></h1>
     </div>
-    <p class="lead sm" id="form-lead">Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.</p>
+    <p class="lead sm" id="form-lead">Gyvenimo žemėlapis ir ✋ 3 klausimai delnams — dovanų. Kuponas su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
       <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Gyvenimo žemėlapis<small id="k-asm-p">16,99 €</small></button>
@@ -650,7 +650,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('k-pora').classList.toggle('on', pora); $('k-pora').setAttribute('aria-checked', String(pora));
     $('form-h1').innerHTML = 'Padovanok<br><em>delnų analizę</em>';
     $('kind-inc').textContent = '✋ Į dovaną įeina ir 3 klausimai delnams';
-    $('form-lead').textContent = pora ? 'Porų suderinamumo analizė ir 3 klausimai porai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.' : 'Asmeninė delnų analizė ir 3 asmeniniai klausimai — dovanų. Kuponas su kodu — iškart į tavo el. paštą.';
+    $('form-lead').textContent = pora ? 'Porų suderinamumas ir ✋ 3 klausimai delnams — dovanų. Kuponas su kodu — iškart į tavo el. paštą.' : 'Gyvenimo žemėlapis ir ✋ 3 klausimai delnams — dovanų. Kuponas su kodu — iškart į tavo el. paštą.';
     $('f-to').placeholder = pora ? 'pvz. Ieva ir Tomas' : 'pvz. Ieva';
     $('s3-h').innerHTML = pora ? 'Dovana atskleidžia <em>poros suderinamumą</em>' : 'Dovana atskleidžia <em>asmeninį žemėlapį</em>';
     $('s3-p').textContent = pora ? 'Pora nufotografuoja delnus — paeiliui viename telefone arba per nuorodą, jei nėra kartu — ir per kelias minutes gauna suderinamumo įvertį, 7 skyrių analizę su PDF ir gali užduoti 3 klausimus apie savo porą. Mokėti nereikės.' : 'Nufotografavus abu delnus, per kelias minutes gaunama asmeninė 7 skyrių analizė su PDF ir galima užduoti 3 asmeninius klausimus. Mokėti nereikės.';
@@ -739,7 +739,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     // Šventės užrašas — tik jei pirkėjas pats pažymėjo šventinę dovaną
     const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
     $('c-season').textContent = SL[g.season] || '';
-    $('c-what').innerHTML = (pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus') + (g.klausk ? '<span class="what-kl">+ 3 ' + (pora ? 'klausimai porai' : 'asmeniniai klausimai') + '</span>' : '');
+    $('c-what').innerHTML = (pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus') + (g.klausk ? '<span class="what-kl">+ ✋ 3 klausimai delnams</span>' : '');
     $('c-how').textContent = pora ? 'nufotografuokite savo delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
     $('again').href = pora ? '/dovana?tipas=pora' : '/dovana';
     const link = redeemLink(g.code);
@@ -826,7 +826,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   });
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
-    const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai porai! 💞' : ' ir 3 asmeniniai klausimai!') : (current.kind === 'pora' ? '! 💞' : '!'));
+    const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai delnams! 💞' : ' ir 3 klausimai delnams!') : (current.kind === 'pora' ? '! 💞' : '!'));
     const text = '🎁 Dovana ' + (current.recipientName ? ltPhrase(current.recipientName, 'dat') : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + ltPhrase(current.fromName, 'gen') : '') + what + '\n\n👉 Atidaryk dovaną: ';
     try {
       // Jei naršyklė leidžia — siunčiame kartu ir kortelės paveikslėlį.

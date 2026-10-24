@@ -3246,7 +3246,7 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   const pora = gift.kind === 'pora';
   const what = pora ? 'porų suderinamumą' : 'gyvenimo žemėlapį';
   const lead = gift.recipientName ? `${escapeHtml(ltPhrase(gift.recipientName, 'dat'))} skirtą DELNAS ${what}` : `DELNAS ${pora ? 'porų suderinamumo' : 'gyvenimo žemėlapio'} dovaną`;
-  const kl = gift.klausk ? ` su 3 ${pora ? 'klausimais porai' : 'asmeniniais klausimais'}` : '';
+  const kl = gift.klausk ? ' su 3 klausimais delnams' : '';
   const hour = String(Number.isInteger(gift.sendHour) ? gift.sendHour : 8).padStart(2, '0');
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center">
   <div style="font-size:26px;margin-bottom:6px">✓</div>
@@ -3273,7 +3273,7 @@ function buildGiftEmailHtml(gift) {
     ${gift.season && SEASON_LABELS[gift.season] ? `<div style="margin-top:12px;font-size:15px;color:#f0d58a;font-style:italic">${SEASON_LABELS[gift.season]}</div>` : ''}
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
-    ${gift.klausk ? `<div style="font-size:14px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
+    ${gift.klausk ? `<div style="font-size:14px;color:#f0d58a;margin-top:6px">+ ✋ 3 klausimai delnams</div>` : ''}
     ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
     ${gift.fromName ? `<div style="margin-top:10px;font-size:14px;color:rgba(255,255,255,.6)">— nuo ${escapeHtml(ltPhrase(gift.fromName, 'gen'))}</div>` : ''}
     <div style="margin:28px auto 6px;display:inline-block;border:1px dashed rgba(212,168,67,.7);border-radius:10px;padding:12px 22px;font-family:'Courier New',monospace;font-size:24px;letter-spacing:.18em;color:#f0d58a">${escapeHtml(gift.code)}</div>
@@ -3332,7 +3332,7 @@ function buildGiftRecipientEmailHtml(gift) {
     ${img ? '' : `<div style="font-size:30px;margin:22px 0 6px">🎁 ${to}</div>`}
     <div style="font-size:17px;color:rgba(255,255,255,.8)${img ? ';margin-top:18px' : ''}">${from ? from + ' ' + (pora ? 'jums dovanoja' : 'tau dovanoja') : (pora ? 'Jums dovana' : 'Tau dovana')}:</div>
     ${img ? '' : `<div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>`}
-    ${gift.klausk && !img ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ 3 ${pora ? 'klausimai porai' : 'asmeniniai klausimai'}</div>` : ''}
+    ${gift.klausk && !img ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ ✋ 3 klausimai delnams</div>` : ''}
     ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kuponas')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
       : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : '')}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną</a></div>
@@ -5135,7 +5135,7 @@ function adminCouponsHtml(key, created) {
   const store = loadGiftStore();
   const list = Object.values(store.codes).filter(g => g.admin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const st = { active: 'galioja', redeemed: 'panaudotas', expired: 'nebegalioja', void: 'anuliuotas' };
-  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}${g.season && SEASON_LABELS[g.season] ? ' · ' + SEASON_LABELS[g.season] : ''}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}</td></tr>`;
+  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų suderinamumas' : 'Gyvenimo žemėlapis'}${g.season && SEASON_LABELS[g.season] ? ' · ' + SEASON_LABELS[g.season] : ''}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}${g.redeemedAt ? `<br><span style="color:#777">${fmtLtDate(g.redeemedAt)}${g.redeemedName ? '<br>' + escapeHtml(g.redeemedName) : ''}${g.redeemedEmail ? '<br>' + escapeHtml(g.redeemedEmail) : ''}</span>` : ''}</td></tr>`;
   const k = encodeURIComponent(key);
   return `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Nemokami kuponai — DELNAS</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}h1{font-size:20px}form{background:#f6f2e6;border:1px solid #e2d6b0;border-radius:10px;padding:14px;margin:12px 0 20px}label{display:block;margin:8px 0 4px;font-size:13px;color:#555}select,input{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;max-width:320px;box-sizing:border-box}button{margin-top:12px;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:#c98a1f;color:#fff;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #eee;padding:7px 6px;text-align:left;vertical-align:top}.new{background:#eef8ee;border:1px solid #bfe3bf;border-radius:10px;padding:12px;margin-bottom:16px}.new b{font-family:monospace;font-size:16px}.new a{word-break:break-all}</style></head><body>
@@ -5143,7 +5143,7 @@ function adminCouponsHtml(key, created) {
 <p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Abiejuose kuponuose — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kuponą (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kuponas“.</p>
 ${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
 <form method="post" action="/admin/kuponai?key=${k}">
-<label>Analizė</label><select name="tipas"><option value="asmenine">Asmeninė analizė (+3 klausimai)</option><option value="pora">Porų analizė (+3 klausimai porai)</option></select>
+<label>Analizė</label><select name="tipas"><option value="asmenine">Gyvenimo žemėlapis (+3 klausimai delnams)</option><option value="pora">Porų suderinamumas (+3 klausimai delnams)</option></select>
 <label>Šventė (užrašas kupone, neprivaloma)</label><select name="svente"><option value="">— be šventės —</option><option value="kaledos">Linksmų Kalėdų 🎄</option><option value="valentinas">Su Valentino diena 💞</option><option value="mama">Su Motinos diena 🌷</option></select>
 <label>Kiek kuponų (1–20)</label><input name="kiek" type="number" min="1" max="20" value="1">
 <label>Pastaba sau (pvz. „Loterija FB, lapkritis“)</label><input name="pastaba" maxlength="80">
