@@ -4944,6 +4944,15 @@ async function buildInviteCardBlob(name){
 // sudarome "text"/"url" laukus. Pridėjus paveikslėlį, šis automatinis
 // pavertimas nebevyksta (lygiai taip pat, kaip jau veikia "Dalintis
 // kortele" mygtukas), o tekstas išlieka.
+// Kvietimo (draugo) nuoroda apmokėjusiam klientui: draugai gauna −10 %, kviečiantysis — 3 klausimus už pirkusį draugą
+async function ensureRefLink(){
+  const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
+  if(!payRef&&!window._refLink) return null;
+  try{
+    if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
+  }catch(e){}
+  return window._refLink||null;
+}
 async function inviteFriend(){
   track('invite');
   let appUrl = 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=kvietimas';
@@ -4952,13 +4961,8 @@ async function inviteFriend(){
   // trumpas, smalsumą keliantis klausimas + nuoroda į programą.
   let text = 'Ką pasakoja delnai?';
   // Apmokėjusiam klientui — asmeninė draugo nuoroda (draugas gauna nuolaidą)
-  const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
-  if(payRef||window._refLink){
-    try{
-      if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
-      if(window._refLink){ appUrl=window._refLink.link+(window._refLink.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką pasakoja delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
-    }catch(e){}
-  }
+  const rl=await ensureRefLink();
+  if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką pasakoja delnai? Su mano nuoroda gausi −'+rl.pct+' % 🎁'; }
   try{
     const blob = await buildInviteCardBlob(name);
     if(blob){
@@ -5305,7 +5309,12 @@ async function buildStoryCardBlob(){
     y += cardH + 8;
   }
 
-  y += 40;
+  y += 22;
+  // Kvietimas žiūrinčiajam — virš svetainės adreso
+  ctx.font = '600 34px "DM Sans", sans-serif';
+  ctx.fillStyle = 'rgba(245,238,216,.75)';
+  ctx.fillText('Ką pasakoja tavo delnai?', W/2, y + 30);
+  y += 62;
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
@@ -5381,11 +5390,12 @@ async function shareStory(){
     const blob = await buildStoryCardBlob();
     if(!blob){ alert('Nepavyko sukurti kortelės. Bandyk dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
-    const appUrl = 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=stiprybes';
+    const rl = await ensureRefLink();
+    const appUrl = rl ? rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=stiprybes' : 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=stiprybes';
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
     // paskelbus (pvz. Facebook) nuoroda atsirasdavo DU KARTUS.
-    const shareText = 'Pažvelk, ką pasakoja tavo delnai ✦';
+    const shareText = rl ? 'Pažvelk, ką pasakoja tavo delnai ✦ Su mano nuoroda gausi −'+rl.pct+' % 🎁' : 'Pažvelk, ką pasakoja tavo delnai ✦';
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Mano gyvenimo žemėlapis', text:shareText, url:appUrl});
       return;
@@ -6701,12 +6711,20 @@ async function poraCardBlob(){
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
 }
 // Porų kvietimo nuoroda: draugai gauna −10 % (/pora?ref=…), pora už pirkusį draugą — 3 klausimus apie savo porą
+// Porų kvietimo nuoroda (draugai gauna −10 %, pora — 3 klausimus apie savo porą už pirkusį draugą)
+async function ensurePoraRefLink(){
+  const p=window._pora||{};
+  try{
+    if(!window._poraRefLink){ const d=await (await fetch('/ref/create-pora',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); if(d&&d.link) window._poraRefLink=d; }
+  }catch(e){}
+  return window._poraRefLink||null;
+}
 async function poraInviteFriend(btn){
   track('pora_invite');
   const p=window._pora||{};
   let url='https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Ką pasakoja delnai?';
   try{
-    if(!window._poraRefLink){ const d=await (await fetch('/ref/create-pora',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); if(d&&d.link) window._poraRefLink=d; }
+    await ensurePoraRefLink();
     if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką pasakoja delnai? Su mūsų nuoroda gausite −'+window._poraRefLink.pct+' % 🎁'; }
   }catch(e){}
   // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
@@ -6720,8 +6738,9 @@ async function poraInviteFriend(btn){
 }
 async function poraShareCard(){
   track('pora_share_card');
-  const url='https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poros-kortele';
-  const text='Mūsų poros suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
+  const rl=await ensurePoraRefLink();
+  const url=rl ? rl.link+'&utm_source=dalinimasis&utm_campaign=poros-kortele' : 'https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poros-kortele';
+  const text=rl ? 'Mūsų poros suderinamumas pagal delnus 💞 Su mūsų nuoroda gausite −'+rl.pct+' % 🎁' : 'Mūsų poros suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
   try{
     const blob=await poraCardBlob(), file=new File([blob],'poru-suderinamumas.jpg',{type:'image/jpeg'});
     if(navigator.share){
