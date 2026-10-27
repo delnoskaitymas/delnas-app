@@ -1136,13 +1136,20 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė</a>
     </div>
     <div style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:'Playfair Display',serif">Pasidalinkite, pakvieskite ar padovanokite</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5">Parodykite artimiesiems savo suderinamumą, pakvieskite draugus arba padovanokite delnų analizę.</div>
+
+      <div class="rb-sec">Pasidalinkite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
-        <button class="btn" id="pora-invite-btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraInviteFriend(this)"><span style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugus išbandyti</span></button>
-        <div class="ref-note" style="margin-top:-2px">Draugai su jūsų nuoroda gaus <b>−10 %</b>, o jūs už kiekvieną pirkusį draugą — <b>3 klausimus apie savo porą dovanų</b>.</div>
-        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti gyvenimo žemėlapį<small style="display:block;font-size:11.5px;font-weight:500;opacity:.85;margin-top:2px">+ ✋ 3 klausimai delnams</small></a>
-        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti porų suderinamumą<small style="display:block;font-size:11.5px;font-weight:500;opacity:.85;margin-top:2px">+ ✋ 3 klausimai delnams</small></a>
+        <button onclick="poraShareCard()" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:10px;padding:13px;color:#07040f;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h1.586a1 1 0 00.707-.293l.828-.828A2 2 0 0110.828 1h2.344a2 2 0 011.414.586l.828.828A1 1 0 0016.12 3H18a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 3a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>Dalintis porų kortele</button>
+        <button onclick="poraInviteFriend(this)" style="width:100%;background:transparent;border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:var(--gold2);font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 10c-4.42 0-8 2.24-8 5v1h11.09A6.98 6.98 0 0115 15c0-1.3.38-2.5 1.03-3.52A11.6 11.6 0 0012 14zm7 1v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>Pakviesti draugus išbandyti</button>
+        <div class="ref-note">Draugai su jūsų nuoroda gaus <b>−10 %</b>, o jūs už kiekvieną pirkusį draugą — <b>3 klausimus apie savo porą dovanų</b>.</div>
+      </div>
+
+      <div class="rb-sec">🎁 Padovanokite</div>
+      <div class="rb-gifts">
+        <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="rb-gift"><span class="rb-gi">🎁</span><b>Gyvenimo žemėlapis</b><small><b style="color:var(--gold2)">+ ✋ 3 klausimai delnams</b></small><em>Padovanoti</em></a>
+        <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="rb-gift"><span class="rb-gi">💞</span><b>Porų suderinamumas</b><small><b style="color:var(--gold2)">+ ✋ 3 klausimai delnams</b></small><em>Padovanoti</em></a>
       </div>
     </div>
     <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
@@ -6395,10 +6402,20 @@ async function poraDuoShare(code,name,btn){
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
 // Porų rezultate: asmeninė analizė kiekvienam porų kaina — du vienkartiniai kodai (/pora/offers)
+// Porų rezultate: −20 % dovanai (24 val.) — kaip Gyvenimo žemėlapio rezultate
+function poraOnceGift(once){
+  const gifts=document.querySelector('#s-pora-result .rb-gifts');
+  if(!once||!gifts||document.getElementById('pora-rb-once')) return;
+  const b=document.createElement('div'); b.id='pora-rb-once'; b.className='rb-once';
+  b.innerHTML='<b>−'+once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(once.expiresAt)+'</span>';
+  gifts.parentNode.insertBefore(b,gifts);
+  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
+}
 async function loadPoraDuo(){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
   if(!box||!p.sid) return; box.innerHTML='';
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
+  poraOnceGift(d&&d.once);
   if(!d||!d.price||!d.a||!d.b) return;
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
