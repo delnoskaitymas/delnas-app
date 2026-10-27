@@ -249,7 +249,6 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 /* Atėjus iš porų rezultato ryškus lieka tik „Dabar — … eilė“ mygtukas */
 #s-result.duo-mode #r-extra .kl-btn,#s-result.duo-mode button[onclick="shareStory()"]{background:transparent!important;border:1px solid var(--gold)!important;color:var(--gold2)!important;box-shadow:none!important}
 /* Porų rezultate pagrindinis — porų kainos mygtukas, todėl klausimų mygtukas kontūrinis */
-#pora-kl .kl-btn{background:transparent;border:1px solid var(--gold);color:var(--gold2);box-shadow:none;font-weight:700}
 .kl-err{display:none;color:#ffb3a0;font-size:12.5px;text-align:center;margin-top:8px}
 .kl-fine{font-size:11px;color:var(--muted);text-align:center;margin-top:9px}
 .px-row b{display:flex;align-items:center;gap:8px;font-size:14px;color:#f3e7c6;font-weight:700}
@@ -1126,12 +1125,12 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
       <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymus — 4,99 €</button>
       <div class="kl-err" id="pora-kl-err"></div>
-      <div class="kl-fine">3 klausimai už 4,99 € · atsakymus matysite naujame lange ir gausite el. paštu · Saugus mokėjimas per Stripe</div>
+      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div>
     </div>
     <!-- Asmeninė analizė kiekvienam — pelningiausias pasiūlymas, iškart po „Klauskite“ (porų kaina abiem — /pora/offers) -->
     <div id="pora-personal" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie kiekvieną iš jūsų?</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Porų analizė parodė, kaip derate kartu. Asmeninis gyvenimo žemėlapis atskleis, kas laukia kiekvieno iš jūsų: kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote.</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</div>
       <div id="pora-duo"></div>
       <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė</a>
     </div>
@@ -1652,7 +1651,7 @@ function renderRating(boxId, kind){
   const key='delnasRated:'+kind+':'+(kind==='pora'?((window._pora||{}).sid||''):(window._orderNumber||window._paymentRef||''));
   let done=false; try{ done=!!localStorage.getItem(key); }catch(e){}
   const you=kind==='pora';
-  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo poros suderinamumo analizę?':'Kaip vertini savo analizę?')+'</div>'+
+  box.innerHTML='<div class="rs rs-std rate'+(kind==='pora'?' pr-rv':' rs-reveal')+'"><div class="rs-label" style="justify-content:center">✦ '+(you?'Kaip vertinate savo analizę?':'Kaip vertini savo analizę?')+'</div>'+
     (done?'<div class="rate-thx" style="display:block">Ačiū už įvertinimą! ✦</div>':
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
@@ -4020,7 +4019,7 @@ function renderResultExtra(r){
   const rmPrev=_remGet()||{};
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
-  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pamatysi, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Kas tavyje pasikeis per 3 mėnesius? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Po 3 mėnesių pažiūrėk, kas pasikeitė</div><div class="px-rem-d">Delnų linijos keičiasi kartu su tavimi. Kas tavyje pasikeis per 3 mėnesius? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>'+
     '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
