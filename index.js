@@ -2333,6 +2333,12 @@ function ownsPaymentRef(ref, { token, sessionId, kl } = {}) {
   if (typeof kl === 'string' && /^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(kl)) { const o = loadKlauskOrders()[kl]; if (o && o.paymentRef === ref) return true; }
   return false;
 }
+// Gyvenimo žemėlapis, gautas dovanų kuponu (gift:KODAS) — panaudotas asmeninės analizės kuponas
+function giftAnalysis(ref) {
+  if (typeof ref !== 'string' || !ref.startsWith('gift:') || ref.length > 40) return null;
+  const g = loadGiftStore().codes[ref.slice(5)];
+  return g && g.kind !== 'pora' && g.status === 'redeemed' ? g : null;
+}
 function giftKlausk(ref) {
   if (typeof ref !== 'string' || !ref.startsWith('gift:') || ref.length > 40) return null;
   const g = loadGiftStore().codes[ref.slice(5)];
@@ -2662,9 +2668,12 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     let pay = null, poraLine = '';
     try { pay = !isGift && typeof paymentRef === 'string' && paymentRef ? await getPaidAnalysisPayment(paymentRef) : null; } catch (e) { pay = null; }
     try {
-      if (pay && pay.metadata.bundle !== '1') {
-        const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: isValidEmail(pay.email) ? pay.email : email, key: 'bundle:' + paymentRef });
-        if (!pr.usedBy && Date.now() < pr.expiresAt && !recentDone(isValidEmail(pay.email) ? pay.email : email, 'pora')) poraLine = resultPoraLineHtml(pr);
+      // Porų suderinamumas rinkinio kaina — pirkėjui ir dovanos gavėjui (ne tam, kas jau užsakė rinkinį)
+      const ga = isGift && ownsPaymentRef(paymentRef, { token }) ? giftAnalysis(paymentRef) : null;
+      if ((pay && pay.metadata.bundle !== '1') || ga) {
+        const em = pay && isValidEmail(pay.email) ? pay.email : email;
+        const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: em, key: 'bundle:' + paymentRef });
+        if (!pr.usedBy && Date.now() < pr.expiresAt && !recentDone(em, 'pora')) poraLine = resultPoraLineHtml(pr);
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
     // Dovanoje įskaičiuoti klausimai — užsakymas sukuriamas iškart, kad priminimas jį rastų ir uždarius rezultato puslapį
@@ -5387,6 +5396,13 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};
     if (!ownsPaymentRef(paymentRef, req.body)) return res.json({});
+    // Dovanų kuponu gautas Gyvenimo žemėlapis — tik porų suderinamumas rinkinio kaina
+    const ga = giftAnalysis(paymentRef);
+    if (ga) {
+      const email = isValidEmail(ga.redeemedEmail) ? ga.redeemedEmail : '';
+      const bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
+      return res.json({ once: null, bundle: bundle.usedBy ? null : promoPublic(bundle), bundleGift: null, poraPrice: PORA_PRICE_CENTS, hasPora: !!bundle.usedBy || recentDone(email, 'pora') });
+    }
     const p = await getPaidAnalysisPayment(paymentRef);
     if (!p) return res.json({});
     const email = isValidEmail(p.email) ? p.email : '';
