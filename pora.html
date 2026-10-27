@@ -426,6 +426,15 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if (!d.valid || d.product !== 'pora') { applyRef(); return; }
       const price = d.price ? Math.min(d.price, d.poraPrice) : Math.round(d.poraPrice * (100 - d.pct) / 100);
       window._promoCode = d.code;
+      // Rinkinio kaina iš asmeninio rezultato — vardas ir el. paštas įrašomi iš anksto (išsaugoti šiame įrenginyje paspaudus pasiūlymą)
+      if (d.kind === 'bundle') try {
+        const me = JSON.parse(localStorage.getItem('delnasMe') || 'null');
+        if (me && Date.now() - (me.at || 0) < 30 * 864e5) {
+          if (me.name && !$('f-a').value.trim()) $('f-a').value = me.name;
+          if (me.email && !$('f-email').value.trim()) $('f-email').value = me.email;
+          refreshBtn();
+        }
+      } catch (e) {}
       $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(d.poraPrice) + '</s>';
       const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
       const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' });
