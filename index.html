@@ -248,6 +248,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .kl-btn[disabled]{opacity:.6}
 /* Atėjus iš porų rezultato ryškus lieka tik „Dabar — … eilė“ mygtukas */
 #s-result.duo-mode #r-extra .kl-btn,#s-result.duo-mode button[onclick="shareStory()"]{background:transparent!important;border:1px solid var(--gold)!important;color:var(--gold2)!important;box-shadow:none!important}
+#pora-kl .kl-btn{background:transparent;border:1px solid var(--gold);color:var(--gold2);box-shadow:none;font-weight:700}
 /* Porų rezultate pagrindinis — porų kainos mygtukas, todėl klausimų mygtukas kontūrinis */
 .kl-err{display:none;color:#ffb3a0;font-size:12.5px;text-align:center;margin-top:8px}
 .kl-fine{font-size:11px;color:var(--muted);text-align:center;margin-top:9px}
@@ -1129,7 +1130,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <!-- Asmeninė analizė kiekvienam — pelningiausias pasiūlymas, iškart po „Klauskite“ (porų kaina abiem — /pora/offers) -->
     <div id="pora-personal" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O ką delnai pasakoja apie kiekvieną iš jūsų?</div>
+      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">O kas laukia kiekvieno iš jūsų?</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</div>
       <div id="pora-duo"></div>
       <a href="/?utm_source=app&amp;utm_campaign=pora" id="pora-personal-btn" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid var(--gold);color:var(--gold2)">Asmeninė delnų analizė</a>
