@@ -753,6 +753,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
     $('card-lead').classList.toggle('hidden', !!used);
+    // Panaudoto kupono nebėra kam siųsti — lieka tik atsisiuntimas prisiminimui
+    $('share').classList.toggle('hidden', !!used); $('copy').classList.toggle('hidden', !!used);
     if (used) $('c-redeemed').textContent = g.status === 'redeemed' ? 'Šis kuponas jau panaudotas.' : 'Šis kuponas nebegalioja.';
     show('v-card'); fitCard();
   }
