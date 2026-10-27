@@ -4791,7 +4791,7 @@ async function buildInviteCardBlob(name){
       document.fonts.ready
     ]);
   }catch(e){ /* jei nepavyksta — tęsiame su numatytaisiais šriftais */ }
-  const W = 1080, H = 980;
+  const W = 1080, H = 1160;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -4888,15 +4888,16 @@ async function buildInviteCardBlob(name){
   // vardas jau įeina į patį sakinį) ir BE žvaigždutės ženklelio šalia
   // (paprasčiau, švariau).
   // Kvietimas tinka ir vienam žmogui, ir porai („dovanoja“ tinka ir porai: „Ona ir Jonas dovanoja…“) — draugas pats renkasi analizę
-  ctx.font = '700 50px "DM Sans", sans-serif';
+  ctx.font = '700 48px "DM Sans", sans-serif';
   ctx.fillStyle = '#f7eccb';
   ctx.shadowColor = 'rgba(240,201,106,.4)';
   ctx.shadowBlur = 10;
-  y = drawWrappedCentered(ctx, 'Ką tavo delnai žino apie tave?', W/2, y, maxWidth, 62) + 14;
+  y = drawWrappedCentered(ctx, 'Ką delnai pasakoja apie tave ir jus abu?', W/2, y, W - 120, 60) + 18;
   ctx.shadowBlur = 0;
   ctx.font = '600 32px "DM Sans", sans-serif';
   ctx.fillStyle = 'rgba(245,238,216,.85)';
-  y = drawWrappedCentered(ctx, 'Kas tave stabdo, kur slypi tavo sėkmė ir kokie pokyčiai artėja.', W/2, y, maxWidth, 42) + 22;
+  y = drawWrappedCentered(ctx, 'Tau — kas stabdo, kur slypi sėkmė ir kokie pokyčiai artėja.', W/2, y, maxWidth, 40) + 10;
+  y = drawWrappedCentered(ctx, 'Jums abiem — kas jus sieja, kur gali kilti trintis ir kiek procentų derate.', W/2, y, maxWidth, 40) + 22;
   ctx.font = '700 32px "DM Sans", sans-serif';
   ctx.fillStyle = '#f0c96a';
   y = drawWrappedCentered(ctx, (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % ir Gyvenimo žemėlapiui, ir porų suderinamumui.', W/2, y, maxWidth, 42) + 60;
