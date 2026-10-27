@@ -4708,7 +4708,7 @@ function poraDuoEmailOffer(o, sessionId) {
     const nm = used.a ? o.nameB : o.nameA, f = ltFormsObj(nm) || {};
     return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">${escapeHtml(f.gen || nm)} asmeninis gyvenimo žemėlapis — <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn(escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis')}`;
   }
-  return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:22px 0 4px;font-family:Georgia,serif">O ką delnai pasakoja apie kiekvieną iš jūsų?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0">Kiekvienam — po <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn('✦ Atskleisti savo gyvenimo žemėlapius')}`;
+  return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:22px 0 4px;font-family:Georgia,serif">O kas laukia kiekvieno iš jūsų?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0">Kiekvienam — po <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn('✦ Atskleisti savo gyvenimo žemėlapius')}`;
 }
 // Mokėjimo patvirtinimas laiškuose (vietoj Stripe kvito): paslauga, suma, data, užsakymo nr., pardavėjas
 function payReceiptHtml({ item, amount, at, orderNo, orderLabel }) {
