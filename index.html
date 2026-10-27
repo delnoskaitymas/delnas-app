@@ -4959,10 +4959,10 @@ async function inviteFriend(){
   const name = window.userName || '';
   // Šalia kortelės (dalinimosi tekste, ne pačiame paveikslėlyje) rodomas
   // trumpas, smalsumą keliantis klausimas + nuoroda į programą.
-  let text = 'Ką pasakoja delnai?';
+  let text = 'Ką delnai pasakoja apie tave ir jus abu?';
   // Apmokėjusiam klientui — asmeninė draugo nuoroda (draugas gauna nuolaidą)
   const rl=await ensureRefLink();
-  if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką pasakoja delnai? Su mano nuoroda gausi −'+rl.pct+' % 🎁'; }
+  if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mano nuoroda −'+rl.pct+' % ir Gyvenimo žemėlapiui, ir porų suderinamumui 🎁'; }
   try{
     const blob = await buildInviteCardBlob(name);
     if(blob){
@@ -6722,10 +6722,10 @@ async function ensurePoraRefLink(){
 async function poraInviteFriend(btn){
   track('pora_invite');
   const p=window._pora||{};
-  let url='https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Ką pasakoja delnai?';
+  let url='https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Ką delnai pasakoja apie tave ir jus abu?';
   try{
     await ensurePoraRefLink();
-    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką pasakoja delnai? Su mūsų nuoroda gausite −'+window._poraRefLink.pct+' % 🎁'; }
+    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mūsų nuoroda −'+window._poraRefLink.pct+' % ir Gyvenimo žemėlapiui, ir porų suderinamumui 🎁'; }
   }catch(e){}
   // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
   try{
