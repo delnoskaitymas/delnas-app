@@ -2442,7 +2442,7 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   }
 });
 
-// Porų rezultatas — kvietimo nuoroda porai (draugai gauna −10 %, pora už pirkusį draugą — 3 klausimus apie savo porą)
+// Porų rezultatas — kvietimo nuoroda porai (draugai renkasi analizę su −10 %, pora už pirkusį draugą — 3 klausimus apie savo porą)
 app.post('/ref/create-pora', sensitiveLimiter, (req, res) => {
   try {
     const sid = (req.body || {}).sessionId;
@@ -2458,7 +2458,7 @@ app.post('/ref/create-pora', sensitiveLimiter, (req, res) => {
       st.byPayment[key] = code;
       saveRefs(st);
     }
-    res.json({ code, link: `${appBaseUrl()}/pora?ref=${code}`, pct: REF_DISCOUNT_PCT });
+    res.json({ code, link: `${appBaseUrl()}/?ref=${code}`, pct: REF_DISCOUNT_PCT });
   } catch (err) {
     console.error('/ref/create-pora klaida:', err);
     res.status(500).json({ error: 'Nepavyko sukurti nuorodos' });
