@@ -4161,7 +4161,9 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     // Porų analizė užsakyta po asmeninės (rinkinio kaina ar rinkinio kuponas) — pirkėjas (A) asmeninę analizę jau turi
     const pub = (p, own) => ({ code: own ? '' : p.code, used: own || !!p.usedBy, expiresAt: p.expiresAt });
     const ownA = poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm');
-    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt) });
+    // Apmokėjusiai porai — −ONCE_PCT % dovanai (24 val.), kaip ir Gyvenimo žemėlapio pirkėjui; dovanų kuponu gautam rezultatui — ne
+    const once = o.gift ? null : createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + sessionId });
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt), once: once && !once.usedBy ? promoPublic(once) : null });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
     res.json({});

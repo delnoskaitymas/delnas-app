@@ -6402,10 +6402,20 @@ async function poraDuoShare(code,name,btn){
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
 // Porų rezultate: asmeninė analizė kiekvienam porų kaina — du vienkartiniai kodai (/pora/offers)
+// Porų rezultate: −20 % dovanai (24 val.) — kaip Gyvenimo žemėlapio rezultate
+function poraOnceGift(once){
+  const gifts=document.querySelector('#s-pora-result .rb-gifts');
+  if(!once||!gifts||document.getElementById('pora-rb-once')) return;
+  const b=document.createElement('div'); b.id='pora-rb-once'; b.className='rb-once';
+  b.innerHTML='<b>−'+once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(once.expiresAt)+'</span>';
+  gifts.parentNode.insertBefore(b,gifts);
+  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
+}
 async function loadPoraDuo(){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
   if(!box||!p.sid) return; box.innerHTML='';
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
+  poraOnceGift(d&&d.once);
   if(!d||!d.price||!d.a||!d.b) return;
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
