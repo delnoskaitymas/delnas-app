@@ -4702,13 +4702,20 @@ function poraDuoEmailOffer(o, sessionId) {
   if (!used.a && (poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm'))) used.a = true;
   if (used.a && used.b) return '';
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
-  const link = `${appBaseUrl()}/?pora=${encodeURIComponent(sessionId)}&amp;utm_source=email&amp;utm_campaign=pora#asmenine`;
-  const btn = t => `<a href="${link}" style="display:inline-block;margin-top:10px;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${t}</a>`;
+  // Kiekvienam — savas mygtukas su vardu (tie patys vienkartiniai kodai kaip porų rezultate, /pora/offers)
+  const email = isValidEmail(o.email) ? o.email : '';
+  const btn = side => {
+    const nm = side === 'a' ? o.nameA : o.nameB, f = ltFormsObj(nm) || {};
+    const pr = createPromo({ kind: 'duo', product: 'asmenine', price: PORA_DUO_CENTS, ttlMs: 30 * DAY_MS, email, key: 'duo:' + sessionId + ':' + side });
+    const link = `${appBaseUrl()}/?promo=${encodeURIComponent(pr.code)}&amp;duo=${encodeURIComponent(sessionId)}&amp;kas=${side}&amp;utm_source=email&amp;utm_campaign=pora-duo`;
+    return `<a href="${link}" style="display:inline-block;margin:10px 4px 0;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">✦ ${escapeHtml(f.gen || nm)} gyvenimo žemėlapis — ${eur(PORA_DUO_CENTS)}</a>`;
+  };
+  const btns = (used.a ? '' : btn('a')) + (used.b ? '' : (used.a ? '' : '<br>') + btn('b'));
   if (used.a || used.b) {
     const nm = used.a ? o.nameB : o.nameA, f = ltFormsObj(nm) || {};
-    return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">${escapeHtml(f.gen || nm)} asmeninis gyvenimo žemėlapis — <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn(escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis')}`;
+    return `<p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:18px 0 0">${escapeHtml(f.gen || nm)} asmeninis gyvenimo žemėlapis — <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btns}`;
   }
-  return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:22px 0 4px;font-family:Georgia,serif">O kas laukia kiekvieno iš jūsų?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0">Kiekvienam — po <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btn('✦ Atskleisti savo gyvenimo žemėlapius')}`;
+  return `<p style="font-size:15px;font-weight:700;color:#d4a843;margin:22px 0 4px;font-family:Georgia,serif">O kas laukia kiekvieno iš jūsų?</p><p style="font-size:13px;line-height:1.6;color:rgba(245,238,216,.75);margin:0 0 6px">Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?</p><p style="font-size:13px;color:rgba(245,238,216,.85);margin:0">Kiekvienam — po <b style="color:#f0d58a">${eur(PORA_DUO_CENTS)}</b> <s style="opacity:.55">${eur(PERSONAL_PRICE_CENTS)}</s></p>${btns}`;
 }
 // Mokėjimo patvirtinimas laiškuose (vietoj Stripe kvito): paslauga, suma, data, užsakymo nr., pardavėjas
 function payReceiptHtml({ item, amount, at, orderNo, orderLabel }) {

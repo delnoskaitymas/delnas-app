@@ -1151,13 +1151,13 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       </div>
     </div>
     <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
-    <div id="pora-plan" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:8px;font-family:'Playfair Display',serif">✦ Po 3 mėnesių pažiūrėkite, kas pasikeitė</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px">Santykiai nuolat keičiasi. Kaip jūsų ryšys atrodys po 3 mėnesių? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>
-      <button type="button" id="pora-plan-btn" class="btn" style="margin:0;background:transparent;border:1px solid var(--gold);color:var(--gold2)" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
-      <div id="pora-plan-done" style="display:none;font-size:12.5px;color:var(--gold2);line-height:1.6;padding:6px 0"></div>
-      <div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:8px">Vienas laiškas. Atsisakyti galima bet kada.</div>
-    </div>
+    <div id="pora-plan" class="rs rs-std pr-rv"><div class="px-rem">
+      <div class="px-rem-t">✦ Po 3 mėnesių pažiūrėkite, kas pasikeitė</div>
+      <div class="px-rem-d">Santykiai nuolat keičiasi. Kaip jūsų ryšys atrodys po 3 mėnesių? Priminsime pasidaryti naują analizę, o jai bus <b style="color:var(--gold2)">−20 %</b>.</div>
+      <button type="button" id="pora-plan-btn" class="px-rem-b" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
+      <div id="pora-plan-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0"></div>
+      <div class="px-rem-f">Vienas laiškas. Atsisakyti galima bet kada.</div>
+    </div></div>
     <div id="pora-rate"></div>
     <div id="pora-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
