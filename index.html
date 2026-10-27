@@ -6740,7 +6740,7 @@ async function poraShareCard(){
   track('pora_share_card');
   const rl=await ensurePoraRefLink();
   const url=rl ? rl.link+'&utm_source=dalinimasis&utm_campaign=poros-kortele' : 'https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poros-kortele';
-  const text=rl ? 'Mūsų poros suderinamumas pagal delnus 💞 Su mūsų nuoroda gausite −'+rl.pct+' % 🎁' : 'Mūsų poros suderinamumas pagal delnus 💞 Pasitikrinkite ir jūs';
+  const text=rl ? 'Mūsų poros suderinamumas pagal delnus 💞 O kiek derate jūs? Su mūsų nuoroda gausite −'+rl.pct+' % 🎁' : 'Mūsų poros suderinamumas pagal delnus 💞 O kiek derate jūs?';
   try{
     const blob=await poraCardBlob(), file=new File([blob],'poru-suderinamumas.jpg',{type:'image/jpeg'});
     if(navigator.share){
