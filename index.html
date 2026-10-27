@@ -1583,14 +1583,22 @@ async function toggleKlauskBump(on){
 (async function refWelcome(){
   const rc=getRefCode(); if(!rc) return;
   // Pasveikinimas rodomas tik tikram draugo kodui (patikrina serveris); netinkamas kodas pamirštamas
-  let pct=10;
-  try{ const q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:rc})})).json();
+  let pct=10, q=null;
+  try{ q=await (await fetch('/order-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:rc})})).json();
     if(!q||!q.refCode){ if(q&&q.total){ try{ localStorage.removeItem('delnasRef'); }catch(e){} } return; }
     if(q.refPct) pct=q.refPct; }catch(e){ return; }
+  // Draugas pats renkasi analizę: Gyvenimo žemėlapis (šis puslapis) arba Porų suderinamumas (/pora) — abiem ta pati nuolaida
+  const eur=c=>(c/100).toFixed(2).replace('.',',')+' €';
+  const pers=q.total||0, pora=q.poraCents?q.poraCents-Math.round(q.poraCents*pct/100):0;
   const show=()=>{ const home=document.getElementById('s-home'); if(!home||document.getElementById('ref-welcome')) return;
     const n=document.createElement('div'); n.id='ref-welcome';
-    n.style.cssText="margin:14px 16px 0;padding:10px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;color:var(--gold2)";
-    n.innerHTML='🎁 Tau dovanojama <b>−'+pct+' %</b> delnų analizei'; home.prepend(n); };
+    n.style.cssText="margin:12px 16px 0;padding:9px 10px 10px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:'DM Sans',sans-serif;position:relative;z-index:5;font-size:13px;color:var(--gold2)";
+    const bs="flex:1;min-width:0;display:block;padding:7px 4px;border:1px solid rgba(212,168,67,.55);border-radius:10px;background:transparent;color:var(--gold2);font:700 12.5px/1.3 'DM Sans',sans-serif;text-decoration:none;cursor:pointer";
+    n.innerHTML='🎁 <b>Draugo dovana −'+pct+' %</b>'+
+      '<div style="display:flex;gap:8px;margin-top:7px"><button type="button" id="ref-pick-asm" style="'+bs+'">✦ Gyvenimo žemėlapis<br><span style="font-weight:500">tau'+(pers?' · '+eur(pers):'')+'</span></button>'+
+      '<a href="/pora?utm_source=dalinimasis&amp;utm_campaign=kvietimas-pasirinkimas" id="ref-pick-pora" style="'+bs+'">💞 Porų suderinamumas<br><span style="font-weight:500">jums dviem'+(pora?' · '+eur(pora):'')+'</span></a></div>';
+    home.prepend(n);
+    document.getElementById('ref-pick-asm').addEventListener('click',()=>{ if(typeof startApp==='function') startApp(); }); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
 })();
 
@@ -4879,13 +4887,19 @@ async function buildInviteCardBlob(name){
   // tekstas, BE atskiros vardo antraštės virš jo (nereikalinga, nes
   // vardas jau įeina į patį sakinį) ir BE žvaigždutės ženklelio šalia
   // (paprasčiau, švariau).
-  const inviteLine = name ? `${name} pakvietė tave sužinoti, kas užkoduota tavo delnuose` : 'Kažkas pakvietė tave sužinoti, kas užkoduota tavo delnuose';
-  ctx.font = '700 48px "DM Sans", sans-serif';
+  // Kvietimas tinka ir vienam žmogui, ir porai („dovanoja“ tinka ir porai: „Ona ir Jonas dovanoja…“) — draugas pats renkasi analizę
+  ctx.font = '700 50px "DM Sans", sans-serif';
   ctx.fillStyle = '#f7eccb';
   ctx.shadowColor = 'rgba(240,201,106,.4)';
   ctx.shadowBlur = 10;
-  y = drawWrappedCentered(ctx, inviteLine, W/2, y, maxWidth, 62) + 85;
+  y = drawWrappedCentered(ctx, 'Ką tavo delnai žino apie tave?', W/2, y, maxWidth, 62) + 14;
   ctx.shadowBlur = 0;
+  ctx.font = '600 32px "DM Sans", sans-serif';
+  ctx.fillStyle = 'rgba(245,238,216,.85)';
+  y = drawWrappedCentered(ctx, 'Kas tave stabdo, kur slypi tavo sėkmė ir kokie pokyčiai artėja.', W/2, y, maxWidth, 42) + 22;
+  ctx.font = '700 32px "DM Sans", sans-serif';
+  ctx.fillStyle = '#f0c96a';
+  y = drawWrappedCentered(ctx, (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % — sužinok apie save ir savo porą.', W/2, y, maxWidth, 42) + 60;
 
   const btnLabel = 'www.delnaskaitymas.lt';
   ctx.font = '700 38px "DM Sans", sans-serif';
@@ -4935,13 +4949,13 @@ async function inviteFriend(){
   const name = window.userName || '';
   // Šalia kortelės (dalinimosi tekste, ne pačiame paveikslėlyje) rodomas
   // trumpas, smalsumą keliantis klausimas + nuoroda į programą.
-  let text = 'Ką slepia tavo delnai?';
+  let text = 'Ką pasakoja delnai?';
   // Apmokėjusiam klientui — asmeninė draugo nuoroda (draugas gauna nuolaidą)
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   if(payRef||window._refLink){
     try{
       if(!window._refLink){ const d=await (await fetch('/ref/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,result:window._palmResult||null,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); if(d&&d.link){ window._refLink=d; rememberOwnRef(d.link); } }
-      if(window._refLink){ appUrl=window._refLink.link+(window._refLink.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką slepia tavo delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
+      if(window._refLink){ appUrl=window._refLink.link+(window._refLink.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką pasakoja delnai? Su mano nuoroda gausi −'+window._refLink.pct+' % 🎁'; }
     }catch(e){}
   }
   try{
@@ -4949,14 +4963,14 @@ async function inviteFriend(){
     if(blob){
       const file = new File([blob], 'delnas-kvietimas.png', {type:'image/png'});
       if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({ files:[file], title:'DELNAS — Gyvenimo žemėlapis', text, url:appUrl });
+        await navigator.share({ files:[file], title:'DELNAS', text, url:appUrl });
         return;
       }
     }
     // Atsarginis variantas, jei paveikslėlio pridėti nepavyko arba
     // failų dalinimasis nepalaikomas
     if(navigator.share){
-      await navigator.share({ title:'DELNAS — Gyvenimo žemėlapis', text, url:appUrl });
+      await navigator.share({ title:'DELNAS', text, url:appUrl });
       return;
     }
     await navigator.clipboard.writeText(`${text} ${appUrl}`);
@@ -6689,12 +6703,18 @@ async function poraCardBlob(){
 async function poraInviteFriend(btn){
   track('pora_invite');
   const p=window._pora||{};
-  let url='https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Kaip derate poroje? Pasitikrinkite pagal delnus 💞';
+  let url='https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Ką pasakoja delnai?';
   try{
     if(!window._poraRefLink){ const d=await (await fetch('/ref/create-pora',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); if(d&&d.link) window._poraRefLink=d; }
-    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Kaip derate poroje? Su mūsų nuoroda gausite −'+window._poraRefLink.pct+' % 🎁'; }
+    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką pasakoja delnai? Su mūsų nuoroda gausite −'+window._poraRefLink.pct+' % 🎁'; }
   }catch(e){}
-  try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url }); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
+  try{
+    const blob=await buildInviteCardBlob(poraNames());
+    if(blob){ const file=new File([blob],'delnas-kvietimas.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({ files:[file], title:'DELNAS', text, url }); return; } }
+    if(navigator.share){ await navigator.share({ title:'DELNAS', text, url }); return; }
+  }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
 async function poraShareCard(){
