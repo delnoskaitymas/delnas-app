@@ -6869,7 +6869,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
 // Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
 async function loadResultOffers(){
   if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
-  const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
+  const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })()
+    ||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   if(!payRef||window._manoView) return;
   let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); }catch(e){ return; }
   if(!d) return;
