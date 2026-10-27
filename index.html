@@ -1112,7 +1112,11 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <div id="pora-sections"></div>
     <div class="result-final">
       <div class="result-final-stars">✦ ✦ ✦</div>
-      <div class="result-final-text">Ši analizė priklauso tik jums. Ji jau atkeliavo į el. paštą PDF formatu.</div>
+      <div class="result-final-text" id="pora-final-text">Ši analizė priklauso tik jums. Ji jau atkeliavo į el. paštą PDF formatu.</div>
+      <div id="pora-partner-mail" style="display:none;margin-top:12px">
+        <div style="display:flex;gap:8px"><input type="email" id="pora-partner-email" placeholder="Tavo el. paštas" autocomplete="email" inputmode="email" style="flex:1;min-width:0;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:11px 12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif"><button type="button" id="pora-partner-btn" onclick="poraPartnerEmail()" style="flex:none;background:transparent;border:1px solid rgba(212,168,67,.55);border-radius:10px;padding:0 14px;color:var(--gold2);font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Gauti PDF</button></div>
+        <div id="pora-partner-msg" style="font-size:12px;color:var(--muted);margin-top:8px;display:none"></div>
+      </div>
     </div>
     <!-- „Klauskite savo delnų“ porai — mokėjimas naujame skirtuke -->
     <div class="rs rs-std kl pr-rv" id="pora-kl">
@@ -1135,6 +1139,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:12px;font-family:'Playfair Display',serif">Pasidalinkite ar padovanokite</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraShareCard()">💞 Dalintis porų kortele</button>
+        <button class="btn" id="pora-invite-btn" style="margin:0;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)" onclick="poraInviteFriend(this)">👥 Pakviesti draugus išbandyti</button>
+        <div class="ref-note" style="margin-top:-2px">Draugai su jūsų nuoroda gaus <b>−10 %</b>, o jūs už kiekvieną pirkusį draugą — <b>3 klausimus apie savo porą dovanų</b>.</div>
         <a href="/dovana?tipas=asmenine&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti gyvenimo žemėlapį<small style="display:block;font-size:11.5px;font-weight:500;opacity:.85;margin-top:2px">+ ✋ 3 klausimai delnams</small></a>
         <a href="/dovana?tipas=pora&amp;utm_source=app&amp;utm_campaign=pora" target="_blank" rel="noopener" class="btn" style="margin:0;display:block;text-decoration:none;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2)">🎁 Padovanoti porų suderinamumą<small style="display:block;font-size:11.5px;font-weight:500;opacity:.85;margin-top:2px">+ ✋ 3 klausimai delnams</small></a>
       </div>
@@ -4696,6 +4702,7 @@ function sendResultPdfEmail(r){
   try{
     console.log('[sendResultPdfEmail] iškviesta. _pdfEmailSent=',window._pdfEmailSent,'_userEmail=',window._userEmail);
     if(window._pdfEmailSent) return;
+    if(window._manoView||window._klView) return; // jau atliktos analizės peržiūra — laiškas išsiųstas anksčiau
     if(!window._userEmail){ console.log('[sendResultPdfEmail] nėra el. pašto, praleidžiama'); return; }
     window._pdfEmailSent=true;
     const name = window.userName || '';
@@ -5202,15 +5209,15 @@ async function buildStoryCardBlob(){
     ctx.fillStyle = '#f7d585';
     ctx.shadowColor = 'rgba(240,201,106,.55)';
     ctx.shadowBlur = 18;
-    y = drawWrappedCentered(ctx, name, W/2, y, maxWidth, 58) + 0;
+    y = drawWrappedCentered(ctx, ltPhrase(name, 'gen'), W/2, y, maxWidth, 58) + 0;
     ctx.shadowBlur = 0;
     ctx.font = '700 34px "DM Sans", sans-serif';
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'tavo prigimtinės stiprybės', W/2, y, maxWidth, 42) + 16;
+    y = drawWrappedCentered(ctx, 'prigimtinės stiprybės', W/2, y, maxWidth, 42) + 16;
   } else {
     ctx.font = '700 40px "Playfair Display", Georgia, serif';
     ctx.fillStyle = '#f5eed8';
-    y = drawWrappedCentered(ctx, 'Tavo prigimtinės stiprybės', W/2, y, maxWidth, 48) + 16;
+    y = drawWrappedCentered(ctx, 'Mano prigimtinės stiprybės', W/2, y, maxWidth, 48) + 16;
   }
 
   y += 8;
@@ -6491,6 +6498,7 @@ function renderPoraResult(r){
   loadPoraDuo();
   setTimeout(poraReveal,100);
   poraSendEmail();
+  poraPartnerMailSetup();
 }
 
 function buildPoraPdfDoc(){
@@ -6592,6 +6600,27 @@ function buildPoraPdfDoc(){
 }
 function poraPdfName(){ return (poraNames().replace(/\s+/g,'-')||'pora')+'-poru-suderinamumas.pdf'; }
 function poraDownloadPdf(){ try{ buildPoraPdfDoc().save(poraPdfName()); }catch(e){ console.error('[pora] PDF klaida:',e); alert('Nepavyko paruošti PDF. Bandykite dar kartą.'); } }
+// Antras poros žmogus (atidarė nuorodą savo telefone) — PDF galima gauti ir į savo el. paštą
+function poraPartnerMailSetup(){
+  let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; }catch(e){}
+  const box=document.getElementById('pora-partner-mail'); if(!box||!isPartner) return;
+  const p=window._pora||{}, a=ltForms(p.nameA||'');
+  document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF jau išsiųstas '+(a.dat||p.nameA||'')+' el. paštu. Nori gauti ir sau?';
+  box.style.display='block';
+}
+async function poraPartnerEmail(){
+  const inp=document.getElementById('pora-partner-email'), btn=document.getElementById('pora-partner-btn'), msg=document.getElementById('pora-partner-msg');
+  const email=(inp.value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.textContent='Įrašyk teisingą el. paštą.'; msg.style.display='block'; inp.focus(); return; }
+  btn.disabled=true; btn.textContent='Siunčiama…';
+  try{
+    const b64=buildPoraPdfDoc().output('datauristring').split(',').pop();
+    const r=await fetch('/pora/email-partner',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:window._pora.sid, email, pdfBase64:b64 }) });
+    const d=await r.json(); if(!r.ok||!d.ok) throw new Error(d.error||'');
+    document.querySelector('#pora-partner-mail > div').style.display='none';
+    msg.textContent='✓ PDF išsiųstas '+(d.alreadySent&&d.email?'anksčiau į '+d.email:'į '+email)+'.'; msg.style.display='block';
+  }catch(e){ btn.disabled=false; btn.textContent='Gauti PDF'; msg.textContent='Nepavyko išsiųsti. Bandyk dar kartą.'; msg.style.display='block'; }
+}
 function poraSendEmail(){
   if(window._poraEmailSent) return;
   window._poraEmailSent=true;
@@ -6655,6 +6684,18 @@ async function poraCardBlob(){
   x.fillStyle='rgba(255,255,255,.55)'; x.font="400 30px 'DM Sans', sans-serif"; x.fillText('Ką apie jūsų porą pasakoja delnai?', cx, 1235);
   x.fillStyle='#d4a843'; x.font="700 32px 'DM Sans', sans-serif"; x.fillText('www.delnaskaitymas.lt/pora', cx, 1282);
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
+}
+// Porų kvietimo nuoroda: draugai gauna −10 % (/pora?ref=…), pora už pirkusį draugą — 3 klausimus apie savo porą
+async function poraInviteFriend(btn){
+  track('pora_invite');
+  const p=window._pora||{};
+  let url='https://www.delnaskaitymas.lt/pora?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Kaip derate poroje? Pasitikrinkite pagal delnus 💞';
+  try{
+    if(!window._poraRefLink){ const d=await (await fetch('/ref/create-pora',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); if(d&&d.link) window._poraRefLink=d; }
+    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Kaip derate poroje? Su mūsų nuoroda gausite −'+window._poraRefLink.pct+' % 🎁'; }
+  }catch(e){}
+  try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url }); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
 async function poraShareCard(){
   track('pora_share_card');
@@ -6866,6 +6907,8 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
   }catch(e){}
 })();
 
+// Paspaudus porų pasiūlymą — /pora formoje iš anksto įrašomas vardas ir el. paštas (tik šiame įrenginyje)
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('a.rb-pora')){ try{ localStorage.setItem('delnasMe',JSON.stringify({name:window.userName||'',email:window._userEmail||'',at:Date.now()})); }catch(x){} } },true);
 // Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
 async function loadResultOffers(){
   if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
