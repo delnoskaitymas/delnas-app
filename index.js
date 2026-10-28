@@ -2875,9 +2875,9 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
         ce.paid = true; ce.paidEmail = email || tokenEntry.email || ''; ce.paidName = userName;
         try { const pt = loadPaymentTokens(); ce.paymentKey = Object.keys(pt).find(k => pt[k].token === token) || ''; } catch (e) {}
         saveAnalysisSessionToDisk(sessionId, ce);
-        // Automatiškai į „Mano analizes“ 90 d. (paslaugos dalis); 12 mėn. ir priminimas — tik paspaudus „Išsaugoti ir priminti“
+        // Automatiškai į „Mano analizes“ 12 mėn.; priminimas — tik paspaudus „Priminti po 3 mėn.“
         if (isValidEmail(ce.paidEmail) && ce.result) {
-          try { upsertSavedAnalysis(sessionId, ce.paidEmail, userName, ce.result, { auto: true, ...(isValidOrderNumber(orderNumber) ? { orderNumber } : {}) }, AUTO_SAVED_DAYS); } catch (e) { console.error('[mano] automatinio išsaugojimo klaida:', e.message); }
+          try { upsertSavedAnalysis(sessionId, ce.paidEmail, userName, ce.result, { auto: true, ...(isValidOrderNumber(orderNumber) ? { orderNumber } : {}) }); } catch (e) { console.error('[mano] automatinio išsaugojimo klaida:', e.message); }
         }
       }
     }
@@ -3163,7 +3163,9 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     // PAŠALINAME jį iš "nebenoriu gauti" sąrašo, o ne tyliai ignoruojame
     // jo prašymą — priešingu atveju UI pažadas ("jei persigalvosi, tiesiog
     // vėl paspausk") būtų neteisingas/neveikiantis.
-    const r = scheduleReminderFor(email, name || '');
+    // Automatiškai išsaugota analizė — kad priminimo laiške būtų palyginimas
+    const sv = loadSaved(), svId = typeof sessionId === 'string' ? sv.bySession[sessionId] : null;
+    const r = scheduleReminderFor(email, name || '', svId && sv.items[svId] && sv.items[svId].email === email ? svId : undefined);
     if (r === 'exists') return res.json({ ok: true, message: 'Jau užregistruota' });
     res.json({ ok: true });
   } catch(e) {
@@ -3606,15 +3608,15 @@ function updatePoraOrder(sessionId, patch) {
   if (patch && patch.status === 'done') markRecentDone(orders[sessionId].email, 'pora');
   return orders[sessionId];
 }
-// Pasenusių (>90 d.) užsakymų valymas paleidimo metu
+// Pasenusių užsakymų valymas paleidimo metu: atlikti saugomi 12 mėn. („Mano analizės“), kiti — 90 d.
 const PORA_USED_FILE = path.join(SHARED_STORAGE_DIR, 'pora-used.json');
 function loadPoraUsed() { try { if (fs.existsSync(PORA_USED_FILE)) return JSON.parse(fs.readFileSync(PORA_USED_FILE, 'utf8')) || {}; } catch (e) {} return {}; }
 function cleanupPoraOrders() {
   try {
-    const orders = loadPoraOrders(), cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    const orders = loadPoraOrders(), cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000, doneCutoff = Date.now() - 365 * 24 * 60 * 60 * 1000;
     let changed = false;
     const used = loadPoraUsed(); let usedChanged = false;
-    for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < cutoff) {
+    for (const [id, o] of Object.entries(orders)) if ((o.createdAt || 0) < (o.status === 'done' ? doneCutoff : cutoff)) {
       // Atliktos analizės žymė (be asmens duomenų) lieka 13 mėn. — kad tuo pačiu mokėjimu ar kuponu nebūtų atlikta antra analizė
       if (o.status === 'done' || o.result) { used[id] = o.finishedAt || o.createdAt || Date.now(); usedChanged = true; }
       delete orders[id]; changed = true;
@@ -4038,7 +4040,7 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
       photos = [...first, ...photos];
     }
     if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
-    // Šio užsakymo analizė jau buvo atlikta (įrašas po 90 d. ištrintas, liko tik žymė)
+    // Šio užsakymo analizė jau buvo atlikta (įrašas ištrintas, liko tik žymė)
     if (!existing && loadPoraUsed()[sessionId]) return res.status(410).json({ error: 'Ši porų analizė jau atlikta' });
     // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo
     if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
@@ -5359,8 +5361,6 @@ const ONCE_PCT = parseInt(process.env.ONCE_DISCOUNT_PCT || '20', 10);
 const REPEAT_PCT = parseInt(process.env.REPEAT_DISCOUNT_PCT || '20', 10);
 const ABANDON_DELAY_MS = parseInt(process.env.ABANDON_DELAY_MIN || '60', 10) * 60 * 1000;
 const SAVED_DAYS = 365;
-// Be sutikimo apmokėta analizė „Mano analizėse“ saugoma tik tiek, kiek reikia paslaugai (vėl atsidaryti rezultatą)
-const AUTO_SAVED_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function loadPromos() { return readJson(PROMOS_FILE, { codes: {}, byKey: {} }); }
@@ -5619,7 +5619,7 @@ function upsertSavedAnalysis(sessionId, email, name, result, extra, days = SAVED
   const now = Date.now();
   if (!id || !s.items[id]) { id = 'sa_' + crypto.randomBytes(9).toString('hex'); s.bySession[sessionId] = id; statInc('saved'); }
   const prev = s.items[id] || {};
-  // Terminas niekada netrumpinamas (automatinis 90 d. įrašas nesumažina jau išsaugoto 12 mėn.)
+  // Terminas niekada netrumpinamas
   const expiresAt = Math.max(prev.expiresAt || 0, now + days * DAY_MS);
   s.items[id] = { ...prev, ...(extra || {}), id, email: email.toLowerCase(), name: name || prev.name || '', result, createdAt: prev.createdAt || now, expiresAt };
   saveSavedStore(s);
@@ -5628,7 +5628,12 @@ function upsertSavedAnalysis(sessionId, email, name, result, extra, days = SAVED
 function cleanupSaved() {
   try {
     const s = loadSaved(), now = Date.now(); let changed = false;
-    for (const [id, it] of Object.entries(s.items)) if (it.expiresAt < now) { delete s.items[id]; changed = true; }
+    for (const [id, it] of Object.entries(s.items)) {
+      // Anksčiau automatiškai išsaugotos (90 d.) — pratęsiamos iki 12 mėn. kaip ir naujos
+      const full = (it.createdAt || 0) + SAVED_DAYS * DAY_MS;
+      if (it.auto && it.expiresAt < full) { it.expiresAt = full; changed = true; }
+      if (it.expiresAt < now) { delete s.items[id]; changed = true; }
+    }
     for (const [sid, id] of Object.entries(s.bySession)) if (!s.items[id]) { delete s.bySession[sid]; changed = true; }
     for (const [t, v] of Object.entries(s.tokens)) if (v.exp < now) { delete s.tokens[t]; changed = true; }
     for (const [e, t] of Object.entries(s.lastLink)) if (t < now - DAY_MS) { delete s.lastLink[e]; changed = true; }

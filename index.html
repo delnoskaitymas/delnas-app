@@ -1156,7 +1156,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div class="px-rem-d">Per 3 mėnesius gali keistis planai, finansai, kasdienybė. Nauja analizė parodys, kaip sprendžiate nesutarimus, kaip žiūrite į pinigus, namus ir ateitį, ir duos naujų patarimų jūsų porai. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>
       <button type="button" id="pora-plan-btn" class="px-rem-b" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
       <div id="pora-plan-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0"></div>
-      <div class="px-rem-f">Vienas laiškas. Atsisakyti galima bet kada.</div>
+      <div class="px-rem-f">Analizę saugome 12 mėn. <a href="/mano" target="_blank">„Mano analizėse“</a>, ištrinti galite bet kada.</div>
     </div></div>
     <div id="pora-rate"></div>
     <div id="pora-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
@@ -4019,9 +4019,9 @@ function renderResultExtra(r){
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
   const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Ar po 3 mėnesių būsi arčiau to, ko nori?</div><div class="px-rem-d">Tikslai keičiasi, o kartu ir kelias iki jų. Nauja analizė parodys, kas tave stabdo, kur slypi tavo sėkmės raktas ir koks pokytis laukia toliau. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>'+
-    '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
-    '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
-    '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
+    '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Priminti po 3 mėn.</button></div>'+
+    '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Priminsime po 3 mėnesių.</div>'+
+    '<div class="px-rem-f">Analizę saugome 12 mėn. <a href="/mano" target="_blank">„Mano analizėse“</a>, ištrinti gali bet kada.</div></div>'+'</div>';
   renderPalmsSideBySide(r);
   if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; loadCompare(); }
   loadResultOffers();
