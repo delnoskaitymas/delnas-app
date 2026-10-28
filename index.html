@@ -4153,13 +4153,20 @@ function setupKlauskBlock(o){
   const valid=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   async function prefetch(){
     try{
-      if(o.prepaid&&!st.noPrepaid){ const u=await o.prepaid; if(u&&!st.noPrepaid){ st.url=u; st.prepaid=true; return; } }
+      if(o.prepaid&&!st.noPrepaid){ const u=await o.prepaid; if(u&&!st.noPrepaid){ st.url=u; st.id=u.split('s=')[1]||null; st.prepaid=true; return; } }
       const email=emailOf(); if(o.emailEl&&!valid(email)) return;
       const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o.body(email))});
-      const d=await res.json(); if(res.ok&&d.url){ st.url=d.url; st.email=email; }
+      const d=await res.json(); if(res.ok&&d.url){ st.url=d.url; st.id=d.id||null; st.email=email; }
     }catch(e){}
   }
   prefetch();
+  // Atidarytas klausimų langas (apmokėti ar dovanoti klausimai): grįžus į šį skirtuką blokas parodo, kiek liko,
+  // o išnaudojus — siūlo naujus 3 klausimus (ne tą patį, jau panaudotą užsakymą ar apmokėtą Stripe nuorodą)
+  const syncOpened=async()=>{
+    if(document.visibilityState!=='visible'||!st.openedId||!blk||blk.classList.contains('kl-done')) return;
+    try{ const d=await (await fetch('/klausk/check?s='+encodeURIComponent(st.openedId))).json(); if(d&&d.paid&&!blk.classList.contains('kl-done')) klScrollAfter(st.openedId); }catch(e){}
+  };
+  document.addEventListener('visibilitychange',syncOpened); window.addEventListener('focus',syncOpened);
   // Grįžus iš klausimų lango: jei įrašytas klausimas jau perduotas (klausimų puslapis juodraštį paėmė) — laukelis išvalomas
   const clearSent=()=>{ if(document.visibilityState!=='visible'||!st.sentQ) return; let pending=false; try{ pending=!!localStorage.getItem('delnasKlDraft'); }catch(e){} if(pending) return; if(qEl.value.trim()===st.sentQ){ qEl.value=''; qEl.dispatchEvent(new Event('input',{bubbles:true})); } st.sentQ=null; };
   document.addEventListener('visibilitychange',clearSent); window.addEventListener('pageshow',clearSent); window.addEventListener('focus',clearSent);
@@ -4170,7 +4177,9 @@ function setupKlauskBlock(o){
     const email=emailOf();
     if(o.emailEl&&!st.prepaid&&!valid(email)){ const i=$(o.emailEl); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
     klDraftSave(q); st.sentQ=q;
-    if(st.url&&(st.prepaid||!o.emailEl||st.email===email)){ klOpen(st.url); return; }
+    // Ta pati mokėjimo nuoroda antrą kartą nenaudojama — kitam kartui paruošiama nauja
+    const fresh=()=>{ if(!st.prepaid){ st.url=null; st.id=null; prefetch(); } };
+    if(st.url&&(st.prepaid||!o.emailEl||st.email===email)){ st.openedId=st.id; klOpen(st.url); fresh(); return; }
     // Nuoroda dar neparuošta (arba pakeistas el. paštas) — atidarome langą iš karto ir nukreipiame, kai gausime nuorodą
     const w=window.open('','_blank');
     btn.disabled=true; const t=btn.textContent; btn.textContent='Jungiamasi prie Stripe…';
@@ -4178,7 +4187,7 @@ function setupKlauskBlock(o){
       const res=await fetch('/klausk/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o.body(email))});
       const d=await res.json();
       if(!res.ok||!d.url) throw new Error(d.error||'Nepavyko pradėti mokėjimo');
-      st.url=d.url; st.email=email; klOpen(d.url,w);
+      st.url=d.url; st.id=d.id||null; st.email=email; st.openedId=st.id; klOpen(d.url,w); fresh();
     }catch(e){ if(w) w.close(); err.textContent=e.message; err.style.display='block'; }
     btn.disabled=false; btn.textContent=t;
   });

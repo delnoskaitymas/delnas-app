@@ -70,6 +70,9 @@ textarea:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)
 .think .orb{width:54px;height:54px;margin:0 auto 12px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .status{text-align:center;color:var(--muted);font-size:14px;line-height:1.6;margin:30px 0}
+.more{margin-top:18px;padding:16px;border:1px solid rgba(212,168,67,.45);border-radius:14px;text-align:center}
+.more p{margin:0 0 4px;color:#e8e2d4;font-size:14.5px}
+.more .btn{margin-top:10px}
 .done{text-align:center;font:italic 400 16px/1.5 'Playfair Display',serif;color:var(--gold2);margin:8px 0 6px}
 .link{display:block;text-align:center;margin-top:16px;color:var(--gold);font-size:13.5px}
 .fine{text-align:center;font-size:10.5px;color:rgba(255,255,255,.32);margin-top:26px;line-height:1.6}
@@ -111,6 +114,12 @@ a,button{-webkit-tap-highlight-color:transparent}
 
   <div id="all-done" class="hidden">
     <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
+    <!-- Dar 3 klausimai: naujas mokėjimas, analizė ta pati -->
+    <div class="more" id="daugiau">
+      <p id="more-txt">Norėtum paklausti dar? 3 nauji klausimai — 4,99&nbsp;€</p>
+      <button type="button" class="btn" id="more-btn">✦ Užduoti dar 3 klausimus</button>
+      <div class="err" id="more-err"></div>
+    </div>
   </div>
   <a class="link" href="/" id="back-link">Grįžti atgal</a>
   <p class="fine" id="fine">Atsakymus pagal tavo asmeninę delnų analizę sugeneruoja dirbtinis intelektas. Tai savęs pažinimo priemonė, ne medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt</p>
@@ -155,6 +164,8 @@ document.getElementById('back-link').addEventListener('click', e => {
   function refresh(){
     $('ask-wrap').classList.toggle('hidden', left <= 0);
     $('all-done').classList.toggle('hidden', left > 0);
+    // Atėjus iš laiško nuorodos „Užduoti dar 3 klausimus“ — iškart prie pasiūlymo
+    if (left <= 0 && location.hash === '#daugiau') setTimeout(() => $('daugiau').scrollIntoView({ block: 'center' }), 150);
     $('note').style.display = left === 3 ? '' : 'none';
     $('left').textContent = left === 3 ? (window._klKind === 'pora' ? 'Galite užduoti 3 klausimus' : 'Gali užduoti 3 klausimus') : 'Liko klausimų: ' + left;
   }
@@ -191,6 +202,7 @@ document.getElementById('back-link').addEventListener('click', e => {
         q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
         $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
+        $('more-txt').textContent = 'Norėtumėte paklausti dar? 3 nauji klausimai — 4,99\u00a0€';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
         $('fine').innerHTML = 'Atsakymus pagal jūsų poros suderinamumo analizę sugeneruoja dirbtinis intelektas. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
@@ -217,6 +229,17 @@ document.getElementById('back-link').addEventListener('click', e => {
       $('lead').textContent = 'Nepavyko patikrinti užsakymo. Atnaujink puslapį.';
     }
   })(0);
+
+  $('more-btn').addEventListener('click', async () => {
+    const b = $('more-btn'), err = $('more-err'), t = b.textContent; err.style.display = 'none';
+    b.disabled = true; b.textContent = 'Jungiamasi prie Stripe…';
+    try {
+      const r = await fetch('/klausk/more', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ s: sid }) });
+      const d = await r.json();
+      if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
+      location.href = d.url;
+    } catch (e) { err.textContent = e.message; err.style.display = 'block'; b.disabled = false; b.textContent = t; }
+  });
 
   const q = $('q');
   // Mygtukas neužrakinamas — pritemdomas; paspaudus per trumpą klausimą parodoma, ko trūksta
