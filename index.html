@@ -1161,7 +1161,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
     <div id="pora-plan" class="rs rs-std pr-rv"><div class="px-rem">
       <div class="px-rem-t">✦ Ar po 3 mėnesių vis dar žiūrėsite į ateitį ta pačia kryptimi?</div>
-      <div class="px-rem-d">Santykiai keičiasi kartu su jumis. Nauja analizė parodys, kiek procentų derate, kaip sutariate jausmuose, bendravime ir kasdienybėje, kur gali kilti trintis ir kokia jūsų poros stiprybė. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>
+      <div class="px-rem-d">Santykiai keičiasi kartu su jumis. Nauja analizė parodys, kiek procentų derate, kaip sutariate jausmuose, bendravime ir kasdienybėje, kur gali kilti trintis ir kas pasikeitė nuo šios analizės. Po 3 mėnesių atsiųsime vieną laišką: per jo nuorodą analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b> ir palyginimas su šia analize.</div>
       <button type="button" id="pora-plan-btn" class="px-rem-b" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
       <div id="pora-plan-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0"></div>
       <div class="px-rem-f">Analizę saugome 12 mėn. <a href="/mano" target="_blank">„Mano analizėse“</a>, ištrinti galite bet kada.</div>
@@ -4026,7 +4026,7 @@ function renderResultExtra(r){
   const rmPrev=_remGet()||{};
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
-  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Ar po 3 mėnesių būsi arčiau to, ko nori?</div><div class="px-rem-d">Tikslai keičiasi, o kartu ir kelias iki jų. Nauja analizė parodys, kas tave stabdo, kur slypi tavo sėkmės raktas ir koks pokytis laukia toliau. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>'+
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Ar po 3 mėnesių būsi arčiau to, ko nori?</div><div class="px-rem-d">Tikslai keičiasi, o kartu ir kelias iki jų. Nauja analizė parodys, kas tave stabdo, kur slypi tavo sėkmės raktas ir kas pasikeitė nuo šios analizės. Po 3 mėnesių atsiųsime vieną laišką: per jo nuorodą analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b> ir palyginimas su šia analize.</div>'+
     '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Priminsime po 3 mėnesių.</div>'+
     '<div class="px-rem-f">Analizę saugome 12 mėn. <a href="/mano" target="_blank">„Mano analizėse“</a>, ištrinti gali bet kada.</div></div>'+'</div>';
@@ -4284,6 +4284,48 @@ function getHeroPhotoDataUrl(){
   }catch(e){ return null; }
 }
 
+// Palyginimas su ankstesne analize PDF faile (asmeninei ir porų analizei).
+// o: { M, maxW, y, bottom, newPage, s (šrifto mastelis), GOLD, GOLD2, BODY, MUTED }
+function pdfCompareBlock(doc, c, o, t){
+  let y=o.y; const s=o.s||1, N=t.N||(x=>x);
+  const ensure=h=>{ if(y+h>o.bottom) y=o.newPage(); };
+  ensure(40*s);
+  doc.setFont('NotoSans','bold'); doc.setFontSize(15*s); doc.setTextColor(...o.GOLD); doc.text(t.title, o.M, y); y+=8*s;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(10.5*s); doc.setTextColor(...o.MUTED);
+  doc.splitTextToSize(t.sub, o.maxW).forEach(l=>{ doc.text(l, o.M, y); y+=5.5*s; }); y+=3*s;
+  if(t.pct){ doc.setFont('NotoSans','bold'); doc.setFontSize(14*s); doc.setTextColor(...o.GOLD2); doc.text(t.pct, o.M, y); y+=10*s; }
+  (c.sritys||[]).forEach(x=>{
+    doc.setFont('NotoSans','normal'); doc.setFontSize(12*s);
+    const A=doc.splitTextToSize('Anksčiau: '+N(x.anksciau), o.maxW), D=doc.splitTextToSize('Dabar: '+N(x.dabar), o.maxW);
+    ensure(7*s+(A.length+D.length)*6*s);
+    doc.setFont('NotoSans','bold'); doc.setFontSize(11.5*s); doc.setTextColor(...o.GOLD); doc.text(N(x.tema).toUpperCase(), o.M, y); y+=6.5*s;
+    doc.setFont('NotoSans','normal'); doc.setFontSize(12*s);
+    doc.setTextColor(...o.BODY); A.forEach(l=>{ doc.text(l, o.M, y); y+=6*s; });
+    doc.setTextColor(...o.GOLD2); D.forEach(l=>{ doc.text(l, o.M, y); y+=6*s; });
+    y+=5*s;
+  });
+  if(c.isvada){
+    doc.setFont('NotoSans','bold'); doc.setFontSize(12*s);
+    const I=doc.splitTextToSize(N(c.isvada), o.maxW-6);
+    ensure(8*s+I.length*6*s);
+    doc.setTextColor(...o.GOLD); doc.text(t.isvTitle, o.M+5, y); y+=6.5*s;
+    doc.setFillColor(...o.GOLD); doc.rect(o.M, y-12*s, 0.8, 6.5*s+I.length*6*s, 'F');
+    doc.setFont('NotoSans','normal'); doc.setTextColor(...o.GOLD2); I.forEach(l=>{ doc.text(l, o.M+5, y); y+=6*s; });
+  }
+  return y+4*s;
+}
+// „Kas pasikeitė“ eilutė skyriaus pabaigoje
+function pdfCompareNote(doc, text, o){
+  let y=o.y; const s=o.s||1;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(11.5*s);
+  const L=doc.splitTextToSize(text, o.maxW-6);
+  if(y+6*s+L.length*5.8*s>o.bottom) y=o.newPage();
+  y+=3*s;
+  doc.setFillColor(...o.GOLD); doc.rect(o.M, y-4*s, 0.8, 5.5*s+L.length*5.8*s, 'F');
+  doc.setFont('NotoSans','bold'); doc.setFontSize(9.5*s); doc.setTextColor(...o.GOLD2); doc.text('KAS PASIKEITĖ', o.M+5, y); y+=5.5*s;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(11.5*s); doc.setTextColor(...o.BODY); L.forEach(l=>{ doc.text(l, o.M+5, y); y+=5.8*s; });
+  return y;
+}
 function buildResultPdfDoc(r, name, orderNumber){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
@@ -4424,6 +4466,7 @@ function buildResultPdfDoc(r, name, orderNumber){
     ['VI · Svarbiausi artėjantys pokyčiai', r.pokyciai, r.pokyciai_insights],
     ['VII · Pažangą stabdančios kliūtys', r.klutys, r.klutys_insights],
   ];
+  const cmpKeys=['prigimtines_stiprybes','gyvenimo_tikslas','santykiai','finansai','galimybes','pokyciai','klutys'];
 
   // Šriftų dydžiai ir tarpai. Tekstas turi šiek tiek "oro" tarp eilučių,
   // o tarpai TARP TEMŲ (skyrių) sumažinti, kad nesusidarytų didelės
@@ -4511,6 +4554,14 @@ function buildResultPdfDoc(r, name, orderNumber){
     return h;
   }
 
+  // Palyginimas su ankstesne analize (pakartotinė analizė per priminimo laišką)
+  const cmpC=r.palyginimas&&Array.isArray(r.palyginimas.sritys)&&r.palyginimas.sritys.length?r.palyginimas:null;
+  const cmpO={ M:margin, maxW, bottom:PAGE_BOTTOM, newPage, s:1.35, GOLD, GOLD2, BODY, MUTED };
+  if(cmpC){
+    const pd=window._cmpPrevDate;
+    y=pdfCompareBlock(doc, cmpC, {...cmpO, y}, { title:'KAS PASIKEITĖ', sub:pd?'Palyginta su tavo analize, padaryta '+_ltDay(pd):'Palyginta su tavo ankstesne analize.', isvTitle:'Kur pajudėjai' });
+    y+=3; doc.setDrawColor(...DIVIDER); doc.setLineWidth(0.5); doc.line(margin, y, W-margin, y); y+=16;
+  }
   // Kairysis ir dešinysis delnas greta (jei analizėje yra) — prieš skyrius
   const dg=r.delnai_greta;
   if(dg&&dg.sirdis){
@@ -4614,6 +4665,8 @@ function buildResultPdfDoc(r, name, orderNumber){
       if(y + INSIGHT_LINE_H > PAGE_BOTTOM){ y = newPage(); }
       drawBulletList(pills);
     }
+    const cmpNote=cmpC&&cmpC.skyriai&&cmpC.skyriai[cmpKeys[secIdx]];
+    if(cmpNote){ y+=2; y=pdfCompareNote(doc, cmpNote, {...cmpO, y}); }
     // Tarpas tarp skyrių — kompaktiškas, bet su pakankamu tarpu, kad
     // skiriamoji linija (brūkšniai) NIEKADA neuž liptų ant teksto virš
     // jos ar sekančios temos antraštės po jos.
@@ -4725,6 +4778,12 @@ function sendResultPdfEmail(r){
     if(window._pdfEmailSent) return;
     if(window._manoView||window._klView) return; // jau atliktos analizės peržiūra — laiškas išsiųstas anksčiau
     if(!window._userEmail){ console.log('[sendResultPdfEmail] nėra el. pašto, praleidžiama'); return; }
+    // Pakartotinė analizė per priminimo laišką — PDF siunčiamas, kai gautas palyginimas (kad jis būtų ir PDF)
+    const rp=_promoStored();
+    if(!r.palyginimas&&rp&&rp.kind==='repeat'&&window.bgSessionId&&!window._cmpDone){
+      if(!window._pdfAfterCmp){ window._pdfAfterCmp=true; setTimeout(()=>{ window._cmpDone=true; sendResultPdfEmail(window._palmResult||r); },120000); }
+      return;
+    }
     window._pdfEmailSent=true;
     const name = window.userName || '';
     const doc = buildResultPdfDoc(r, name, window._orderNumber||'');
@@ -6582,6 +6641,10 @@ function buildPoraPdfDoc(){
   y+=6; doc.setFontSize(46); doc.text((r.suderinamumas||0)+'%', W/2, y+10, {align:'center'}); y+=18;
   doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('suderinamumas', W/2, y, {align:'center'}); y+=7;
   doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(poraLevel(r.suderinamumas||0), W/2, y+1, {align:'center'}); y+=9;
+  const pc=r.palyginimas&&Array.isArray(r.palyginimas.sritys)&&r.palyginimas.sritys.length?r.palyginimas:null;
+  const pcO={ M, maxW, bottom:280, newPage:()=>{ doc.addPage(); dark(); return 30; }, s:1, GOLD, GOLD2, BODY, MUTED }, pcN=t=>poraNeutralText(String(t||''));
+  const pcDiff=pc&&pc.pctPrev?(pc.pctNow-pc.pctPrev>0?'+'+(pc.pctNow-pc.pctPrev)+' %':pc.pctNow<pc.pctPrev?'−'+(pc.pctPrev-pc.pctNow)+' %':'nepakito'):'';
+  if(pcDiff){ doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...GOLD2); doc.text('Anksčiau buvo '+pc.pctPrev+' % · '+pcDiff, W/2, y, {align:'center'}); y+=8; }
   doc.setFont('NotoSans','normal'); doc.setTextColor(...MUTED);
   doc.setFontSize(10); doc.splitTextToSize('Įvertinta palyginus jūsų delnus: formą, linijas, kalnelius, pirštus ir kairiųjų bei dešiniųjų delnų skirtumus', maxW-20).forEach(l=>{ doc.text(l, W/2, y, {align:'center'}); y+=5; }); y+=5;
   if((r.poros_bruozai||[]).length){ doc.setTextColor(...GOLD); doc.setFontSize(13); doc.text(r.poros_bruozai.join('  ·  '), W/2, y, {align:'center', maxWidth:maxW}); y+=10; }
@@ -6610,6 +6673,12 @@ function buildPoraPdfDoc(){
       }
       if(y>262){ doc.addPage(); dark(); y=30; }
     });
+    y+=6;
+  }
+  // Palyginimas su ankstesne porų analize (pakartotinė analizė per priminimo laišką)
+  if(pc){
+    if(y>215){ doc.addPage(); dark(); y=30; }
+    y=pdfCompareBlock(doc, pc, {...pcO, y}, { N:pcN, title:'KAS PASIKEITĖ JŪSŲ POROJE', sub:pc.prevDate?'Palyginta su jūsų analize, padaryta '+_ltDay(pc.prevDate):'Palyginta su jūsų ankstesne analize.', pct:pc.pctPrev?'Suderinamumas: anksčiau '+pc.pctPrev+' %, dabar '+pc.pctNow+' %':'', isvTitle:'Kur pajudėjote' });
     y+=6;
   }
   // Delnų palyginimai — kiekvieno partnerio bruožas ir išvada porai
@@ -6644,6 +6713,8 @@ function buildPoraPdfDoc(){
     const iz=(r.izvalgos||{})[k]||[];
     if(iz.length){ y+=2; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2);
       iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
+    const pn=pc&&pc.skyriai&&pc.skyriai[k];
+    if(pn){ y+=2; y=pdfCompareNote(doc, pcN(pn), {...pcO, y}); }
     y+=10;
   });
   // Pabaiga — tokia pati kaip asmeninės analizės PDF: padėka, mygtukas į svetainę, pastaba apie paslaugos pobūdį
@@ -7056,10 +7127,13 @@ async function loadCompare(){
     const res=await fetch('/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:window.bgSessionId,code:d.c})});
     const j=await res.json();
     if(!res.ok||!j.palyginimas) throw new Error(j.error||'');
+    window._cmpPrevDate=j.prevDate;
     renderCompare(j.palyginimas,j.prevDate);
     if(window._palmResult) window._palmResult.palyginimas=j.palyginimas;
     _promoSave(null);
   }catch(e){ box.innerHTML=''; }
+  window._cmpDone=true;
+  if(window._pdfAfterCmp&&window._palmResult) sendResultPdfEmail(window._palmResult);
 }
 
 // Grįžimas iš klausimų puslapio: /?kl=ID#klausk — asmeninės analizės rezultatas su pasiūlymais, iškart prie klausimų bloko
