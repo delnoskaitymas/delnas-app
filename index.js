@@ -5210,7 +5210,8 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
       : nm.split(/\s+/)[0].slice(0, 30);
     const fb = readJson(FEEDBACK_FILE, { items: [] });
     const id = crypto.randomBytes(8).toString('hex');
-    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', createdAt: Date.now() };
+    const on = typeof req.body.orderNumber === 'string' && /^[A-Za-z0-9-]{3,40}$/.test(req.body.orderNumber) ? req.body.orderNumber : '';
+    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', ...(on ? { orderNumber: on } : {}), createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
     // Svetainėje rodomi tik trumpi (iki TESTI_MAX ženklų) atsiliepimai — ilgiems patvirtinimo mygtuko nėra
     const tooLong = t.length > TESTI_MAX;
@@ -5220,7 +5221,7 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
       subject: `${'★'.repeat(st)}${'☆'.repeat(5 - st)} Naujas įvertinimas${first ? ' — ' + first : ''}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${'★'.repeat(st)}${'☆'.repeat(5 - st)}</h2><p><strong>Vardas:</strong> ${escapeHtml(first || '—')} · ${item.kind === 'pora' ? 'porų analizė' : 'asmeninė analizė'}</p><p><strong>Atsiliepimas:</strong> ${escapeHtml(t || '—')}</p><p><strong>Leidžia rodyti viešai:</strong> ${item.allowPublic ? 'taip' : 'ne'}${item.allowPublic && t && t.length <= 60 ? ' · <b>trumpas — tiks ir pradžios ekranui</b>' : ''}</p>${approve}<p style="margin-top:18px;font-size:13px;color:#777">📊 Statistika ir visi įvertinimai — per išsaugotą /admin/stats nuorodą</p></div>`
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>${'★'.repeat(st)}${'☆'.repeat(5 - st)}</h2><p><strong>Vardas:</strong> ${escapeHtml(first || '—')} · ${item.kind === 'pora' ? 'porų analizė' : 'asmeninė analizė'}</p><p><strong>Užsakymo numeris:</strong> ${escapeHtml(on || '—')}</p><p><strong>Atsiliepimas:</strong> ${escapeHtml(t || '—')}</p><p><strong>Leidžia rodyti viešai:</strong> ${item.allowPublic ? 'taip' : 'ne'}${item.allowPublic && t && t.length <= 60 ? ' · <b>trumpas — tiks ir pradžios ekranui</b>' : ''}</p>${approve}<p style="margin-top:18px;font-size:13px;color:#777">📊 Statistika ir visi įvertinimai — per išsaugotą /admin/stats nuorodą</p></div>`
     }).catch(e => console.error('[feedback] laiško klaida:', e.message));
     res.json({ ok: true });
   } catch (err) { console.error('/feedback klaida:', err); res.status(500).json({ error: 'Nepavyko išsaugoti' }); }
