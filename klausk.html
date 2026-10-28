@@ -146,6 +146,10 @@ document.getElementById('back-link').addEventListener('click', e => {
     d.className = 'qa' + (isNew ? ' new' : '');
     d.innerHTML = '<div class="lbl">✦ ' + ORD[n - 1] + ' klausimas</div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
     $('list').appendChild(d);
+    // Jau užduotas pavyzdinis klausimas tarp pavyzdžių nebesiūlomas
+    $('chips').querySelectorAll('button').forEach(c => { if (c.textContent.trim() === String(qa.q || '').trim()) c.remove(); });
+    const qi = $('q'), first = $('chips').querySelector('button');
+    if (qi && first && qi.placeholder === 'pvz. ' + String(qa.q || '').trim()) qi.placeholder = 'pvz. ' + first.textContent.trim();
     return d;
   }
   function refresh(){
