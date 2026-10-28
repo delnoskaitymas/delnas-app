@@ -331,6 +331,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 #s-info.pay-t2 #info-qs>div{padding:1px 0!important}
 #s-info.pay-t2 #pay-section{gap:7px!important}
 .rate{text-align:center}
+.rate .rs-label::after{display:none}
+.rate-hint{font-size:11px;color:var(--muted);margin:4px 0 0 24px;line-height:1.4;text-align:left}
 .rate-stars{display:flex;justify-content:center;gap:6px;margin:10px 0 4px}
 .rate-stars button{background:none;border:none;font-size:32px;line-height:1;color:rgba(212,168,67,.3);cursor:pointer;padding:2px;transition:transform .15s,color .15s}
 .rate-stars button.on{color:#f0c96a;text-shadow:0 0 12px rgba(240,201,106,.5)}
@@ -1662,20 +1664,24 @@ function renderRating(boxId, kind){
     (done?'<div class="rate-thx" style="display:block">Ačiū už įvertinimą! ✦</div>':
     '<div class="rate-stars">'+[1,2,3,4,5].map(n=>'<button type="button" data-n="'+n+'" aria-label="'+n+' iš 5">★</button>').join('')+'</div>'+
     '<div class="rate-more"><textarea maxlength="500" placeholder="'+(you?'Kas jums labiausiai patiko ar ką pagerinti? (neprivaloma)':'Kas labiausiai patiko ar ką pagerinti? (neprivaloma)')+'"></textarea>'+
-    '<label class="rate-pub-row"><input type="checkbox" class="rate-pub"> Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)</label>'+
+    '<label class="rate-pub-row"><input type="checkbox" class="rate-pub"> '+(you?'Leidžiame parodyti šį atsiliepimą svetainėje (tik su vardais)':'Leidžiu parodyti šį atsiliepimą svetainėje (tik su vardu)')+'</label>'+
+    '<div class="rate-hint">Svetainėje rodome trumpus atsiliepimus — iki 60 ženklų.</div>'+
     '<button type="button" class="rate-send">Siųsti</button></div><div class="rate-thx">Ačiū už įvertinimą! ✦</div>')+'</div>';
   if(done) return;
   let stars=0; const card=box.querySelector('.rate');
   const ta=card.querySelector('textarea'), pubRow=card.querySelector('.rate-pub-row'), pub=card.querySelector('.rate-pub');
   card.querySelectorAll('.rate-stars button').forEach(b=>b.addEventListener('click',()=>{ stars=+b.dataset.n; card.querySelectorAll('.rate-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); card.querySelector('.rate-more').style.display='block';
     // 1–3 ★ — atsiliepimas tik mums: viešo rodymo pasirinkimo nėra
-    const low=stars<=3; pubRow.style.display=low?'none':''; if(low) pub.checked=false;
+    const low=stars<=3; pubRow.style.display=low?'none':''; card.querySelector('.rate-hint').style.display=low?'none':''; if(low) pub.checked=false;
     ta.placeholder=low?(you?'Ką galėtume patobulinti? (neprivaloma)':'Ką galėtume patobulinti? (neprivaloma)'):(you?'Kas jums labiausiai patiko? (neprivaloma)':'Kas labiausiai patiko? (neprivaloma)'); }));
   card.querySelector('.rate-send').addEventListener('click',async()=>{
     if(!stars) return; const btn=card.querySelector('.rate-send'); btn.disabled=true; btn.textContent='Siunčiama…';
     const name=kind==='pora'?[((window._pora||{}).nameA||''),((window._pora||{}).nameB||'')].filter(Boolean).join(' ir '):(window.userName||window._userName||'');
-    try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind})}); }catch(e){}
+    // Užsakymo numeris — tik administratoriaus laiškui (kad žinotum, kuri tai analizė)
+    const orderNumber=kind==='pora'?poraOrderNumber():(window._orderNumber||'');
+    try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind,orderNumber})}); }catch(e){}
     try{ localStorage.setItem(key,'1'); }catch(e){}
+    if(stars<=3) card.querySelector('.rate-thx').textContent=you?'Ačiū — jūsų atsiliepimas padės mums tobulėti. ✦':'Ačiū — tavo atsiliepimas padės mums tobulėti. ✦';
     card.querySelector('.rate-stars').style.display='none'; card.querySelector('.rate-more').style.display='none'; card.querySelector('.rate-thx').style.display='block';
   });
 }
