@@ -505,6 +505,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if (d.kind !== 'pora') { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
       // Jau pradėtas kuponas (pvz. uždarė langą prieš fotografuojant) — tęsti galima įrašius tą patį el. paštą
       if (d.status !== 'active' && d.status !== 'redeemed') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
+      if (d.poraDone) { $('gift-note').innerHTML = '<b>Šis kuponas jau panaudotas</b><span>Rezultatą rasite el. pašte ir <a href="/mano" style="color:var(--gold2)">„Mano analizėse“</a>.</span>'; $('gift-note').classList.remove('hidden'); return; }
       window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;

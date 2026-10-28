@@ -702,7 +702,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   });
 
   // ---------- 2. Kortelė ----------
-  function fmtDate(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  // Data kaip laiškuose: „2027 m. spalio 28 d.“
+  function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('lt-LT', { year:'numeric', month:'long', day:'numeric', timeZone:'Europe/Vilnius' }); } catch (e) { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); } }
   function redeemLink(code){
     return location.origin + (current && current.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(code);
   }
@@ -922,8 +923,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
       // Porų kuponas, panaudotas, bet delnai dar nenufotografuoti — porų puslapis leidžia tęsti (serveris grąžina tą patį užsakymą)
-      if (d.valid || (d.kind === 'pora' && d.status === 'redeemed')) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
-      err.textContent = d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
+      if (d.valid || (d.kind === 'pora' && d.status === 'redeemed' && !d.poraDone)) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
+      err.textContent = d.poraDone ? 'Šis kuponas jau panaudotas — rezultatą rasite el. pašte ir „Mano analizėse“.' : d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
     } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
     err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti';
   });
@@ -985,7 +986,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
     btn.addEventListener('click',e=>{
       e.preventDefault();
-      if(!d){ if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ btn.textContent='Šį langą gali uždaryti'; btn.style.pointerEvents='none'; },300); return; }
+      if(!d){ if(history.length>1){ history.back(); return; } if(window.opener){ try{ window.close(); }catch(x){} } setTimeout(()=>{ location.href='/'; },300); return; }
       if(d.b){ location.href=d.b; return; }
       try{ if(window.opener&&!window.opener.closed){ window.opener.focus(); } }catch(x){}
       try{ window.close(); }catch(x){}
