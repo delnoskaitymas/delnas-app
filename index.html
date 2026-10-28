@@ -4157,7 +4157,7 @@ function setupKlauskBlock(o){
   btn.addEventListener('click',async()=>{
     err.style.display='none';
     const q=qEl.value.trim();
-    if(q.length<5){ err.textContent='Įrašyk savo klausimą — bent kelis žodžius.'; err.style.display='block'; qEl.focus(); return; }
+    if(q.length<5){ err.textContent=o.you?'Įrašykite savo klausimą — bent kelis žodžius.':'Įrašyk savo klausimą — bent kelis žodžius.'; err.style.display='block'; qEl.focus(); return; }
     const email=emailOf();
     if(o.emailEl&&!st.prepaid&&!valid(email)){ const i=$(o.emailEl); i.classList.remove('hidden'); i.focus(); err.textContent='Įrašyk el. paštą — į jį atkeliaus atsakymai.'; err.style.display='block'; return; }
     klDraftSave(q); st.sentQ=q;
@@ -6383,7 +6383,7 @@ function poraReveal(){
 function setupPoraKlausk(){
   const btn=document.getElementById('pora-kl-btn'); if(!btn||btn.dataset.ready) return; btn.dataset.ready='1';
   const sid=(window._pora||{}).sid||'';
-  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', body:()=>({kind:'pora',poraSid:(window._pora||{}).sid}),
+  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', you:true, body:()=>({kind:'pora',poraSid:(window._pora||{}).sid}),
     // Porų dovanoje įskaičiuoti 3 klausimai — blokas jau apmokėtas
     prepaid:/^gp_/.test(sid)?(async()=>{
       const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
