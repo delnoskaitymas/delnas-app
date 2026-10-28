@@ -4711,7 +4711,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       if (!s) return res.json({ paid: false });
       markKlauskPaid(id, orders, s);
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}) });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });

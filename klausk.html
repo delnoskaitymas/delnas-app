@@ -186,7 +186,7 @@ document.getElementById('back-link').addEventListener('click', e => {
         // Porų klausimai — „jūs“ forma ir porai skirti pavyzdžiai
         document.title = 'DELNAS — Klauskite savo delnų';
         $('h1').innerHTML = 'Klauskite savo <em>delnų</em>';
-        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų poros suderinamumo analize.';
+        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų poros suderinamumo analize' + (d.compare ? ' ir palyginimu su ankstesne.' : '.');
         $('qlabel').textContent = 'Jūsų klausimas';
         q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
         $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
@@ -195,8 +195,10 @@ document.getElementById('back-link').addEventListener('click', e => {
         $('fine').innerHTML = 'Atsakymus pagal jūsų poros suderinamumo analizę sugeneruoja dirbtinis intelektas. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
         window._klKind = 'pora';
       } else {
-        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize.';
+        $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize' + (d.compare ? ' ir palyginimu su ankstesne.' : '.');
       }
+      // Pakartotinė analizė su palyginimu — pirmas pavyzdys apie pokyčius
+      if (d.compare) $('chips').insertAdjacentHTML('afterbegin', '<button type="button">' + (d.kind === 'pora' ? 'Kaip išlaikyti tai, kas mūsų poroje pagerėjo?' : 'Kaip išlaikyti tai, kas pasikeitė į gerą?') + '</button>');
       (d.qa || []).forEach(x => card(x, false));
       left = d.left; refresh();
       if (location.hash === '#klausti' && left > 0) {

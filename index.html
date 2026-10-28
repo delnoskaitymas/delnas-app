@@ -4044,13 +4044,14 @@ function renderResultExtra(r){
     '<div class="kl-err" id="kl-err"></div>'+
     '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
   box.innerHTML=h;
+  klCmpPersonal();
   { const pl=document.getElementById('r-plan'); if(pl) pl.innerHTML=hPlan; }
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })();
   const rn=document.getElementById('ref-note'); if(rn) rn.style.display=payRef?'block':'none';
   // Klausimai apmokėti kartu su analize (payRef) arba įskaičiuoti į dovaną (gift:KODAS)
   const kref=payRef||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   setupKlauskBlock({
-    q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
+    q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email', onReset:klCmpPersonal,
     body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||'',sessionId:window.bgSessionId||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
     prepaid:kref&&!window._manoView?(async()=>{
@@ -4060,7 +4061,7 @@ function renderResultExtra(r){
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
       if(await klLeftOf(dd.id)===0) return null; // visi apmokėti klausimai jau užduoti — siūlome naujus
       const blk=document.querySelector('#r-extra .kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; klCmpPersonal(); }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
       document.getElementById('kl-btn').textContent='Gauti atsakymus';
       return '/klausk?s='+dd.id;
@@ -4135,6 +4136,7 @@ function setupKlauskBlock(o){
   if(blk) blk._klResetPaid=()=>{
     if(!st.prepaid) return; st.prepaid=false; st.noPrepaid=true; st.url=null; qEl.value='';
     const t=blk.querySelector('.kl-txt'); if(t) t.innerHTML=txt0; const f=blk.querySelector('.kl-fine'); if(f) f.textContent=fine0; btn.textContent=btn0;
+    if(o.onReset) o.onReset();
     const ei=o.emailEl&&$(o.emailEl); if(ei&&!valid(ei.value.trim())) ei.classList.remove('hidden');
     prefetch();
   };
@@ -6390,7 +6392,7 @@ function setupPoraKlausk(){
       const d=await r.json(); if(!r.ok||!d.id) return null;
       if(await klLeftOf(d.id)===0) return null;
       const blk=document.getElementById('pora-kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; if((window._poraResult||{}).palyginimas) klCmpApply(blk, true); }
       btn.textContent='Gauti atsakymus';
       return '/klausk?s='+d.id;
     })():null });
@@ -6600,6 +6602,7 @@ function renderPoraResult(r){
   document.getElementById('pora-compare').innerHTML=poraCompareHtml(r);
   const cmp=poraChange(r.palyginimas);
   document.getElementById('pora-change').innerHTML=cmp.box;
+  if(cmp.box) klCmpApply(document.getElementById('pora-kl'), true);
   const para=t=>String(t||'').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).map(s=>'<p>'+poraEsc(s.trim())+'</p>').join('');
   // Skyriai — lygiai tokia pati struktūra kaip asmeninėje analizėje: antraštė, tekstas, auksinės įžvalgų kortelės, baigiamoji eilutė
   const iz=r.izvalgos||{};
@@ -7098,6 +7101,15 @@ async function loadResultOffers(){
 }
 
 // Palyginimas su ankstesne analize (atėjus per priminimo laiško nuorodą ?kartoti=)
+// Klausimų blokas pakartotinei analizei: „…ir palyginimu su ankstesne“ ir pavyzdys apie pokyčius
+function klCmpApply(blk, pora){
+  if(!blk) return;
+  const t=blk.querySelector('.kl-txt');
+  if(t) t.innerHTML=t.innerHTML.replace(/(tavo delnų analize|jūsų poros analize)(?! ir palyginimu)/,'$1 ir palyginimu su ankstesne');
+  const ex=blk.querySelector('.kl-ex');
+  if(ex&&!ex.querySelector('[data-cmp]')) ex.insertAdjacentHTML('afterbegin','<button type="button" data-cmp="1">'+(pora?'Kaip išlaikyti tai, kas mūsų poroje pagerėjo?':'Kaip išlaikyti tai, kas pasikeitė į gerą?')+'</button>');
+}
+function klCmpPersonal(){ if(window._klCmp) klCmpApply(document.querySelector('#r-extra .kl'), false); }
 // Palyginimo eilutės skyriuose (prieš baigiamąją „✦“ eilutę)
 const CMP_SECTION_IDS={prigimtines_stiprybes:'r-char',gyvenimo_tikslas:'r-mission',santykiai:'r-love',finansai:'r-finance',galimybes:'r-gifts-text',pokyciai:'r-astro',klutys:'r-challenges'};
 function cmpNoteHtml(t){ return '<div class="cmp-note"><b>↻ Kas pasikeitė</b>'+_xEsc(t)+'</div>'; }
@@ -7113,6 +7125,7 @@ function renderCompare(c, prevDate){
   const box=document.getElementById('r-compare'); if(!box) return;
   renderCompareNotes(c);
   if(!c||!c.sritys||!c.sritys.length){ box.innerHTML=''; return; }
+  window._klCmp=true; klCmpPersonal();
   const items=c.sritys.map(x=>'<div class="pr-cmp"><div class="pr-cmp-t">'+_xEsc(x.tema)+'</div><div class="pr-cmp-ab"><div><small>Anksčiau</small>'+_xEsc(x.anksciau)+'</div><div class="now"><small>Dabar</small>'+_xEsc(x.dabar)+'</div></div></div>').join('');
   box.innerHTML='<div class="rs rs-std rs-reveal visible pl-greta cmp-box"><div class="pr-h">Kas pasikeitė</div><div class="pr-sub">'+(prevDate?'Palyginta su tavo analize, padaryta '+_ltDay(prevDate):'Palyginta su tavo ankstesne analize')+'</div>'+items+
     (c.isvada?'<div class="pl-is"><b>Kur pajudėjai</b>'+_xEsc(c.isvada)+'</div>':'')+'</div>';
