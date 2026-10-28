@@ -2389,7 +2389,7 @@ app.get('/order-extras', sensitiveLimiter, async (req, res) => {
 
 // Su analize apmokėti klausimai → klausimų užsakymas (kp_…), vieną kartą
 // Su analize apmokėtų ar į dovaną įskaičiuotų klausimų užsakymas (kp_…): randamas esamas arba sukuriamas
-function ensureKlauskOrder(paymentRef, p, gk, result) {
+function ensureKlauskOrder(paymentRef, p, gk, result, sid) {
   const orders = loadKlauskOrders();
   const existing = Object.entries(orders).find(([, o]) => o.paymentRef === paymentRef);
   if (existing) return { id: existing[0] };
@@ -2397,7 +2397,7 @@ function ensureKlauskOrder(paymentRef, p, gk, result) {
   const picked = pickKlauskResult(result);
   if (!picked) return { status: 400, error: 'Nerasta asmeninė analizė. Atnaujink rezultato puslapį.' };
   const id = 'kp_' + crypto.randomBytes(12).toString('hex');
-  orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: gk ? 0 : KLAUSK_BUMP_CENTS, gift: gk ? gk.code : undefined, paymentRef, createdAt: Date.now() };
+  orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: gk ? 0 : KLAUSK_BUMP_CENTS, gift: gk ? gk.code : undefined, paymentRef, ...(isAnalysisSid(sid) ? { analysisSession: sid } : {}), createdAt: Date.now() };
   saveKlauskOrders(orders);
   return { id };
 }
@@ -2408,7 +2408,7 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
     const gk = giftKlausk(paymentRef);
     const p = gk ? { email: gk.redeemedEmail || '', metadata: { addKlausk: '1', name: gk.redeemedName || '' } } : await getPaidAnalysisPayment(paymentRef);
     if (!p || p.metadata.addKlausk !== '1') return res.status(403).json({ error: 'Klausimai šiame užsakyme neapmokėti' });
-    const k = ensureKlauskOrder(paymentRef, p, gk, result);
+    const k = ensureKlauskOrder(paymentRef, p, gk, result, req.body.sessionId);
     if (!k.id) return res.status(k.status).json({ error: k.error });
     res.json({ id: k.id });
   } catch (err) {
@@ -4495,6 +4495,25 @@ async function getPaidKlausk(sessionId) {
   return session;
 }
 
+// Pakartotinė analizė: palyginimas su ankstesne — kad atsakymai jam neprieštarautų
+function isAnalysisSid(s) { return typeof s === 'string' && /^[A-Za-z0-9_-]{8,200}$/.test(s); }
+function klauskCompareOf(order) {
+  if (order.result && order.result.palyginimas) return order.result.palyginimas;
+  const sid = order.analysisSession, em = String(order.email || '').toLowerCase();
+  if (!isAnalysisSid(sid)) return null;
+  const e = analysisCache.get(sid);
+  if (e && e.compare && String(e.paidEmail || '').toLowerCase() === em) return e.compare;
+  const sv = loadSaved(), it = sv.items[sv.bySession[sid]];
+  return it && it.email === em && it.result && it.result.palyginimas ? it.result.palyginimas : null;
+}
+function klauskCompareText(c, pora) {
+  if (!c || !Array.isArray(c.sritys) || !c.sritys.length) return '';
+  let t = `## Kas pasikeitė nuo ankstesnės analizės (prieš maždaug 3 mėnesius)\n`;
+  if (pora && c.pctPrev && c.pctNow) t += `Suderinamumas: anksčiau ${c.pctPrev} %, dabar ${c.pctNow} %\n`;
+  for (const x of c.sritys.slice(0, 4)) t += `${String(x.tema).slice(0, 40)}: anksčiau — ${String(x.anksciau).slice(0, 200)}; dabar — ${String(x.dabar).slice(0, 200)}\n`;
+  if (c.isvada) t += `Išvada: ${String(c.isvada).slice(0, 500)}\n`;
+  return t + `(Jei klausimas apie pokyčius nuo ankstesnės analizės — remkis šia dalimi ir jai neprieštarauk; kitų pokyčių neišgalvok.)\n\n`;
+}
 function klauskContextText(res) {
   const L = { prigimtines_stiprybes: 'Prigimtinės stiprybės ir charakteris', gyvenimo_tikslas: 'Gyvenimo kryptis ir tikslai', santykiai: 'Bendravimas ir santykiai', finansai: 'Finansinis potencialas', galimybes: 'Unikalus sėkmės raktas', pokyciai: 'Artėjantys pokyčiai', klutys: 'Pažangą stabdančios kliūtys' };
   let t = '';
@@ -4544,7 +4563,7 @@ async function answerKlausk(order, question) {
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
 
 ASMENINĖ DELNŲ ANALIZĖ:
-${klauskContextText(order.result)}
+${klauskContextText(order.result)}${klauskCompareText(klauskCompareOf(order), false)}
 ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
 KLAUSIMAS: ${question}
 
@@ -4588,7 +4607,7 @@ async function answerKlauskPora(order, question) {
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Atsakyk remdamasis BŪTENT šia analize.
 
 PORŲ ANALIZĖ:
-${klauskPoraContext(order.result)}
+${klauskPoraContext(order.result)}${klauskCompareText(order.result && order.result.palyginimas, true)}
 ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
 KLAUSIMAS: ${question}
 
@@ -4639,7 +4658,7 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
       const picked = pickKlauskResult(result);
       if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujink rezultato puslapį.' });
-      record = { email, name: (name || '').trim(), result: picked, ...(isValidOrderNumber((req.body || {}).orderNumber) ? { orderNumber: req.body.orderNumber } : {}) };
+      record = { email, name: (name || '').trim(), result: picked, ...(isValidOrderNumber((req.body || {}).orderNumber) ? { orderNumber: req.body.orderNumber } : {}), ...(isAnalysisSid((req.body || {}).sessionId) ? { analysisSession: req.body.sessionId } : {}) };
       // Analizės mokėjimo nuoroda — kad iš klausimų puslapio būtų galima grįžti į rezultatą su jo pasiūlymais
       const pr = req.body && req.body.paymentRef;
       if (typeof pr === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(pr)) record.paymentRef = pr;

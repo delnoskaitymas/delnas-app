@@ -4051,7 +4051,7 @@ function renderResultExtra(r){
   const kref=payRef||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   setupKlauskBlock({
     q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email',
-    body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||''}),
+    body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||'',sessionId:window.bgSessionId||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
     prepaid:kref&&!window._manoView?(async()=>{
       const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref)+'&token='+encodeURIComponent(window.palmToken||'')+'&sid='+encodeURIComponent(window.bgSessionId||'')+'&kl='+encodeURIComponent(window._klId||''))).json();
