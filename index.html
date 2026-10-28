@@ -1152,8 +1152,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <!-- Priminimas porai po 3 mėn. su −20 % pakartotinei porų analizei (/pora/reminder) -->
     <div id="pora-plan" class="rs rs-std pr-rv"><div class="px-rem">
-      <div class="px-rem-t">✦ Koks bus jūsų ryšys po 3 mėnesių?</div>
-      <div class="px-rem-d">Per 3 mėnesius poroje gali nutikti daug kas: ginčai, sprendimai, nauji planai. Priminsime pasitikrinti dar kartą. Analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>
+      <div class="px-rem-t">✦ Ar po 3 mėnesių vis dar žiūrėsite į ateitį ta pačia kryptimi?</div>
+      <div class="px-rem-d">Per 3 mėnesius gali keistis planai, finansai, kasdienybė. Nauja analizė parodys, kaip sprendžiate nesutarimus, kaip žiūrite į pinigus, namus ir ateitį, ir duos naujų patarimų jūsų porai. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>
       <button type="button" id="pora-plan-btn" class="px-rem-b" onclick="poraPlanRemind()">✦ Priminti po 3 mėn.</button>
       <div id="pora-plan-done" style="display:none;font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0"></div>
       <div class="px-rem-f">Vienas laiškas. Atsisakyti galima bet kada.</div>
@@ -4018,7 +4018,7 @@ function renderResultExtra(r){
   const rmPrev=_remGet()||{};
   if(!window._manoView&&!window._klView&&window.bgSessionId) _remStore({...(rmPrev.bg===window.bgSessionId?rmPrev:{at:Date.now()}),bg:window.bgSessionId,refs:[window._paymentRef,window._orderNumber].filter(Boolean)});
   const remSaved=!!rmPrev.saved&&rmPrev.bg===(window.bgSessionId||window._klRem);
-  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Ką tavo delnai pasakys po 3 mėnesių?</div><div class="px-rem-d">Per 3 mėnesius gali pasikeisti daug kas: sprendimai, santykiai, planai, o kartu ir delnų linijos. Pasidaryk naują analizę po 3 mėn. ir sužinok, ką jos sako apie pinigus, santykius ir artėjančius pokyčius. Jai bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>'+
+  const hPlan=(window._manoView||(window._klView&&!window._klRem))?'':'<div class="rs rs-std rs-reveal">'+'<div class="px-rem"><div class="px-rem-t">✦ Ar po 3 mėnesių būsi arčiau to, ko nori?</div><div class="px-rem-d">Tikslai keičiasi, o kartu ir kelias iki jų. Nauja analizė parodys, kas tave stabdo, kur slypi tavo sėkmės raktas ir koks pokytis laukia toliau. Priminsime vienu laišku, o analizei bus <b style="color:var(--gold2)">−20&nbsp;%</b>.</div>'+
     '<div id="reminder-wrap"'+(remSaved?' style="display:none"':'')+'><button type="button" class="px-rem-b" onclick="registerReminder()">✦ Išsaugoti ir priminti po 3 mėn.</button></div>'+
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Išsaugota 12 mėnesių. Analizę rasi „Mano analizėse“, o po 3 mėnesių priminsime.</div>'+
     '<div class="px-rem-f">Saugome iki 12 mėn. Ištrinti gali bet kada <a href="/mano" target="_blank">„Mano analizėse“</a>.</div></div>'+'</div>';
