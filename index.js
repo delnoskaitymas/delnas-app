@@ -4384,7 +4384,7 @@ function saveKlauskOrders(o) {
   fs.writeFileSync(tmp, JSON.stringify(o, null, 2));
   fs.renameSync(tmp, KLAUSK_ORDERS_FILE);
 }
-// Neapmokėti įrašai — 1 d., apmokėti — 90 d.
+// Neapmokėti įrašai — 1 d., apmokėti — 12 mėn. (kaip ir analizės „Mano analizėse“)
 // Ištrinto klausimų užsakymo žymė (be turinio) — tuo pačiu mokėjimu ar dovana klausimai iš naujo neatidaromi
 const KLAUSK_USED_FILE = path.join(SHARED_STORAGE_DIR, 'klausk-used.json');
 function loadKlauskUsed() { try { if (fs.existsSync(KLAUSK_USED_FILE)) return JSON.parse(fs.readFileSync(KLAUSK_USED_FILE, 'utf8')) || {}; } catch (e) {} return {}; }
@@ -4393,7 +4393,7 @@ function cleanupKlauskOrders() {
     const o = loadKlauskOrders(), now = Date.now(); let changed = false;
     const used = loadKlauskUsed(); let usedCh = false;
     for (const [id, r] of Object.entries(o)) {
-      const ttl = r.paid ? 90 * 864e5 : 864e5;
+      const ttl = r.paid ? 365 * 864e5 : 864e5;
       if ((r.createdAt || 0) < now - ttl) {
         if (r.paid && r.paymentRef) { used[r.paymentRef] = now; usedCh = true; }
         if (r.paid && r.poraSid && r.gift) { used['pora:' + r.poraSid] = now; usedCh = true; }
