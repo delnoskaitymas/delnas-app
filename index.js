@@ -3655,7 +3655,8 @@ async function getPaidPoraSession(sessionId) {
     nameA: session.metadata.nameA || '',
     nameB: session.metadata.nameB || '',
     email: session.metadata.email || session.customer_email || '',
-    amount: session.amount_total || PORA_PRICE_CENTS
+    amount: session.amount_total || PORA_PRICE_CENTS,
+    promo: session.metadata.promo || ''
   };
 }
 
@@ -4051,7 +4052,8 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     const isFirst = !existing || (existing.status === 'waiting_partner' && !existing.gift);
     if (isFirst && !sessionId.startsWith('gp_')) statInc('pora_paid');
     deletePoraFirstPhotos(sessionId);
-    updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now() });
+    const prevPora = repeatPoraPrev(s.promo, sessionId);
+    updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now(), ...(prevPora ? { prevPora } : {}) });
     res.json({ started: true, status: 'pending' });
 
     if (isFirst) {
@@ -4075,6 +4077,54 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// Porų priminimo kodas (repeat-pora:<ankstesnis užsakymas>) → ankstesnis atliktas užsakymas palyginimui
+function repeatPoraPrev(code, sessionId) {
+  try {
+    const c = normalizePromoCode(code || ''); if (!c) return '';
+    const s = loadPromos(), p = s.codes[c];
+    if (!p || p.kind !== 'repeat' || p.product !== 'pora') return '';
+    const key = Object.keys(s.byKey).find(k => k.startsWith('repeat-pora:') && s.byKey[k] === c);
+    const prevId = key ? key.slice('repeat-pora:'.length) : '';
+    const prev = prevId && prevId !== sessionId ? loadPoraOrders()[prevId] : null;
+    return prev && prev.status === 'done' && prev.result ? prevId : '';
+  } catch (e) { return ''; }
+}
+const PORA_REPEAT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
+async function runPoraCompare(prev, cur, nameA, nameB) {
+  const brief = r => {
+    let t = `Suderinamumas: ${clampScore(r.suderinamumas)} %\n`;
+    if (r.sritys) t += 'Sritys: ' + Object.entries(r.sritys).map(([k, v]) => `${k} ${v && v.balas}`).join(', ') + '\n';
+    for (const k of PORA_REPEAT_KEYS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 600)}\n`;
+    return t;
+  };
+  const prompt = `Tu esi patyręs chiromantas. ${nameA} ir ${nameB} prieš kelis mėnesius pasidarė porų suderinamumo analizę pagal delnus, o dabar — naują. Palygink jas ir parašyk, KAS PASIKEITĖ JŲ POROJE.
+
+ANKSTESNĖ ANALIZĖ:
+${brief(prev)}
+NAUJA ANALIZĖ:
+${brief(cur)}
+Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Bendravimas, Vertybės, Kasdienybė, Trauka, Trintis, Pinigai ir ateitis). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur pora pajudėjo ir kam verta skirti dėmesio toliau. Papildomai skyriai: 2–4 analizės skyriams (raktai: ${PORA_REPEAT_KEYS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
+Rašyk taisyklinga, paprasta lietuvių kalba, „jūs“ forma apie porą, esamuoju laiku apie dabartį. Iš vardų lyties nespręsk: nevartok giminę turinčių dalyvių ir būdvardžių apie žmones, neatskirk žmonių žodžiais „vienas… kitas…“ (rašyk „jūs“, „jūsų poroje“, „tarpusavyje“). Vardų nenaudok. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
+ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+      }, 60000);
+      const d = await r.json();
+      const txt = (d.content || []).map(b => b.text || '').join('');
+      const m = txt.match(/\{[\s\S]*\}/);
+      const j = m ? parseJsonLenient(m[0]) : null;
+      const fx = (t, n) => applyTextFixes(String(t).trim().replace(/"/g, '').slice(0, n)).text;
+      const sr = j && Array.isArray(j.sritys) ? j.sritys.filter(x => x && typeof x.tema === 'string' && typeof x.anksciau === 'string' && typeof x.dabar === 'string').slice(0, 4) : [];
+      if (sr.length >= 2 && typeof j.isvada === 'string') return { sritys: sr.map(x => ({ tema: fx(x.tema, 40), anksciau: fx(x.anksciau, 160), dabar: fx(x.dabar, 160) })), skyriai: compareSections(j.skyriai, PORA_REPEAT_KEYS, fx), isvada: fx(j.isvada, 500) };
+    } catch (e) { console.error('[pora compare] klaida:', e.message); }
+  }
+  throw new Error('Nepavyko palyginti porų analizių');
+}
+
 // ── Porų analizės vykdymas ──
 // Nuotraukos laikinai saugomos diske, kol analizė vyksta: jei serveris perkraunamas (pvz. naujas
 // diegimas), nebaigta analizė automatiškai paleidžiama iš naujo. Baigus (ar galutinai nepavykus) —
@@ -4089,7 +4139,17 @@ function runPoraJob(sessionId, photos, s) {
   updatePoraOrder(sessionId, { hb: Date.now() });
   const hb = setInterval(() => { try { const o = loadPoraOrders()[sessionId]; if (o && o.status === 'pending') updatePoraOrder(sessionId, { hb: Date.now() }); } catch (e) {} }, 20000);
   runCoupleAnalysis(photos, s.nameA, s.nameB)
-    .then(result => { clearInterval(hb); deleteRunPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); console.log(`[pora] analizė baigta ${sessionId}`); })
+    .then(async result => {
+      // Pakartotinė analizė per priminimo laišką — palyginimas su ankstesne (nepavykus rezultatas rodomas be jo)
+      try {
+        const o = loadPoraOrders()[sessionId], prev = o && o.prevPora ? loadPoraOrders()[o.prevPora] : null;
+        if (prev && prev.result) {
+          const cmp = await runPoraCompare(prev.result, result, s.nameA, s.nameB);
+          result.palyginimas = { ...cmp, pctPrev: clampScore(prev.result.suderinamumas), pctNow: clampScore(result.suderinamumas), prevDate: prev.finishedAt || prev.createdAt || 0 };
+        }
+      } catch (e) { console.error(`[pora] palyginimo klaida ${sessionId}:`, e.message); }
+      clearInterval(hb); deleteRunPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); console.log(`[pora] analizė baigta ${sessionId}`);
+    })
     .catch(err => {
       clearInterval(hb); deleteRunPhotos(sessionId);
       updatePoraOrder(sessionId, { status: 'error', error: err.message });
@@ -5676,6 +5736,12 @@ app.post('/save-analysis', sensitiveLimiter, async (req, res) => {
 });
 
 // ── Palyginimas su ankstesne analize (pakartotinė analizė per priminimo laišką) ──
+// Palyginimo eilutės skyriuose: tik žinomi skyriai, daugiausiai 4
+function compareSections(o, keys, fx) {
+  const out = {};
+  if (o && typeof o === 'object') for (const k of keys) if (typeof o[k] === 'string' && o[k].trim() && Object.keys(out).length < 4) out[k] = fx(o[k], 200);
+  return out;
+}
 async function runCompareAnalysis(prev, cur, name) {
   const brief = r => {
     let t = '';
@@ -5692,8 +5758,9 @@ ${brief(prev)}
 NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Mąstymas, Santykiai, Darbas ir pinigai, Pasitikėjimas savimi, Gyvenimo tempas). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur žmogus pajudėjo ir kam verta skirti dėmesio toliau. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
+Papildomai skyriai: 2–4 analizės skyriams (raktai: ${KLAUSK_RESULT_FIELDS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize (pvz. „Anksčiau … , dabar …“). Skyrių, kuriuose pokyčių nėra, nerašyk.
 Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę turinčių dalyvių. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
-ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"isvada":"..."}`;
+ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
@@ -5707,7 +5774,7 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"isv
       const j = m ? parseJsonLenient(m[0]) : null;
       const fx = (t, n) => applyTextFixes(String(t).trim().replace(/"/g, '').slice(0, n)).text;
       const sr = j && Array.isArray(j.sritys) ? j.sritys.filter(x => x && typeof x.tema === 'string' && typeof x.anksciau === 'string' && typeof x.dabar === 'string').slice(0, 4) : [];
-      if (sr.length >= 2 && typeof j.isvada === 'string') return { sritys: sr.map(x => ({ tema: fx(x.tema, 40), anksciau: fx(x.anksciau, 160), dabar: fx(x.dabar, 160) })), isvada: fx(j.isvada, 500) };
+      if (sr.length >= 2 && typeof j.isvada === 'string') return { sritys: sr.map(x => ({ tema: fx(x.tema, 40), anksciau: fx(x.anksciau, 160), dabar: fx(x.dabar, 160) })), skyriai: compareSections(j.skyriai, KLAUSK_RESULT_FIELDS, fx), isvada: fx(j.isvada, 500) };
     } catch (e) { console.error('[compare] klaida:', e.message); }
   }
   throw new Error('Nepavyko palyginti analizių');
