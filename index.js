@@ -2395,7 +2395,7 @@ function ensureKlauskOrder(paymentRef, p, gk, result) {
   if (existing) return { id: existing[0] };
   if (loadKlauskUsed()[paymentRef]) return { status: 410, error: 'Šio užsakymo klausimai jau panaudoti' };
   const picked = pickKlauskResult(result);
-  if (!picked) return { status: 400, error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' };
+  if (!picked) return { status: 400, error: 'Nerasta asmeninė analizė. Atnaujink rezultato puslapį.' };
   const id = 'kp_' + crypto.randomBytes(12).toString('hex');
   orders[id] = { email: p.email, name: p.metadata.name || '', result: picked, qa: [], paid: true, paidAt: Date.now(), amount: gk ? 0 : KLAUSK_BUMP_CENTS, gift: gk ? gk.code : undefined, paymentRef, createdAt: Date.now() };
   saveKlauskOrders(orders);
@@ -4638,7 +4638,7 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       if (!isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
       if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardas' });
       const picked = pickKlauskResult(result);
-      if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujinkite rezultato puslapį.' });
+      if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujink rezultato puslapį.' });
       record = { email, name: (name || '').trim(), result: picked, ...(isValidOrderNumber((req.body || {}).orderNumber) ? { orderNumber: req.body.orderNumber } : {}) };
       // Analizės mokėjimo nuoroda — kad iš klausimų puslapio būtų galima grįžti į rezultatą su jo pasiūlymais
       const pr = req.body && req.body.paymentRef;
