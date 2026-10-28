@@ -289,6 +289,13 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .px-rem-f a{color:var(--gold)}
 .cmp-box .pr-cmp-ab .now{border-color:rgba(212,168,67,.6);background:rgba(212,168,67,.12)}
 .cmp-wait{text-align:center}
+.cmp-note{margin-top:12px;padding:9px 12px;border-left:2px solid var(--gold);background:rgba(212,168,67,.08);border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.75)}
+.cmp-note b{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold2);margin-bottom:3px;font-weight:600}
+.cmp-pct{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 14px;font-family:'Playfair Display',serif}
+.cmp-pct div{text-align:center}.cmp-pct .was{opacity:.6}.cmp-pct i{font-style:normal;color:var(--gold2);font-size:20px}
+.cmp-pct span{display:block;font-size:26px;color:#e8e2d4}.cmp-pct .now span{font-size:30px;color:var(--gold2)}
+.cmp-pct small{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cmp-chip{display:inline-block;margin:10px auto 0;padding:5px 12px;border:1px solid rgba(212,168,67,.35);border-radius:999px;font-size:12px;color:var(--gold2)}
 .cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
 /* Grįžus iš klausimų — suskleistas klausimų blokas: patvirtinimas + „Užduoti dar 3 klausimus“ */
 .kl.kl-done > :not(.kl-done-box):not(.rs-label){display:none!important}
@@ -1106,6 +1113,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <div class="result-divider"></div>
   </div>
   <div style="padding:6px 16px 40px">
+    <div id="pora-change"></div>
     <div id="pora-map"></div>
     <div id="pora-compare"></div>
     <div id="pora-sections"></div>
@@ -4023,7 +4031,7 @@ function renderResultExtra(r){
     '<div id="reminder-done" style="display:'+(remSaved?'block':'none')+';font-size:12px;color:var(--gold2);line-height:1.6;text-align:center;padding:8px 0">✦ Priminsime po 3 mėnesių.</div>'+
     '<div class="px-rem-f">Analizę saugome 12 mėn. <a href="/mano" target="_blank">„Mano analizėse“</a>, ištrinti gali bet kada.</div></div>'+'</div>';
   renderPalmsSideBySide(r);
-  if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; loadCompare(); }
+  if(r.palyginimas) renderCompare(r.palyginimas); else { const cb=document.getElementById('r-compare'); if(cb) cb.innerHTML=''; renderCompareNotes(null); loadCompare(); }
   loadResultOffers();
   // „Klausk savo delnų“ — mokamas priedas (mokėjimas naujame skirtuke, kad rezultatas liktų)
   const em=window._userEmail||window.userEmail||'';
@@ -6501,6 +6509,21 @@ function poraNeutralResult(r){
   if(r.sritys) Object.values(r.sritys).forEach(d=>{ if(d){ d.fraze=f(d.fraze); d.aprasymas=f(d.aprasymas); } });
   return r;
 }
+// Pakartotinė porų analizė: kas pasikeitė lyginant su ankstesne (blokas viršuje, žymė po procentais, eilutės skyriuose)
+function poraChange(c){
+  const out={box:'',chip:'',notes:{}};
+  if(!c||!Array.isArray(c.sritys)||!c.sritys.length) return out;
+  const N=t=>poraNeutralText(String(t||''));
+  const d=c.pctNow-c.pctPrev, diff=d>0?'+'+d+'\u00a0%':d<0?'−'+(-d)+'\u00a0%':'nepakito';
+  const when=c.prevDate?_ltDay(c.prevDate):'';
+  if(c.pctPrev) out.chip='<div id="pora-chip" class="cmp-chip">'+'Anksčiau buvo '+c.pctPrev+'\u00a0% · <b>'+diff+'</b></div>';
+  const items=c.sritys.map(x=>'<div class="pr-cmp"><div class="pr-cmp-t">'+poraEsc(N(x.tema))+'</div><div class="pr-cmp-ab"><div><small>Anksčiau</small>'+poraEsc(N(x.anksciau))+'</div><div class="now"><small>Dabar</small>'+poraEsc(N(x.dabar))+'</div></div></div>').join('');
+  out.box='<div class="rs rs-std pl-greta cmp-box"><div class="pr-h">Kas pasikeitė jūsų poroje</div><div class="pr-sub">'+(when?'Palyginta su jūsų analize, padaryta '+when:'Palyginta su jūsų ankstesne analize')+'</div>'+
+    (c.pctPrev?'<div class="cmp-pct"><div class="was"><span>'+c.pctPrev+'%</span><small>Anksčiau</small></div><i>→</i><div class="now"><span>'+c.pctNow+'%</span><small>Dabar</small></div></div>':'')+items+
+    (c.isvada?'<div class="pl-is"><b>Kur pajudėjote</b>'+poraEsc(N(c.isvada))+'</div>':'')+'</div>';
+  for(const [k,t] of Object.entries(c.skyriai||{})) out.notes[k]=N(t);
+  return out;
+}
 function renderPoraResult(r){
   markDone('pora');
   try{ cleanResultText(r); }catch(e){}
@@ -6516,6 +6539,8 @@ function renderPoraResult(r){
   document.getElementById('pora-traits').innerHTML=traits;
   document.getElementById('pora-map').innerHTML='';
   document.getElementById('pora-compare').innerHTML=poraCompareHtml(r);
+  const cmp=poraChange(r.palyginimas);
+  document.getElementById('pora-change').innerHTML=cmp.box;
   const para=t=>String(t||'').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).map(s=>'<p>'+poraEsc(s.trim())+'</p>').join('');
   // Skyriai — lygiai tokia pati struktūra kaip asmeninėje analizėje: antraštė, tekstas, auksinės įžvalgų kortelės, baigiamoji eilutė
   const iz=r.izvalgos||{};
@@ -6523,6 +6548,7 @@ function renderPoraResult(r){
     const used=new Set();
     const cards=(iz[k]||[]).map(t=>'<div class="insight-card"><div style="width:22px;height:22px;border-radius:5px;background:rgba(212,168,67,.18);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+pillIconFor(t,used)+'</div><div class="insight-text">'+poraEsc(t)+'</div></div>').join('');
     return '<div class="rs rs-std pr-rv"><div class="rs-label">'+title+'</div><div class="rs-body">'+para(r[k])+'</div>'+(cards?'<div class="insight-cards">'+cards+'</div>':'')+
+      (cmp.notes[k]?cmpNoteHtml(cmp.notes[k]):'')+
       '<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(212,168,67,.12);font-size:11px;color:rgba(212,168,67,.6);font-style:italic">✦ '+PORA_FOOTERS[k]+'</div></div>'; }).join('');
   { const on=document.getElementById('pora-order-number'); if(on) on.textContent=poraOrderNumber()?'Užsakymo numeris: '+poraOrderNumber():''; }
   go('s-pora-result');
@@ -6532,6 +6558,7 @@ function renderPoraResult(r){
   // Procentų žiedo animacija, tada ryšio lygio užrašas
   const pct=Math.max(0,Math.min(100,r.suderinamumas||0)), arc=document.getElementById('pora-ring-arc'), lbl=document.getElementById('pora-pct'), lv=document.getElementById('pora-level');
   lv.classList.remove('on'); lv.textContent=poraLevel(pct);
+  { const old=document.getElementById('pora-chip'); if(old) old.remove(); if(cmp.chip) lv.insertAdjacentHTML('afterend',cmp.chip); }
   const C=326.7, t0=performance.now();
   (function step(t){ const k=Math.min(1,(t-t0)/1600), e=1-Math.pow(1-k,3); arc.setAttribute('stroke-dashoffset',String(C*(1-pct/100*e))); lbl.textContent=Math.round(pct*e)+'%'; if(k<1) requestAnimationFrame(step); else lv.classList.add('on'); })(t0);
   renderRating('pora-rate','pora');
@@ -7000,8 +7027,20 @@ async function loadResultOffers(){
 }
 
 // Palyginimas su ankstesne analize (atėjus per priminimo laiško nuorodą ?kartoti=)
+// Palyginimo eilutės skyriuose (prieš baigiamąją „✦“ eilutę)
+const CMP_SECTION_IDS={prigimtines_stiprybes:'r-char',gyvenimo_tikslas:'r-mission',santykiai:'r-love',finansai:'r-finance',galimybes:'r-gifts-text',pokyciai:'r-astro',klutys:'r-challenges'};
+function cmpNoteHtml(t){ return '<div class="cmp-note"><b>↻ Kas pasikeitė</b>'+_xEsc(t)+'</div>'; }
+function renderCompareNotes(c){
+  document.querySelectorAll('#r-compare ~ .rs .cmp-note').forEach(e=>e.remove());
+  const sk=(c&&c.skyriai)||{};
+  for(const [k,id] of Object.entries(CMP_SECTION_IDS)){
+    const el=document.getElementById(id), rs=el&&el.closest('.rs'); if(!rs||!sk[k]) continue;
+    rs.lastElementChild.insertAdjacentHTML('beforebegin',cmpNoteHtml(sk[k]));
+  }
+}
 function renderCompare(c, prevDate){
   const box=document.getElementById('r-compare'); if(!box) return;
+  renderCompareNotes(c);
   if(!c||!c.sritys||!c.sritys.length){ box.innerHTML=''; return; }
   const items=c.sritys.map(x=>'<div class="pr-cmp"><div class="pr-cmp-t">'+_xEsc(x.tema)+'</div><div class="pr-cmp-ab"><div><small>Anksčiau</small>'+_xEsc(x.anksciau)+'</div><div class="now"><small>Dabar</small>'+_xEsc(x.dabar)+'</div></div></div>').join('');
   box.innerHTML='<div class="rs rs-std rs-reveal visible pl-greta cmp-box"><div class="pr-h">Kas pasikeitė</div><div class="pr-sub">'+(prevDate?'Palyginta su tavo analize, padaryta '+_ltDay(prevDate):'Palyginta su tavo ankstesne analize')+'</div>'+items+
