@@ -1687,6 +1687,8 @@ function renderRating(boxId, kind){
   });
 }
 
+// Nuolaida ką tik panaudota kitame lange ar nebegalioja — kodas pamirštamas, kaina ekrane atnaujinama
+function promoGoneRefresh(){ try{ _promoSave(null); const pw=document.getElementById('promo-welcome'); if(pw) pw.remove(); if(typeof refreshPayQuote==='function') refreshPayQuote(); }catch(e){} }
 async function initiatePayment(){
   const errEl=document.getElementById('stripe-card-errors');
   if(errEl){errEl.style.display='none';errEl.textContent='';}
@@ -1719,6 +1721,7 @@ async function initiatePayment(){
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
       const data=await res.json();
+      if(data.promoGone) promoGoneRefresh();
       if(data.url){_savePhotos();window.location.href=data.url;}
       else throw new Error(data.error||'Klaida');
       return;
@@ -1731,6 +1734,7 @@ async function initiatePayment(){
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,email,ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
     const data=await res.json();
+    if(data.promoGone) promoGoneRefresh();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
     _savePhotos();
     const sid=data.sessionId||data.paymentIntentId;
@@ -5858,6 +5862,7 @@ function initPayment(){
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
+        if(d.promoGone){ ev.complete('fail'); promoGoneRefresh(); const pe=document.getElementById('stripe-card-errors'); if(pe){ pe.textContent=d.error; pe.style.display='block'; } return; }
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
           {payment_method:ev.paymentMethod.id},{handleActions:false});
@@ -5905,6 +5910,7 @@ function initPayment(){
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
+        if(d.promoGone){ ev.complete('fail'); promoGoneRefresh(); const pe=document.getElementById('stripe-card-errors'); if(pe){ pe.textContent=d.error; pe.style.display='block'; } return; }
         if(!d.clientSecret){ev.complete('fail');return;}
         const{paymentIntent,error}=await stripeInstance.confirmCardPayment(d.clientSecret,
           {payment_method:ev.paymentMethod.id},{handleActions:false});
@@ -7104,6 +7110,15 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
   try{
     const q=await (await fetch('/promo/check?code='+encodeURIComponent(d.c))).json();
     if(!q||q.product!=='asmenine'){ if(!q||!q.code) _promoSave(null); return; }
+    // Laiško nuolaida jau panaudota ar baigėsi — trumpas paaiškinimas, kad kaina įprasta (ne be priežasties)
+    if(inTab&&!q.valid&&(q.kind==='repeat'||q.kind==='back'||q.kind==='remind')){
+      const home=document.getElementById('s-home');
+      if(home&&!document.getElementById('promo-welcome')){ const n=document.createElement('div'); n.id='promo-welcome'; n.className='promo-welcome';
+        n.innerHTML=q.kind==='back'
+          ? 'Ši −'+q.pct+' % nuolaida jau '+(q.used?'panaudota':'nebegalioja')+' — kaina įprasta.'
+          : (q.used?'✓ Pakartotinė analizė su −'+q.pct+' % jau atlikta — ją rasi „<a href="/mano" style="color:inherit">Mano analizėse</a>“.':'Šios −'+q.pct+' % nuolaidos laikas baigėsi — kaina įprasta.');
+        home.prepend(n); }
+    }
     if(q.kind==='repeat'&&q.used){ _promoSave({...d,kind:'repeat',used:true}); return; }
     // Porų kaina jau panaudota (šio žmogaus analizė užsakyta) — paaiškinimas vietoj tuščio pradžios ekrano
     if(q.kind==='duo'&&q.used&&inTab){

@@ -2232,20 +2232,24 @@ cleanupRefs();
 setInterval(cleanupRefs, 24 * 60 * 60 * 1000);
 function normalizeRefCode(c) { return typeof c === 'string' ? c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) : ''; }
 // Galiojantis kodas, kuris nepriklauso pačiam pirkėjui
-function validRef(code, email) {
+function validRef(code, email, req) {
   const c = normalizeRefCode(code); if (c.length < 5) return null;
   const r = loadRefs().codes[c]; if (!r) return null;
   if (email && r.email && r.email.toLowerCase() === String(email).toLowerCase()) return null;
+  // Ta pati naršyklė / tinklas, kuriame kvietimo nuoroda sukurta — sau nuolaida netaikoma
+  const tag = ipTag(req); if (tag && r.ip && r.ip === tag) return null;
   return c;
 }
-async function computeOrderAmount({ ref, addKlausk, email, promo }) {
+// Nuolaidos kodu jau sumokėta kitame lange (ar išnaudotas) — pranešama, kad kaina pasikeitė; mokama tik paspaudus dar kartą
+function promoGoneJson() { return { promoGone: true, error: 'Ši nuolaida nebegalioja. Kaina atnaujinta — patikrink ir spausk dar kartą.' }; }
+async function computeOrderAmount({ ref, addKlausk, email, promo, req }) {
   const activePrice = personalPrice();
   const base = activePrice.unit_amount, currency = activePrice.currency;
-  let refCode = validRef(ref, email);
+  let refCode = validRef(ref, email, req);
   const refBy = refCode; // kvietėjas gauna dovaną net jei pritaikyta kita, didesnė nuolaida
   const refDiscount = refCode ? Math.round(base * REF_DISCOUNT_PCT / 100) : 0;
   // Nuolaidos nesumuojamos — taikoma didesnė (draugo arba asmeninis kodas)
-  const pr = getValidPromo(promo, 'asmenine');
+  const pr = getValidPromo(promo, 'asmenine', email);
   const promoDiscount = pr ? base - promoAmount(pr, base) : 0;
   let discount = refDiscount, promoCode = null, discountLabel = refCode ? `🎁 Draugo dovana −${REF_DISCOUNT_PCT} %` : '';
   if (promoDiscount > 0 && promoDiscount >= refDiscount) { discount = promoDiscount; promoCode = pr.code; refCode = null; discountLabel = promoTag(pr); }
@@ -2312,7 +2316,7 @@ function handlePaidAnalysis(paymentRef, metadata, email) {
 app.post('/order-quote', sensitiveLimiter, async (req, res) => {
   try {
     const { ref, addKlausk, email, promo } = req.body || {};
-    const q = await computeOrderAmount({ ref, addKlausk: !!addKlausk, email: isValidEmail(email) ? email : '', promo });
+    const q = await computeOrderAmount({ ref, addKlausk: !!addKlausk, email: isValidEmail(email) ? email : '', promo, req });
     res.json({ ...q, bumpCents: KLAUSK_BUMP_CENTS, klauskCents: KLAUSK_PRICE_CENTS, refPct: REF_DISCOUNT_PCT, poraCents: PORA_PRICE_CENTS });
   } catch (err) {
     console.error('/order-quote klaida:', err);
@@ -2417,13 +2421,13 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
 
 // Asmeninė draugo nuoroda (sukuriama apmokėjusiam klientui, vieną kartą mokėjimui)
 // Kvietimo kodas (6 ženklai) apmokėjusiam ar dovaną gavusiam klientui; tas pats paymentRef — tas pats kodas
-function createRefCode({ email, name, paymentRef, result }) {
+function createRefCode({ email, name, paymentRef, result, ip }) {
   const st = loadRefs();
   if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) return st.byPayment[paymentRef];
   let code;
   for (let i = 0; i < 20; i++) { let c = ''; for (let j = 0; j < 6; j++) c += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; if (!st.codes[c]) { code = c; break; } }
   if (!code) return null;
-  st.codes[code] = { email, name: name || '', paymentRef, result: pickKlauskResult(result), uses: [], createdAt: Date.now() };
+  st.codes[code] = { email, name: name || '', paymentRef, result: pickKlauskResult(result), uses: [], ip: ip || '', createdAt: Date.now() };
   st.byPayment[paymentRef] = code;
   saveRefs(st);
   return code;
@@ -2435,6 +2439,7 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
     const st = loadRefs();
     if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) {
       const c = st.byPayment[paymentRef];
+      if (!st.codes[c].ip) { st.codes[c].ip = ipTag(req); saveRefs(st); }
       return res.json({ code: c, link: `${appBaseUrl()}/?ref=${c}`, pct: REF_DISCOUNT_PCT });
     }
     // Dovanų kuponu gautas Gyvenimo žemėlapis — kaip ir apmokėtas (gavėjo el. paštas ir vardas)
@@ -2444,7 +2449,7 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
     let code;
     for (let i = 0; i < 20; i++) { let c = ''; for (let j = 0; j < 6; j++) c += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; if (!st.codes[c]) { code = c; break; } }
     if (!code) throw new Error('Nepavyko sugeneruoti kodo');
-    st.codes[code] = { email: p.email, name: p.metadata.name || '', paymentRef, result: pickKlauskResult(result), uses: [], createdAt: Date.now() };
+    st.codes[code] = { email: p.email, name: p.metadata.name || '', paymentRef, result: pickKlauskResult(result), uses: [], ip: ipTag(req), createdAt: Date.now() };
     st.byPayment[paymentRef] = code;
     saveRefs(st);
     res.json({ code, link: `${appBaseUrl()}/?ref=${code}`, pct: REF_DISCOUNT_PCT });
@@ -2466,7 +2471,7 @@ app.post('/ref/create-pora', sensitiveLimiter, (req, res) => {
     if (!code) {
       for (let i = 0; i < 20; i++) { let c = ''; for (let j = 0; j < 6; j++) c += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; if (!st.codes[c]) { code = c; break; } }
       if (!code) throw new Error('Nepavyko sugeneruoti kodo');
-      st.codes[code] = { email: o.email, name: `${o.nameA} ir ${o.nameB}`, pora: true, poraSid: sid, nameA: o.nameA, nameB: o.nameB, paymentRef: key, result: o.result, uses: [], createdAt: Date.now() };
+      st.codes[code] = { email: o.email, name: `${o.nameA} ir ${o.nameB}`, pora: true, poraSid: sid, nameA: o.nameA, nameB: o.nameB, paymentRef: key, result: o.result, uses: [], ip: ipTag(req), createdAt: Date.now() };
       st.byPayment[key] = code;
       saveRefs(st);
     }
@@ -2485,7 +2490,9 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     if (bgSessionId && (typeof bgSessionId !== 'string' || bgSessionId.length > 200)) return res.status(400).json({ error: 'Neteisingas bgSessionId' });
     if (orderNumber && !isValidOrderNumber(orderNumber)) return res.status(400).json({ error: 'Neteisingas orderNumber formatas' });
 
-    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo });
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, req });
+    if (req.body.promo && getAnyPromo(req.body.promo, 'asmenine') && !getValidPromo(req.body.promo, 'asmenine', email)) return res.status(409).json(promoGoneJson());
+    if (q.promoCode && !(await promoMakeRoom(q.promoCode))) return res.status(409).json(promoGoneJson());
     // Apskaičiuotos eilutės (kaina — PERSONAL_PRICE_CENTS, su nuolaida ir priedais)
     const lineItems = [
       { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (${q.promoCode ? 'nuolaida' : `draugo nuolaida −${REF_DISCOUNT_PCT} %`})` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
@@ -2505,8 +2512,10 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // nuo naršyklės saugyklos elgsenos.
       metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', refBy: q.refBy || '', promo: q.promoCode || '' },
       success_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`
+      cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`,
+      ...(q.promoCode ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {})
     });
+    if (q.promoCode) promoAddHold(q.promoCode, session.id);
     
     res.json({ url: session.url });
   } catch(err) {
@@ -2963,7 +2972,9 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     if (name && !isValidName(name)) return res.status(400).json({ error: 'Neteisingas vardo formatas' });
     if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     // Suma — computeOrderAmount (PERSONAL_PRICE_CENTS su nuolaidomis ir priedais).
-    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo });
+    const q = await computeOrderAmount({ ref: req.body.ref, addKlausk: !!req.body.addKlausk, email, promo: req.body.promo, req });
+    if (req.body.promo && getAnyPromo(req.body.promo, 'asmenine') && !getValidPromo(req.body.promo, 'asmenine', email)) return res.status(409).json(promoGoneJson());
+    if (q.promoCode && !(await promoMakeRoom(q.promoCode))) return res.status(409).json(promoGoneJson());
     const paymentIntent = await stripe.paymentIntents.create({
       amount: q.total,
       currency: q.currency,
@@ -2973,6 +2984,7 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
       ...(email ? {receipt_email: email} : {}),
       payment_method_types: ['card', 'revolut_pay']
     });
+    if (q.promoCode) promoAddHold(q.promoCode, paymentIntent.id);
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -4014,12 +4026,14 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
     if (!nameA || !nameB || !isValidName(nameA) || !isValidName(nameB)) return res.status(400).json({ error: 'Įrašykite abu vardus' });
     const base = appBaseUrl();
     // Nuolaidos kodas: grįžimas po nebaigto mokėjimo (−15 %) arba rinkinio kaina po asmeninės analizės
-    const pr0 = getValidPromo(req.body.promo, 'pora');
+    const pr0 = getValidPromo(req.body.promo, 'pora', email);
     // Draugo nuoroda (−10 %) — nesumuojama su kodu, taikoma didesnė nuolaida
-    const refCode = validRef(req.body.ref, email);
+    const refCode = validRef(req.body.ref, email, req);
     const refAmount = refCode ? PORA_PRICE_CENTS - Math.round(PORA_PRICE_CENTS * REF_DISCOUNT_PCT / 100) : PORA_PRICE_CENTS;
     const useRef = !!refCode && refAmount < (pr0 ? promoAmount(pr0, PORA_PRICE_CENTS) : PORA_PRICE_CENTS);
     const pr = useRef ? null : pr0;
+    // Kodas atsiųstas, bet jau nebegalioja ar juo ką tik sumokėta kitame lange — pirma pranešame apie kainą
+    if ((req.body.promo && !pr0 && getAnyPromo(req.body.promo, 'pora')) || (pr && !(await promoMakeRoom(pr.code)))) return res.status(409).json(promoGoneJson());
     const amount = useRef ? refAmount : (pr ? promoAmount(pr, PORA_PRICE_CENTS) : PORA_PRICE_CENTS);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -4032,8 +4046,10 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       customer_email: email,
       metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '', refBy: refCode || '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`
+      cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`,
+      ...(pr ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {})
     });
+    if (pr) promoAddHold(pr.code, session.id);
     if (req.body.remind === true) noteAbandonCandidate({ kind: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), ref: session.id }, req);
     res.json({ url: session.url });
   } catch (err) {
@@ -4878,7 +4894,7 @@ function giftEmailPromo(pr) {
   // Laiškas nebesikeičia — rašoma, kiek dovanų su nuolaida galima įsigyti (išnaudojus nuorodoje rodoma įprasta kaina ir paaiškinimas)
   const left = Math.max(0, GIFT_PROMO_MAX - (pr.uses || []).length);
   if (!left) return { q: '', line: '' };
-  return { q: '&amp;promo=' + encodeURIComponent(pr.code), line: `<p style="font-size:13px;color:#f0c96a;margin:0 0 10px"><b>−${pr.pct}&nbsp;% dovanai</b> artimam žmogui · galioja iki ${fmtLtDate(pr.expiresAt)}, ${hm} · ${left === 1 ? 'vienai dovanai' : `iki ${left} dovanų`}</p>` };
+  return { q: '&amp;promo=' + encodeURIComponent(pr.code), line: `<p style="font-size:13px;color:#f0c96a;margin:0 0 10px"><b>−${pr.pct}&nbsp;% dovanai</b> artimam žmogui · galioja iki ${fmtLtDate(pr.expiresAt)}, ${hm} · ${left === 1 ? 'nuolaida taikoma vienai dovanai' : `nuolaida taikoma iki ${left} dovanų`}</p>` };
 }
 function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, giftPromo }) {
   const gp = giftEmailPromo(giftPromo);
@@ -5028,6 +5044,10 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
       const full = (kind === 'pora' ? PORA_PRICE_CENTS : personalPrice().unit_amount) + (kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS);
       return res.status(409).json({ promoGone: true, error: `−20 % pasiūlymas jau išnaudotas arba baigėsi. Dovanos kaina — ${(full / 100).toFixed(2).replace('.', ',')} €.` });
     }
+    if (pr && !(await promoMakeRoom(pr.code))) {
+      const full = (kind === 'pora' ? PORA_PRICE_CENTS : personalPrice().unit_amount) + (kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS);
+      return res.status(409).json({ promoGone: true, error: `−20 % pasiūlymas jau išnaudotas. Dovanos kaina — ${(full / 100).toFixed(2).replace('.', ',')} €.` });
+    }
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
     const base = appBaseUrl();
@@ -5062,9 +5082,11 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         promo: pr ? pr.code : ''
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
+      ...(pr ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {}),
       // Grįžus iš Stripe neapmokėjus — tas pats tipas, šventė ir −20 % pasiūlymas
       cancel_url: `${base}/dovana` + (() => { const q = new URLSearchParams(); if (kind === 'pora') q.set('tipas', 'pora'); if (season) q.set('sezonas', season); if (pr) q.set('promo', pr.code); const t = q.toString(); return t ? '?' + t : ''; })()
     });
+    if (pr) promoAddHold(pr.code, session.id, kind);
     res.json({ url: session.url });
   } catch (err) {
     console.error('/gift/create-checkout klaida:', err);
@@ -5573,14 +5595,55 @@ function createPromo({ kind, product, pct, price, ttlMs, email, key, meta }) {
   return p;
 }
 // Galiojantis kodas konkrečiam produktui (asmenine | pora | dovana)
+// Įrenginio / tinklo žymė be paties IP adreso (vienkartinė maiša) — kvietimo nuorodai sau ir priminimų ribai
+function ipTag(req) { try { return req && req.ip ? crypto.createHash('sha256').update('ip:' + ADMIN_KEY + ':' + req.ip).digest('hex').slice(0, 16) : ''; } catch (e) { return ''; } }
+// Vienkartinis nuolaidos kodas mokėjimo lange „rezervuojamas“: atidarius naują mokėjimą tuo pačiu kodu, ankstesnis
+// neapmokėtas mokėjimas atšaukiamas — kodu sumokėti galima tik tiek kartų, kiek leidžiama (dovanai — iki 3, kitiems — 1)
+const PROMO_HOLD_MS = 35 * 60 * 1000;       // Stripe Checkout langas galioja 31 min.
+const PROMO_HOLD_PI_MS = 24 * 60 * 60 * 1000; // kortelės mokėjimas (PaymentIntent) — iki atšaukimo
+function promoSlots(p) { return p.product === 'dovana' ? GIFT_PROMO_MAX - (p.uses || []).length : (p.usedBy ? 0 : 1); }
+async function promoMakeRoom(code) {
+  code = normalizePromoCode(code);
+  for (let guard = 0; guard < 10; guard++) {
+    const s = loadPromos(), p = s.codes[code];
+    if (!p || p.usedBy) return false;
+    const now = Date.now();
+    const holds = (p.holds || []).filter(h => h.until > now);
+    if (holds.length !== (p.holds || []).length) { p.holds = holds; savePromos(s); }
+    if (holds.length < promoSlots(p)) return true;
+    // Seniausias neapmokėtas mokėjimas atšaukiamas; jei jis jau apmokėtas — kodas pažymimas panaudotu
+    const h = holds[0];
+    let paid = false;
+    try {
+      if (h.ref.startsWith('cs_')) { const cs = await stripe.checkout.sessions.retrieve(h.ref); paid = cs.payment_status === 'paid'; if (!paid && cs.status === 'open') await stripe.checkout.sessions.expire(h.ref); }
+      else if (h.ref.startsWith('pi_')) { const pi = await stripe.paymentIntents.retrieve(h.ref); paid = pi.status === 'succeeded'; if (!paid && !['canceled', 'processing'].includes(pi.status)) await stripe.paymentIntents.cancel(h.ref); else if (pi.status === 'processing') return false; }
+    } catch (e) { console.error('[promo] ankstesnio mokėjimo atšaukimo klaida:', e.message); return false; }
+    if (paid) markPromoUsed(code, h.ref, h.kind);
+    const s2 = loadPromos(), p2 = s2.codes[code];
+    if (p2) { p2.holds = (p2.holds || []).filter(x => x.ref !== h.ref); savePromos(s2); }
+  }
+  return false;
+}
+function promoAddHold(code, ref, kind) {
+  code = normalizePromoCode(code);
+  const s = loadPromos(), p = s.codes[code];
+  if (!p || !ref) return;
+  p.holds = (p.holds || []).filter(h => h.ref !== ref);
+  p.holds.push({ ref, kind: kind || '', until: Date.now() + (ref.startsWith('pi_') ? PROMO_HOLD_PI_MS : PROMO_HOLD_MS) });
+  savePromos(s);
+}
 // Dovanos kodas (−20 % po analizės) galioja iki GIFT_PROMO_MAX dovanų (bet kokios rūšies) per 24 val. —
 // šeimai ar draugams užtenka, o paskelbtas kodas netampa nuolaida visiems
 const GIFT_PROMO_MAX = parseInt(process.env.GIFT_PROMO_MAX || '3', 10);
-function getValidPromo(code, product) {
+// Kodas egzistuoja šiam produktui (galiojantis ar ne) — kad nebegaliojantį būtų galima atskirti nuo atsitiktinio
+function getAnyPromo(code, product) { code = normalizePromoCode(code); const p = code && loadPromos().codes[code]; return p && p.product === product ? p : null; }
+function getValidPromo(code, product, email) {
   code = normalizePromoCode(code);
   if (!code) return null;
   const p = loadPromos().codes[code];
   if (!p || p.product !== product || p.usedBy || Date.now() > p.expiresAt) return null;
+  // „Tęsti su −15 %“ kodas galioja tik tam el. paštui, kuriam buvo išsiųstas
+  if (p.kind === 'back' && p.email && email && String(email).trim().toLowerCase() !== p.email) return null;
   return p;
 }
 function markPromoUsed(code, ref, giftKind) {
@@ -5588,6 +5651,7 @@ function markPromoUsed(code, ref, giftKind) {
   if (!code || !ref) return;
   const s = loadPromos(), p = s.codes[code];
   if (!p || p.usedBy) return;
+  if (p.holds) p.holds = p.holds.filter(h => h.ref !== ref);
   if (p.product === 'dovana') {
     p.uses = p.uses || [];
     if (p.uses.some(u => u.ref === ref)) return;
@@ -5728,7 +5792,7 @@ function noteAbandonCandidate(item, req) {
     }
     const s = loadAbandoned(), email = item.email.toLowerCase();
     s.items = s.items.filter(x => !(x.email === email && x.kind === item.kind && !x.sentAt && !x.skip));
-    s.items.push({ ...item, id: crypto.randomBytes(6).toString('hex'), email, createdAt: Date.now(), sentAt: null });
+    s.items.push({ ...item, id: crypto.randomBytes(6).toString('hex'), email, ip: ipTag(req), createdAt: Date.now(), sentAt: null });
     saveAbandoned(s);
   } catch (e) { console.error('[abandon] klaida:', e.message); }
 }
@@ -5764,6 +5828,8 @@ async function processAbandoned() {
       else if (now - it.createdAt > DAY_MS) skip = 'old';
       else if (isReminderBlacklisted(it.email) || isAbandonOptedOut(it.email)) skip = 'unsub';
       else if (s.items.some(x => x !== it && x.email === it.email && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
+      // Vienas „−15 %“ laiškas tam pačiam įrenginiui / tinklui per 30 d. (kad nuolaidos nebūtų renkamos kitais el. paštais)
+      else if (it.ip && s.items.some(x => x !== it && x.ip === it.ip && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
       else if (it.kind === 'pora' && it.ref) {
         try { const cs = await stripe.checkout.sessions.retrieve(it.ref); if (cs && cs.payment_status === 'paid') skip = 'paid'; } catch (e) {}
       } else if (it.kind === 'asmenine') {
@@ -5787,6 +5853,7 @@ async function processAbandoned() {
           html: buildAbandonEmailHtml(it, p)
         });
         done[it.id] = { sentAt: Date.now(), code: p.code };
+        it.sentAt = done[it.id].sentAt; // kad tame pačiame cikle tam pačiam tinklui antras laiškas nebūtų siunčiamas
         statInc('abandon_sent');
         console.log(`[abandon] priminimas išsiųstas ${it.email} (${it.kind})`);
       } catch (e) { console.error('[abandon] laiško klaida:', e.message); }
@@ -6007,7 +6074,7 @@ app.get('/mano/item', sensitiveLimiter, (req, res) => {
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
   let own = ownRefCodes(email);
   // Dar nėra kvietimo kodo — sukuriamas šiai analizei (el. paštą patvirtina „Mano analizių“ nuoroda), kad draugai gautų −10 %, o kvietėjas — atlygį
-  if (!own.length && it.result) { const c = createRefCode({ email, name: it.name || '', paymentRef: 'mano:' + it.id, result: it.result }); if (c) own = [c]; }
+  if (!own.length && it.result) { const c = createRefCode({ email, name: it.name || '', paymentRef: 'mano:' + it.id, result: it.result, ip: ipTag(req) }); if (c) own = [c]; }
   res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
