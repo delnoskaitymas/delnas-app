@@ -6493,14 +6493,36 @@ async function poraDuoShare(code,name,btn){
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
 // Porų rezultate: asmeninė analizė kiekvienam porų kaina — du vienkartiniai kodai (/pora/offers)
+// −20 % dovanai: blokas virš „Padovanoti“ mygtukų (asmeninio ir porų rezultato). Kiek dovanų su nuolaida dar liko —
+// atnaujinama grįžus į langą; išnaudojus ar pasibaigus — nuolaida nuimama, kad mygtukas nežadėtų to, ko nebėra
+function giftOnceShow(id,gifts,once){
+  if(!once||!gifts||!once.left) return;
+  let b=document.getElementById(id);
+  if(!b){ b=document.createElement('div'); b.id=id; b.className='rb-once'; gifts.parentNode.insertBefore(b,gifts); }
+  b.dataset.code=once.code;
+  b.innerHTML='<b>−'+once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(once.expiresAt)+' · liko '+once.left+' '+(once.left===1?'dovana':'dovanos')+' su nuolaida</span>';
+  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
+}
+function giftOnceOff(id,gifts){
+  const b=document.getElementById(id); if(b) b.remove();
+  if(gifts) gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti'; });
+}
+async function giftOnceRefresh(){
+  for(const [id,sel] of [['rb-once','#s-result .rb-gifts'],['pora-rb-once','#s-pora-result .rb-gifts']]){
+    const b=document.getElementById(id); if(!b||!b.dataset.code) continue;
+    try{ const q=await (await fetch('/promo/check?code='+encodeURIComponent(b.dataset.code))).json();
+      const gifts=document.querySelector(sel);
+      if(q&&q.valid&&q.left) giftOnceShow(id,gifts,q); else if(q&&q.code) giftOnceOff(id,gifts); }catch(e){}
+  }
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') giftOnceRefresh(); });
+window.addEventListener('focus',giftOnceRefresh);
+window.addEventListener('pageshow',e=>{ if(e.persisted) giftOnceRefresh(); });
 // Porų rezultate: −20 % dovanai (24 val.) — kaip Gyvenimo žemėlapio rezultate
 function poraOnceGift(once){
   const gifts=document.querySelector('#s-pora-result .rb-gifts');
   if(!once||!gifts||document.getElementById('pora-rb-once')) return;
-  const b=document.createElement('div'); b.id='pora-rb-once'; b.className='rb-once';
-  b.innerHTML='<b>−'+once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(once.expiresAt)+'</span>';
-  gifts.parentNode.insertBefore(b,gifts);
-  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
+  giftOnceShow('pora-rb-once',gifts,once);
 }
 async function loadPoraDuo(){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
@@ -7133,12 +7155,7 @@ async function loadResultOffers(){
   let d; try{ d=await (await fetch('/promo/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:payRef,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})})).json(); }catch(e){ return; }
   if(!d) return;
   const gifts=document.querySelector('#s-result .rb-gifts');
-  if(d.once&&gifts&&!document.getElementById('rb-once')){
-    const b=document.createElement('div'); b.id='rb-once'; b.className='rb-once';
-    b.innerHTML='<b>−'+d.once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(d.once.expiresAt)+'</span>';
-    gifts.parentNode.insertBefore(b,gifts);
-    gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' %'; });
-  }
+  if(d.once&&gifts&&!document.getElementById('rb-once')) giftOnceShow('rb-once',gifts,d.once);
   // Porų analizė jau atlikta ar užsakyta — „Jums dviem“ nebesiūlome
   if(d.hasPora||recentDone('pora')){ d.hasPora=true; const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
   const pora=d.hasPora?null:document.querySelector('#s-result .rb-pora');

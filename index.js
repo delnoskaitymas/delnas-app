@@ -4867,7 +4867,10 @@ function buildPoraResultEmailHtml(o, names, sessionId, partner, giftPromo) {
 function giftEmailPromo(pr) {
   if (!pr || pr.usedBy || Date.now() > pr.expiresAt) return { q: '', line: '' };
   const hm = new Date(pr.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
-  return { q: '&amp;promo=' + encodeURIComponent(pr.code), line: `<p style="font-size:13px;color:#f0c96a;margin:0 0 10px"><b>−${pr.pct}&nbsp;% dovanai</b> artimam žmogui · galioja iki ${fmtLtDate(pr.expiresAt)}, ${hm}</p>` };
+  // Laiškas nebesikeičia — rašoma, kiek dovanų su nuolaida galima įsigyti (išnaudojus nuorodoje rodoma įprasta kaina ir paaiškinimas)
+  const left = Math.max(0, GIFT_PROMO_MAX - (pr.uses || []).length);
+  if (!left) return { q: '', line: '' };
+  return { q: '&amp;promo=' + encodeURIComponent(pr.code), line: `<p style="font-size:13px;color:#f0c96a;margin:0 0 10px"><b>−${pr.pct}&nbsp;% dovanai</b> artimam žmogui · galioja iki ${fmtLtDate(pr.expiresAt)}, ${hm} · ${left === 1 ? 'vienai dovanai' : `iki ${left} dovanų`}</p>` };
 }
 function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, giftPromo }) {
   const gp = giftEmailPromo(giftPromo);
@@ -5012,6 +5015,11 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : personalPrice();
     // −20 % pasiūlymas po analizės (24 val.)
     const pr = getValidPromo(req.body && req.body.promo, 'dovana');
+    // Ekrane rodyta −20 %, bet kodas jau išnaudotas ar pasibaigęs — nemokame pilnos kainos tyliai, pirma pranešame
+    if (req.body && req.body.promo && !pr) {
+      const full = (kind === 'pora' ? PORA_PRICE_CENTS : personalPrice().unit_amount) + (kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS);
+      return res.status(409).json({ promoGone: true, error: `−20 % pasiūlymas jau išnaudotas arba baigėsi. Dovanos kaina — ${(full / 100).toFixed(2).replace('.', ',')} €.` });
+    }
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
     const base = appBaseUrl();
@@ -5582,7 +5590,7 @@ function markPromoUsed(code, ref, giftKind) {
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
 const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Tavo kaina' };
-function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
+function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida', ...(p.product === 'dovana' ? { left: p.usedBy ? 0 : Math.max(0, GIFT_PROMO_MAX - (p.uses || []).length) } : {}) } : null; }
 // Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
 function duoForName(code) {
   try {
