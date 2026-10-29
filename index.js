@@ -2513,7 +2513,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', refBy: q.refBy || '', promo: q.promoCode || '' },
       success_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`,
-      ...(q.promoCode ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {})
+      ...(q.promoCode ? { expires_at: promoCheckoutExpiry(q.promoCode) } : {})
     });
     if (q.promoCode) promoAddHold(q.promoCode, session.id);
     
@@ -4047,7 +4047,7 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '', refBy: refCode || '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`,
-      ...(pr ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {})
+      ...(pr ? { expires_at: promoCheckoutExpiry(pr.code) } : {})
     });
     if (pr) promoAddHold(pr.code, session.id);
     if (req.body.remind === true) noteAbandonCandidate({ kind: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), ref: session.id }, req);
@@ -5082,7 +5082,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         promo: pr ? pr.code : ''
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
-      ...(pr ? { expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {}),
+      ...(pr ? { expires_at: promoCheckoutExpiry(pr.code) } : {}),
       // Grįžus iš Stripe neapmokėjus — tas pats tipas, šventė ir −20 % pasiūlymas
       cancel_url: `${base}/dovana` + (() => { const q = new URLSearchParams(); if (kind === 'pora') q.set('tipas', 'pora'); if (season) q.set('sezonas', season); if (pr) q.set('promo', pr.code); const t = q.toString(); return t ? '?' + t : ''; })()
     });
@@ -5599,7 +5599,7 @@ function createPromo({ kind, product, pct, price, ttlMs, email, key, meta }) {
 function ipTag(req) { try { return req && req.ip ? crypto.createHash('sha256').update('ip:' + ADMIN_KEY + ':' + req.ip).digest('hex').slice(0, 16) : ''; } catch (e) { return ''; } }
 // Vienkartinis nuolaidos kodas mokėjimo lange „rezervuojamas“: atidarius naują mokėjimą tuo pačiu kodu, ankstesnis
 // neapmokėtas mokėjimas atšaukiamas — kodu sumokėti galima tik tiek kartų, kiek leidžiama (dovanai — iki 3, kitiems — 1)
-const PROMO_HOLD_MS = 35 * 60 * 1000;       // Stripe Checkout langas galioja 31 min.
+const PROMO_HOLD_MS = 24 * 60 * 60 * 1000;  // Stripe Checkout langas su nuolaida galioja iki 24 val. (žr. promoCheckoutExpiry)
 const PROMO_HOLD_PI_MS = 24 * 60 * 60 * 1000; // kortelės mokėjimas (PaymentIntent) — iki atšaukimo
 function promoSlots(p) { return p.product === 'dovana' ? GIFT_PROMO_MAX - (p.uses || []).length : (p.usedBy ? 0 : 1); }
 async function promoMakeRoom(code) {
@@ -5623,6 +5623,12 @@ async function promoMakeRoom(code) {
     if (p2) { p2.holds = (p2.holds || []).filter(x => x.ref !== h.ref); savePromos(s2); }
   }
   return false;
+}
+// Stripe langas su nuolaida galioja iki pasiūlymo pabaigos (ne vėliau) — Stripe ribos: ne trumpiau nei 30 min., ne ilgiau nei 24 val.
+function promoCheckoutExpiry(code) {
+  const p = loadPromos().codes[normalizePromoCode(code)], now = Date.now();
+  const end = Math.min(p ? p.expiresAt : now + PROMO_HOLD_MS, now + PROMO_HOLD_MS - 60 * 1000);
+  return Math.floor(Math.max(end, now + 31 * 60 * 1000) / 1000);
 }
 function promoAddHold(code, ref, kind) {
   code = normalizePromoCode(code);
