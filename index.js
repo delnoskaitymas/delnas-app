@@ -5011,7 +5011,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
     const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : personalPrice();
     // −20 % pasiūlymas po analizės (24 val.)
-    const pr = getValidPromo(req.body && req.body.promo, 'dovana', kind);
+    const pr = getValidPromo(req.body && req.body.promo, 'dovana');
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
     const base = appBaseUrl();
@@ -5555,14 +5555,14 @@ function createPromo({ kind, product, pct, price, ttlMs, email, key, meta }) {
   return p;
 }
 // Galiojantis kodas konkrečiam produktui (asmenine | pora | dovana)
-// giftKind — dovanos kodas (−20 % po analizės) galioja po vieną kartą kiekvienai dovanai: gyvenimo žemėlapiui ir porų suderinamumui
-const GIFT_KINDS = ['asmenine', 'pora'];
-function getValidPromo(code, product, giftKind) {
+// Dovanos kodas (−20 % po analizės) galioja iki GIFT_PROMO_MAX dovanų (bet kokios rūšies) per 24 val. —
+// šeimai ar draugams užtenka, o paskelbtas kodas netampa nuolaida visiems
+const GIFT_PROMO_MAX = parseInt(process.env.GIFT_PROMO_MAX || '3', 10);
+function getValidPromo(code, product) {
   code = normalizePromoCode(code);
   if (!code) return null;
   const p = loadPromos().codes[code];
   if (!p || p.product !== product || p.usedBy || Date.now() > p.expiresAt) return null;
-  if (product === 'dovana' && giftKind && p.usedKinds && p.usedKinds[giftKind]) return null;
   return p;
 }
 function markPromoUsed(code, ref, giftKind) {
@@ -5570,19 +5570,19 @@ function markPromoUsed(code, ref, giftKind) {
   if (!code || !ref) return;
   const s = loadPromos(), p = s.codes[code];
   if (!p || p.usedBy) return;
-  if (p.product === 'dovana' && GIFT_KINDS.includes(giftKind)) {
-    p.usedKinds = p.usedKinds || {};
-    if (p.usedKinds[giftKind]) return;
-    p.usedKinds[giftKind] = ref;
-    // Panaudotas abiem dovanoms — kodas nebegalioja
-    if (GIFT_KINDS.every(k => p.usedKinds[k])) { p.usedBy = ref; p.usedAt = Date.now(); }
+  if (p.product === 'dovana') {
+    p.uses = p.uses || [];
+    if (p.uses.some(u => u.ref === ref)) return;
+    p.uses.push({ ref, kind: giftKind || '', at: Date.now() });
+    // Išnaudotas — kodas nebegalioja
+    if (p.uses.length >= GIFT_PROMO_MAX) { p.usedBy = ref; p.usedAt = Date.now(); }
     savePromos(s); statInc('promo_' + p.kind); return;
   }
   p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind);
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
 const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Tavo kaina' };
-function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida', ...(p.usedKinds ? { usedKinds: Object.keys(p.usedKinds) } : {}) } : null; }
+function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
 // Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
 function duoForName(code) {
   try {

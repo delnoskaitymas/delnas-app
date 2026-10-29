@@ -6500,7 +6500,7 @@ function poraOnceGift(once){
   const b=document.createElement('div'); b.id='pora-rb-once'; b.className='rb-once';
   b.innerHTML='<b>−'+once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(once.expiresAt)+'</span>';
   gifts.parentNode.insertBefore(b,gifts);
-  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ if(((once.usedKinds)||[]).includes(a.getAttribute('href').indexOf('tipas=pora')>=0?'pora':'asmenine')) return; /* šiai dovanai −20 % jau panaudota */ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
+  gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+once.pct+' %'; });
 }
 async function loadPoraDuo(){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
@@ -7137,7 +7137,7 @@ async function loadResultOffers(){
     const b=document.createElement('div'); b.id='rb-once'; b.className='rb-once';
     b.innerHTML='<b>−'+d.once.pct+' % dovanai</b> artimam žmogui<span>Galioja iki '+_untilText(d.once.expiresAt)+'</span>';
     gifts.parentNode.insertBefore(b,gifts);
-    gifts.querySelectorAll('a.rb-gift').forEach(a=>{ if(((d.once.usedKinds)||[]).includes(a.getAttribute('href').indexOf('tipas=pora')>=0?'pora':'asmenine')) return; /* šiai dovanai −20 % jau panaudota */ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' %'; });
+    gifts.querySelectorAll('a.rb-gift').forEach(a=>{ a.href=a.getAttribute('href').split('&promo=')[0]+'&promo='+d.once.code; const em=a.querySelector('em'); if(em) em.textContent='Padovanoti −'+d.once.pct+' %'; });
   }
   // Porų analizė jau atlikta ar užsakyta — „Jums dviem“ nebesiūlome
   if(d.hasPora||recentDone('pora')){ d.hasPora=true; const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
