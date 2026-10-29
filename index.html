@@ -7393,13 +7393,15 @@ function fitPayScreen(){
 </script>
 <script>
 // ═══ Šventinė eilutė pradžios ekrane — įsijungia pati pagal datą (Vilniaus laiku) ═══
-// Peržiūra: /?sezonas=kaledos|metai|valentinas|mama
+// Peržiūra: /?sezonas=kaledos|kaledos_sv|nm|metai_sv|metai|valentinas|mama
 (function seasonLine(){
   const SEASONS={
     kaledos:{ic:'🎄',btn:'Dovanoti',html:'Kalėdoms — <b>padovanok delnų analizę</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
-    kaledos_sv:{ic:'🎄',html:'<b>Jaukių šv. Kalėdų!</b>',greet:true},
+    // Švenčių dienomis — sveikinimas ir kelias gavusiems dovaną
+    kaledos_sv:{ic:'🎄',btn:'Įvesti kodą',html:'<b>Jaukių šv. Kalėdų!</b> Gavai dovaną?',href:'/kodas?utm_source=app&utm_campaign=kaledos'},
+    nm:{ic:'✨',btn:'Dovanoti',html:'Naujiems metams — <b>padovanok delnų analizę</b>',href:'/dovana?sezonas=metai&utm_source=app&utm_campaign=metai'},
     metai:{ic:'✨',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',greet:true},
-    metai_sv:{ic:'✨',html:'<b>Laimingų Naujųjų metų!</b>',greet:true},
+    metai_sv:{ic:'✨',btn:'Įvesti kodą',html:'<b>Laimingų Naujųjų metų!</b> Gavai dovaną?',href:'/kodas?utm_source=app&utm_campaign=metai'},
     valentinas:{ic:'💞',btn:'Pradėti',html:'Valentino dienai — <b>sužinokite, kaip derate</b>',href:'/pora?utm_source=app&utm_campaign=valentinas'},
     mama:{ic:'🌷',btn:'Dovanoti',html:'<b>Mamai, kuri visada galvoja apie kitus</b> — dovana tik apie ją',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'},
     // Pačią šventės dieną — sveikinimas kartu su pasiūlymu
@@ -7417,7 +7419,8 @@ function fitPayScreen(){
     if((m===11&&day>=15)||(m===12&&day<=24)) return 'kaledos';
     if(m===12&&(day===25||day===26)) return 'kaledos_sv';
     if(m===1&&day<=2) return 'metai_sv';
-    if((m===12&&day>=27)||(m===1&&day<=10)) return 'metai';
+    if(m===12&&day>=27) return 'nm';
+    if(m===1&&day<=10) return 'metai';
     if(m===2&&day===14) return 'valentinas_d';
     if(m===2&&day<=14) return 'valentinas';
     // Motinos diena — pirmasis gegužės sekmadienis; rodoma nuo balandžio 20 d.
@@ -7428,7 +7431,7 @@ function fitPayScreen(){
   }
   // Šventiniu laikotarpiu — rezultatų ekranų dovanų nuorodose šventė iš karto pažymėta, antraštė šventinė
   try{
-    const k=byDate().replace(/_d$/,''), G={kaledos:'🎄 Padovanok Kalėdoms',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
+    const d=byDate().replace(/_d$/,''), k=d==='nm'?'metai':d, G={kaledos:'🎄 Padovanok Kalėdoms',metai:'✨ Padovanok Naujiesiems metams',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
     if(G[k]){
       const sec=document.getElementById('rb-gift-sec'); if(sec) sec.textContent=G[k];
       document.querySelectorAll('a[href^="/dovana"]').forEach(a=>{

@@ -3402,7 +3402,7 @@ function ltDate(ts) { return new Date(ts).toLocaleDateString('sv-SE', { timeZone
 function ltHour(ts) { return parseInt(new Date(ts).toLocaleString('en-GB', { timeZone: 'Europe/Vilnius', hour: '2-digit', hour12: false }), 10); }
 
 // Šventės užrašas — tik jei pirkėjas pats pažymėjo šventinę dovaną (dovana.html)
-const SEASON_LABELS = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
+const SEASON_LABELS = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄', metai: 'Laimingų Naujųjų metų ✨' };
 // Dovanų kortelės paveikslėlis (sugeneruotas pirkėjo naršyklėje po apmokėjimo) — rodomas laiške gavėjui
 const GIFT_CARD_DIR = path.join(SHARED_STORAGE_DIR, 'gift-cards');
 function giftCardImgUrl(gift) {
@@ -5030,7 +5030,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     // Siuntimo valanda Lietuvos laiku (0–23), numatyta 8
     const sendHourRaw = req.body && req.body.sendHour;
     const sendHour = Number.isInteger(Number(sendHourRaw)) && Number(sendHourRaw) >= 0 && Number(sendHourRaw) <= 23 ? Number(sendHourRaw) : 8;
-    const season = ['valentinas', 'mama', 'kaledos'].includes(req.body && req.body.season) ? req.body.season : '';
+    const season = ['valentinas', 'mama', 'kaledos', 'metai'].includes(req.body && req.body.season) ? req.body.season : '';
     // Pirkėjo el. paštas privalomas, nebent dovana siunčiama gavėjui (tada Stripe pats paprašys pirkėjo el. pašto kvitui)
     if (buyerEmail ? !isValidEmail(buyerEmail) : !sendTo) return res.status(400).json({ error: 'Neteisingas el. pašto formatas' });
     if (!isValidGiftText(fromName, 60) || !isValidGiftText(recipientName, 60)) return res.status(400).json({ error: 'Vardas per ilgas' });
@@ -5429,9 +5429,9 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
     { q: 'Ar man verta keisti darbą?', a: 'Tai pavyzdinis atsakymas.\nTikras atsakymas remiasi delnų analize.' },
     { q: 'Kaip man geriau tvarkytis su pinigais?', a: 'Tai pavyzdinis atsakymas.' }
   ];
-  // &sezonas=kaledos|valentinas|mama — dovanų laiškai su šventės užrašu
-  const tSeason = ['kaledos', 'valentinas', 'mama'].includes(req.query.sezonas) ? req.query.sezonas : '';
-  const giftBase = { code: 'TEST-0000', kind: tSeason === 'valentinas' ? 'pora' : 'asmenine', fromName: 'Tomas', recipientName: tSeason === 'valentinas' ? 'Ieva ir Tomas' : 'Ieva', message: tSeason === 'kaledos' ? 'Linksmų Kalėdų! ✨' : tSeason === 'mama' ? 'Su Motinos diena! 🌷' : tSeason === 'valentinas' ? 'Su Valentino diena! 💞' : 'Su gimtadieniu! ✨', season: tSeason, klausk: true, amount: tSeason === 'valentinas' ? PORA_PRICE_CENTS + GIFT_KLAUSK_PORA_CENTS : PERSONAL_PRICE_CENTS + GIFT_KLAUSK_CENTS, createdAt: now, expiresAt: now + 365 * DAY_MS };
+  // &sezonas=kaledos|metai|valentinas|mama — dovanų laiškai su šventės užrašu
+  const tSeason = ['kaledos', 'metai', 'valentinas', 'mama'].includes(req.query.sezonas) ? req.query.sezonas : '';
+  const giftBase = { code: 'TEST-0000', kind: tSeason === 'valentinas' ? 'pora' : 'asmenine', fromName: 'Tomas', recipientName: tSeason === 'valentinas' ? 'Ieva ir Tomas' : 'Ieva', message: tSeason === 'kaledos' ? 'Linksmų Kalėdų! ✨' : tSeason === 'metai' ? 'Laimingų Naujųjų metų! ✨' : tSeason === 'mama' ? 'Su Motinos diena! 🌷' : tSeason === 'valentinas' ? 'Su Valentino diena! 💞' : 'Su gimtadieniu! ✨', season: tSeason, klausk: true, amount: tSeason === 'valentinas' ? PORA_PRICE_CENTS + GIFT_KLAUSK_PORA_CENTS : PERSONAL_PRICE_CENTS + GIFT_KLAUSK_CENTS, createdAt: now, expiresAt: now + 365 * DAY_MS };
   const list = [];
   const add = (label, build) => { try { list.push({ label, ...build() }); } catch (e) { list.push({ label, error: e.message }); } };
   add('Neužbaigtas užsakymas (asmeninė)', () => ({ subject: abandonSubject({ kind: 'asmenine', name }, { pct: BACK_PCT }), html: buildAbandonEmailHtml({ kind: 'asmenine', name, email: to }, fake({ pct: BACK_PCT })) }));
@@ -5480,7 +5480,7 @@ function adminCouponsHtml(key, created) {
 ${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
 <form method="post" action="/admin/kuponai?key=${k}">
 <label>Analizė</label><select name="tipas"><option value="asmenine">Gyvenimo žemėlapis (+3 klausimai delnams)</option><option value="pora">Porų suderinamumas (+3 klausimai delnams)</option></select>
-<label>Šventė (užrašas kupone, neprivaloma)</label><select name="svente"><option value="">— be šventės —</option><option value="kaledos">Linksmų Kalėdų 🎄</option><option value="valentinas">Su Valentino diena 💞</option><option value="mama">Su Motinos diena 🌷</option></select>
+<label>Šventė (užrašas kupone, neprivaloma)</label><select name="svente"><option value="">— be šventės —</option><option value="kaledos">Linksmų Kalėdų 🎄</option><option value="metai">Laimingų Naujųjų metų ✨</option><option value="valentinas">Su Valentino diena 💞</option><option value="mama">Su Motinos diena 🌷</option></select>
 <label>Kiek kuponų (1–20)</label><input name="kiek" type="number" min="1" max="20" value="1">
 <label>Pastaba sau (pvz. „Loterija FB, lapkritis“)</label><input name="pastaba" maxlength="80">
 <br><button type="submit">Sukurti kuponus</button></form>
@@ -5502,7 +5502,7 @@ app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: fals
   const kind = b.tipas === 'pora' ? 'pora' : 'asmenine';
   const n = Math.max(1, Math.min(20, parseInt(b.kiek, 10) || 1));
   const note = String(b.pastaba || '').trim().slice(0, 80);
-  const season = ['kaledos', 'valentinas', 'mama'].includes(b.svente) ? b.svente : '';
+  const season = ['kaledos', 'metai', 'valentinas', 'mama'].includes(b.svente) ? b.svente : '';
   const store = loadGiftStore(), now = Date.now(), created = [];
   for (let i = 0; i < n; i++) {
     const code = generateGiftCode(store.codes);

@@ -568,11 +568,12 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-msg').addEventListener('input', () => { $('msg-count').textContent = $('f-msg').value.length; });
 
-  // Sezoninės temos — įsijungia automatiškai pagal datą (peržiūrai: ?sezonas=valentinas|mama|kaledos)
+  // Sezoninės temos — įsijungia automatiškai pagal datą (peržiūrai: ?sezonas=valentinas|mama|kaledos|metai)
   const SEASONS = {
     valentinas: { ask: 'Dovana Valentino dienai? 💞', tag: '💞 Valentino dienos dovana', kind: 'pora', label: 'Su Valentino diena 💞', msg: 'Su Valentino diena! 💞' },
     mama: { ask: 'Dovana Motinos dienai? 🌷', tag: '🌷 Dovana Motinos dienai', kind: 'asmenine', label: 'Su Motinos diena 🌷', msg: 'Su Motinos diena, mamyte! 🌷' },
-    kaledos: { ask: 'Kalėdinė dovana? 🎄', tag: '🎄 Kalėdinė dovana', kind: 'asmenine', label: 'Linksmų Kalėdų 🎄', msg: 'Linksmų Kalėdų! ✨' }
+    kaledos: { ask: 'Kalėdinė dovana? 🎄', tag: '🎄 Kalėdinė dovana', kind: 'asmenine', label: 'Linksmų Kalėdų 🎄', msg: 'Linksmų Kalėdų! ✨' },
+    metai: { ask: 'Dovana Naujiesiems metams? ✨', tag: '✨ Naujųjų metų dovana', kind: 'asmenine', label: 'Laimingų Naujųjų metų ✨', msg: 'Laimingų Naujųjų metų! ✨' }
   };
   function currentSeason(){
     const o = params.get('sezonas'); if (SEASONS[o]) return o;
@@ -581,6 +582,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
     if (m === 2 && day <= 14) return 'valentinas';
     if ((m === 11 && day >= 15) || (m === 12 && day <= 24)) return 'kaledos';
+    if (m === 12 && day >= 27) return 'metai';
     // Motinos diena Lietuvoje — pirmasis gegužės sekmadienis; tema nuo balandžio 20 d.
     const may1 = new Date(y, 4, 1), mday = 1 + ((7 - may1.getDay()) % 7);
     if ((m === 4 && day >= 20) || (m === 5 && day <= mday)) return 'mama';
@@ -779,7 +781,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('c-exp').textContent = 'Galioja iki ' + fmtDate(g.expiresAt);
     const pora = g.kind === 'pora';
     // Šventės užrašas — tik jei pirkėjas pats pažymėjo šventinę dovaną
-    const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄' };
+    const SL = { valentinas: 'Su Valentino diena 💞', mama: 'Su Motinos diena 🌷', kaledos: 'Linksmų Kalėdų 🎄', metai: 'Laimingų Naujųjų metų ✨' };
     $('c-season').textContent = SL[g.season] || '';
     $('c-what').innerHTML = (pora ? '<em>Porų suderinamumas</em><br>pagal jūsų delnus' : 'Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus') + (g.klausk ? '<span class="what-kl">+ ✋ 3 klausimai delnams</span>' : '');
     $('c-how').textContent = pora ? 'nufotografuokite savo delnus, mokėti nereikės.' : 'nufotografuok delnus, mokėti nereikės.';
