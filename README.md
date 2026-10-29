@@ -82,7 +82,7 @@ PORT = 3000
 - Tą pačią nuorodą atidarius vėl — rodomas tas pats rezultatas (naujo AI kvietimo nėra).
 - Užsakymai saugomi `SHARED_STORAGE_DIR/pora-orders.json` 90 dienų; nuotraukos nesaugomos.
 - Kainą galima pakeisti Railway kintamuoju `PORA_PRICE_CENTS` (pvz. `2299` = 22,99 €); atskiro Stripe produkto kurti nereikia.
-- Asmeninės analizės kaina — Railway kintamasis `PERSONAL_PRICE_CENTS` (numatyta `1499` = 14,99 €); Stripe Price objekto keisti nereikia.
+- Asmeninės analizės kaina — Railway kintamasis `PERSONAL_PRICE_CENTS` (numatyta `1699` = 16,99 €); Stripe Price objekto keisti nereikia.
 
 ## Klausk savo delnų
 

@@ -69,8 +69,8 @@ const STRIPE_PRICE_ID_REGULAR = process.env.STRIPE_PRICE_ID_REGULAR || 'price_1T
 // konstantą į STRIPE_PRICE_ID_PROMO.
 const ACTIVE_PRICE_ID = STRIPE_PRICE_ID_REGULAR;
 // Asmeninės analizės kaina (centais) — imama iš čia, ne iš Stripe Price objekto (kaip ir porų analizės).
-// Pakeisti galima Railway kintamuoju PERSONAL_PRICE_CENTS (pvz. 1499 = 14,99 €); Stripe nieko keisti nereikia.
-const PERSONAL_PRICE_CENTS = parseInt(process.env.PERSONAL_PRICE_CENTS || '1499', 10);
+// Pakeisti galima Railway kintamuoju PERSONAL_PRICE_CENTS (pvz. 1699 = 16,99 €); Stripe nieko keisti nereikia.
+const PERSONAL_PRICE_CENTS = parseInt(process.env.PERSONAL_PRICE_CENTS || '1699', 10);
 const personalPrice = () => ({ unit_amount: PERSONAL_PRICE_CENTS, currency: 'eur' });
 
 // Paleidimo diagnostika: įspėja, jei Stripe rakto rėžimas (test/live)
@@ -3582,14 +3582,16 @@ setInterval(cleanupGiftStore, 24 * 60 * 60 * 1000);
 // analizė; grįžus ta pačia nuoroda rodomas tas pats rezultatas).
 const PORA_ORDERS_FILE = path.join(SHARED_STORAGE_DIR, 'pora-orders.json');
 const PORA_PRICE_CENTS = parseInt(process.env.PORA_PRICE_CENTS || '2299', 10);
-// Dovanų kupone visada įskaičiuoti 3 „Klausk savo delnų“ klausimai — prie dovanos kainos pridedama
-const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '200', 10);
+// Dovanų kupone visada įskaičiuoti 3 „Klausk savo delnų“ klausimai — nemokamai (dovana kainuoja kaip analizė)
+const GIFT_KLAUSK_CENTS = parseInt(process.env.GIFT_KLAUSK_CENTS || '0', 10);
 // Porų dovanoje klausimai — nemokamas priedas (kaina lieka iki 20 €)
 const GIFT_KLAUSK_PORA_CENTS = parseInt(process.env.GIFT_KLAUSK_PORA_CENTS || '0', 10);
 // Porų analizės kaina rinkinyje su asmenine analize (mokėjimo ir rezultato ekrane)
 const PORA_BUNDLE_CENTS = parseInt(process.env.PORA_BUNDLE_CENTS || '1799', 10);
 // Porų rezultate: asmeninė analizė kiekvienam poros žmogui porų kaina (du vienkartiniai kodai)
-const PORA_DUO_CENTS = parseInt(process.env.PORA_DUO_CENTS || '1199', 10);
+// −PORA_DUO_PCT % nuo asmeninės analizės kainos (16,99 € → 13,59 €); fiksuotą kainą galima nustatyti PORA_DUO_CENTS
+const PORA_DUO_PCT = parseInt(process.env.PORA_DUO_PCT || '20', 10);
+const PORA_DUO_CENTS = process.env.PORA_DUO_CENTS ? parseInt(process.env.PORA_DUO_CENTS, 10) : Math.round(PERSONAL_PRICE_CENTS * (100 - PORA_DUO_PCT) / 100);
 // Porų priminimas: po kiek dienų siunčiamas kvietimas pakartotinei porų analizei
 const PORA_REMINDER_DAYS = parseInt(process.env.PORA_REMINDER_DAYS || '90', 10);
 const PORA_RESULT_KEYS = ['traukia', 'bendravimas', 'papildo', 'trintis', 'ateitis', 'stiprybe', 'patarimai'];
