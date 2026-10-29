@@ -7397,11 +7397,10 @@ function fitPayScreen(){
 (function seasonLine(){
   const SEASONS={
     kaledos:{ic:'🎄',btn:'Dovanoti',html:'Kalėdoms — <b>padovanok delnų analizę</b>',href:'/dovana?sezonas=kaledos&utm_source=app&utm_campaign=kaledos'},
-    // Švenčių dienomis — sveikinimas ir kelias gavusiems dovaną
-    kaledos_sv:{ic:'🎄',btn:'Įvesti kodą',html:'<b>Jaukių šv. Kalėdų!</b> Gavai dovaną?',href:'/kodas?utm_source=app&utm_campaign=kaledos'},
+    kaledos_sv:{ic:'🎄',html:'<b>Jaukių šv. Kalėdų!</b>',greet:true},
     nm:{ic:'✨',btn:'Dovanoti',html:'Naujiems metams — <b>padovanok delnų analizę</b>',href:'/dovana?sezonas=metai&utm_source=app&utm_campaign=metai'},
     metai:{ic:'✨',html:'Ką tau žada <b>nauji metai</b>? Pažiūrėk į savo delnus',greet:true},
-    metai_sv:{ic:'✨',btn:'Įvesti kodą',html:'<b>Laimingų Naujųjų metų!</b> Gavai dovaną?',href:'/kodas?utm_source=app&utm_campaign=metai'},
+    metai_sv:{ic:'✨',html:'<b>Laimingų Naujųjų metų!</b>',greet:true},
     valentinas:{ic:'💞',btn:'Pradėti',html:'Valentino dienai — <b>sužinokite, kaip derate</b>',href:'/pora?utm_source=app&utm_campaign=valentinas'},
     mama:{ic:'🌷',btn:'Dovanoti',html:'<b>Mamai, kuri visada galvoja apie kitus</b> — dovana tik apie ją',href:'/dovana?sezonas=mama&utm_source=app&utm_campaign=mama'},
     // Pačią šventės dieną — sveikinimas kartu su pasiūlymu
