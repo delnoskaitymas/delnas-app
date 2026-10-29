@@ -5176,7 +5176,7 @@ async function isGiftRefunded(gift) {
 
 app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
   try {
-    const { code: rawCode, name, email, orderNumber, bgSessionId } = req.body || {};
+    const { code: rawCode, name, email, orderNumber, bgSessionId, prevSessionId } = req.body || {};
     const code = normalizeGiftCode(rawCode);
     if (!code) return res.status(400).json({ paid: false, error: 'Neteisingas dovanos kodas' });
     if (name && !isValidName(name)) return res.status(400).json({ paid: false, error: 'Neteisingas vardo formatas' });
@@ -5203,10 +5203,16 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
       if (giftResumable(gift)) {
         if (!email || String(email).trim().toLowerCase() !== String(gift.redeemedEmail || '').trim().toLowerCase()) return res.status(409).json({ paid: false, status, resumable: true, error: 'Ši dovana jau pradėta naudoti kitu el. paštu. Įrašyk tą patį el. paštą.' });
         const token = getOrCreateTokenForPayment('gift:' + code, name || gift.redeemedName || '', gift.redeemedEmail);
-        // Jau pradėta ar atlikta analizė parodoma ta pati (be naujos analizės)
+        // Jau pradėta ar atlikta analizė parodoma ta pati tik tai pačiai naršyklei (ji žino tos analizės sesiją).
+        // Kitur — nauja analizė pagal ką tik nufotografuotus delnus: kodą ir el. paštą žinantis kitas žmogus
+        // svetimos analizės nepamatytų.
         const t = validTokens.get(token), prev = gift.redeemedBgSessionId, ce = prev ? analysisCache.get(prev) : null;
-        const sid = t && t.used && t.sessionId ? t.sessionId : (ce && ce.status !== 'error' ? prev : '');
-        if (!sid && bgSessionId) { const st = loadGiftStore(); if (st.codes[code]) { st.codes[code].redeemedBgSessionId = bgSessionId; saveGiftStore(st); } }
+        const own = typeof prevSessionId === 'string' && prevSessionId.length <= 200 && !!prevSessionId && (prevSessionId === prev || (t && prevSessionId === t.sessionId));
+        const sid = !own ? '' : t && t.used && t.sessionId ? t.sessionId : (ce && ce.status !== 'error' ? prev : '');
+        if (!sid) {
+          if (t && t.used) { t.used = false; t.sessionId = ''; updatePaymentTokenPersistently(token, { used: false, sessionId: '' }); }
+          if (bgSessionId) { const st = loadGiftStore(); if (st.codes[code]) { st.codes[code].redeemedBgSessionId = bgSessionId; saveGiftStore(st); } }
+        }
         console.log(`[gift] tęsiama dovana ${code} (sesija ${sid || 'nauja'})`);
         markPaidIp(req);
         return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: gift.redeemedEmail, gift: true, resumed: true, sessionId: sid });

@@ -2017,7 +2017,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
 
   if(finalAd){
     // Dovanos rezultatas parodytas — tęsimo žymė nebereikalinga
-    if(window._isGiftOrder){ try{ sessionStorage.removeItem('delnasGiftPending'); }catch(e){} }
+    if(window._isGiftOrder){ try{ sessionStorage.removeItem('delnasGiftPending'); sessionStorage.removeItem('delnasGiftPrevSid'); }catch(e){} }
     // Sklandus perėjimas — naudojame TIK go() vidinę fuOut/fu animaciją
     // (anksčiau papildomas app-wrap opacity blukimas persidengdavo su go() animacija
     // ir sukeldavo ilgą tamsų/juodą tarpinį būvį pereinant į rezultatus)
@@ -6903,7 +6903,7 @@ async function poraShareCard(){
   let code=null, pending=false;
   try{ code=sessionStorage.getItem('delnasGiftCode'); }catch(e){}
   // Kodas jau panaudotas šiame skirtuke, bet rezultatas dar nerodytas (pvz. puslapis perkrautas analizės metu)
-  if(!code){ try{ code=sessionStorage.getItem('delnasGiftPending'); pending=!!code; }catch(e){} }
+  if(!code){ try{ code=sessionStorage.getItem('delnasGiftPending'); pending=!!code; window._giftPrevSid=sessionStorage.getItem('delnasGiftPrevSid')||''; }catch(e){} }
   if(!code) return;
   window._giftCode=code;
   fetch('/gift/check?code='+encodeURIComponent(code)).then(r=>r.json()).then(d=>{
@@ -7009,7 +7009,7 @@ async function redeemGiftAndProceed(){
   if(ge) ge.style.display='none';
   try{
     const r=await fetch('/redeem-gift',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code:window._giftCode,name:window._userName||'',email:window._userEmail||'',orderNumber:window._orderNumber||'',bgSessionId:window.bgSessionId||''})});
+      body:JSON.stringify({code:window._giftCode,name:window._userName||'',email:window._userEmail||'',orderNumber:window._orderNumber||'',bgSessionId:window.bgSessionId||'',prevSessionId:window._giftPrevSid||''})});
     const d=await r.json();
     if(d&&!d.paid&&d.resumable&&re&&ge){
       // Dovana pradėta kitu el. paštu — leidžiama įrašyti tą patį (dovana neprarandama)
@@ -7027,11 +7027,12 @@ async function redeemGiftAndProceed(){
     // Dovanoje įskaičiuoti klausimai — rezultato ekrane „Klausk“ blokas bus jau apmokėtas
     window._giftRef='gift:'+window._giftCode; try{ sessionStorage.setItem('delnasGiftRef',window._giftRef); }catch(e){}
     // Kol rezultatas neparodytas, kodas lieka skirtuke — perkrovus puslapį dovaną galima tęsti
-    try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.setItem('delnasGiftPending',window._giftCode); }catch(e){}
+    // Kartu — šios analizės sesija: tik ši naršyklė, tęsdama, pamatys jau pradėtą analizę
+    try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.setItem('delnasGiftPending',window._giftCode); sessionStorage.setItem('delnasGiftPrevSid',window.bgSessionId||''); }catch(e){}
   }catch(e){
     // Kodas nebegalioja — grąžiname įprastą mokėjimą, kad žmogus nebūtų užstrigęs.
     window._giftFailed=true;
-    try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.removeItem('delnasGiftPending'); }catch(x){}
+    try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.removeItem('delnasGiftPending'); sessionStorage.removeItem('delnasGiftPrevSid'); }catch(x){}
     applyGiftMode();
     if(typeof startPayProgressBar==='function') startPayProgressBar();
     const pe=document.getElementById('stripe-card-errors');

@@ -341,6 +341,7 @@ body.form-view.tight #pay-btn{margin-top:8px;padding-top:11px;padding-bottom:11p
 body.form-view.tight #form-err{margin-top:6px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
 body.form-view.tight #v-form .trust{display:none}
+body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
 </style>
 <script>
 // Atėjus iš rezultato ekrano — adresas grįžti išsaugomas skirtuke (iki puslapis išvalo adreso parametrus; Stripe grąžina be jų)
@@ -981,13 +982,16 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const fits=()=>root.scrollHeight<=window.innerHeight+1;
     const best=()=>{ for(const l of L){ set(l); if(fits()) return l; } return null; };
     // Įprasta forma; jei ikona tada mažesnė nei 102px, bandoma suglaudinta (.tight) ir paliekamas variantas su didesne ikona
-    document.body.classList.remove('tight');
+    document.body.classList.remove('tight','tighter');
     const a=best(); let pick=a;
     if(!a||a[1]<102){
       document.body.classList.add('tight');
       const b=best();
-      if(b&&(!a||b[1]>a[1])) pick=b; else document.body.classList.remove('tight');
+      // Netelpa net suglaudinta — suglaudinta lieka (ji vis tiek žemesnė)
+      if(b&&(!a||b[1]>a[1])) pick=b; else if(a) document.body.classList.remove('tight');
     }
+    // Vis dar netelpa (pvz. šventė, −20 % ir siuntimas gavėjui kartu) — be delno ikonos
+    if(!pick){ document.body.classList.add('tighter'); pick=best(); }
     if(!pick) pick=L[L.length-1];
     set(pick);
     void root.offsetHeight; document.body.classList.remove('fitting');
