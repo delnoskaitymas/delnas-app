@@ -784,7 +784,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
         <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.4),transparent)"></div>
         <div style="display:flex;align-items:center;justify-content:center;min-height:34px">
           <!-- Kaina -->
-          <span id="price-promo" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">14,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
+          <span id="price-promo" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px rgba(212,168,67,.3)">16,99<span style="font-size:.55em;font-weight:400;vertical-align:super;margin-left:1px">€</span></span>
         </div>
       </div>
     </div>
@@ -6481,10 +6481,12 @@ async function renderDuoNext(){
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
+// Kainos — iš /pora/offers (nustatomos loadPoraDuo), kad tekstas sutaptų su mokama suma
 async function poraDuoShare(code,name,btn){
   track('pora_duo_send');
   const url=location.origin+'/?promo='+encodeURIComponent(code)+'&utm_source=dalinimasis&utm_campaign=antrajai-pusei', f=ltForms(name||'');
-  const text=(f.voc||name)+', tau — gyvenimo žemėlapis pagal delnus už 11,99 € vietoj 14,99 €. Nufotografuok delnus čia:';
+  const pr=window._poraDuoPrices||{}, eur=c=>(c/100).toFixed(2).replace('.',',')+' €';
+  const text=(f.voc||name)+', tau — gyvenimo žemėlapis pagal delnus'+(pr.price?' už '+eur(pr.price)+(pr.base>pr.price?' vietoj '+eur(pr.base):''):'')+'. Nufotografuok delnus čia:';
   try{ if(navigator.share){ await navigator.share({title:'Asmeninė delnų analizė',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(text+' '+url); if(btn){ const t=btn.textContent; btn.textContent='Nuoroda nukopijuota ✓'; setTimeout(()=>{ btn.textContent=t; },2000); } }catch(e){ prompt('Nukopijuokite nuorodą:',url); }
 }
@@ -6504,6 +6506,7 @@ async function loadPoraDuo(){
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
   poraOnceGift(d&&d.once);
   if(!d||!d.price||!d.a||!d.b) return;
+  window._poraDuoPrices={price:d.price,base:d.base};
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
     return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' gyvenimo žemėlapis paruoštas</div>'
