@@ -425,8 +425,11 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     if (!raw) { applyRef(); return; }
     try {
       const d = await (await fetch('/promo/check?code=' + encodeURIComponent(raw))).json();
+      // Nuolaida jau panaudota ar baigėsi — paaiškinama, kad kaina įprasta
+      if (d.product === 'pora' && !d.valid) { $('gift-note').innerHTML = '<b>' + (d.kind === 'repeat' && d.used ? 'Pakartotinė analizė su šia nuolaida jau atlikta' : 'Ši nuolaida jau ' + (d.used ? 'panaudota' : 'nebegalioja')) + '</b><span>Kaina įprasta.</span>'; $('gift-note').classList.remove('hidden'); document.body.classList.add('has-note'); }
       if (!d.valid || d.product !== 'pora') { applyRef(); return; }
       const price = d.price ? Math.min(d.price, d.poraPrice) : Math.round(d.poraPrice * (100 - d.pct) / 100);
+      window._poraFullCents = d.poraPrice;
       window._promoCode = d.code;
       // „Tęsti su −15 %“ iš laiško — tie patys vardai ir el. paštas kaip nebaigtame užsakyme
       if (d.prefill) { [['f-a', d.prefill.nameA], ['f-b', d.prefill.nameB], ['f-email', d.prefill.email]].forEach(([id, v]) => { if (v && !$(id).value.trim()) $(id).value = v; }); refreshBtn(); }
@@ -539,11 +542,13 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: window._refCode || storedRef(), remind: !window._noRemind }) });
       const d = await r.json();
+      // Nuolaida ką tik panaudota kitame lange ar nebegalioja — rodoma tikra kaina, mokama tik paspaudus dar kartą
+      if (d.promoGone) { window._promoCode = ''; window._poraPromoGone = true; $('gift-note').classList.add('hidden'); document.body.classList.remove('has-note'); }
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';
-      btn.disabled = false; btn.innerHTML = label;
+      btn.disabled = false; btn.innerHTML = window._poraPromoGone ? 'Užsakyti — <span id="price">' + eur(window._poraFullCents || 2299) + '</span>' : label;
     }
   });
 
