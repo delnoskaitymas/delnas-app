@@ -2745,6 +2745,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
 });
 
 
+const analyzeInFlight = new Map();
 app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, name, email, token, sessionId, orderNumber } = req.body;
@@ -2758,6 +2759,13 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
 
     const tokenEntry = validTokens.get(token);
     if (!tokenEntry) return res.status(403).json({ error: 'Mokėjimas nepatvirtintas.' });
+    // Kol šiuo raktu ruošiama viena analizė, kitos (kitos nuotraukos) tuo pačiu raktu neleidžiamos
+    const inFlight = analyzeInFlight.get(token);
+    if (inFlight && inFlight !== (sessionId || '')) return res.status(409).json({ error: 'Šiam užsakymui analizė jau ruošiama.' });
+    if (!tokenEntry.used && !inFlight) {
+      analyzeInFlight.set(token, sessionId || '');
+      res.on('close', () => { if (analyzeInFlight.get(token) === (sessionId || '')) analyzeInFlight.delete(token); });
+    }
     // Vienas apmokėjimas — viena analizė. Po sėkmingos analizės tuo pačiu raktu galima
     // tik vėl gauti TĄ PAČIĄ analizę (tas pats sessionId), o ne daryti naują.
     // (Nauja nuotrauka leidžiama, kol analizė dar nepavyko, pvz. nuotrauka atmesta.)
@@ -5160,7 +5168,7 @@ app.get('/gift/check', sensitiveLimiter, (req, res) => {
   if (!gift) return res.json({ valid: false, status: 'not_found' });
   const info = giftPublicInfo(gift);
   // Porų kuponas: nuotraukos jau pateiktos — tęsti nebegalima (rezultatas el. pašte ir „Mano analizėse“)
-  if (giftResumable(gift)) info.resumable = true;
+  if (giftResumable(gift, req.query.sid)) info.resumable = true;
   if (gift.kind === 'pora' && info.status === 'redeemed') { const o = gift.poraOrderId ? loadPoraOrders()[gift.poraOrderId] : null; if (!o || !PORA_GIFT_RESUMABLE.includes(o.status)) info.poraDone = true; else info.poraStatus = o.status; }
   res.json({ valid: info.status === 'active', ...info });
 });
@@ -5168,11 +5176,14 @@ app.get('/gift/check', sensitiveLimiter, (req, res) => {
 // Asmeninės analizės kuponas panaudotas, bet rezultato laiškas dar neišsiųstas (pvz. puslapis perkrautas
 // analizės metu) — tą pačią dovaną galima tęsti su tuo pačiu el. paštu GIFT_RESUME_MS nuo panaudojimo
 const GIFT_RESUME_MS = 6 * 60 * 60 * 1000;
-function giftResumable(gift) {
+// prevSid — tęsiančios naršyklės analizės sesija: jau atliktą analizę tęsti galima tik toje pačioje naršyklėje
+function giftResumable(gift, prevSid) {
   if (!gift || gift.kind === 'pora' || gift.status !== 'redeemed' || !gift.redeemedEmail) return false;
   if (Date.now() - (gift.redeemedAt || 0) > GIFT_RESUME_MS) return false;
   const pt = loadPaymentTokens()['gift:' + gift.code];
-  return !(pt && pt.pdfSent);
+  if (pt && pt.pdfSent) return false;
+  if (pt && pt.used) return typeof prevSid === 'string' && !!prevSid && (prevSid === pt.sessionId || prevSid === gift.redeemedBgSessionId);
+  return true;
 }
 
 // Grąžinamas kuponas (refund Stripe'e) nebeturi galioti. Jei Stripe
@@ -5222,19 +5233,18 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
         return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: email || gift.redeemedEmail || '', gift: true });
       }
       // Rezultatas dar neatkeliavo (pvz. puslapis perkrautas analizės metu) — kelias valandas galima tęsti su tuo pačiu el. paštu
-      if (giftResumable(gift)) {
+      if (giftResumable(gift, prevSessionId)) {
         if (!email || String(email).trim().toLowerCase() !== String(gift.redeemedEmail || '').trim().toLowerCase()) return res.status(409).json({ paid: false, status, resumable: true, error: 'Ši dovana jau pradėta naudoti kitu el. paštu. Įrašyk tą patį el. paštą.' });
         const token = getOrCreateTokenForPayment('gift:' + code, name || gift.redeemedName || '', gift.redeemedEmail);
-        // Jau pradėta ar atlikta analizė parodoma ta pati tik tai pačiai naršyklei (ji žino tos analizės sesiją).
-        // Kitur — nauja analizė pagal ką tik nufotografuotus delnus: kodą ir el. paštą žinantis kitas žmogus
-        // svetimos analizės nepamatytų.
+        // Jau pradėta ar atlikta analizė parodoma ta pati tik tai pačiai naršyklei (ji žino tos analizės sesiją) —
+        // kodą ir el. paštą žinantis kitas žmogus svetimos analizės nepamato. Kitur — tik jei analizė dar neatlikta.
         const t = validTokens.get(token), prev = gift.redeemedBgSessionId, ce = prev ? analysisCache.get(prev) : null;
         const own = typeof prevSessionId === 'string' && prevSessionId.length <= 200 && !!prevSessionId && (prevSessionId === prev || (t && prevSessionId === t.sessionId));
+        // Analizė jau atlikta, bet tęsiama kitoje naršyklėje — antros analizės tuo pačiu kuponu nedarome:
+        // rezultatas jau išsaugotas „Mano analizėse“ (gavėjo el. paštu)
+        if (!own && t && t.used) return res.status(409).json({ paid: false, status, error: 'Šios dovanos analizė jau atlikta — ją rasi „Mano analizėse“ (www.delnaskaitymas.lt/mano), įrašęs tą patį el. paštą.' });
         const sid = !own ? '' : t && t.used && t.sessionId ? t.sessionId : (ce && ce.status !== 'error' ? prev : '');
-        if (!sid) {
-          if (t && t.used) { t.used = false; t.sessionId = ''; updatePaymentTokenPersistently(token, { used: false, sessionId: '' }); }
-          if (bgSessionId) { const st = loadGiftStore(); if (st.codes[code]) { st.codes[code].redeemedBgSessionId = bgSessionId; saveGiftStore(st); } }
-        }
+        if (!sid && bgSessionId) { const st = loadGiftStore(); if (st.codes[code]) { st.codes[code].redeemedBgSessionId = bgSessionId; saveGiftStore(st); } }
         console.log(`[gift] tęsiama dovana ${code} (sesija ${sid || 'nauja'})`);
         markPaidIp(req);
         return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: gift.redeemedEmail, gift: true, resumed: true, sessionId: sid });
@@ -6011,6 +6021,11 @@ app.post('/mano/delete', sensitiveLimiter, (req, res) => {
     const orders = type === 'pora' ? loadPoraOrders() : loadKlauskOrders(), o = orders[key];
     if (!o || (o.email || '').toLowerCase() !== email) return res.status(404).json({ error: 'Įrašas nerastas' });
     delete orders[key];
+    // Žymė (be turinio), kad tuo pačiu mokėjimu ar kuponu analizė ar klausimai nebūtų gauti iš naujo
+    try {
+      if (type === 'pora') { if (o.status === 'done' || o.result) { const u = loadPoraUsed(); u[key] = Date.now(); writeFileSafe(PORA_USED_FILE, JSON.stringify(u)); } }
+      else if (o.paid) { const u = loadKlauskUsed(); if (o.paymentRef) u[o.paymentRef] = Date.now(); if (o.poraSid && o.gift) u['pora:' + o.poraSid] = Date.now(); writeFileSafe(KLAUSK_USED_FILE, JSON.stringify(u)); }
+    } catch (e) { console.error('[mano] žymės klaida:', e.message); }
     if (type === 'pora') {
       savePoraOrders(orders); try { deletePoraFirstPhotos(key); } catch (e) {}
       const rem = loadReminders(), left = rem.filter(r => !(r.kind === 'pora' && r.sessionId === key));
