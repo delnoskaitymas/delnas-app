@@ -235,6 +235,7 @@ body.sched-on .sched-hint{display:none}
 .dt-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.4}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
+.season-tag.gone{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.15);text-transform:none;letter-spacing:.02em;font-weight:600}
 .season-tag.pick{cursor:pointer;display:flex;align-items:center;gap:8px;background:rgba(212,168,67,.06);color:var(--gold2);border:1px dashed rgba(212,168,67,.7);text-transform:none;letter-spacing:.02em;font-size:13.5px;padding:5px 14px 5px 8px;-webkit-tap-highlight-color:transparent;user-select:none}
 .season-tag.pick .sbox{width:18px;height:18px;flex:0 0 18px;border:1.5px solid var(--gold2);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:1;background:rgba(0,0,0,.4)}
 .season-tag.pick.on{background:linear-gradient(125deg,#fff0c4,#e0a930);color:#140f02;border:1px solid transparent}
@@ -671,21 +672,28 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     if (d && typeof d.giftKlauskPora === 'number') klauskC.pora = d.giftKlauskPora;
     showPrices();
   }).catch(() => {});
-  function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = '💞 ' + prices.pora; $('price').innerHTML = prices[kind]; }
+  function showPrices(){ $('k-asm-p').innerHTML = prices.asmenine; $('k-pora-p').innerHTML = '💞 ' + prices.pora; if ($('price')) $('price').innerHTML = prices[kind]; }
   if (params.get('promo')) (async () => {
     try {
       const d = await (await fetch('/promo/check?code=' + encodeURIComponent(params.get('promo')))).json();
+      const tag = $('promo-tag');
+      // Pasiūlymas jau išnaudotas ar pasibaigęs — aiškiai parodoma, kad kaina įprasta
+      if (d.product === 'dovana' && !d.valid) { promoGoneTag(d.used ? 'used' : 'expired'); return; }
       if (!d.valid || d.product !== 'dovana') return;
       promo = d; showPrices();
-      const tag = $('promo-tag');
       // Ramus tekstas be tiksinčio laikmačio: „galioja iki rytojaus 14:30“
       const day = t => new Date(t).toLocaleDateString('lt-LT', { timeZone: 'Europe/Vilnius' });
       const hm = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
-      tag.textContent = '−' + d.pct + ' % dovanai · galioja iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm;
+      tag.textContent = '−' + d.pct + ' % dovanai · galioja iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm + (d.left ? ' · liko ' + d.left : '');
       tag.classList.remove('hidden');
     } catch (e) {}
   })();
 
+  function promoGoneTag(why){
+    const tag = $('promo-tag');
+    tag.textContent = why === 'used' ? '−20 % pasiūlymas jau išnaudotas — kaina įprasta' : '−20 % pasiūlymo laikas baigėsi — kaina įprasta';
+    tag.classList.remove('hidden'); tag.classList.add('gone');
+  }
   $('gift-form').addEventListener('submit', async e => {
     e.preventDefault();
     if (!validForm()) { showMissing(); return; }
@@ -696,6 +704,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
         body: JSON.stringify({ kind, season: seasonOn ? season : '', promo: promo ? promo.code : '', recipientEmail: $('f-sched').checked ? $('f-to-email').value.trim() : '', sendAt: $('f-sched').checked ? $('f-date').value : '', sendHour: $('f-sched').checked ? +$('f-h').value : 8, buyerEmail: $('f-email').value.trim(), fromName: $('f-from').value.trim(),
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
+      // Kol forma buvo atidaryta, −20 % išnaudotas — kaina atnaujinama, mokama tik dar kartą paspaudus
+      if (d.promoGone) { promo = null; showPrices(); promoGoneTag('used'); }
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       saveForm();
       location.href = d.url;
