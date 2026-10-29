@@ -292,7 +292,9 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
 (function(){ const K='delnasPoraBack';
   try{
     const p=new URLSearchParams(location.search), g=p.get('grizti'), c=p.get('utm_campaign');
-    if(g&&/^\/\?(kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
+    // Iš laiško (utm_source=email) — ne iš rezultato lango: mygtukas „Grįžti atgal“
+    if(p.get('utm_source')==='email') sessionStorage.removeItem(K);
+    else if(g&&/^\/\?(kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
     else if(c==='rezultatas'||c==='rinkinys') sessionStorage.setItem(K,JSON.stringify({b:'',at:Date.now()}));
   }catch(e){}
 })();
@@ -439,7 +441,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
       const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' });
       $('gift-note').innerHTML = d.kind === 'bundle'
-        ? '<b>💞 Jums — rinkinio kaina ' + eur(price) + '</b><span>Kaip asmeninės analizės pirkėjui (vietoj ' + eur(d.poraPrice) + ')</span>'
+        ? '<b>💞 Jums — ' + eur(price) + ' vietoj ' + eur(d.poraPrice) + '</b><span>Kaina po gyvenimo žemėlapio analizės · galioja iki ' + day + '</span>'
         : d.kind === 'repeat'
         ? '<b>✦ Pakartotinis porų suderinamumas −' + d.pct + ' %</b><span>Pažiūrėkite, kaip pasikeitė jūsų suderinamumas · galioja iki ' + day + '</span>'
         : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
@@ -510,7 +512,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
       $('gift-note').classList.toggle('hidden', !d.message && !d.fromName);
-      $('lead').textContent = d.status === 'redeemed' ? 'Jūs jau pradėjote naudoti šį kuponą. Įrašykite abu vardus ir tą patį el. paštą, kurį įvedėte pirmą kartą, tada nufotografuokite delnus.' : 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
+      $('lead').textContent = d.status === 'redeemed' ? (d.poraStatus === 'waiting_partner' ? 'Jūs jau pradėjote naudoti šį kuponą — laukiama antrojo žmogaus nuotraukų. Įrašykite abu vardus ir tą patį el. paštą, kad tęstumėte.' : d.poraStatus === 'pending' ? 'Jūsų porų analizė jau ruošiama. Įrašykite abu vardus ir tą patį el. paštą, kad ją pamatytumėte.' : 'Jūs jau pradėjote naudoti šį kuponą. Įrašykite abu vardus ir tą patį el. paštą, kurį įvedėte pirmą kartą, tada nufotografuokite delnus.') : 'Įrašykite abu vardus ir el. paštą, tada nufotografuokite delnus. Mokėti nereikia.';
       $('pay-btn').innerHTML = 'Pradėti';
       // „Kaip tai veikia“ — dovanos atveju mokėti nereikia
       $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
