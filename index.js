@@ -4641,6 +4641,25 @@ app.get('/klausk', (req, res) => {
   res.sendFile(path.join(__dirname, 'klausk.html'));
 });
 
+// „Klausk“ mokėjimas (Stripe Checkout) pagal paruoštą užsakymo įrašą (analizė, el. paštas, vardas)
+async function createKlauskCheckout(record) {
+  const email = record.email, name = record.name || '';
+  const base = appBaseUrl();
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card', 'revolut_pay'],
+    line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: record.kind === 'pora' ? 'DELNAS — Klauskite savo delnų: porai (3 klausimai)' : 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
+    locale: 'lt',
+    customer_email: email,
+    metadata: { type: 'klausk', kind: record.kind || 'asmenine', email, name: (name || '').trim().slice(0, 120) },
+    success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${base}/klausk?atsaukta=1`
+  });
+  const orders = loadKlauskOrders();
+  orders[session.id] = { ...record, qa: [], paid: false, createdAt: Date.now() };
+  saveKlauskOrders(orders);
+  return session;
+}
 app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
   try {
     const { kind, poraSid } = req.body || {};
@@ -4664,23 +4683,34 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       const pr = req.body && req.body.paymentRef;
       if (typeof pr === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(pr)) record.paymentRef = pr;
     }
-    const base = appBaseUrl();
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card', 'revolut_pay'],
-      line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: record.kind === 'pora' ? 'DELNAS — Klauskite savo delnų: porai (3 klausimai)' : 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
-      locale: 'lt',
-      customer_email: email,
-      metadata: { type: 'klausk', kind: record.kind || 'asmenine', email, name: (name || '').trim().slice(0, 120) },
-      success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/klausk?atsaukta=1`
-    });
-    const orders = loadKlauskOrders();
-    orders[session.id] = { ...record, qa: [], paid: false, createdAt: Date.now() };
-    saveKlauskOrders(orders);
-    res.json({ url: session.url });
+    const session = await createKlauskCheckout(record);
+    res.json({ url: session.url, id: session.id });
   } catch (err) {
     console.error('/klausk/create-checkout klaida:', err);
+    res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandykite dar kartą.' });
+  }
+});
+
+// Dar 3 klausimai: naujas mokėjimas su ta pačia analize (kai visi ankstesni klausimai užduoti)
+app.post('/klausk/more', sensitiveLimiter, async (req, res) => {
+  try {
+    const id = (req.body || {}).s;
+    if (!isValidKlauskId(id)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
+    const o = loadKlauskOrders()[id];
+    if (!o || !o.paid || (o.qa || []).length < KLAUSK_MAX_QUESTIONS || !isValidEmail(o.email)) return res.status(409).json({ error: 'Pirmiausia užduokite visus klausimus' });
+    const record = { kind: o.kind || 'asmenine', email: o.email, name: o.name || '', result: o.result };
+    if (o.kind === 'pora') {
+      const po = o.poraSid ? loadPoraOrders()[o.poraSid] : null;
+      Object.assign(record, { nameA: o.nameA, nameB: o.nameB, poraSid: o.poraSid, result: (po && po.result) || o.result });
+    } else {
+      for (const k of ['orderNumber', 'analysisSession']) if (o[k]) record[k] = o[k];
+      if (typeof o.paymentRef === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(o.paymentRef)) record.paymentRef = o.paymentRef;
+    }
+    if (!record.result) return res.status(400).json({ error: 'Analizė nerasta' });
+    const session = await createKlauskCheckout(record);
+    res.json({ url: session.url, id: session.id });
+  } catch (err) {
+    console.error('/klausk/more klaida:', err);
     res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandykite dar kartą.' });
   }
 });
@@ -4767,8 +4797,8 @@ function buildGiftRecipientReminderHtml(g) {
   const txt = from ? `${from} ${pora ? 'jums' : 'tau'} padovanojo ${what}.` : (pora ? 'Jums padovanotas porų suderinamumas pagal poros delnus.' : 'Tau padovanotas asmeninis Gyvenimo žemėlapis pagal delnus.');
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:6px">🎁</div><div style="font-size:19px;font-weight:700;color:#d4a843;margin-bottom:10px">Dovana dar laukia</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85)">${txt} ${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</p><a href="${giftRedeemLink(g)}" style="display:inline-block;margin-top:8px;background:#d4a843;color:#140f02;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atidaryti dovaną</a><div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(g.code)}</b><br>Galioja iki ${fmtLtDate(g.expiresAt)}</div><div style="margin-top:14px;font-family:Arial,sans-serif;font-size:11.5px;color:#888">Tai vienintelis priminimas apie šią dovaną.</div>${EMAIL_FOOTER_HTML}</div>`;
 }
-function buildKlauskDigestHtml({ pora, n, items, id, btn }) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : n >= KLAUSK_MAX_QUESTIONS ? (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`) : (pora ? `Jūsų klausimai ir atsakymai (${n})` : `Tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a></div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`;
+function buildKlauskDigestHtml({ pora, n, items, id, btn, more }) {
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:520px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : n >= KLAUSK_MAX_QUESTIONS ? (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`) : (pora ? `Jūsų klausimai ir atsakymai (${n})` : `Tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a>${more ? `<div style="margin-top:12px;font-family:Arial,sans-serif;font-size:12.5px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#daugiau" style="color:#d4a843">Užduoti dar 3 klausimus — ${(KLAUSK_PRICE_CENTS / 100).toFixed(2).replace('.', ',')}&nbsp;€</a></div>` : ''}</div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`;
 }
 function poraResultSubject(o) {
   return `${ltPhrase(o.nameA + ' ir ' + o.nameB, 'voc')}, jūsų poros suderinamumas paruoštas 💞`;
@@ -4850,7 +4880,7 @@ async function sendKlauskDigest(id) {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: cur.email,
       subject: klauskDigestSubject(cur.name, pora, n),
-      html: buildKlauskDigestHtml({ pora, n, items, id, btn })
+      html: buildKlauskDigestHtml({ pora, n, items, id, btn, more: left === 0 })
     });
     console.log(`[klausk] suvestinė (${n} atsak.) išsiųsta į ${cur.email}`);
   } catch (e) {
