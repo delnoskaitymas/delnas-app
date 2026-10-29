@@ -2416,6 +2416,18 @@ app.post('/klausk/claim', sensitiveLimiter, async (req, res) => {
 });
 
 // Asmeninė draugo nuoroda (sukuriama apmokėjusiam klientui, vieną kartą mokėjimui)
+// Kvietimo kodas (6 ženklai) apmokėjusiam ar dovaną gavusiam klientui; tas pats paymentRef — tas pats kodas
+function createRefCode({ email, name, paymentRef, result }) {
+  const st = loadRefs();
+  if (st.byPayment[paymentRef] && st.codes[st.byPayment[paymentRef]]) return st.byPayment[paymentRef];
+  let code;
+  for (let i = 0; i < 20; i++) { let c = ''; for (let j = 0; j < 6; j++) c += GIFT_CODE_ALPHABET[crypto.randomInt(GIFT_CODE_ALPHABET.length)]; if (!st.codes[c]) { code = c; break; } }
+  if (!code) return null;
+  st.codes[code] = { email, name: name || '', paymentRef, result: pickKlauskResult(result), uses: [], createdAt: Date.now() };
+  st.byPayment[paymentRef] = code;
+  saveRefs(st);
+  return code;
+}
 app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef, result } = req.body || {};
@@ -4999,7 +5011,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
     // Porų kuponas — porų analizės kaina; asmeninis — aktyvi asmeninės analizės kaina
     const activePrice = kind === 'pora' ? { currency: 'eur', unit_amount: PORA_PRICE_CENTS } : personalPrice();
     // −20 % pasiūlymas po analizės (24 val.)
-    const pr = getValidPromo(req.body && req.body.promo, 'dovana');
+    const pr = getValidPromo(req.body && req.body.promo, 'dovana', kind);
     const giftAmount = pr ? promoAmount(pr, activePrice.unit_amount) : activePrice.unit_amount;
     const giftKlauskCents = kind === 'pora' ? GIFT_KLAUSK_PORA_CENTS : GIFT_KLAUSK_CENTS;
     const base = appBaseUrl();
@@ -5050,7 +5062,7 @@ function finalizeGiftSession(session) {
   const { gift, isNew } = issueGiftForSession(session);
   if (isNew) {
     statInc('gift_paid'); statInc(gift && gift.kind === 'pora' ? 'gift_paid_pora' : 'gift_paid_asm');
-    if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id);
+    if (session.metadata.promo) markPromoUsed(session.metadata.promo, session.id, session.metadata.kind === 'pora' ? 'pora' : 'asmenine');
     if (gift.recipientEmail) setTimeout(processGiftSchedules, 2 * 60 * 1000 + 5000);
     // Pirkėjui — dovanų kortelė el. paštu
     if (gift.buyerEmail) {
@@ -5543,22 +5555,34 @@ function createPromo({ kind, product, pct, price, ttlMs, email, key, meta }) {
   return p;
 }
 // Galiojantis kodas konkrečiam produktui (asmenine | pora | dovana)
-function getValidPromo(code, product) {
+// giftKind — dovanos kodas (−20 % po analizės) galioja po vieną kartą kiekvienai dovanai: gyvenimo žemėlapiui ir porų suderinamumui
+const GIFT_KINDS = ['asmenine', 'pora'];
+function getValidPromo(code, product, giftKind) {
   code = normalizePromoCode(code);
   if (!code) return null;
   const p = loadPromos().codes[code];
   if (!p || p.product !== product || p.usedBy || Date.now() > p.expiresAt) return null;
+  if (product === 'dovana' && giftKind && p.usedKinds && p.usedKinds[giftKind]) return null;
   return p;
 }
-function markPromoUsed(code, ref) {
+function markPromoUsed(code, ref, giftKind) {
   code = normalizePromoCode(code);
   if (!code || !ref) return;
   const s = loadPromos(), p = s.codes[code];
-  if (p && !p.usedBy) { p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind); }
+  if (!p || p.usedBy) return;
+  if (p.product === 'dovana' && GIFT_KINDS.includes(giftKind)) {
+    p.usedKinds = p.usedKinds || {};
+    if (p.usedKinds[giftKind]) return;
+    p.usedKinds[giftKind] = ref;
+    // Panaudotas abiem dovanoms — kodas nebegalioja
+    if (GIFT_KINDS.every(k => p.usedKinds[k])) { p.usedBy = ref; p.usedAt = Date.now(); }
+    savePromos(s); statInc('promo_' + p.kind); return;
+  }
+  p.usedBy = ref; p.usedAt = Date.now(); savePromos(s); statInc('promo_' + p.kind);
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
 const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Tavo kaina' };
-function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida' } : null; }
+function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida', ...(p.usedKinds ? { usedKinds: Object.keys(p.usedKinds) } : {}) } : null; }
 // Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
 function duoForName(code) {
   try {
@@ -5612,7 +5636,16 @@ app.get('/promo/check', pollLimiter, (req, res) => {
   const valid = !p.usedBy && Date.now() <= p.expiresAt;
   // Porų kaina: kam skirtas kodas (vardas iš porų užsakymo) — kad ir per „Nusiųsti“ nuorodą pasisveikintume vardu
   const forName = p.kind === 'duo' ? duoForName(code) : '';
-  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}) });
+  // Grįžimas po nebaigto užsakymo — tie patys vardai ir el. paštas formoje (kodas siunčiamas tik užsakovo el. paštu)
+  let prefill = null;
+  if (p.kind === 'back' && valid) {
+    try {
+      const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('back:'));
+      const it = key && loadAbandoned().items.find(x => x.id === key.slice(5));
+      if (it) prefill = it.kind === 'pora' ? { nameA: it.nameA || '', nameB: it.nameB || '', email: it.email } : { name: it.name || '', email: it.email };
+    } catch (e) {}
+  }
+  res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}), ...(prefill ? { prefill } : {}) });
 });
 
 // Pasiūlymai rezultato ekrane apmokėjusiam klientui: −20 % dovana (24 val.) ir porų analizė rinkinio kaina
@@ -5954,7 +5987,9 @@ app.get('/mano/item', sensitiveLimiter, (req, res) => {
   if (!email) return res.status(403).json({ error: 'Nuoroda nebegalioja — paprašyk naujos.' });
   const it = loadSaved().items[String(req.query.id || '')];
   if (!it || it.email !== email) return res.status(404).json({ error: 'Analizė nerasta' });
-  const own = ownRefCodes(email);
+  let own = ownRefCodes(email);
+  // Dar nėra kvietimo kodo — sukuriamas šiai analizei (el. paštą patvirtina „Mano analizių“ nuoroda), kad draugai gautų −10 %, o kvietėjas — atlygį
+  if (!own.length && it.result) { const c = createRefCode({ email, name: it.name || '', paymentRef: 'mano:' + it.id, result: it.result }); if (c) own = [c]; }
   res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {

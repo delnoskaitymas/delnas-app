@@ -428,6 +428,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if (!d.valid || d.product !== 'pora') { applyRef(); return; }
       const price = d.price ? Math.min(d.price, d.poraPrice) : Math.round(d.poraPrice * (100 - d.pct) / 100);
       window._promoCode = d.code;
+      // „Tęsti su −15 %“ iš laiško — tie patys vardai ir el. paštas kaip nebaigtame užsakyme
+      if (d.prefill) { [['f-a', d.prefill.nameA], ['f-b', d.prefill.nameB], ['f-email', d.prefill.email]].forEach(([id, v]) => { if (v && !$(id).value.trim()) $(id).value = v; }); refreshBtn(); }
       // Rinkinio kaina iš asmeninio rezultato — vardas ir el. paštas įrašomi iš anksto (išsaugoti šiame įrenginyje paspaudus pasiūlymą)
       if (d.kind === 'bundle') try {
         const me = JSON.parse(localStorage.getItem('delnasMe') || 'null');
