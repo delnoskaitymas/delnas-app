@@ -6933,7 +6933,7 @@ async function poraShareCard(){
   if(!code){ try{ code=sessionStorage.getItem('delnasGiftPending'); pending=!!code; window._giftPrevSid=sessionStorage.getItem('delnasGiftPrevSid')||''; }catch(e){} }
   if(!code) return;
   window._giftCode=code;
-  fetch('/gift/check?code='+encodeURIComponent(code)).then(r=>r.json()).then(d=>{
+  fetch('/gift/check?code='+encodeURIComponent(code)+(window._giftPrevSid?'&sid='+encodeURIComponent(window._giftPrevSid):'')).then(r=>r.json()).then(d=>{
     // Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų)
     if(d.kind==='pora'){ try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.removeItem('delnasGiftPending'); }catch(e){} location.href='/pora?dovana='+encodeURIComponent(d.code||code); return; }
     if(pending&&!d.resumable){ try{ sessionStorage.removeItem('delnasGiftPending'); }catch(e){} window._giftCode=null; return; }
