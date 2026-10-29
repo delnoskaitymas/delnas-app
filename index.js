@@ -3366,7 +3366,7 @@ function buildGiftEmailHtml(gift) {
     <div style="font-size:30px;margin:26px 0 6px">🎁 ${to}</div>
     <div style="font-size:17px;color:rgba(255,255,255,.75)">${pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus'}</div>
     ${gift.klausk ? `<div style="font-size:14px;color:#f0d58a;margin-top:6px">+ ✋ 3 klausimai delnams</div>` : ''}
-    ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : ''}
+    ${gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a;word-break:break-word;overflow-wrap:anywhere">„${escapeHtml(gift.message)}“</div>` : ''}
     ${gift.fromName ? `<div style="margin-top:10px;font-size:14px;color:rgba(255,255,255,.6)">— nuo ${escapeHtml(ltPhrase(gift.fromName, 'gen'))}</div>` : ''}
     <div style="margin:28px auto 6px;display:inline-block;border:1px dashed rgba(212,168,67,.7);border-radius:10px;padding:12px 22px;font-family:'Courier New',monospace;font-size:24px;letter-spacing:.18em;color:#f0d58a">${escapeHtml(gift.code)}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.45)">Galioja iki ${fmtLtDate(gift.expiresAt)}</div>
@@ -3426,7 +3426,7 @@ function buildGiftRecipientEmailHtml(gift) {
     ${img ? '' : `<div style="font-size:19px;color:#fff;margin-top:8px">${from ? (pora ? '<em style="color:#d4a843">Porų suderinamumą</em> pagal poros delnus' : 'Asmeninį <em style="color:#d4a843">Gyvenimo žemėlapį</em> pagal delnus') : (pora ? '<em style="color:#d4a843">Porų suderinamumas</em> pagal poros delnus' : 'Asmeninis <em style="color:#d4a843">Gyvenimo žemėlapis</em> pagal delnus')}</div>`}
     ${gift.klausk && !img ? `<div style="font-size:15px;color:#f0d58a;margin-top:6px">+ ✋ 3 klausimai delnams</div>` : ''}
     ${img ? `<a href="${link}" style="display:block;margin:22px auto 0;max-width:420px"><img src="${img}" width="420" alt="${escapeHtml(gift.message ? '„' + gift.message + '“' : 'DELNAS dovanų kuponas')}" style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:12px"></a>`
-      : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a">„${escapeHtml(gift.message)}“</div>` : '')}
+      : (gift.message ? `<div style="margin:22px auto 0;max-width:420px;font-style:italic;font-size:16px;line-height:1.5;color:#f0d58a;word-break:break-word;overflow-wrap:anywhere">„${escapeHtml(gift.message)}“</div>` : '')}
     <div style="margin-top:28px"><a href="${link}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti dovaną</a></div>
     ${img ? '' : `<div style="margin-top:18px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(255,255,255,.6)">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}<br>${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.</div>`}
   </div>
