@@ -2853,6 +2853,12 @@ app.post('/analyze-palm', sensitiveLimiter, async (req, res) => {
     }
 
     if (!result) {
+      // Ta pati jau atlikta analizė (pvz. tęsiama dovana), kai laikinas įrašas jau išvalytas — imama iš „Mano analizių“
+      if (tokenEntry.used && sessionId && sessionId === tokenEntry.sessionId) {
+        try { const sv = loadSaved(), sa = sv.items[sv.bySession[sessionId]]; if (sa && sa.result) result = sa.result; } catch (e) {}
+      }
+    }
+    if (!result) {
       // Mokėjimas jau panaudotas (rezultatas buvo pateiktas) — naujos analizės tuo pačiu mokėjimu nepradedame
       if (tokenEntry.used) return res.status(403).json({ error: 'Skaitymas jau atliktas.' });
       if (!photos || photos.length === 0) {
@@ -3305,7 +3311,7 @@ function buildGiftOrderedEmailHtml(gift, cardLink) {
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:30px 22px;max-width:480px;margin:0 auto;text-align:center">
   <div style="font-size:26px;margin-bottom:6px">✓</div>
   <div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:12px">Dovana užsakyta</div>
-  <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead}${kl} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.).</p>
+  <p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 14px">${lead}${kl} išsiųsime adresu <b>${escapeHtml(gift.recipientEmail)}</b> ${/^\d{4}-\d{2}-\d{2}$/.test(gift.sendAt || '') ? fmtLtDate(Date.parse(gift.sendAt + 'T12:00:00Z')) : escapeHtml(gift.sendAt)} apie ${hour}:00 Lietuvos laiku (gali vėluoti iki 5 min.).</p>
   <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(245,238,216,.6);margin:0 0 18px">Dovanos kodas: <b style="color:#f0d58a;letter-spacing:.12em">${escapeHtml(gift.code)}</b><br>Galioja iki ${fmtLtDate(gift.expiresAt)}</p>
   ${giftReceiptHtml(gift)}
   <a href="${cardLink}" style="display:inline-block;border:1px solid #d4a843;color:#d4a843;text-decoration:none;padding:10px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">Atsisiųsti dovanų kuponą</a>
@@ -4365,11 +4371,14 @@ app.post('/pora/email-partner', sensitiveLimiter, async (req, res) => {
 
 // Porų dovanų kupono panaudojimas: /pora?dovana=KODAS → įvedami abu vardai ir
 // el. paštas → sukuriamas „apmokėtas“ porų užsakymas gp_… → /?pora=gp_…
+// Porų kuponu pradėtą analizę galima tęsti, kol ji nebaigta: dar nefotografuota, laukiama antrojo žmogaus, ruošiama ar nepavyko
+const PORA_GIFT_RESUMABLE = ['new', 'waiting_partner', 'pending', 'error'];
 function poraGiftResume(res, id, email) {
   const o = loadPoraOrders()[id];
+  const open = !!(o && PORA_GIFT_RESUMABLE.includes(o.status));
   // Tęsti galima tik įrašius tą patį el. paštą, kurį pora nurodė panaudodama kuponą
-  if (o && o.status === 'new' && isValidEmail(email) && String(o.email || '').trim().toLowerCase() === String(email).trim().toLowerCase()) return res.json({ ok: true, id });
-  return res.status(409).json({ error: o && o.status === 'new' ? 'El. paštas nesutampa su įrašytu panaudojant kuponą. Įrašykite tą patį el. paštą.' : 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
+  if (open && isValidEmail(email) && String(o.email || '').trim().toLowerCase() === String(email).trim().toLowerCase()) return res.json({ ok: true, id });
+  return res.status(409).json({ error: open ? 'El. paštas nesutampa su įrašytu panaudojant kuponą. Įrašykite tą patį el. paštą.' : 'Šis dovanos kodas jau panaudotas. Rezultatas išsiųstas el. paštu — jį rasite ir „Mano analizėse“.' });
 }
 app.post('/pora/redeem-gift', sensitiveLimiter, async (req, res) => {
   try {
@@ -5023,7 +5032,8 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         promo: pr ? pr.code : ''
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/dovana${kind === 'pora' ? '?tipas=pora' : ''}`
+      // Grįžus iš Stripe neapmokėjus — tas pats tipas, šventė ir −20 % pasiūlymas
+      cancel_url: `${base}/dovana` + (() => { const q = new URLSearchParams(); if (kind === 'pora') q.set('tipas', 'pora'); if (season) q.set('sezonas', season); if (pr) q.set('promo', pr.code); const t = q.toString(); return t ? '?' + t : ''; })()
     });
     res.json({ url: session.url });
   } catch (err) {
@@ -5128,9 +5138,20 @@ app.get('/gift/check', sensitiveLimiter, (req, res) => {
   if (!gift) return res.json({ valid: false, status: 'not_found' });
   const info = giftPublicInfo(gift);
   // Porų kuponas: nuotraukos jau pateiktos — tęsti nebegalima (rezultatas el. pašte ir „Mano analizėse“)
-  if (gift.kind === 'pora' && info.status === 'redeemed') { const o = gift.poraOrderId ? loadPoraOrders()[gift.poraOrderId] : null; if (!o || o.status !== 'new') info.poraDone = true; }
+  if (giftResumable(gift)) info.resumable = true;
+  if (gift.kind === 'pora' && info.status === 'redeemed') { const o = gift.poraOrderId ? loadPoraOrders()[gift.poraOrderId] : null; if (!o || !PORA_GIFT_RESUMABLE.includes(o.status)) info.poraDone = true; else info.poraStatus = o.status; }
   res.json({ valid: info.status === 'active', ...info });
 });
+
+// Asmeninės analizės kuponas panaudotas, bet rezultato laiškas dar neišsiųstas (pvz. puslapis perkrautas
+// analizės metu) — tą pačią dovaną galima tęsti su tuo pačiu el. paštu GIFT_RESUME_MS nuo panaudojimo
+const GIFT_RESUME_MS = 6 * 60 * 60 * 1000;
+function giftResumable(gift) {
+  if (!gift || gift.kind === 'pora' || gift.status !== 'redeemed' || !gift.redeemedEmail) return false;
+  if (Date.now() - (gift.redeemedAt || 0) > GIFT_RESUME_MS) return false;
+  const pt = loadPaymentTokens()['gift:' + gift.code];
+  return !(pt && pt.pdfSent);
+}
 
 // Grąžinamas kuponas (refund Stripe'e) nebeturi galioti. Jei Stripe
 // laikinai nepasiekiamas — leidžiame (kuponas buvo apmokėtas), bet užrašome.
@@ -5177,6 +5198,18 @@ app.post('/redeem-gift', sensitiveLimiter, async (req, res) => {
         const token = getOrCreateTokenForPayment('gift:' + code, name || gift.redeemedName || '', email || gift.redeemedEmail || '');
         markPaidIp(req);
         return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: email || gift.redeemedEmail || '', gift: true });
+      }
+      // Rezultatas dar neatkeliavo (pvz. puslapis perkrautas analizės metu) — kelias valandas galima tęsti su tuo pačiu el. paštu
+      if (giftResumable(gift)) {
+        if (!email || String(email).trim().toLowerCase() !== String(gift.redeemedEmail || '').trim().toLowerCase()) return res.status(409).json({ paid: false, status, resumable: true, error: 'Ši dovana jau pradėta naudoti kitu el. paštu. Įrašyk tą patį el. paštą.' });
+        const token = getOrCreateTokenForPayment('gift:' + code, name || gift.redeemedName || '', gift.redeemedEmail);
+        // Jau pradėta ar atlikta analizė parodoma ta pati (be naujos analizės)
+        const t = validTokens.get(token), prev = gift.redeemedBgSessionId, ce = prev ? analysisCache.get(prev) : null;
+        const sid = t && t.used && t.sessionId ? t.sessionId : (ce && ce.status !== 'error' ? prev : '');
+        if (!sid && bgSessionId) { const st = loadGiftStore(); if (st.codes[code]) { st.codes[code].redeemedBgSessionId = bgSessionId; saveGiftStore(st); } }
+        console.log(`[gift] tęsiama dovana ${code} (sesija ${sid || 'nauja'})`);
+        markPaidIp(req);
+        return res.json({ paid: true, token, name: name || gift.redeemedName || '', email: gift.redeemedEmail, gift: true, resumed: true, sessionId: sid });
       }
       return res.status(409).json({ paid: false, status, error: 'Šis dovanos kodas jau panaudotas' });
     }

@@ -347,7 +347,9 @@ body.form-view.tight #v-form .trust{display:none}
 (function(){ const K='delnasGiftBack';
   try{
     const p=new URLSearchParams(location.search), g=p.get('grizti'), c=p.get('utm_campaign');
-    if(g&&/^\/\?(pora|kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
+    // Iš laiško (utm_source=email) — ne iš rezultato lango: mygtukas „Grįžti atgal“
+    if(p.get('utm_source')==='email') sessionStorage.removeItem(K);
+    else if(g&&/^\/\?(pora|kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
     else if(c==='rezultatas'||c==='pora') sessionStorage.setItem(K,JSON.stringify({b:'',at:Date.now()}));
   }catch(e){}
 })();
@@ -694,12 +696,40 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
                                recipientName: $('f-to').value.trim(), message: $('f-msg').value.trim() }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
+      saveForm();
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';
       btn.disabled = false; btn.innerHTML = 'Apmokėti <span id="price">' + prices[kind] + '</span>';
     }
   });
+
+  // Užpildyta forma išsaugoma skirtuke prieš Stripe — grįžus neapmokėjus („atgal“ Stripe lange) laukai atkuriami
+  const FORM_KEY = 'delnasGiftForm';
+  const FORM_FIELDS = ['f-to','f-from','f-msg','f-to-email','f-email','f-y','f-m','f-d','f-h'];
+  function saveForm(){
+    try {
+      const v = { at: Date.now(), kind, seasonOn, sched: $('f-sched').checked, ok: $('f-ok').checked };
+      FORM_FIELDS.forEach(id => { v[id] = $(id).value; });
+      sessionStorage.setItem(FORM_KEY, JSON.stringify(v));
+    } catch (e) {}
+  }
+  function restoreForm(){
+    let v = null;
+    try { v = JSON.parse(sessionStorage.getItem(FORM_KEY) || 'null'); sessionStorage.removeItem(FORM_KEY); } catch (e) {}
+    if (!v || Date.now() - v.at > 3600e3) return;
+    if (v.kind !== kind) setKind(v.kind === 'pora' ? 'pora' : 'asmenine');
+    if (season && v.seasonOn !== seasonOn) { seasonOn = !!v.seasonOn; paintSeason(); }
+    ['f-to','f-from','f-msg','f-to-email','f-email'].forEach(id => { if (typeof v[id] === 'string') $(id).value = v[id]; });
+    $('msg-count').textContent = $('f-msg').value.length;
+    if (v.sched) {
+      $('f-sched').checked = true; $('f-sched').dispatchEvent(new Event('change'));
+      ['f-y','f-m','f-d','f-h'].forEach(id => { if (v[id] && [...$(id).options].some(o => o.value === v[id])) $(id).value = v[id]; if (id === 'f-m') fillDays(); });
+      syncDate();
+    }
+    $('f-ok').checked = !!v.ok;
+    refreshBtn();
+  }
 
   // ---------- 2. Kortelė ----------
   // Data kaip laiškuose: „2027 m. spalio 28 d.“
@@ -876,7 +906,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       try {
         const r = await fetch('/gift/confirm?session_id=' + encodeURIComponent(sessionId));
         const d = await r.json();
-        if (d.paid) { if (window.delnasSrcBuy) window.delnasSrcBuy('dovana', sessionId); history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); if (d.needCardImg) uploadCardImg(sessionId); return; }
+        if (d.paid) { try { sessionStorage.removeItem(FORM_KEY); } catch (e) {} if (window.delnasSrcBuy) window.delnasSrcBuy('dovana', sessionId); history.replaceState(null, '', '/dovana/kortele?kodas=' + encodeURIComponent(d.code)); renderCard(d); if (d.needCardImg) uploadCardImg(sessionId); return; }
         if (r.status === 400) break;
       } catch (e) {}
       $('wait-txt').textContent = 'Laukiame mokėjimo patvirtinimo…';
@@ -923,8 +953,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(code))).json();
       // Porų kuponas, panaudotas, bet delnai dar nenufotografuoti — porų puslapis leidžia tęsti (serveris grąžina tą patį užsakymą)
-      if (d.valid || (d.kind === 'pora' && d.status === 'redeemed' && !d.poraDone)) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
-      err.textContent = d.poraDone ? 'Šis kuponas jau panaudotas — rezultatą rasite el. pašte ir „Mano analizėse“.' : d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
+      if (d.valid || d.resumable || (d.kind === 'pora' && d.status === 'redeemed' && !d.poraDone)) { location.href = (d.kind === 'pora' ? '/pora?dovana=' : '/?dovana=') + encodeURIComponent(d.code); return; }
+      err.textContent = d.poraDone ? 'Šis kuponas jau panaudotas — rezultatą rasite el. pašte ir „Mano analizėse“.' : d.status === 'redeemed' ? 'Šis kodas jau panaudotas.' : d.status === 'expired' ? 'Šio kodo galiojimas baigėsi.' : d.status === 'void' ? 'Šis kodas nebegalioja.' : 'Kodas nerastas. Patikrink, ar teisingai įvedei.';
     } catch (ex) { err.textContent = 'Nepavyko patikrinti. Pabandyk dar kartą.'; }
     err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti';
   });
@@ -932,7 +962,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
   else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
-  else { show('v-form'); if (kind === 'pora') setKind('pora'); }
+  else { show('v-form'); if (kind === 'pora') setKind('pora'); restoreForm(); }
 })();
 </script>
 <script src="/src.js"></script>
