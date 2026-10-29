@@ -6933,6 +6933,8 @@ async function poraShareCard(){
       history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
     }
   }catch(e){}
+  // Porų analizė, klausimai, „Mano analizės“, apmokėtas užsakymas — ne dovanos ekranas: neatidarytos dovanos užrašas nerodomas (kodas lieka skirtuke)
+  try{ const q=new URLSearchParams(location.search); if(q.get('pora')||q.get('kl')||q.get('mano')||q.get('session_id')) return; }catch(e){}
   let code=null, pending=false;
   try{ code=sessionStorage.getItem('delnasGiftCode'); }catch(e){}
   // Kodas jau panaudotas šiame skirtuke, bet rezultatas dar nerodytas (pvz. puslapis perkrautas analizės metu)
