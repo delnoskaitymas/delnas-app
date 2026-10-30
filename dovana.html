@@ -686,7 +686,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       // Ramus tekstas be tiksinčio laikmačio: „galioja iki rytojaus 14:30“
       const day = t => new Date(t).toLocaleDateString('lt-LT', { timeZone: 'Europe/Vilnius' });
       const hm = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
-      tag.textContent = '−' + d.pct + ' % dovanai · galioja iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm + (d.left ? ' · liko ' + d.left : '');
+      tag.textContent = '−' + d.pct + ' % dovanai · iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm + (d.left ? ' · liko ' + d.left + (d.left === 1 ? ' dovana' : ' dovanos') : '');
       tag.classList.remove('hidden');
     } catch (e) {}
   })();
