@@ -1166,6 +1166,26 @@ function _escapeAllQuotesInside(str) {
   return str.replace(/\\"/g, '"').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '');
 }
 
+// delnai_greta su sugadintomis kabutėmis (pvz. „frazė" — uždaroma paprasta kabute) — reikšmės paimamos pagal žinomus
+// raktus: viskas tarp vieno rakto ir kito yra viena reikšmė
+function salvageDelnaiGreta(raw) {
+  const keys = [], re = /"(sirdis|protas|gyvenimas|kairys|desinys|isvada)"\s*:/g; let m;
+  while ((m = re.exec(raw))) keys.push({ k: m[1], s: m.index, e: m.index + m[0].length });
+  const val = i => {
+    let v = raw.slice(keys[i].e, i + 1 < keys.length ? keys[i + 1].s : raw.length).trim();
+    v = v.replace(/^\{\s*/, '').replace(/[\s,{}]+$/, '');
+    if (v.startsWith('"')) v = v.slice(1);
+    if (v.endsWith('"')) v = v.slice(0, -1);
+    return v.replace(/\\"/g, '"').replace(/\\n/g, ' ').trim();
+  };
+  const out = {}; let sec = null;
+  keys.forEach((x, i) => {
+    if (['sirdis', 'protas', 'gyvenimas'].includes(x.k)) { sec = x.k; out[sec] = {}; }
+    else if (x.k === 'isvada') { out.isvada = val(i); sec = null; }
+    else if (sec) out[sec][x.k] = val(i);
+  });
+  return out.sirdis || out.protas || out.gyvenimas ? out : null;
+}
 function repairJsonBySchema(text) {
   const positions = [];
   for (const [key] of ANALYSIS_JSON_SCHEMA) {
@@ -1208,6 +1228,7 @@ function repairJsonBySchema(text) {
       let val = null;
       for (const c of cands) { if (val) break; try { val = JSON.parse(c); } catch (e) {} }
       for (const c of cands) { if (val) break; try { val = JSON.parse(repairJsonString(c)); } catch (e) {} }
+      if (!val && cur.key === 'delnai_greta') val = salvageDelnaiGreta(raw);
       fixedValue = val && typeof val === 'object' && !Array.isArray(val) ? JSON.stringify(val) : 'null';
     } else {
       // String laukas — PIRMA ir PASKUTINĖ kabutė šiame segmente yra
@@ -1999,7 +2020,28 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
   { const need = ['prigimtines_stiprybes', 'gyvenimo_tikslas', 'santykiai', 'finansai', 'pokyciai', 'galimybes', 'klutys', 'stiprybes_sarasas', 'delnai_greta'], miss = need.filter(k => !result[k]);
     const dgr = result.delnai_greta, dgBad = dgr && !(['sirdis', 'protas', 'gyvenimas'].every(k => dgr[k] && dgr[k].kairys && dgr[k].desinys));
-    if (miss.length || dgBad) { const info = `trūksta: ${miss.join(', ') || '—'}${dgBad ? '; delnai_greta: ' + JSON.stringify(dgr).slice(0, 300) : ''}; stop=${step2Data.stop_reason}; žetonai=${step2Data.usage && step2Data.usage.output_tokens}`; console.error('[runPalmAnalysis] Neišsamus rezultatas — ' + info); aiLogAdd({ kind: 'Neišsamus rezultatas', err: info }); } }
+    if (miss.length || dgBad) { const info = `trūksta: ${miss.join(', ') || '—'}${dgBad ? '; delnai_greta: ' + JSON.stringify(dgr).slice(0, 300) : ''}${!dgr ? '; tekste: ' + (rawText.indexOf('delnai_greta') >= 0 ? rawText.slice(rawText.indexOf('delnai_greta'), rawText.indexOf('delnai_greta') + 300) : 'nėra') : ''}; stop=${step2Data.stop_reason}; žetonai=${step2Data.usage && step2Data.usage.output_tokens}`; console.error('[runPalmAnalysis] Neišsamus rezultatas — ' + info); aiLogAdd({ kind: 'Neišsamus rezultatas', err: info }); } }
+  // Delnų palyginimo lentelės (delnai_greta) modelis kartais nepateikia — tada ji paprašoma atskirai, su tomis pačiomis
+  // nuotraukomis ir tais pačiais lentelės nurodymais (trumpa užklausa)
+  if (!result.delnai_greta || typeof result.delnai_greta !== 'object') {
+    try {
+      const allText = step2Content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+      const i0 = allText.indexOf('- delnai_greta'), i1 = allText.indexOf('\n- ', i0 + 5);
+      const dgRules = i0 >= 0 ? allText.slice(i0, i1 > i0 ? i1 : undefined) : '';
+      const dgPrompt = `Pažvelk į šias dvi delno nuotraukas (kairysis ir dešinysis delnas).\n${bruozaiText}${dgRules}\n\nAtsakyk tik JSON: {"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}. Frazėse nenaudok kabučių.`;
+      const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: aiBody({ max_tokens: 1500, messages: [{ role: 'user', content: [...imageBlocks, { type: 'text', text: dgPrompt }] }] }, 'medium')
+      }, 90000);
+      const d = await r.json();
+      const t = aiJsonText(d), mm = t.match(/\{[\s\S]*\}/);
+      let dg = null;
+      if (mm) { try { const j = JSON.parse(mm[0]); dg = j.delnai_greta || j; } catch (e) { dg = salvageDelnaiGreta(mm[0]); } }
+      if (dg && typeof dg === 'object') { result.delnai_greta = dg; console.log('[runPalmAnalysis] delnai_greta gauta atskira užklausa'); }
+      else console.error('[runPalmAnalysis] delnai_greta atskira užklausa nepavyko:', t.slice(0, 300));
+    } catch (e) { console.error('[runPalmAnalysis] delnai_greta atskiros užklausos klaida:', e.message); }
+  }
   sanitizeExtraResult(result);
 
   // ═══════════════════════════════════════════════════════════════════
