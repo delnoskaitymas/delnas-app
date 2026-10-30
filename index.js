@@ -171,78 +171,57 @@ function isValidPhotosArray(photos) {
   return photos.every(p => p && isRealImageBase64(p.data) && (!p.type || allowedTypes.includes(p.type)));
 }
 // --- Dirbtinio intelekto modelis ---
-// claude-sonnet-4-5 nustoja veikti 2026-11-30, todėl nuo 2026-11-28 automatiškai naudojamas claude-sonnet-5-5.
-// Anksčiau pereiti (ar grįžti) galima Railway kintamuoju AI_MODEL (pvz. AI_MODEL=claude-sonnet-5-5).
-const AI_MODEL_OLD = 'claude-sonnet-4-5', AI_MODEL_NEW = 'claude-sonnet-5-5';
-const AI_SWITCH_AT = Date.parse('2026-11-28T00:00:00+02:00');
-function aiModel() { const m = String(process.env.AI_MODEL || '').trim(); return m || (Date.now() >= AI_SWITCH_AT ? AI_MODEL_NEW : AI_MODEL_OLD); }
-// Senieji modeliai priima temperature ir atsakymo pradžią (assistant „{“); naujieji — ne
-function aiOldApi(m) { return /^claude-(sonnet|opus|haiku)-4-5|^claude-3/.test(m); }
-// Užklausa parašyta senajam modeliui → pritaikoma pasirinktam: naujajam be temperature ir be atsakymo pradžios
-// (vietoj jos — nurodymas pradėti JSON objektu), be papildomo „mąstymo“ (kaip senasis), effort high
-const _aiOrig = new Map(); // užklausos tekstas → pradinė (senajam modeliui parašyta) užklausa — atsarginiam bandymui
+// Visos AI užklausos (nuotraukų patikra, analizės, klausimai, palyginimai) eina per claude-sonnet-5-5.
+// Kitą modelį galima nurodyti Railway kintamuoju AI_MODEL (to paties tipo — su naujomis API taisyklėmis).
+const AI_MODEL_DEFAULT = 'claude-sonnet-5-5';
+function aiModel() { return String(process.env.AI_MODEL || '').trim() || AI_MODEL_DEFAULT; }
+// Užklausos rašomos kaip anksčiau ({ model, max_tokens, temperature, messages }) — čia pritaikomos naujam modeliui:
+// be temperature, be atsakymo pradžios (assistant „{“ — vietoj jos nurodymas pradėti JSON objektu),
+// be papildomo „mąstymo“ (thinking between_tools), effort high
 function aiBody(o) {
-  const m = aiModel(), b = { ...o, model: m };
-  if (!aiOldApi(m)) {
-    delete b.temperature;
-    const msgs = [...b.messages], last = msgs[msgs.length - 1];
-    if (last && last.role === 'assistant') {
-      msgs.pop();
-      const u = msgs[msgs.length - 1], note = 'Atsakymą pradėk iškart simboliu { ir pateik tik JSON objektą — be jokio teksto prieš jį ar po jo.';
-      msgs[msgs.length - 1] = { ...u, content: typeof u.content === 'string' ? u.content + '\n\n' + note : [...u.content, { type: 'text', text: note }] };
-    }
-    b.messages = msgs;
-    b.thinking = { type: 'between_tools' };
-    b.output_config = { effort: 'high' };
+  const b = { ...o, model: aiModel() };
+  delete b.temperature;
+  const msgs = [...b.messages], last = msgs[msgs.length - 1];
+  if (last && last.role === 'assistant') {
+    msgs.pop();
+    const u = msgs[msgs.length - 1], note = 'Atsakymą pradėk iškart simboliu { ir pateik tik JSON objektą — be jokio teksto prieš jį ar po jo.';
+    msgs[msgs.length - 1] = { ...u, content: typeof u.content === 'string' ? u.content + '\n\n' + note : [...u.content, { type: 'text', text: note }] };
   }
-  const str = JSON.stringify(b);
-  if (!aiOldApi(m)) { _aiOrig.set(str, o); if (_aiOrig.size > 50) _aiOrig.delete(_aiOrig.keys().next().value); }
-  return str;
+  b.messages = msgs;
+  b.thinking = { type: 'between_tools' };
+  b.output_config = { effort: 'high' };
+  return JSON.stringify(b);
 }
-// Naujasis modelis atmetė užklausą (pvz. neleidžiamas nustatymas, modelis nepasiekiamas šiai paskyrai, riba) —
-// kol senasis dar veikia, ta pati užklausa automatiškai pakartojama su juo, kad klientas gautų analizę.
-// Tiksli priežastis — serverio žurnale ir vienas laiškas administratoriui per parą.
-const AI_OLD_RETIRES_AT = Date.parse('2026-11-30T00:00:00Z');
-const _aiFallbackNotified = { day: '' };
+// AI atmetė užklausą (klaida ar atsisakymas) — tiksli priežastis į serverio žurnalą ir vienas laiškas adminui per parą
+const _aiErrNotified = { day: '' };
 const _fetchOrig = global.fetch;
 global.fetch = async function (url, opts) {
   const res = await _fetchOrig.apply(this, arguments);
   try {
-    if (!String(url).startsWith('https://api.anthropic.com/') || res.status === 529 || res.status >= 500) return res;
-    const orig = opts && typeof opts.body === 'string' && _aiOrig.get(opts.body);
-    if (!orig || Date.now() >= AI_OLD_RETIRES_AT) return res;
+    if (!String(url).startsWith('https://api.anthropic.com/') || typeof res.clone !== 'function') return res;
+    const j = await res.clone().json().catch(() => null);
     let err = '';
-    try {
-      const j = await res.clone().json();
-      if (res.ok) {
-        if (!j || j.stop_reason !== 'refusal') return res; // įprastas atsakymas
-        err = 'refusal: ' + ((j.stop_details && (j.stop_details.category || j.stop_details.explanation)) || '');
-      } else err = (j && j.error) ? `${j.error.type}: ${j.error.message}` : '';
-    } catch (e) { if (res.ok) return res; }
-    console.error(`[AI] ${aiModel()} atmetė užklausą (${res.status}) ${err} — kartojama su ${AI_MODEL_OLD}`);
+    if (!res.ok) err = (j && j.error) ? `${j.error.type}: ${j.error.message}` : 'HTTP ' + res.status;
+    else if (j && j.stop_reason === 'refusal') err = 'refusal: ' + ((j.stop_details && (j.stop_details.category || j.stop_details.explanation)) || '');
+    if (!err) return res;
+    console.error(`[AI] ${aiModel()} — klaida (${res.status}): ${err}`);
     const today = ltDate(Date.now());
-    if (_aiFallbackNotified.day !== today) {
-      _aiFallbackNotified.day = today;
+    if (_aiErrNotified.day !== today && res.status !== 529 && res.status < 500) {
+      _aiErrNotified.day = today;
       mailer.sendMail({
         from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
         to: ADMIN_EMAIL,
-        subject: `[DELNAS] Naujas AI modelis (${aiModel()}) atmetė užklausą — naudojamas senasis`,
-        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas AI modelis atmetė užklausą</h2><p>Modelis: <b>${escapeHtml(aiModel())}</b>, atsakymo kodas: <b>${res.status}</b></p><p>Priežastis: <code>${escapeHtml(err || '(nėra)')}</code></p><p>Analizės kol kas daromos su ${AI_MODEL_OLD} (veikia iki 2026-11-30). Persiųsk šį laišką programuotojui.</p></div>`
+        subject: `[DELNAS] AI modelis (${aiModel()}) atmetė užklausą`,
+        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>AI modelis atmetė užklausą</h2><p>Modelis: <b>${escapeHtml(aiModel())}</b>, atsakymo kodas: <b>${res.status}</b></p><p>Priežastis: <code>${escapeHtml(err)}</code></p><p>Persiųsk šį laišką programuotojui.</p></div>`
       }).catch(e => console.error('[AI] laiško klaida:', e.message));
     }
-    const o2 = { ...opts, body: JSON.stringify({ ...orig, model: AI_MODEL_OLD }) };
-    return await _fetchOrig.call(this, url, o2);
-  } catch (e) { return res; }
+  } catch (e) {}
+  return res;
 };
-
-// Atsakymo tekstas (tik text blokai — naujasis modelis gali grąžinti ir thinking blokus)
+// Atsakymo tekstas (tik text blokai — modelis gali grąžinti ir thinking blokus)
 function aiText(d) { return ((d && d.content) || []).map(x => (x && (!x.type || x.type === 'text') && x.text) || '').join(''); }
-// JSON atsakymas: senasis modelis tęsia po „{“, naujasis pradeda pats — paimama nuo pirmo „{“
-function aiJsonText(d) {
-  const t = aiText(d);
-  if ((aiOldApi(aiModel()) || aiOldApi((d && d.model) || '')) && !t.trimStart().startsWith('{')) return '{' + t;
-  const i = t.indexOf('{'); return i > 0 ? t.slice(i) : t;
-}
+// JSON atsakymas — nuo pirmo „{“ (prieš jį modelis kartais parašo žodį ar du)
+function aiJsonText(d) { const t = aiText(d), i = t.indexOf('{'); return i > 0 ? t.slice(i) : t; }
 
 // Apsaugo nuo HTML/turinio įterpimo (injection), kai vartotojo įvestas vardas
 // ar el. paštas patenka į siunčiamų el. laiškų HTML šabloną.
@@ -1716,7 +1695,6 @@ async function runPalmAnalysis(photos, name, sessionId) {
 
   // Žingsnis 1: Vizualinė diagnostika
   const step1Body = aiBody({
-    model: 'claude-sonnet-4-5',
     max_tokens: 1200,
     temperature: 0.2,
     messages: [{
@@ -1941,7 +1919,6 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
           'anthropic-version': '2023-06-01'
         },
         body: aiBody({
-          model: 'claude-sonnet-4-5',
           max_tokens: 12000,
           temperature: 0.2,
           messages: [
@@ -2122,7 +2099,6 @@ Be precise and objective — do not round everything to convenient default numbe
         'anthropic-version': '2023-06-01'
       },
       body: aiBody({
-        model: 'claude-sonnet-4-5',
         max_tokens: 150,
         temperature: 0,
         messages: [{
@@ -3958,7 +3934,7 @@ ${list}`;
     const resp = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] })
+      body: aiBody({ max_tokens: 8000, temperature: 0, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] })
     }, 120000);
     const data = await resp.json();
     if (!data || data.error || !data.content || data.stop_reason === 'max_tokens') return r;
@@ -4050,7 +4026,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
       }, 220000);
       data = await r.json();
     } catch (e) {
@@ -4260,7 +4236,7 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
       }, 60000);
       const d = await r.json();
       const txt = aiText(d);
@@ -4738,7 +4714,7 @@ async function klauskCallAI(prompt) {
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
       }, 90000);
       data = await r.json();
     } catch (e) { data = null; console.log(`[klausk] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`); }
@@ -5591,6 +5567,43 @@ ${created && created.length ? `<div class="new"><div style="margin-bottom:6px">S
 ${list.length ? `<table><tr><th>Kodas</th><th>Tipas, pastaba</th><th>Sukurtas, būsena</th></tr>${list.map(row).join('')}</table>` : '<p style="color:#888">Dar nėra.</p>'}
 <p style="margin-top:20px;font-size:13px"><a href="/admin/stats?key=${k}">📊 Statistika</a></p></body></html>`;
 }
+// AI modelio patikra (admin): kelios mažos užklausos skirtingais nustatymais — parodo tikslų modelio atsakymą ar klaidą
+function testPng(n) { // n×n auksinės spalvos PNG
+  const zlib = require('zlib'), crc = b => { let c, t = []; for (let i = 0; i < 256; i++) { c = i; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[i] = c >>> 0; } let x = 0xFFFFFFFF; for (const v of b) x = t[(x ^ v) & 0xFF] ^ (x >>> 8); return (x ^ 0xFFFFFFFF) >>> 0; };
+  const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(n, 0); ihdr.writeUInt32BE(n, 4); ihdr[8] = 8; ihdr[9] = 2;
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(n * 3).fill(Buffer.from([212, 168, 67]))]);
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.concat(Array(n).fill(row)))), chunk('IEND', Buffer.alloc(0))]).toString('base64');
+}
+app.get('/admin/ai-test', sensitiveLimiter, async (req, res) => {
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
+  res.setHeader('Cache-Control', 'no-store');
+  const m = aiModel(), msg = [{ role: 'user', content: 'Atsakyk vienu žodžiu lietuviškai: labas' }];
+  const img = [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/png', data: testPng(64) } }, { type: 'text', text: 'Kokios spalvos šis paveikslėlis? Atsakyk vienu žodžiu.' }] }];
+  const tests = [
+    ['1. Paprasta užklausa', JSON.stringify({ model: m, max_tokens: 50, messages: msg })],
+    ['2. + thinking between_tools', JSON.stringify({ model: m, max_tokens: 50, thinking: { type: 'between_tools' }, messages: msg })],
+    ['3. + output_config effort high', JSON.stringify({ model: m, max_tokens: 50, output_config: { effort: 'high' }, messages: msg })],
+    ['4. Kaip programoje (tekstas)', aiBody({ max_tokens: 50, messages: msg })],
+    ['5. Kaip programoje (nuotrauka)', aiBody({ max_tokens: 50, messages: img })],
+    ['6. Kaip programoje (JSON atsakymas)', aiBody({ max_tokens: 200, messages: [{ role: 'user', content: 'Grąžink JSON objektą su lauku "pasisveikinimas" (lietuviškai).' }, { role: 'assistant', content: '{' }] })]
+  ];
+  const rows = [];
+  for (const [name, body] of tests) {
+    const t0 = Date.now();
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }, body });
+      const d = await r.json().catch(() => ({}));
+      const out = d.error ? `${d.error.type}: ${d.error.message}` : (d.stop_reason === 'refusal' ? 'refusal: ' + JSON.stringify(d.stop_details || {}) : aiText(d).slice(0, 300));
+      rows.push([name, r.status, d.stop_reason || '', out, Date.now() - t0, (d.content || []).map(x => x.type).join(',')]);
+    } catch (e) { rows.push([name, 'tinklo klaida', '', e.message, Date.now() - t0, '']); }
+  }
+  const ok = rows.every(r => r[1] === 200 && !/refusal/.test(r[3]));
+  res.type('html').send(`<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>AI patikra — DELNAS</title>
+<style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}td:nth-child(4){overflow-wrap:anywhere}.ok{color:#1a7f37}.bad{color:#c62828}</style></head><body>
+<h1 style="font-size:20px">AI modelio patikra</h1><p>Modelis: <b>${escapeHtml(m)}</b> · ${ok ? '<b class="ok">✓ Visos užklausos pavyko</b>' : '<b class="bad">✗ Kai kurios užklausos nepavyko — nufotografuok šį puslapį ir atsiųsk programuotojui</b>'}</p>
+<table><tr><th>Bandymas</th><th>Kodas</th><th>Pabaiga</th><th>Atsakymas / klaida</th><th>ms</th><th>Blokai</th></tr>${rows.map(r => `<tr><td>${escapeHtml(r[0])}</td><td class="${r[1] === 200 ? 'ok' : 'bad'}">${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td><td>${r[4]}</td><td>${escapeHtml(r[5])}</td></tr>`).join('')}</table></body></html>`);
+});
 app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   res.setHeader('Cache-Control', 'no-store');
@@ -6084,7 +6097,7 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
       }, 60000);
       const d = await r.json();
       const txt = aiText(d);
