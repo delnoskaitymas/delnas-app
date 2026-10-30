@@ -177,9 +177,9 @@ const AI_MODEL_DEFAULT = 'claude-sonnet-5-5';
 function aiModel() { return String(process.env.AI_MODEL || '').trim() || AI_MODEL_DEFAULT; }
 // Užklausos rašomos kaip anksčiau ({ model, max_tokens, temperature, messages }) — čia pritaikomos naujam modeliui:
 // be temperature, be atsakymo pradžios (assistant „{“ — vietoj jos nurodymas pradėti JSON objektu),
-// adaptyvus mąstymas žemu lygiu (effort low — paprastus atsakymus modelis duoda iškart, o ilgose analizėse
-// gali tyliai pasitikrinti tekstą, kaip prašoma nurodymuose); mąstymas įskaičiuojamas į max_tokens, todėl jis didinamas
-function aiBody(o) {
+// adaptyvus mąstymas (effort: numatytas low — paprasti atsakymai iškart; pagrindinėms analizėms — medium, kad ilgi
+// nurodymai, visi laukai ir galutinis teksto patikrinimas būtų įvykdyti tiksliai); mąstymas įskaičiuojamas į max_tokens
+function aiBody(o, effort) {
   const b = { ...o, model: aiModel() };
   delete b.temperature;
   const msgs = [...b.messages], last = msgs[msgs.length - 1];
@@ -190,7 +190,7 @@ function aiBody(o) {
   }
   b.messages = msgs;
   b.max_tokens = Math.min(32000, (o.max_tokens || 1000) + 8000);
-  b.output_config = { effort: 'low' };
+  b.output_config = { effort: effort || 'low' };
   return JSON.stringify(b);
 }
 // AI atmetė užklausą (klaida ar atsisakymas) — tiksli priežastis į serverio žurnalą ir vienas laiškas adminui per parą
@@ -1932,7 +1932,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
             { role: 'user', content: step2Content },
             { role: 'assistant', content: '{' }
           ]
-        })
+        }, 'medium')
       }, 240000);
       step2Data = await r.json();
     } catch (networkErr) {
@@ -1997,6 +1997,9 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
     throw parseErr;
   }
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
+  { const need = ['prigimtines_stiprybes', 'gyvenimo_tikslas', 'santykiai', 'finansai', 'pokyciai', 'galimybes', 'klutys', 'stiprybes_sarasas', 'delnai_greta'], miss = need.filter(k => !result[k]);
+    const dgr = result.delnai_greta, dgBad = dgr && !(['sirdis', 'protas', 'gyvenimas'].every(k => dgr[k] && dgr[k].kairys && dgr[k].desinys));
+    if (miss.length || dgBad) { const info = `trūksta: ${miss.join(', ') || '—'}${dgBad ? '; delnai_greta: ' + JSON.stringify(dgr).slice(0, 300) : ''}; stop=${step2Data.stop_reason}; žetonai=${step2Data.usage && step2Data.usage.output_tokens}`; console.error('[runPalmAnalysis] Neišsamus rezultatas — ' + info); aiLogAdd({ kind: 'Neišsamus rezultatas', err: info }); } }
   sanitizeExtraResult(result);
 
   // ═══════════════════════════════════════════════════════════════════
@@ -4038,8 +4041,8 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
-      }, 220000);
+        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] }, 'medium')
+      }, 280000);
       data = await r.json();
     } catch (e) {
       console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
