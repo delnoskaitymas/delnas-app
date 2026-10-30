@@ -329,8 +329,8 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
     </form>
     <button type="button" class="how-link" id="how-open">✦ Ką gausite ir kaip tai veikia?</button>
     <a class="how-link" id="gift-link" href="/dovana?tipas=pora" style="width:fit-content;margin-top:2px">🎁 Padovanoti porai</a>
-    <a class="how-link back-res hidden" href="/" style="width:fit-content;margin-top:2px">Grįžti į rezultatą</a>
-    <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:6px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
+    <a class="how-link back-res hidden" href="/" style="width:fit-content;margin-top:2px">Grįžti į gyvenimo žemėlapį</a>
+    <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:6px">Gyvenimo žemėlapis liko ankstesniame lange — šį langą gali uždaryti.</div>
     <div class="pora-testi" id="pora-testi" style="display:none"></div>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
@@ -628,7 +628,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   // Ne iš rezultato — „Grįžti atgal“ ten, iš kur atėjo (ir į laišką ar kitą svetainę); naujame lange be istorijos — langas uždaromas
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
-    btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
+    btn.textContent=d?'Grįžti į gyvenimo žemėlapį':'Grįžti atgal';
     btn.addEventListener('click',e=>{
       e.preventDefault();
       if(!d){ if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ btn.textContent='Šį langą gali uždaryti'; btn.style.pointerEvents='none'; },300); return; }
