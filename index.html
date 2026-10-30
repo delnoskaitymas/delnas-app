@@ -3074,6 +3074,10 @@ function animateLoading(){
   requestWakeLock();
   const HARD_CAP=170;
   let elapsed=0;let pct=0;let finished=false;
+  // Mažiausia ekrano trukmė (s): jei rezultatas paruoštas anksčiau, juosta
+  // toliau tolygiai kyla iki 100 % per šį laiką, tekstai keičiasi kaip įprasta
+  const MIN_SCREEN=90;let doneAt=null;let doneFromPct=0;
+  function minScreenWait(){return window.bgAnalysisDone&&!window.bgAnalysisError&&elapsed<MIN_SCREEN;}
   let phaseShown=1;let phase2StartElapsed=null;let phase3Shown=false;
   window._finishPauseMs=1200;
 
@@ -3362,6 +3366,10 @@ function animateLoading(){
       else pct=94+Math.min((e2-130)/40,1)*2;
     }
     pct=Math.min(pct,96);
+    if(doneAt===null&&minScreenWait()){doneAt=elapsed;doneFromPct=window._currentProgress||pct;}
+    if(doneAt!==null){
+      pct=Math.max(pct,doneFromPct+(99-doneFromPct)*Math.min(1,(elapsed-doneAt)/Math.max(1,MIN_SCREEN-doneAt)));
+    }
     const pctRound=Math.round(pct);
     if(pbar) pbar.style.width=pct+'%';if(ppct) ppct.textContent=pctRound+'%';window._currentProgress=pctRound;
     // Nuo 85% rodome UŽBAIGIAMOJO tono frazes (phase3Texts) vietoj "dar
@@ -3378,6 +3386,7 @@ function animateLoading(){
     // (likusi analizė bus užbaigta jau po apmokėjimo, kaip numatyta
     // fetchResultsAndNavigate() pakartotinio bandymo logikoje).
     if(elapsed>=HARD_CAP) finishNow(true);
+    else if(doneAt!==null&&!minScreenWait()) finishNow();
   },250);
   window._loadTickInterval=t;
 
@@ -3386,7 +3395,7 @@ function animateLoading(){
   // šaltinis, nuo kurio priklauso, kada šis ekranas realiai užsibaigia.
   window._loadStatusInterval=setInterval(()=>{
     if(finished) return;
-    if(window.bgAnalysisDone) finishNow();
+    if(window.bgAnalysisDone&&!minScreenWait()) finishNow();
   },1000);
 
   // Patikriname IŠ KARTO, be jokio delsimo — jei analizė jau buvo baigta
@@ -3394,7 +3403,7 @@ function animateLoading(){
   // el.pašto formą, ir foninė analizė per tą laiką jau spėjo baigtis),
   // ekranas neturi dirbtinai "vaidinti", kad dar dirbama — iš karto rodome
   // realią, jau pasiektą būseną.
-  if(window.bgAnalysisDone) finishNow();
+  if(window.bgAnalysisDone&&!minScreenWait()) finishNow();
 }
 
 
