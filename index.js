@@ -180,6 +180,7 @@ function aiModel() { const m = String(process.env.AI_MODEL || '').trim(); return
 function aiOldApi(m) { return /^claude-(sonnet|opus|haiku)-4-5|^claude-3/.test(m); }
 // Užklausa parašyta senajam modeliui → pritaikoma pasirinktam: naujajam be temperature ir be atsakymo pradžios
 // (vietoj jos — nurodymas pradėti JSON objektu), be papildomo „mąstymo“ (kaip senasis), effort high
+const _aiOrig = new Map(); // užklausos tekstas → pradinė (senajam modeliui parašyta) užklausa — atsarginiam bandymui
 function aiBody(o) {
   const m = aiModel(), b = { ...o, model: m };
   if (!aiOldApi(m)) {
@@ -194,14 +195,52 @@ function aiBody(o) {
     b.thinking = { type: 'between_tools' };
     b.output_config = { effort: 'high' };
   }
-  return JSON.stringify(b);
+  const str = JSON.stringify(b);
+  if (!aiOldApi(m)) { _aiOrig.set(str, o); if (_aiOrig.size > 50) _aiOrig.delete(_aiOrig.keys().next().value); }
+  return str;
 }
+// Naujasis modelis atmetė užklausą (pvz. neleidžiamas nustatymas, modelis nepasiekiamas šiai paskyrai, riba) —
+// kol senasis dar veikia, ta pati užklausa automatiškai pakartojama su juo, kad klientas gautų analizę.
+// Tiksli priežastis — serverio žurnale ir vienas laiškas administratoriui per parą.
+const AI_OLD_RETIRES_AT = Date.parse('2026-11-30T00:00:00Z');
+const _aiFallbackNotified = { day: '' };
+const _fetchOrig = global.fetch;
+global.fetch = async function (url, opts) {
+  const res = await _fetchOrig.apply(this, arguments);
+  try {
+    if (!String(url).startsWith('https://api.anthropic.com/') || res.status === 529 || res.status >= 500) return res;
+    const orig = opts && typeof opts.body === 'string' && _aiOrig.get(opts.body);
+    if (!orig || Date.now() >= AI_OLD_RETIRES_AT) return res;
+    let err = '';
+    try {
+      const j = await res.clone().json();
+      if (res.ok) {
+        if (!j || j.stop_reason !== 'refusal') return res; // įprastas atsakymas
+        err = 'refusal: ' + ((j.stop_details && (j.stop_details.category || j.stop_details.explanation)) || '');
+      } else err = (j && j.error) ? `${j.error.type}: ${j.error.message}` : '';
+    } catch (e) { if (res.ok) return res; }
+    console.error(`[AI] ${aiModel()} atmetė užklausą (${res.status}) ${err} — kartojama su ${AI_MODEL_OLD}`);
+    const today = ltDate(Date.now());
+    if (_aiFallbackNotified.day !== today) {
+      _aiFallbackNotified.day = today;
+      mailer.sendMail({
+        from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+        to: ADMIN_EMAIL,
+        subject: `[DELNAS] Naujas AI modelis (${aiModel()}) atmetė užklausą — naudojamas senasis`,
+        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas AI modelis atmetė užklausą</h2><p>Modelis: <b>${escapeHtml(aiModel())}</b>, atsakymo kodas: <b>${res.status}</b></p><p>Priežastis: <code>${escapeHtml(err || '(nėra)')}</code></p><p>Analizės kol kas daromos su ${AI_MODEL_OLD} (veikia iki 2026-11-30). Persiųsk šį laišką programuotojui.</p></div>`
+      }).catch(e => console.error('[AI] laiško klaida:', e.message));
+    }
+    const o2 = { ...opts, body: JSON.stringify({ ...orig, model: AI_MODEL_OLD }) };
+    return await _fetchOrig.call(this, url, o2);
+  } catch (e) { return res; }
+};
+
 // Atsakymo tekstas (tik text blokai — naujasis modelis gali grąžinti ir thinking blokus)
 function aiText(d) { return ((d && d.content) || []).map(x => (x && (!x.type || x.type === 'text') && x.text) || '').join(''); }
 // JSON atsakymas: senasis modelis tęsia po „{“, naujasis pradeda pats — paimama nuo pirmo „{“
 function aiJsonText(d) {
   const t = aiText(d);
-  if (aiOldApi(aiModel()) && !t.trimStart().startsWith('{')) return '{' + t;
+  if ((aiOldApi(aiModel()) || aiOldApi((d && d.model) || '')) && !t.trimStart().startsWith('{')) return '{' + t;
   const i = t.indexOf('{'); return i > 0 ? t.slice(i) : t;
 }
 
