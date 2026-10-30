@@ -2,7 +2,12 @@
 <html lang="lt">
 <head>
 <script>try{ if(/[?&]pora=/.test(location.search)) document.documentElement.classList.add('pora-boot'); }catch(e){}</script>
-<script>/* Grįžus iš klausimų puslapio — nerodyti pradžios ekrano, kol neatšokta prie vietos po klausimų bloku */try{if(location.hash==="#klausk"&&/[?&](kl|pora)=/.test(location.search)){document.documentElement.classList.add("kl-boot");setTimeout(function(){document.documentElement.classList.remove("kl-boot")},7000);}}catch(e){}</script>
+<script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
+   nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
+window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
+try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti)$/.test(h));
+if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
+if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
 <style>html.kl-boot body>*{visibility:hidden!important}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1403,8 +1408,8 @@ window.addEventListener('DOMContentLoaded',async()=>{
   document.documentElement.style.height="100vh";
   document.body.style.height="100vh";
   document.body.style.overflow="hidden";
-  // Grįžtant iš klausimų puslapio (#klausk) neslinkti į viršų — rodoma vieta po klausimų bloku
-  if(location.hash!=='#klausk'){
+  // Grįžtant prie konkretaus bloko (klausimų, dovanų, asmeninės analizės) neslinkti į viršų — rodoma ta vieta
+  if(!/^#(klausk|dovanos|asmenine|klausti)$/.test(location.hash)){
     window.scrollTo(0,1);
     setTimeout(()=>window.scrollTo(0,1),300);
     setTimeout(()=>window.scrollTo(0,1),600);
@@ -2195,6 +2200,7 @@ let camStream=null;
 let cameraReady=false;let cameraLoading=false;
 
 function startApp(){
+  try{ sessionStorage.removeItem('delnasLastRes'); }catch(e){} // nauja analizė — ankstesnio rezultato perkrovus nebeatkuriame
   // Švelnus, vienkartinis sutikimo langas PRIEŠ pradedant fotografuoti —
   // GDPR prasme sutikimas turi būti gaunamas PRIEŠ renkant duomenis
   // (nuotraukas), o ne vėliau, mokėjimo ekrane. Rodomas tik VIENĄ kartą
@@ -3927,6 +3933,11 @@ function displayResult(r){
     return;
   }
   if(r.userName) window.userName=r.userName;
+  // Ką tik gautas rezultatas — įsimenamas šiame lange, kad perkrovus puslapį būtų parodytas vėl (žr. lastResView)
+  if(!window._klView&&!window._manoView) try{
+    const pr=window._paymentRef||sessionStorage.getItem('delnasPayRef')||'';
+    sessionStorage.setItem('delnasLastRes',JSON.stringify({at:Date.now(),r,name:window.userName||window._userName||'',email:window._userEmail||'',orderNumber:window._orderNumber||'',paymentRef:pr,gift:!!window._isGiftOrder,giftRef:window._giftRef||'',bg:window.bgSessionId||''}));
+  }catch(e){}
   const name=window.userName||'';
   function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
   const resNameEl=document.getElementById('res-name');
@@ -6089,6 +6100,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   (async function check(attempt){
     try{
       const d=await (await fetch('/pora/check?session_id='+encodeURIComponent(sid))).json();
+      if(!(d.status==='done'&&d.result)) delnasReveal();
       if(d.deleted){
         window._pora=null; document.documentElement.classList.remove('pora-boot');
         note.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">Ši porų analizė ištrinta.</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Naują porų suderinamumą galite užsisakyti <a href="/pora" style="color:var(--gold2)">čia</a>.</div>';
@@ -6102,8 +6114,13 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
       }
       Object.assign(window._pora,{ nameA:d.nameA||'Pirmasis', nameB:d.nameB||'Antrasis' });
       try{ sessionStorage.removeItem('delnasPoraForm'); }catch(e){} // apmokėta — /pora formos juodraščio nebereikia
+      if(d.status==='done' && d.result){
+        // Rezultatas rodomas iškart — pradžios ekranas nespėja pasirodyti
+        note.remove(); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); renderPoraResult(d.result);
+        requestAnimationFrame(()=>{ document.documentElement.classList.remove('pora-boot'); if(!/^#(klausk|dovanos|asmenine|klausti)$/.test(location.hash)) delnasReveal(); });
+        return;
+      }
       setTimeout(()=>document.documentElement.classList.remove('pora-boot'),0);
-      if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
       let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; }catch(e){}
       if(d.status==='waiting_partner' && !isPartner){ note.remove(); poraShowRemote(location.origin+'/?pora='+encodeURIComponent(sid)+'&partneris=1',true); return; }
@@ -6644,8 +6661,27 @@ function poraChange(c){
   for(const [k,t] of Object.entries(c.skyriai||{})) out.notes[k]=N(t);
   return out;
 }
+// Porų analizė užsakyta iš asmeninio rezultato (naujame lange) — porų rezultate „Grįžti į rezultatą“
+function poraBackToPersonal(){
+  let d=null; try{ d=JSON.parse(sessionStorage.getItem('delnasPoraBack')||'null'); }catch(e){}
+  if(!d||Date.now()-d.at>6*3600e3||document.getElementById('duo-back')) return;
+  const sr=document.getElementById('s-pora-result'); if(!sr) return;
+  const old=document.getElementById('res-home'); if(old) old.remove();
+  const a=document.createElement('a'); a.id='res-home'; a.href=d.b||'/'; a.textContent='Grįžti į rezultatą';
+  a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    if(d.b){ location.href=d.b; return; }
+    // Asmeninis rezultatas liko ankstesniame lange — šis langas uždaromas; jei naršyklė neleidžia — paaiškinama
+    try{ if(window.opener&&!window.opener.closed) window.opener.focus(); }catch(x){}
+    try{ window.close(); }catch(x){}
+    setTimeout(()=>{ a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },400);
+  });
+  sr.prepend(a);
+}
 function renderPoraResult(r){
   markDone('pora');
+  setTimeout(poraBackToPersonal,0);
   try{ cleanResultText(r); }catch(e){}
   try{ poraNeutralResult(r); }catch(e){}
   // Analizė baigta — „Mano analizių“ „Pradžia“ šios poros pradžios ekrano nebeprimena
@@ -7167,6 +7203,20 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
   }catch(e){}
 })();
 
+// Porų analizė atlikta kitame lange (užsakyta iš „Jums dviem“) — grįžus į šį rezultatą blokas nebesiūlo kainos
+(function poraCardDone(){
+  const t0=Date.now();
+  const chk=()=>{
+    if(document.visibilityState!=='visible') return;
+    const pc=document.getElementById('r-pora-card'); if(!pc||pc.dataset.done||!pc.offsetParent) return;
+    let at=0; try{ at=(JSON.parse(localStorage.getItem('delnasDone')||'{}')||{}).pora||0; }catch(e){}
+    if(at<=t0) return;
+    pc.dataset.done='1';
+    pc.innerHTML='<div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:\'Playfair Display\',serif">💞 Jums dviem</div>'+
+      '<div style="font-size:14px;color:#e8e2d4">✓ Porų analizė atlikta</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Rezultatą rasite el. pašte ir „Mano analizėse“.</div>';
+  };
+  document.addEventListener('visibilitychange',chk); window.addEventListener('focus',chk);
+})();
 // Paspaudus porų pasiūlymą — /pora formoje iš anksto įrašomas vardas ir el. paštas (tik šiame įrenginyje)
 document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('a.rb-pora')){ try{ localStorage.setItem('delnasMe',JSON.stringify({name:window.userName||'',email:window._userEmail||'',at:Date.now()})); }catch(x){} } },true);
 // Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
@@ -7263,7 +7313,30 @@ async function loadCompare(){
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(location.hash==='#klausk') setTimeout(klScrollAfter,250);
+      else if(!/^#(dovanos|klausti)$/.test(location.hash)) requestAnimationFrame(()=>requestAnimationFrame(delnasReveal));
     }catch(e){ location.replace('/'); }
+  };
+  if(document.readyState==='complete') run(); else window.addEventListener('load',run);
+})();
+
+// Perkrautas ką tik gautas rezultatas (tas pats langas, adresas be parametrų) — rodomas vėl, be laiško ir statistikos pakartojimo
+(function lastResView(){
+  if(location.search) return;
+  let nav=null; try{ nav=performance.getEntriesByType('navigation')[0]; }catch(e){}
+  // Atidarytas pradžios ekranas (ne perkrautas rezultatas) — senas rezultatas nebeatkuriamas
+  if(!nav||nav.type!=='reload'){ try{ sessionStorage.removeItem('delnasLastRes'); }catch(e){} return; }
+  let s=null; try{ s=JSON.parse(sessionStorage.getItem('delnasLastRes')||'null'); }catch(e){}
+  if(!s||!s.r||Date.now()-s.at>6*3600e3){ delnasReveal(); return; }
+  window._klView=true; window._resRestored=true;
+  window.userName=window._userName=s.name||''; if(s.email) window._userEmail=window.userEmail=s.email;
+  if(s.orderNumber) window._orderNumber=s.orderNumber; if(s.paymentRef) window._paymentRef=s.paymentRef;
+  if(s.gift){ window._isGiftOrder=true; if(s.giftRef) window._giftRef=s.giftRef; }
+  if(s.bg) window.bgSessionId=s.bg;
+  // Tame pačiame lange užregistruota analizės sesija — blokas „Po 3 mėnesių“ lieka
+  const rm=_remGet(); if(rm&&rm.bg&&rm.bg===s.bg&&Date.now()-rm.at<3*3600*1000) window._klRem=rm.bg;
+  const run=()=>{
+    try{ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); go('s-result'); displayResult(s.r); }catch(e){}
+    requestAnimationFrame(()=>requestAnimationFrame(delnasReveal));
   };
   if(document.readyState==='complete') run(); else window.addEventListener('load',run);
 })();
@@ -7306,9 +7379,9 @@ document.addEventListener('click',e=>{
     if(scr&&scr.id==='s-result'&&g&&g.offsetParent){
       clearInterval(iv);
       try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-      setTimeout(()=>{ let y=0,el=g; while(el){ y+=el.offsetTop; el=el.offsetParent; } window.scrollTo(0,Math.max(0,y-Math.round(window.innerHeight*0.4))); },400);
+      setTimeout(()=>{ let y=0,el=g; while(el){ y+=el.offsetTop; el=el.offsetParent; } window.scrollTo(0,Math.max(0,y-Math.round(window.innerHeight*0.4))); requestAnimationFrame(delnasReveal); },400);
     }
-    if(++n>80) clearInterval(iv);
+    if(++n>80){ clearInterval(iv); delnasReveal(); }
   },250);
 })();
 
@@ -7327,9 +7400,10 @@ document.addEventListener('click',e=>{
         const gb=blk.nextElementSibling;
         const y=!blk.offsetParent&&gb ? top(gb)-16 : mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
         window.scrollTo(0,Math.max(0,y));
+        requestAnimationFrame(delnasReveal);
       },300);
     }
-    if(++n>80) clearInterval(iv);
+    if(++n>80){ clearInterval(iv); delnasReveal(); }
   },250);
 })();
 
@@ -7343,9 +7417,10 @@ document.addEventListener('click',e=>{
     if(kl&&kl.offsetParent){
       clearInterval(iv);
       try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-      setTimeout(()=>{ kl.classList.add('visible','in'); let y=0,e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; } window.scrollTo({top:Math.max(0,y-16),behavior:'smooth'}); },700);
+      const boot=document.documentElement.classList.contains('kl-boot');
+      setTimeout(()=>{ kl.classList.add('visible','in'); let y=0,e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; } window.scrollTo({top:Math.max(0,y-16),behavior:boot?'instant':'smooth'}); requestAnimationFrame(delnasReveal); },boot?300:700);
     }
-    if(++n>80) clearInterval(iv);
+    if(++n>80){ clearInterval(iv); delnasReveal(); }
   },250);
 })();
 
@@ -7367,7 +7442,8 @@ document.addEventListener('click',e=>{
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
-    }catch(e){ alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
+      if(!/^#(dovanos|klausti)$/.test(location.hash)) requestAnimationFrame(()=>requestAnimationFrame(delnasReveal));
+    }catch(e){ delnasReveal(); alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
   };
   if(document.readyState==='complete') setTimeout(run,300); else window.addEventListener('load',()=>setTimeout(run,300));
 })();
