@@ -6284,7 +6284,7 @@ const PORA_MICRO1=['Tikrinamos visos keturios delnų nuotraukos...','Nustatoma j
 const PORA_MICRO2=['Tyrinėjamos jūsų širdies linijos ir jausmai...','Lyginama, kaip reiškiate savo jausmus...','Tyrinėjamos jūsų galvos linijos ir mąstymas...','Lyginamas jūsų mąstymo ir sprendimų stilius...','Tyrinėjamos jūsų gyvenimo linijų kryptys...','Lyginamas jūsų gyvenimo tempas ir ritmas...','Ieškoma sąsajų tarp jūsų likimo linijų...','Lyginami ryškiausi jūsų delnų kalneliai...','Ieškoma, kur jūsų bruožai aiškiai sutampa...','Ieškoma, kaip gerai derate tarpusavyje...','Vertinamos šešios jūsų santykių sritys...','Skaičiuojama, kiek jūs derate tarpusavyje...','Lyginamas jūsų jausmų gylis ir raiška...','Vertinama, kaip rodote rūpestį savo porai...','Ieškoma bendrų jūsų vertybių ir tikslų...','Lyginamas jūsų požiūris į finansinę gerovę...','Vertinama, kaip kartu kuriate namų jaukumą...','Lyginami jūsų ateities planai ir siekiai...','Tyrinėjamos jūsų likimo linijos ir kryptis...','Ieškoma, kas jus stipriausiai traukia...','Lyginama, kaip sprendžiate savo nesutarimus...','Vertinamas jūsų kasdienio bendravimo ritmas...','Ieškoma, kur jums verta aiškiau susitarti...','Lyginami jūsų kasdieniai įpročiai ir tempas...','Atskleidžiamos jūsų poros stipriosios pusės...'];
 const PORA_MICRO3=['Ruošiami asmeniniai patarimai jūsų porai...','Rengiamos galutinės jūsų analizės išvados...','Baigiama ruošti visą jūsų poros analizę...','Tikrinamas kiekvienas jūsų analizės skyrius...','Ruošiamas jūsų poros rezultatų ekranas...','Ruošiamos įžvalgos kiekvienai jūsų sričiai...','Tikslinamas jūsų poros suderinamumo įvertis...','Dedami paskutiniai jūsų analizės štrichai...','Peržiūrimi visi septyni analizės skyriai...','Jūsų poros analizė jau beveik paruošta...'];
 function poraStopProgress(){
-  window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraMicroT);
+  window._poraDone=true; clearInterval(window._poraProgTimer); clearTimeout(window._poraFinT); clearTimeout(window._poraMicroT);
   const sp=document.getElementById('pora-spinner'); if(sp) sp.style.display='none';
 }
 function poraProgress(start){
@@ -6292,7 +6292,7 @@ function poraProgress(start){
   const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct'), txt=document.getElementById('pora-wait-txt'), spin=document.getElementById('pora-spinner');
   document.getElementById('pora-wait-names').textContent=poraNames();
   if(start||!window._poraT0){
-    window._poraT0=Date.now(); window._poraPhase=1; window._poraPct=0;
+    window._poraT0=Date.now(); window._poraPhase=1; window._poraPct=0; window._poraDoneAt=null; clearTimeout(window._poraFinT);
     for(let i=1;i<=7;i++){
       const el=document.getElementById('pls'+i), st=document.getElementById('pls'+i+'-status');
       if(el){ el.classList.remove('active','done'); el.style.animation=''; el.style.backgroundImage=''; const t=el.querySelector('.ls-text'); if(t){ t.style.color=''; t.style.fontWeight=''; } const ic=el.querySelector('.ls-icon'); if(ic){ ic.style.background=''; ic.style.borderColor=''; } }
@@ -6334,11 +6334,24 @@ function poraProgress(start){
     const e=Math.max(0,s-4.5);
     const raw=window._poraPhase===1?Math.min(20,s/4.5*20)
       : e<=60?20+e/60*40 : e<=120?60+(e-60)/60*25 : e<=180?85+(e-120)/60*9 : 94+Math.min(3,(e-180)/20);
-    const v=Math.min(97,Math.round(raw));
+    let v=Math.min(97,Math.round(raw));
+    // Rezultatas paruoštas anksčiau nei per PORA_MIN_SCREEN — juosta tolygiai kyla iki 99 %
+    const da=window._poraDoneAt;
+    if(da!=null) v=Math.max(v,Math.round(window._poraDoneFrom+(99-window._poraDoneFrom)*Math.min(1,(s-da)/Math.max(1,PORA_MIN_SCREEN-da))));
     window._poraPct=v; pbar.style.width=v+'%'; pct.textContent=v+'%';
   },250);
 }
+// Mažiausia laukimo ekrano trukmė (s), kaip ir asmeninėje analizėje
+const PORA_MIN_SCREEN=90;
 function poraFinishProgress(done){
+  const s=window._poraT0?(Date.now()-window._poraT0)/1000:PORA_MIN_SCREEN;
+  if(!window._poraDone&&s<PORA_MIN_SCREEN){
+    if(window._poraDoneAt==null){ window._poraDoneAt=s; window._poraDoneFrom=window._poraPct||0; }
+    clearTimeout(window._poraFinT);
+    window._poraFinT=setTimeout(()=>poraFinishProgress(done),(PORA_MIN_SCREEN-s)*1000+50);
+    return;
+  }
+  window._poraDoneAt=null;
   poraStopProgress();
   const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct'), txt=document.getElementById('pora-wait-txt'), scr=document.getElementById('s-pora-wait');
   for(let n=1;n<=6;n++) activateStep(n,true,0,'pls');
