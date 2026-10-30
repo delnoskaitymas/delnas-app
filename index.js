@@ -4065,6 +4065,8 @@ app.get('/pora/check', sensitiveLimiter, async (req, res) => {
     if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ paid: false });
     const order = loadPoraOrders()[sessionId];
     if (order && order.status === 'done') return res.json({ paid: true, nameA: order.nameA, nameB: order.nameB, status: 'done', result: order.result });
+    // Analizė atlikta, bet ištrinta („Mano analizėse“ ar po saugojimo laiko) — ne naujas užsakymas
+    if (!order && loadPoraUsed()[sessionId]) return res.json({ paid: false, deleted: true });
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.json({ paid: false });
     res.json({ paid: true, nameA: s.nameA, nameB: s.nameB, status: order ? order.status : 'new' });
@@ -5731,6 +5733,15 @@ app.get('/promo/check', pollLimiter, (req, res) => {
       const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('back:'));
       const it = key && loadAbandoned().items.find(x => x.id === key.slice(5));
       if (it) prefill = it.kind === 'pora' ? { nameA: it.nameA || '', nameB: it.nameB || '', email: it.email } : { name: it.name || '', email: it.email };
+    } catch (e) {}
+  }
+  // Pakartotinė porų analizė (priminimas po 3 mėn.) — vardai ir el. paštas iš ankstesnio užsakymo
+  if (p.kind === 'repeat' && p.product === 'pora' && valid) {
+    try {
+      const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('repeat-pora:'));
+      const prev = key && loadPoraOrders()[key.slice('repeat-pora:'.length)];
+      const email = (prev && prev.email) || p.email || '';
+      if (prev || email) prefill = { nameA: (prev && prev.nameA) || '', nameB: (prev && prev.nameB) || '', email };
     } catch (e) {}
   }
   res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}), ...(prefill ? { prefill } : {}) });
