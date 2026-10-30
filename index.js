@@ -170,6 +170,41 @@ function isValidPhotosArray(photos) {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
   return photos.every(p => p && isRealImageBase64(p.data) && (!p.type || allowedTypes.includes(p.type)));
 }
+// --- Dirbtinio intelekto modelis ---
+// claude-sonnet-4-5 nustoja veikti 2026-11-30, todėl nuo 2026-11-28 automatiškai naudojamas claude-sonnet-5-5.
+// Anksčiau pereiti (ar grįžti) galima Railway kintamuoju AI_MODEL (pvz. AI_MODEL=claude-sonnet-5-5).
+const AI_MODEL_OLD = 'claude-sonnet-4-5', AI_MODEL_NEW = 'claude-sonnet-5-5';
+const AI_SWITCH_AT = Date.parse('2026-11-28T00:00:00+02:00');
+function aiModel() { const m = String(process.env.AI_MODEL || '').trim(); return m || (Date.now() >= AI_SWITCH_AT ? AI_MODEL_NEW : AI_MODEL_OLD); }
+// Senieji modeliai priima temperature ir atsakymo pradžią (assistant „{“); naujieji — ne
+function aiOldApi(m) { return /^claude-(sonnet|opus|haiku)-4-5|^claude-3/.test(m); }
+// Užklausa parašyta senajam modeliui → pritaikoma pasirinktam: naujajam be temperature ir be atsakymo pradžios
+// (vietoj jos — nurodymas pradėti JSON objektu), be papildomo „mąstymo“ (kaip senasis), effort high
+function aiBody(o) {
+  const m = aiModel(), b = { ...o, model: m };
+  if (!aiOldApi(m)) {
+    delete b.temperature;
+    const msgs = [...b.messages], last = msgs[msgs.length - 1];
+    if (last && last.role === 'assistant') {
+      msgs.pop();
+      const u = msgs[msgs.length - 1], note = 'Atsakymą pradėk iškart simboliu { ir pateik tik JSON objektą — be jokio teksto prieš jį ar po jo.';
+      msgs[msgs.length - 1] = { ...u, content: typeof u.content === 'string' ? u.content + '\n\n' + note : [...u.content, { type: 'text', text: note }] };
+    }
+    b.messages = msgs;
+    b.thinking = { type: 'between_tools' };
+    b.output_config = { effort: 'high' };
+  }
+  return JSON.stringify(b);
+}
+// Atsakymo tekstas (tik text blokai — naujasis modelis gali grąžinti ir thinking blokus)
+function aiText(d) { return ((d && d.content) || []).map(x => (x && (!x.type || x.type === 'text') && x.text) || '').join(''); }
+// JSON atsakymas: senasis modelis tęsia po „{“, naujasis pradeda pats — paimama nuo pirmo „{“
+function aiJsonText(d) {
+  const t = aiText(d);
+  if (aiOldApi(aiModel()) && !t.trimStart().startsWith('{')) return '{' + t;
+  const i = t.indexOf('{'); return i > 0 ? t.slice(i) : t;
+}
+
 // Apsaugo nuo HTML/turinio įterpimo (injection), kai vartotojo įvestas vardas
 // ar el. paštas patenka į siunčiamų el. laiškų HTML šabloną.
 function escapeHtml(str) {
@@ -1641,7 +1676,7 @@ async function runPalmAnalysis(photos, name, sessionId) {
   // ═══════════════════════════════════════════════════════════════════
 
   // Žingsnis 1: Vizualinė diagnostika
-  const step1Body = JSON.stringify({
+  const step1Body = aiBody({
     model: 'claude-sonnet-4-5',
     max_tokens: 1200,
     temperature: 0.2,
@@ -1728,7 +1763,7 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
 
   let bruozai = [];
   try {
-    const step1Text = step1Data.content.map(b => b.text || '').join('');
+    const step1Text = aiText(step1Data);
     const jsonMatch = step1Text.match(/\{[\s\S]*\}/);
     if (jsonMatch) bruozai = parseJsonLenient(jsonMatch[0]).bruozai || [];
   } catch(e) {
@@ -1866,7 +1901,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
           'x-api-key': process.env.ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01'
         },
-        body: JSON.stringify({
+        body: aiBody({
           model: 'claude-sonnet-4-5',
           max_tokens: 12000,
           temperature: 0.2,
@@ -1913,7 +1948,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   }
   if (step2Data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
 
-  const rawText = '{' + step2Data.content.map(b => b.text || '').join('');
+  const rawText = aiJsonText(step2Data);
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('JSON nerastas');
 
@@ -1975,7 +2010,7 @@ function sanitizeExtraResult(result) {
 // Delno nuotraukos patikra AI (tik atsarginis variantas, kai telefone neveikia vietinė patikra) — kiekviena kainuoja,
 // todėl iš viso ne daugiau kaip VALIDATE_DAILY_CAP per parą (Lietuvos laiku). Pasiekus ribą nuotrauka tiesiog
 // nebetikrinama (priimama — klientas nesustabdomas), o adminui — vienas laiškas.
-const VALIDATE_DAILY_CAP = parseInt(process.env.VALIDATE_DAILY_CAP || '3000', 10);
+const VALIDATE_DAILY_CAP = parseInt(process.env.VALIDATE_DAILY_CAP || '1000', 10);
 const _validateDaily = { day: '', count: 0, notified: false };
 function validateDailyCapReached() {
   const today = ltDate(Date.now());
@@ -2047,7 +2082,7 @@ Be precise and objective — do not round everything to convenient default numbe
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
+      body: aiBody({
         model: 'claude-sonnet-4-5',
         max_tokens: 150,
         temperature: 0,
@@ -2062,7 +2097,7 @@ Be precise and objective — do not round everything to convenient default numbe
     });
 
     const data = await response.json();
-    const rawAnswer = (data.content?.[0]?.text || '').trim();
+    const rawAnswer = aiText(data).trim();
     console.log('[validate-palm] raw:', JSON.stringify(rawAnswer));
 
     let facts = null;
@@ -3884,12 +3919,12 @@ ${list}`;
     const resp = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] })
+      body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 8000, temperature: 0, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] })
     }, 120000);
     const data = await resp.json();
     if (!data || data.error || !data.content || data.stop_reason === 'max_tokens') return r;
     let fixes;
-    try { fixes = JSON.parse('{' + data.content.map(b => b.text || '').join('')); } catch (e) { return r; }
+    try { fixes = JSON.parse(aiJsonText(data)); } catch (e) { return r; }
     r.neutralV = 1; // peržiūra įvyko (net jei taisyti nereikėjo)
     let n = 0;
     for (const [k, v] of Object.entries(fixes || {})) {
@@ -3976,7 +4011,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
+        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] })
       }, 220000);
       data = await r.json();
     } catch (e) {
@@ -3989,7 +4024,7 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   }
   if (!data || data.error || !data.content) throw new Error(data && data.error ? `${data.error.type}: ${data.error.message || ''}` : 'Tuščias AI atsakymas');
   if (data.stop_reason === 'max_tokens') throw new Error('Atsakymas nukirptas');
-  const text = '{' + data.content.map(b => b.text || '').join('');
+  const text = aiJsonText(data);
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('JSON nerastas');
   // Dažniausia AI JSON klaida — trūksta kablelio tarp laukų eilutės pradžioje
@@ -4186,10 +4221,10 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
       }, 60000);
       const d = await r.json();
-      const txt = (d.content || []).map(b => b.text || '').join('');
+      const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
       const j = m ? parseJsonLenient(m[0]) : null;
       const fx = (t, n) => applyTextFixes(String(t).trim().replace(/"/g, '').slice(0, n)).text;
@@ -4664,7 +4699,7 @@ async function klauskCallAI(prompt) {
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
       }, 90000);
       data = await r.json();
     } catch (e) { data = null; console.log(`[klausk] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`); }
@@ -4673,7 +4708,7 @@ async function klauskCallAI(prompt) {
     if (attempt < 3) await new Promise(res => setTimeout(res, 2500 * attempt));
   }
   if (!data || data.error || !data.content) throw new Error(data && data.error ? `${data.error.type}: ${data.error.message || ''}` : 'Tuščias AI atsakymas');
-  const text = data.content.map(b => b.text || '').join('').trim();
+  const text = aiText(data).trim();
   if (!text) throw new Error('Tuščias atsakymas');
   return applyTextFixes(text.slice(0, 4000)).text;
 }
@@ -6010,10 +6045,10 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
+        body: aiBody({ model: 'claude-sonnet-4-5', max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
       }, 60000);
       const d = await r.json();
-      const txt = (d.content || []).map(b => b.text || '').join('');
+      const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
       const j = m ? parseJsonLenient(m[0]) : null;
       const fx = (t, n) => applyTextFixes(String(t).trim().replace(/"/g, '').slice(0, n)).text;
