@@ -3277,7 +3277,8 @@ function animateLoading(){
       // procentas realiai parodomas (ne interpoliuojamas/praleidžiamas), kad
       // niekada neatrodytų kaip šuolis. Tempas — apie 40ms vienam procentui.
       const startPct=window._currentProgress||96;
-      const STEP_MS=40;
+      // Rezultatas paruoštas anksčiau (pvz. ties 54 %) — likusi dalis kyla tolygiai ~6 s, o ne per sekundę
+      const STEP_MS=Math.max(40,Math.min(150,Math.round(6000/Math.max(1,100-startPct))));
       let cur=startPct;
       function stepCount(){
         cur++;
@@ -6333,7 +6334,7 @@ function poraFinishProgress(done){
   const pbar=document.getElementById('pora-pbar'), pct=document.getElementById('pora-ppct'), txt=document.getElementById('pora-wait-txt'), scr=document.getElementById('s-pora-wait');
   for(let n=1;n<=6;n++) activateStep(n,true,0,'pls');
   txt.style.opacity='1'; txt.textContent='Jūsų poros suderinamumas paruoštas ✦';
-  const STEP_MS=40, startPct=window._poraPct||94; let cur=startPct;
+  const startPct=window._poraPct||94, STEP_MS=Math.max(40,Math.min(150,Math.round(6000/Math.max(1,100-startPct)))); let cur=startPct; // likusi dalis — tolygiai ~6 s
   pbar.style.transition='width '+STEP_MS+'ms linear';
   (function count(){ if(cur>=100) return; cur++; pct.textContent=cur+'%'; pbar.style.width=cur+'%'; setTimeout(count,STEP_MS); })();
   activateStep(7,true,0,'pls');
