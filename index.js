@@ -2212,7 +2212,6 @@ app.get('/analysis-status', pollLimiter, async (req, res) => {
 // Suma VISADA skaičiuojama serveryje — klientas siunčia tik pasirinkimus.
 const KLAUSK_BUMP_CENTS = parseInt(process.env.KLAUSK_BUMP_CENTS || '299', 10);
 const REF_DISCOUNT_PCT = parseInt(process.env.REF_DISCOUNT_PCT || '10', 10);
-const REF_MAX_REWARDS = 5;
 const REFS_FILE = path.join(SHARED_STORAGE_DIR, 'refs.json');
 function loadRefs() {
   try { if (fs.existsSync(REFS_FILE)) { const d = JSON.parse(fs.readFileSync(REFS_FILE, 'utf8')); return { codes: d.codes || {}, byPayment: d.byPayment || {} }; } }
@@ -2280,7 +2279,7 @@ function rewardReferrer(refCode, paymentRef, buyerEmail, kind) {
     if (buyerEmail && r.email && r.email.toLowerCase() === String(buyerEmail).toLowerCase()) return;
     r.uses = r.uses || [];
     let rewardId = null;
-    if (r.uses.filter(u => u.rewardId).length < REF_MAX_REWARDS && r.result) {
+    if (r.result) {
       rewardId = 'kp_' + crypto.randomBytes(12).toString('hex');
       const orders = loadKlauskOrders();
       orders[rewardId] = r.pora
