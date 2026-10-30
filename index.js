@@ -177,7 +177,8 @@ const AI_MODEL_DEFAULT = 'claude-sonnet-5-5';
 function aiModel() { return String(process.env.AI_MODEL || '').trim() || AI_MODEL_DEFAULT; }
 // Užklausos rašomos kaip anksčiau ({ model, max_tokens, temperature, messages }) — čia pritaikomos naujam modeliui:
 // be temperature, be atsakymo pradžios (assistant „{“ — vietoj jos nurodymas pradėti JSON objektu),
-// be papildomo „mąstymo“ (thinking between_tools), effort high
+// adaptyvus mąstymas žemu lygiu (effort low — paprastus atsakymus modelis duoda iškart, o ilgose analizėse
+// gali tyliai pasitikrinti tekstą, kaip prašoma nurodymuose); mąstymas įskaičiuojamas į max_tokens, todėl jis didinamas
 function aiBody(o) {
   const b = { ...o, model: aiModel() };
   delete b.temperature;
@@ -188,12 +189,14 @@ function aiBody(o) {
     msgs[msgs.length - 1] = { ...u, content: typeof u.content === 'string' ? u.content + '\n\n' + note : [...u.content, { type: 'text', text: note }] };
   }
   b.messages = msgs;
-  b.thinking = { type: 'between_tools' };
-  b.output_config = { effort: 'high' };
+  b.max_tokens = Math.min(32000, (o.max_tokens || 1000) + 8000);
+  b.output_config = { effort: 'low' };
   return JSON.stringify(b);
 }
 // AI atmetė užklausą (klaida ar atsisakymas) — tiksli priežastis į serverio žurnalą ir vienas laiškas adminui per parą
 const _aiErrNotified = { day: '' };
+const _aiLog = []; // paskutiniai AI atsakymai ir analizių klaidos — /admin/ai-test
+function aiLogAdd(x) { _aiLog.push({ at: Date.now(), ...x }); if (_aiLog.length > 40) _aiLog.shift(); }
 const _fetchOrig = global.fetch;
 global.fetch = async function (url, opts) {
   const res = await _fetchOrig.apply(this, arguments);
@@ -201,6 +204,9 @@ global.fetch = async function (url, opts) {
     if (!String(url).startsWith('https://api.anthropic.com/') || typeof res.clone !== 'function') return res;
     const j = await res.clone().json().catch(() => null);
     let err = '';
+    let reqInfo = ''; try { const rb = JSON.parse(opts.body); reqInfo = `max_tokens ${rb.max_tokens}, nuotraukų ${(JSON.stringify(rb.messages).match(/"type":"image"/g) || []).length}`; } catch (e) {}
+    const txt = ((j && j.content) || []).map(x => x.type === 'text' ? x.text : (x.type === 'thinking' && x.thinking ? '[thinking] ' + x.thinking : '')).join(' ').trim();
+    aiLogAdd({ kind: 'AI atsakymas', preview: txt.slice(0, 300) + (txt.length > 300 ? '… (' + txt.length + ' simb.)' : ''), status: res.status, stop: (j && j.stop_reason) || '', out: (j && j.usage && j.usage.output_tokens) || '', blocks: ((j && j.content) || []).map(x => x.type).join(','), info: reqInfo, err: j && j.error ? `${j.error.type}: ${j.error.message}` : (j && j.stop_reason === 'refusal' ? 'refusal ' + JSON.stringify(j.stop_details || {}) : '') });
     if (!res.ok) err = (j && j.error) ? `${j.error.type}: ${j.error.message}` : 'HTTP ' + res.status;
     else if (j && j.stop_reason === 'refusal') err = 'refusal: ' + ((j.stop_details && (j.stop_details.category || j.stop_details.explanation)) || '');
     if (!err) return res;
@@ -884,6 +890,7 @@ const reportedAnalysisFailures = new Set();
 // Klaidų laiškų tau — ne daugiau kaip 20 per valandą (kad niekas negalėtų jais išnaudoti dienos laiškų limito)
 const _failMailTimes = [];
 function logAnalysisFailure({ name, email, sessionId, orderNumber, errorMessage }) {
+  try { aiLogAdd({ kind: 'Analizės klaida', err: String(errorMessage || '') }); } catch (e) {}
   try {
     const nowF = Date.now();
     while (_failMailTimes.length && nowF - _failMailTimes[0] > 60 * 60 * 1000) _failMailTimes.shift();
@@ -1926,7 +1933,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
             { role: 'assistant', content: '{' }
           ]
         })
-      }, 150000);
+      }, 240000);
       step2Data = await r.json();
     } catch (networkErr) {
       // Trumpalaikis tinklo trikdis (fetch() pats metė klaidą) — taip
@@ -1966,7 +1973,11 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
   const rawText = aiJsonText(step2Data);
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('JSON nerastas');
+  if (!jsonMatch) {
+    const blocks = (step2Data.content || []).map(b => b.type + (b.type === 'text' ? ':' + (b.text || '').length : '')).join(',');
+    console.error(`[runPalmAnalysis] JSON nerastas — stop=${step2Data.stop_reason} blokai=${blocks} išvestis=${step2Data.usage && step2Data.usage.output_tokens} pradžia: ${rawText.slice(0, 500)}`);
+    throw new Error('JSON nerastas');
+  }
 
   let result;
   try {
@@ -2260,6 +2271,7 @@ app.post('/start-analysis', startAnalysisLimiter, startAnalysisDailyLimiter, asy
       .catch(err => {
         const entry = analysisCache.get(sessionId);
         if (entry) { entry.status = 'error'; entry.error = err.message; saveAnalysisSessionToDisk(sessionId, entry); }
+        aiLogAdd({ kind: 'Analizės klaida (prieš mokėjimą)', err: err.message });
         console.log(`[start-analysis] sessionId=${sessionId} FONO ANALIZĖ KLAIDA: ${err.message}`);
       });
 
@@ -5602,7 +5614,12 @@ app.get('/admin/ai-test', sensitiveLimiter, async (req, res) => {
   res.type('html').send(`<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>AI patikra — DELNAS</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}td:nth-child(4){overflow-wrap:anywhere}.ok{color:#1a7f37}.bad{color:#c62828}</style></head><body>
 <h1 style="font-size:20px">AI modelio patikra</h1><p>Modelis: <b>${escapeHtml(m)}</b> · ${ok ? '<b class="ok">✓ Visos užklausos pavyko</b>' : '<b class="bad">✗ Kai kurios užklausos nepavyko — nufotografuok šį puslapį ir atsiųsk programuotojui</b>'}</p>
-<table><tr><th>Bandymas</th><th>Kodas</th><th>Pabaiga</th><th>Atsakymas / klaida</th><th>ms</th><th>Blokai</th></tr>${rows.map(r => `<tr><td>${escapeHtml(r[0])}</td><td class="${r[1] === 200 ? 'ok' : 'bad'}">${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td><td>${r[4]}</td><td>${escapeHtml(r[5])}</td></tr>`).join('')}</table></body></html>`);
+<table><tr><th>Bandymas</th><th>Kodas</th><th>Pabaiga</th><th>Atsakymas / klaida</th><th>ms</th><th>Blokai</th></tr>${rows.map(r => `<tr><td>${escapeHtml(r[0])}</td><td class="${r[1] === 200 ? 'ok' : 'bad'}">${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td><td>${r[4]}</td><td>${escapeHtml(r[5])}</td></tr>`).join('')}</table>
+<h2 style="font-size:16px;margin-top:24px">Paskutinės tikros AI užklausos ir analizių klaidos (nuo serverio paleidimo)</h2>
+${_aiLog.length ? `<table><tr><th>Laikas</th><th>Kas</th><th>Kodas</th><th>Pabaiga</th><th>Išvesties žetonai</th><th>Užklausa</th><th>Klaida</th><th>Atsakymo pradžia</th></tr>${_aiLog.slice().reverse().filter(x => !/^Atsakyk vienu|Kokios spalvos/.test(x.info || '')).map(x => `<tr><td>${new Date(x.at).toLocaleTimeString('lt-LT', { timeZone: 'Europe/Vilnius' })}</td><td>${escapeHtml(x.kind)}</td><td>${escapeHtml(x.status || '')}</td><td>${escapeHtml(x.stop || '')}</td><td>${escapeHtml(x.out || '')}</td><td>${escapeHtml(x.info || '')}</td><td class="${x.err ? 'bad' : ''}">${escapeHtml(x.err || '')}</td><td style="overflow-wrap:anywhere;font-size:12px;color:#555">${escapeHtml(x.preview || '')}</td></tr>`).join('')}</table>` : '<p style="color:#888">Dar nėra (padaryk analizę ir atnaujink šį puslapį).</p>'}
+<h2 style="font-size:16px;margin-top:24px">Išsaugotos nepavykusios analizės</h2>
+${(() => { try { const fl = fs.readdirSync(ANALYSIS_SESSIONS_DIR).filter(f => f.endsWith('.json')).map(f => ({ f, t: fs.statSync(path.join(ANALYSIS_SESSIONS_DIR, f)).mtimeMs })).sort((a, b) => b.t - a.t).slice(0, 30); const errs = []; for (const x of fl) { try { const e = JSON.parse(fs.readFileSync(path.join(ANALYSIS_SESSIONS_DIR, x.f), 'utf8')); if (e.status === 'error') errs.push([x.t, e.error || '']); } catch (er) {} } return errs.length ? '<table><tr><th>Laikas</th><th>Klaida</th></tr>' + errs.slice(0, 10).map(e => `<tr><td>${new Date(e[0]).toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' })}</td><td class="bad">${escapeHtml(e[1])}</td></tr>`).join('') + '</table>' : '<p style="color:#888">Nėra.</p>'; } catch (e) { return '<p style="color:#888">Nėra.</p>'; } })()}
+</body></html>`);
 });
 app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
