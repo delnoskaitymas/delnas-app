@@ -417,6 +417,21 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   $('f-ok').addEventListener('change', refreshBtn);
   $('f-noremind').addEventListener('click', () => { window._noRemind = true; $('remind-txt').textContent = '✓ Gerai, priminimo nesiųsime.'; });
 
+  // Grįžus iš Stripe (atšaukus mokėjimą) — formoje lieka tie patys vardai ir el. paštas
+  const FORM_KEY = 'delnasPoraForm';
+  function saveForm(){
+    try { sessionStorage.setItem(FORM_KEY, JSON.stringify({ at: Date.now(), a: $('f-a').value, b: $('f-b').value, email: $('f-email').value, ok: $('f-ok').checked, noRemind: !!window._noRemind })); } catch (e) {}
+  }
+  (function restoreForm(){
+    let v = null;
+    try { v = JSON.parse(sessionStorage.getItem(FORM_KEY) || 'null'); sessionStorage.removeItem(FORM_KEY); } catch (e) {}
+    if (!v || Date.now() - v.at > 3600e3 || new URLSearchParams(location.search).get('dovana')) return;
+    [['f-a', v.a], ['f-b', v.b], ['f-email', v.email]].forEach(([id, x]) => { if (typeof x === 'string' && x && !$(id).value.trim()) $(id).value = x; });
+    $('f-ok').checked = !!v.ok;
+    if (v.noRemind) { window._noRemind = true; $('remind-txt').textContent = '✓ Gerai, priminimo nesiųsime.'; }
+    refreshBtn();
+  })();
+
   // Nuolaidos kodas: /pora?grizk=KODAS (laiškas apie nebaigtą užsakymą) arba /pora?promo=KODAS (rinkinio kaina po asmeninės analizės)
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + ' €';
   (async () => {
@@ -545,6 +560,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       // Nuolaida ką tik panaudota kitame lange ar nebegalioja — rodoma tikra kaina, mokama tik paspaudus dar kartą
       if (d.promoGone) { window._promoCode = ''; window._poraPromoGone = true; $('gift-note').classList.add('hidden'); document.body.classList.remove('has-note'); }
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
+      saveForm();
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';

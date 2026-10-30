@@ -6089,6 +6089,11 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
   (async function check(attempt){
     try{
       const d=await (await fetch('/pora/check?session_id='+encodeURIComponent(sid))).json();
+      if(d.deleted){
+        window._pora=null; document.documentElement.classList.remove('pora-boot');
+        note.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">Ši porų analizė ištrinta.</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Naują porų suderinamumą galite užsisakyti <a href="/pora" style="color:var(--gold2)">čia</a>.</div>';
+        return;
+      }
       if(!d.paid){
         if(attempt<6&&!sid.startsWith('gp_')){ setTimeout(()=>check(attempt+1),2000); return; } // dovanos užsakymas Stripe nelaukia
         window._pora=null; document.documentElement.classList.remove('pora-boot');
@@ -6096,6 +6101,7 @@ function poraCurrentName(){ const p=window._pora; return p ? (p.stage === 0 ? p.
         return;
       }
       Object.assign(window._pora,{ nameA:d.nameA||'Pirmasis', nameB:d.nameB||'Antrasis' });
+      try{ sessionStorage.removeItem('delnasPoraForm'); }catch(e){} // apmokėta — /pora formos juodraščio nebereikia
       setTimeout(()=>document.documentElement.classList.remove('pora-boot'),0);
       if(d.status==='done' && d.result){ note.remove(); renderPoraResult(d.result); return; }
       if(d.status==='pending'){ note.remove(); go('s-pora-wait'); poraPoll(); return; }
