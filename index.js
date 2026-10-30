@@ -1972,11 +1972,35 @@ function sanitizeExtraResult(result) {
 }
 
 // --- ENDPOINT: Greita delno validacija ---
+// Delno nuotraukos patikra AI (tik atsarginis variantas, kai telefone neveikia vietinė patikra) — kiekviena kainuoja,
+// todėl iš viso ne daugiau kaip VALIDATE_DAILY_CAP per parą (Lietuvos laiku). Pasiekus ribą nuotrauka tiesiog
+// nebetikrinama (priimama — klientas nesustabdomas), o adminui — vienas laiškas.
+const VALIDATE_DAILY_CAP = parseInt(process.env.VALIDATE_DAILY_CAP || '3000', 10);
+const _validateDaily = { day: '', count: 0, notified: false };
+function validateDailyCapReached() {
+  const today = ltDate(Date.now());
+  if (_validateDaily.day !== today) { _validateDaily.day = today; _validateDaily.count = 0; _validateDaily.notified = false; }
+  if (_validateDaily.count < VALIDATE_DAILY_CAP) { _validateDaily.count++; return false; }
+  if (!_validateDaily.notified) {
+    _validateDaily.notified = true;
+    console.error(`[validate-palm] pasiekta dienos riba (${VALIDATE_DAILY_CAP}) — nuotraukos iki vidurnakčio AI nebetikrinamos`);
+    mailer.sendMail({
+      from: `"Delno Skaitymas — Sistema" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `[DELNAS] Pasiekta delno nuotraukų patikrų dienos riba (${VALIDATE_DAILY_CAP})`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Pasiekta dienos riba</h2>
+        <p>Šiandien atlikta ${VALIDATE_DAILY_CAP} delno nuotraukų patikrų dirbtiniu intelektu. Iki vidurnakčio (Lietuvos laiku) nuotraukos nebetikrinamos — klientai gali tęsti, analizė vyksta įprastai.</p>
+        <p>Įprastai šios patikros beveik nenaudojamos (tik telefonams, kuriuose neveikia vietinė patikra), todėl tiek daug — greičiausiai piktnaudžiavimas; patikrink Anthropic išlaidas. Ribą galima keisti Railway kintamuoju <b>VALIDATE_DAILY_CAP</b>.</p></div>`
+    }).catch(e => console.error('[validate-palm] dienos ribos laiško klaida:', e.message));
+  }
+  return true;
+}
 app.post('/validate-palm', sensitiveLimiter, async (req, res) => {
   try {
     const { photos, livePreview } = req.body;
     if (!photos || photos.length === 0) return res.json({ valid: false });
     if (!isValidPhotosArray(photos)) return res.status(400).json({ valid: false, reason: 'no_hand' });
+    if (validateDailyCapReached()) return res.json({ valid: true, unchecked: true });
     // ═══════════════════════════════════════════════════════════════════
     // DVIEJŲ ŽINGSNIŲ VALIDACIJA: AI grąžina TIK objektyvius, išmatuojamus
     // vizualinius faktus (kiek pirštų matosi, koks % delno matomas, ir t.t.)
@@ -2190,7 +2214,8 @@ app.post('/start-analysis', startAnalysisLimiter, startAnalysisDailyLimiter, asy
       });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('/start-analysis klaida:', err.message);
+    res.status(500).json({ error: 'Nepavyko pradėti analizės' });
   }
 });
 
@@ -2519,7 +2544,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     res.json({ url: session.url });
   } catch(err) {
     console.error('/create-checkout klaida:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandyk dar kartą.' });
   }
 });
 
@@ -2562,7 +2587,7 @@ app.post('/register-order', sensitiveLimiter, (req, res) => {
     res.json({ orderNumber });
   } catch (err) {
     console.error('[register-order] klaida:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Serverio klaida' });
   }
 });
 
@@ -2584,7 +2609,7 @@ app.post('/notify-order-complete', sensitiveLimiter, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-order-complete] klaida:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Serverio klaida' });
   }
 });
 
@@ -2665,7 +2690,7 @@ app.post('/notify-client-error', sensitiveLimiter, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[notify-client-error] klaida:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Serverio klaida' });
   }
 });
 
@@ -2748,7 +2773,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[email-result-pdf] klaida:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Nepavyko išsiųsti laiško' });
   }
 });
 
@@ -2986,7 +3011,8 @@ app.post('/create-payment', sensitiveLimiter, async (req, res) => {
     if (q.promoCode) promoAddHold(q.promoCode, paymentIntent.id);
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, sessionId: paymentIntent.id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('/create-payment klaida:', err.message);
+    res.status(500).json({ error: 'Nepavyko pradėti mokėjimo. Pabandyk dar kartą.' });
   }
 });
 
@@ -3017,7 +3043,8 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       res.json({ paid: false, status: pi.status });
     }
   } catch (err) {
-    res.status(500).json({ paid: false, error: err.message });
+    console.error('/verify-payment-intent klaida:', err.message);
+    res.status(500).json({ paid: false, error: 'Mokėjimas nerastas' });
   }
 });
 
@@ -3207,7 +3234,8 @@ app.post('/schedule-reminder', sensitiveLimiter, async (req, res) => {
     if (r === 'exists') return res.json({ ok: true, message: 'Jau užregistruota' });
     res.json({ ok: true });
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    console.error('/schedule-reminder klaida:', e.message);
+    res.status(500).json({ error: 'Nepavyko užregistruoti priminimo. Pabandyk dar kartą.' });
   }
 });
 
