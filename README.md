@@ -51,7 +51,7 @@ PORT = 3000
 > **Saugumo priminimas:** niekada nedėk realių raktų, slaptažodžių ar banko duomenų į README, kodą ar public repo — visi jautrūs duomenys turi būti tik Railway „Variables" skiltyje (arba lokaliame `.env` faile, kuris **neįkeliamas** į Git — patikrink, ar `.env` įtrauktas į `.gitignore`).
 
 Neprivalomi kintamieji:
-- `AI_MODEL` — dirbtinio intelekto modelis. Nenurodžius: `claude-sonnet-4-5` iki 2026-11-27, nuo 2026-11-28 — `claude-sonnet-5-5` (senasis nustoja veikti 2026-11-30). Anksčiau pereiti: `AI_MODEL = claude-sonnet-5-5`.
+- `AI_MODEL` — dirbtinio intelekto modelis (numatytas `claude-sonnet-5-5`). Patikra: `/admin/ai-test?key=ADMIN_KEY` — kelios mažos užklausos, rodo modelio atsakymą ar klaidą.
 - `VALIDATE_DAILY_CAP` — kiek delno nuotraukų patikrų dirbtiniu intelektu per parą (numatyta 1000).
 
 5. (Neprivaloma, bet rekomenduojama) Railway projekte pridėk **Volume**, prijungtą prie `SHARED_STORAGE_DIR` kelio — kitaip failai kaip `reminders.json` ir `reminder-blacklist.json` bus ištrinami po kiekvieno naujo deploy'inimo.
