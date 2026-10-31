@@ -2676,6 +2676,13 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// Trumpa kvietimo nuoroda, užrašyta ant dalinimosi kortelių (delnaskaitymas.lt/d/KODAS): kai programėlė
+// perduoda tik paveikslėlį (be nuorodos), draugas gali ją įvesti ranka ir vis tiek gauna −10 %
+app.get('/d/:code', (req, res) => {
+  const c = normalizeRefCode(req.params.code);
+  res.redirect(302, c.length >= 5 ? `/?ref=${c}&utm_source=dalinimasis&utm_campaign=kortele` : '/');
+});
+
 // Porų rezultatas — kvietimo nuoroda porai (draugai renkasi analizę su −10 %, pora už pirkusį draugą — 3 klausimus apie savo porą)
 app.post('/ref/create-pora', sensitiveLimiter, (req, res) => {
   try {

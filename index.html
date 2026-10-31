@@ -1576,6 +1576,8 @@ function rememberOwnRef(link){
     const w=document.getElementById('ref-welcome'); if(w) w.remove();
   }catch(e){}
 }
+// Trumpas kvietimo adresas kortelėms (delnaskaitymas.lt/d/KODAS); be kodo — įprastas adresas
+function cardRefLabel(link, fallback){ try{ const c=String(new URL(link,location.origin).searchParams.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length>=5) return 'delnaskaitymas.lt/d/'+c; }catch(e){} return fallback; }
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
 async function refreshPayQuote(){
   try{
@@ -4898,7 +4900,7 @@ async function sharePdfToFriend(){
 // programėlę (kad draugas galėtų pats pradėti savo analizę nuo nulio).
 // Sukuria paprastą, BENDRĄ (be asmeninių rezultatų) kvietimo kortelę —
 // tik prekės ženklas, trumpas kvietimas ir mygtukas su adresu.
-async function buildInviteCardBlob(name){
+async function buildInviteCardBlob(name, refLink){
   try{
     await Promise.all([
       document.fonts.load('700 62px "Playfair Display"'),
@@ -5020,7 +5022,7 @@ async function buildInviteCardBlob(name){
   ctx.fillStyle = '#f0c96a';
   y = drawWrappedCentered(ctx, (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % ir Gyvenimo žemėlapiui, ir porų suderinamumui.', W/2, y, maxWidth, 42) + 60;
 
-  const btnLabel = 'www.delnaskaitymas.lt';
+  const btnLabel = cardRefLabel(refLink, 'www.delnaskaitymas.lt');
   ctx.font = '700 38px "DM Sans", sans-serif';
   const btnPadX = 34, btnH = 78;
   const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-160);
@@ -5083,7 +5085,7 @@ async function inviteFriend(){
   const rl=await ensureRefLink();
   if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mano nuoroda −'+rl.pct+' % ir Gyvenimo žemėlapiui, ir porų suderinamumui 🎁'; }
   try{
-    const blob = await buildInviteCardBlob(name);
+    const blob = await buildInviteCardBlob(name, rl && rl.link);
     if(blob){
       const file = new File([blob], 'delnas-kvietimas.png', {type:'image/png'});
       if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
@@ -5239,7 +5241,7 @@ function drawCardFrame(ctx, W, H){
   });
 }
 
-async function buildStoryCardBlob(){
+async function buildStoryCardBlob(refLink){
   const r = window._palmResult; if(!r) return null;
   const name = window.userName || '';
   // SVARBU: laukiame, kol PILNAI užsikrauna reikiami šriftai, PRIEŠ
@@ -5437,7 +5439,7 @@ async function buildStoryCardBlob(){
 
   // --- CTA mygtukas su tuo pačiu premium auksiniu gradientu, kaip
   // mokėjimo mygtukas kitur programoje (vizualus nuoseklumas).
-  const btnLabel = 'www.delnaskaitymas.lt';
+  const btnLabel = cardRefLabel(refLink || (window._refLink && window._refLink.link), 'www.delnaskaitymas.lt');
   ctx.font = '700 38px "DM Sans", sans-serif';
   const btnPadX = 34, btnH = 78;
   const btnW = Math.min(ctx.measureText(btnLabel).width + btnPadX*2, W-160);
@@ -5506,10 +5508,10 @@ async function shareStory(){
   try{
     // Dalinamasi pačia kvadratine kortele (1080×1080) — įraše ji užima visą plotą be juodų kraštų,
     // o istorijose Facebook/Instagram ją patys padeda per vidurį (anksčiau — 9:16 su dideliais juodais plotais)
-    const blob = await buildStoryCardBlob();
+    const rl = await ensureRefLink();
+    const blob = await buildStoryCardBlob(rl && rl.link);
     if(!blob){ alert('Nepavyko sukurti kortelės. Bandyk dar kartą.'); return; }
     const file = new File([blob], 'delnas-istorija.png', {type:'image/png'});
-    const rl = await ensureRefLink();
     const appUrl = rl ? rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=stiprybes' : 'https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=stiprybes';
     // SVARBU: nuoroda perduodama TIK per atskirą "url" lauką — anksčiau ji
     // BUVO ĮTRAUKTA ir į "text" tekstą, IR papildomai į "url" lauką, todėl
@@ -6943,7 +6945,7 @@ async function poraCardBlob(){
   }
   x.textAlign='center';
   x.fillStyle='rgba(255,255,255,.55)'; x.font="400 30px 'DM Sans', sans-serif"; x.fillText('Ką apie jūsų porą pasakoja delnai?', cx, 1235);
-  x.fillStyle='#d4a843'; x.font="700 32px 'DM Sans', sans-serif"; x.fillText('www.delnaskaitymas.lt/pora', cx, 1282);
+  x.fillStyle='#d4a843'; x.font="700 32px 'DM Sans', sans-serif"; x.fillText(cardRefLabel(window._poraRefLink && window._poraRefLink.link, 'www.delnaskaitymas.lt/pora'), cx, 1282);
   return await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));
 }
 // Porų kvietimo nuoroda: draugai gauna −10 % (/pora?ref=…), pora už pirkusį draugą — 3 klausimus apie savo porą
@@ -6965,7 +6967,7 @@ async function poraInviteFriend(btn){
   }catch(e){}
   // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
   try{
-    const blob=await buildInviteCardBlob(poraNames());
+    const blob=await buildInviteCardBlob(poraNames(), window._poraRefLink && window._poraRefLink.link);
     if(blob){ const file=new File([blob],'delnas-kvietimas.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({ files:[file], title:'DELNAS', text, url }); return; } }
     if(navigator.share){ await navigator.share({ title:'DELNAS', text, url }); return; }
