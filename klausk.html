@@ -136,9 +136,14 @@ document.getElementById('back-link').addEventListener('click', e => {
   try { if (window.opener && !window.opener.closed && window.opener.location.origin === location.origin) { if (typeof window.opener.klScrollAfter === 'function') window.opener.klScrollAfter(new URLSearchParams(location.search).get('s')); window.opener.focus(); window.close(); } } catch (x) {}
   // Atidaryta iš „Mano analizių“ — grįžtame į sąrašą
   try { const mt = new URLSearchParams(location.search).get('mt'); if (mt && /^mt_[a-f0-9]{32}$/.test(mt)) { location.href = '/mano?t=' + encodeURIComponent(mt); return; } } catch (x) {}
-  if (window._klBack) { location.href = window._klBack; return; }
-  try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (x) {}
-  location.href = '/';
+  // Langas atidarytas iš rezultato, bet per Stripe ryšys su juo nutrūko (svetainės apsauga) — pirmiausia bandoma uždaryti langą:
+  // lieka atidarytas rezultatas toje pačioje vietoje (ar laiškas, iš kurio atėjo); nepavykus — atidaromas rezultatas ar grįžtama atgal
+  try { window.close(); } catch (x) {}
+  setTimeout(() => {
+    if (window._klBack) { location.href = window._klBack; return; }
+    try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (x) {}
+    location.href = '/';
+  }, 300);
 });
 (function(){
   const $ = id => document.getElementById(id);
