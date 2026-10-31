@@ -170,6 +170,8 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Atsiųsti nuorodą'; }
   });
 
+  const VIEW_KEY = 'delnasManoView';
+  function saveView(cat, y){ try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ cat, y, at: Date.now() })); } catch (e) {} }
   async function load(){
     let d;
     try {
@@ -228,7 +230,22 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
       show(b.dataset.cat);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      saveView(b.dataset.cat, 0);
     });
+    // Grįžus iš atidarytos analizės — tas pats skirtukas ir ta pati vieta sąraše (šiame skirtuke, iki 6 val.)
+    try {
+      const v = JSON.parse(sessionStorage.getItem(VIEW_KEY) || 'null');
+      const vb = v && Date.now() - v.at < 6 * 3600e3 && tb && tb.querySelector('button[data-cat="' + v.cat + '"]:not([disabled])');
+      if (vb) {
+        tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === vb));
+        show(v.cat);
+        requestAnimationFrame(() => window.scrollTo(0, v.y || 0));
+      }
+    } catch (e) {}
+    // Atidarant analizę — įsimenama, kuris skirtukas ir kur sąraše
+    $('list').querySelectorAll('a.open').forEach(a => a.addEventListener('click', () => {
+      const on = tb && tb.querySelector('button.on'); saveView(on ? on.dataset.cat : '', Math.round(window.scrollY));
+    }));
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {
       const it = b.closest('.item');
       const ty = it.dataset.type || 'asm';
