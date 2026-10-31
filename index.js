@@ -1868,7 +1868,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
 - Rašyk taisyklinga, natūralia lietuvių kalba, kreipdamasis "tu" esamuoju laiku. Jei abejoji dėl retesnio žodžio formos, rinkis paprastesnį, tau gerai žinomą.
-- Skaitytojo lytis nežinoma, tad geriau vengti aiškiai giminę turinčių žodžių apie jį (pvz. "pasirengęs", "laukdamas") — rink neutralią formą, kai natūraliai išeina.
+- LYČIAI NEUTRALI KALBA VISUOSE LAUKUOSE: skaitytojo lytis nežinoma, todėl apie skaitytoją NIEKADA nerašyk giminę rodančių būdvardžių, dalyvių ar padalyvių — nei paprastų, nei lyginamųjų (KLAIDA: „esi ramus“, „nesijauti priverstas“, „tapai santūresnis ir susitelkęs“, „buvai gimęs“, „esi linkęs“, „pasirengęs“, „laukdamas“). Rašyk veiksmažodžiu, prieveiksmiu ar daiktavardžiu: „elgiesi ramiai“, „nejauti spaudimo“, „ėmei elgtis santūriau ir susikaupei“, „nuo gimimo“, „dažnai renkiesi“, „esi pasirengęs“ → „tau netrūksta pasiryžimo“. Būdvardžiai leidžiami tik apie daiktus („linija ilga“, „ryšys stiprus“).
 - Rašyk taip, kaip natūraliai kalbėtų gimtakalbis lietuvis.
 - Žodis "akcija" lietuviškai reiškia akcijų paketą/nuolaidą, NE "action" — naudok "veiksmas".
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
@@ -1916,7 +1916,7 @@ Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą. (Vienintelė išimtis — delnai_greta kairys/desinys frazės, kur trumpai įvardyti, ką matai, PRIVALOMA.)
-5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
+5. Ar šiame sakinyje NĖRA giminę turinčio būdvardžio, dalyvio ar padalyvio apie skaitytoją (ramus, priverstas, santūresnis, susitelkęs, gimęs, linkęs, pasirengęs/-usi, atradęs/-usi, likęs/-usi, laukdamas ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
 Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. JEI PERRAŠEI BENT VIENĄ SAKINĮ PATAISYDAMAS KLAIDĄ — prieš atiduodamas galutinį atsakymą, PERSKAITYK TĄ PATAISYTĄ SAKINĮ DAR KARTĄ NUO PRADŽIOS per visus 5 klausimus (pataisymas pats gali įnešti naują klaidą). Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus/taisyklingas faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
@@ -2058,6 +2058,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
     } catch (e) { console.error('[runPalmAnalysis] delnai_greta atskiros užklausos klaida:', e.message); }
   }
   sanitizeExtraResult(result);
+  await palmNeutralPass(result);
 
   // ═══════════════════════════════════════════════════════════════════
   // 3 žingsnis (AI korektūra) PILNAI PAŠALINTAS (2026-09-24, vartotojo prašymu) —
@@ -2069,6 +2070,72 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   applyKnownGrammarFixes(result);
 
   return result;
+}
+
+// ── Lyčiai neutralios kalbos peržiūra asmeninei analizei (antras AI užklausimas, kaip porų analizėje) ──
+// Skaitytojo lytis nežinoma, bet AI kartais parašo giminę rodančių formų („esi ramus“, „tapai santūresnis“, „gimęs“).
+// Peržiūrimi visi rezultato tekstai (skyriai, įžvalgos, stiprybės, delnų lentelė); AI grąžina TIK tuos, kuriuos pataisė.
+// Bet kokios klaidos atveju paliekamas originalas — analizė dėl to niekada nenukenčia.
+function palmTextSlots(r) {
+  const slots = [];
+  const walk = (o, depth) => {
+    if (!o || typeof o !== 'object' || depth > 3) return;
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if (typeof v === 'string') { if (v.trim().length > 3) slots.push({ text: v, set: t => { o[k] = t; } }); }
+      else if (v && typeof v === 'object') walk(v, depth + 1);
+    }
+  };
+  walk(r, 0);
+  return slots;
+}
+async function palmNeutralPass(r) {
+  try {
+    if (!r || !process.env.ANTHROPIC_API_KEY) return r;
+    const slots = palmTextSlots(r);
+    if (!slots.length) return r;
+    // Žodžiai, kurie dažniausiai rodo giminę (padalyviai -damas/-dama, dalyviai -ęs/-usi, „pats/pati“) — pažymimi, kad peržiūra jų nepraleistų
+    const suspect = t => [...new Set((t.match(/(?<![\p{L}])(\p{L}+(?:damas|dama|damasi|ęs|usi)|pats|pati)(?![\p{L}])/giu) || []))];
+    const list = slots.map((s, i) => { const w = suspect(s.text); return `${i}: ${s.text}${w.length ? `  [patikrink: ${w.join(', ')}]` : ''}`; }).join('\n');
+    const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — asmeninės delnų analizės tekstai, parašyti skaitytojui „tu“ forma. Skaitytojo LYTIS NEŽINOMA.
+
+Rask tekstus, kuriuose apie skaitytoją pavartotos giminę rodančios formos, ir perrašyk tik tuos sakinius neutraliai, išlaikydamas prasmę, toną, ilgį ir „tu“ kreipinį:
+- būdvardžiai apie skaitytoją, taip pat lyginamieji („esi ramus“, „atviras“, „tapai santūresnis“, „esi stipri“) → veiksmažodis ar prieveiksmis („elgiesi ramiai“, „kalbi atvirai“, „ėmei elgtis santūriau“, „tau netrūksta jėgų“);
+- dalyviai ir padalyviai apie skaitytoją („gimęs“, „linkęs“, „priverstas“, „susitelkęs“, „pasirengęs“, „išmokęs“, „laukdamas“, „nustojęs“) → asmenuojamas veiksmažodis ar daiktavardis („nuo gimimo“, „dažnai renkiesi“, „nejauti spaudimo“, „susikaupi“, „esi pasiruošęs“ → „tau netrūksta pasiryžimo“, „išmokai“, „kai lauki“, „kai nustojai“);
+- padalyviai su -damas/-dama apie skaitytoją („bendraudamas“, „kalbėdamas“, „susikaupdamas“, „dirbdamas“) → šalutinis sakinys ar daiktavardis („kai bendrauji“, „per pokalbį“, „kai susikaupi“, „darbe“);
+- lyginamieji būdvardžiai apie skaitytoją („atrodai atviresnis“, „tapai ramesnis“) → veiksmažodis ar prieveiksmis („atrodo, kad atsiveri lengviau“, „elgiesi ramiau“);
+- įvardžiai „pats“, „pati“ apie skaitytoją → „tu“, „savarankiškai“ arba perrašytas sakinys („nori viską išspręsti pats“ → „nori viską išspręsti savarankiškai“, „gali rinktis tu pats“ → „gali rinktis tu“).
+Tikrink KIEKVIENĄ tekstą žodis po žodžio, ypač žodžius, kurie baigiasi -as, -is, -ęs, -usi, -damas, -dama, -esnis, -esnė, ir „pats“/„pati“: jei jie nusako skaitytoją — taisyk.
+Formos apie daiktus („linija ilga“, „ryšys stiprus“, „sprendimas priimtas“) ir be giminės („žmogus“) — taisyklingos, jų NEKEISK. Neperrašinėk tekstų, kuriuose giminės apie skaitytoją nėra. Kiekvieną pataisytą tekstą grąžink VISĄ.
+
+Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}.
+
+Prie kai kurių tekstų laužtiniuose skliaustuose [patikrink: …] nurodyti žodžiai, kurie DAŽNAI rodo giminę — jei kuris jų nusako skaitytoją, tą sakinį PRIVALAI perrašyti; jei nusako daiktą — palik. Pastabos [patikrink: …] į atsakymą neįtrauk.
+
+Tekstai:
+${list}`;
+    const resp = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: aiBody({ max_tokens: 8000, messages: [{ role: 'user', content: prompt }, { role: 'assistant', content: '{' }] }, 'medium')
+    }, 120000);
+    const data = await resp.json();
+    if (!data || data.error || !data.content || data.stop_reason === 'max_tokens') return r;
+    let fixes;
+    try { fixes = JSON.parse(firstJsonObject(aiJsonText(data)) || aiJsonText(data)); } catch (e) { return r; }
+    r.neutralV = 1; // peržiūra įvyko (net jei taisyti nereikėjo)
+    let n = 0;
+    for (const [k, v] of Object.entries(fixes || {})) {
+      const s = slots[Number(k)];
+      if (!s || typeof v !== 'string' || !v.trim()) continue;
+      const len = v.trim().length, orig = s.text.length;
+      if (len < orig * 0.6 || len > orig * 1.6) continue; // saugiklis — neleidžiame stipriai pakeisti teksto
+      s.set(v.trim().replace(/"/g, ''));
+      n++;
+    }
+    console.log(`[runPalmAnalysis] neutralios kalbos peržiūra: pataisyta tekstų ${n}`);
+  } catch (e) { console.log('[runPalmAnalysis] neutralios kalbos peržiūra nepavyko:', e.message); }
+  return r;
 }
 
 // Papildomi rezultato blokai (kairysis ir dešinysis delnas greta) —
