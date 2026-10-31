@@ -1702,6 +1702,11 @@ function applyKnownGrammarFixes(result) {
   return result;
 }
 
+// Delnų palyginimo lentelė (delnai_greta) pilna: visi trys langeliai abiem delnams ir išvada
+const DG_AREAS = ['sirdis', 'protas', 'gyvenimas'];
+const dgCellOk = v => typeof v === 'string' && v.trim().length > 3;
+const dgComplete = g => !!g && typeof g === 'object' && DG_AREAS.every(k => g[k] && dgCellOk(g[k].kairys) && dgCellOk(g[k].desinys)) && dgCellOk(g.isvada);
+
 // --- Pagrindinė Claude analizės funkcija ---
 async function runPalmAnalysis(photos, name, sessionId) {
 
@@ -1877,7 +1882,7 @@ TAISYKLĖS:
 - Kiekvienas sakinys privalo atskleisti KONKRETŲ, TIESIOGINĮ FAKTĄ apie šį žmogų — ne hipotetinį pavyzdį, scenarijų ar iliustraciją. Arba (a) atskleidžia NAUJĄ faktą, arba (b) tiesiogiai pagrindžia prieš tai buvusį faktą kitu konkrečiu faktu (ne pramanytu pavyzdžiu) — niekada tik "užpildyti vietą" ar pakartoti jau pasakytą mintį kitais žodžiais
 - DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
-- Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
+- Kiekvienas skyrius: 10–12 sakinių, skyriai nesikartoja tarpusavyje
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
@@ -1916,7 +1921,7 @@ Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink j�
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
+{"prigimtines_stiprybes":"10-12 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"10-12 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"10-12 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"10-12 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"10-12 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"10-12 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"10-12 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
     }
   ];
 
@@ -2019,11 +2024,11 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
   }
   if (!result || !result.prigimtines_stiprybes) throw new Error('Netinkamas rezultatas');
   { const need = ['prigimtines_stiprybes', 'gyvenimo_tikslas', 'santykiai', 'finansai', 'pokyciai', 'galimybes', 'klutys', 'stiprybes_sarasas', 'delnai_greta'], miss = need.filter(k => !result[k]);
-    const dgr = result.delnai_greta, dgBad = dgr && !(['sirdis', 'protas', 'gyvenimas'].every(k => dgr[k] && dgr[k].kairys && dgr[k].desinys));
+    const dgr = result.delnai_greta, dgBad = dgr && !dgComplete(dgr);
     if (miss.length || dgBad) { const info = `trūksta: ${miss.join(', ') || '—'}${dgBad ? '; delnai_greta: ' + JSON.stringify(dgr).slice(0, 300) : ''}${!dgr ? '; tekste: ' + (rawText.indexOf('delnai_greta') >= 0 ? rawText.slice(rawText.indexOf('delnai_greta'), rawText.indexOf('delnai_greta') + 300) : 'nėra') : ''}; stop=${step2Data.stop_reason}; žetonai=${step2Data.usage && step2Data.usage.output_tokens}`; console.error('[runPalmAnalysis] Neišsamus rezultatas — ' + info); aiLogAdd({ kind: 'Neišsamus rezultatas', err: info }); } }
-  // Delnų palyginimo lentelės (delnai_greta) modelis kartais nepateikia — tada ji paprašoma atskirai, su tomis pačiomis
-  // nuotraukomis ir tais pačiais lentelės nurodymais (trumpa užklausa)
-  if (!result.delnai_greta || typeof result.delnai_greta !== 'object') {
+  // Delnų palyginimo lentelės (delnai_greta) modelis kartais nepateikia arba pateikia ne visą (be išvados ar langelio) —
+  // tada ji paprašoma atskirai, su tomis pačiomis nuotraukomis ir tais pačiais lentelės nurodymais (trumpa užklausa)
+  if (!dgComplete(result.delnai_greta)) {
     try {
       const allText = step2Content.filter(b => b.type === 'text').map(b => b.text).join('\n');
       const i0 = allText.indexOf('- delnai_greta'), i1 = allText.indexOf('\n- ', i0 + 5);
@@ -2038,7 +2043,17 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
       const t = aiJsonText(d), mm = t.match(/\{[\s\S]*\}/);
       let dg = null;
       if (mm) { try { const j = JSON.parse(mm[0]); dg = j.delnai_greta || j; } catch (e) { dg = salvageDelnaiGreta(mm[0]); } }
-      if (dg && typeof dg === 'object') { result.delnai_greta = dg; console.log('[runPalmAnalysis] delnai_greta gauta atskira užklausa'); }
+      if (dg && typeof dg === 'object') {
+        // Pilna nauja lentelė pakeičia nepilną; kitaip — iš naujos papildomi tik trūkstami langeliai ir išvada
+        const cur = result.delnai_greta && typeof result.delnai_greta === 'object' ? result.delnai_greta : {};
+        if (dgComplete(dg) || !Object.keys(cur).length) result.delnai_greta = dg;
+        else {
+          for (const k of DG_AREAS) if (!(cur[k] && dgCellOk(cur[k].kairys) && dgCellOk(cur[k].desinys)) && dg[k]) cur[k] = dg[k];
+          if (!dgCellOk(cur.isvada) && dgCellOk(dg.isvada)) cur.isvada = dg.isvada;
+          result.delnai_greta = cur;
+        }
+        console.log('[runPalmAnalysis] delnai_greta gauta atskira užklausa' + (dgComplete(result.delnai_greta) ? '' : ' (vis dar ne visa)'));
+      }
       else console.error('[runPalmAnalysis] delnai_greta atskira užklausa nepavyko:', t.slice(0, 300));
     } catch (e) { console.error('[runPalmAnalysis] delnai_greta atskiros užklausos klaida:', e.message); }
   }
