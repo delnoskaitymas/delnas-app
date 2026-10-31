@@ -7277,12 +7277,13 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     if(at<=t0) return;
     pc.dataset.done='1';
     pc.innerHTML='<div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:\'Playfair Display\',serif">💞 Jums dviem</div>'+
-      '<div style="font-size:14px;color:#e8e2d4">✓ Porų analizė atlikta</div><div class="pc-done-txt" style="font-size:12px;color:var(--muted);margin-top:4px">Rezultatą rasite el. pašte ir „Mano analizėse“.</div>';
-    // Tiesioginė nuoroda į ką tik atliktą porų rezultatą — tekste, be atskiro mygtuko
+      '<div style="font-size:14px;color:#e8e2d4">✓ Porų analizė atlikta</div><div class="pc-done-txt" style="font-size:12px;color:var(--muted);margin-top:4px">PDF failas išsiųstas el. paštu, rezultatas išsaugotas „Mano&nbsp;analizėse“.</div>';
+    // Tiesioginė nuoroda į ką tik atliktą porų rezultatą — tekstinė nuoroda atskiroje eilutėje (ne mygtukas)
     let sid=''; try{ sid=localStorage.getItem('delnasDonePoraSid')||''; }catch(e){}
     if(/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(sid)){
-      const t=pc.querySelector('.pc-done-txt');
-      t.innerHTML='Rezultatą rasite el. pašte, „Mano analizėse“ arba <a href="/?pora='+encodeURIComponent(sid)+'" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:3px">atidarykite dabar</a>.';
+      const a=document.createElement('a'); a.href='/?pora='+encodeURIComponent(sid); a.target='_blank'; a.rel='noopener'; a.className='pc-done-link'; a.textContent='Atidaryti porų rezultatą';
+      a.style.cssText="display:table;margin:10px auto 0;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px";
+      pc.appendChild(a);
     }
   };
   document.addEventListener('visibilitychange',chk); window.addEventListener('focus',chk);
