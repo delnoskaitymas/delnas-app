@@ -1088,7 +1088,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <div style="position:relative;width:100%;max-width:340px;flex:1;min-height:0;overflow:hidden">
       <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none"></div>
-      <div class="load-steps" style="gap:4px;padding-bottom:20px">
+      <div class="load-steps" id="pora-steps" style="gap:4px;padding-bottom:20px">
         <div class="ls" id="pls1"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="ls-text">Atrandama, kas jus traukia ir sieja.</div><div class="ls-status" id="pls1-status">·</div></div>
         <div class="ls" id="pls2"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="ls-text">Lyginama, kaip bendraujate ir sprendžiate nesutarimus.</div><div class="ls-status" id="pls2-status">·</div></div>
         <div class="ls" id="pls3"><div class="ls-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div><div class="ls-text">Ieškoma, kaip jūsų savybės dera tarpusavyje.</div><div class="ls-status" id="pls3-status">·</div></div>
@@ -6263,6 +6263,7 @@ async function poraStart(keep){
   p.active=false;
   if(!keep){ go('s-pora-wait'); poraProgress(true); }
   document.getElementById('pora-wait-err').style.display='none';
+  document.getElementById('pora-steps').style.display='';
   const photos=(p.remoteB?[...p.photos[1]]:[...p.photos[0],...p.photos[1]]).map(d=>({ type:'image/jpeg', data:String(d).split(',')[1] }));
   try{
     const r=await fetch('/pora/start',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:p.sid, photos }) });
@@ -6274,6 +6275,8 @@ async function poraStart(keep){
 function poraRetry(){ if(window._pora && window._pora.photos[1]) poraStart(); else location.reload(); }
 function poraShowError(msg){
   document.getElementById('pora-wait-err-txt').textContent=(msg||'Įvyko klaida.')+' Jūsų nuotraukos išsaugotos šiame lange — galite bandyti dar kartą.';
+  // Sąrašas paslepiamas, kad neužstotų klaidos ir mygtuko (blokas apkarpytas)
+  document.getElementById('pora-steps').style.display='none';
   document.getElementById('pora-wait-err').style.display='block';
 }
 
