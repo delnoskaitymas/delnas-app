@@ -3966,6 +3966,21 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
   throw last;
 }
 
+// Pirmas pilnas JSON objektas tekste (nuo pirmo „{“ iki jį uždarančio „}“, kabutėse esantys skliaustai neskaičiuojami);
+// null — jei objektas neužsidaro
+function firstJsonObject(text) {
+  const i0 = text.indexOf('{'); if (i0 < 0) return null;
+  let depth = 0, inStr = false, esc = false;
+  for (let i = i0; i < text.length; i++) {
+    const ch = text[i];
+    if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; }
+    if (ch === '"') inStr = true;
+    else if (ch === '{') depth++;
+    else if (ch === '}' && --depth === 0) return text.slice(i0, i + 1);
+  }
+  return null;
+}
+
 // ── Lyčiai neutralios kalbos peržiūra (antras AI užklausimas) ──
 // AI kartais iš vardų „nusprendžia“ lytį („Lina linkusi“, „jaučiatės sulaikoma“, „esate pasirengę“).
 // Taisyklių (poraNeutral) visiems atvejams nepakanka, todėl visi rezultato tekstai peržiūrimi dar kartą:
@@ -4116,9 +4131,18 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
   if (!m) throw new Error('JSON nerastas');
   // Dažniausia AI JSON klaida — trūksta kablelio tarp laukų eilutės pradžioje
   // („Expected ',' or '}' after property value … column 2“): pridedame jį ir tik tada taisome toliau
+  // Naujasis modelis kartais po JSON dar prirašo teksto — pirmiausia bandomas pirmas pilnas JSON objektas
+  const first = firstJsonObject(text);
+  const commaFix = t => t.replace(/(["}\]0-9]|true|false|null)(\s*\n\s*)(?="[A-Za-z_]+"\s*:)/g, '$1,$2');
   let raw;
-  try { raw = JSON.parse(m[0]); }
-  catch (e) { raw = parseJsonLenient(m[0].replace(/(["}\]0-9]|true|false|null)(\s*\n\s*)(?="[A-Za-z_]+"\s*:)/g, '$1,$2')); }
+  try { raw = JSON.parse(first || m[0]); }
+  catch (e0) {
+    try { raw = JSON.parse(m[0]); }
+    catch (e) {
+      try { raw = parseJsonLenient(commaFix(m[0])); }
+      catch (e2) { if (!first || first === m[0]) throw e2; raw = parseJsonLenient(commaFix(first)); }
+    }
+  }
   const fix = (t, max) => poraNeutral(applyTextFixes(smartTrim(String(t).trim(), max)).text);
   // Sritys: balai 55–98; bendras suderinamumas — sričių vidurkis (nuoseklu su tuo, ką mato vartotojas)
   const sritys = {};
