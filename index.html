@@ -4120,6 +4120,8 @@ function klScrollAfter(ks){
   const root=document.documentElement;
   if(!kl){ root.classList.remove('kl-boot'); return; }
   const boot=root.classList.contains('kl-boot');
+  // Blokas jau suskleistas ir matomas (pvz. grįžus iš „Peržiūrėti atsakymus“) — ekranas nejudinamas, lieka ta pati vieta
+  const wasDone=kl.classList.contains('kl-done'), r0=kl.getBoundingClientRect(), inView=wasDone&&r0.bottom>0&&r0.top<window.innerHeight;
   // Suskleidžiame klausimų bloką: patvirtinimas ir mygtukas užduoti daugiau klausimų
   if(!kl.querySelector('.kl-done-box')){
     const pora=kl.id==='pora-kl', b=document.createElement('div'); b.className='kl-done-box';
@@ -4136,7 +4138,7 @@ function klScrollAfter(ks){
   // Suskleistas klausimų blokas — ekrano viršuje, po juo visas matosi kitas pasiūlymas
   // (vieta skaičiuojama be atsiradimo animacijos poslinkio — offsetTop, ne getBoundingClientRect)
   let y=0, e=kl; while(e){ y+=e.offsetTop; e=e.offsetParent; }
-  window.scrollTo({top:Math.max(0,y-16),behavior:boot?'instant':'smooth'});
+  if(!inView) window.scrollTo({top:Math.max(0,y-16),behavior:boot?'instant':'smooth'});
   if(boot) requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('kl-boot')));
 }
 // Nauji 3 klausimai — laukelis išvalomas (ankstesnis klausimas jau užduotas)
@@ -4159,6 +4161,13 @@ function klRefreshLeft(kl){
       nb.addEventListener('click',()=>klNewRound(kl));
     }
     old.replaceWith(nb);
+    // Jau užduotų klausimų atsakymai — nuoroda juos peržiūrėti (klausimų puslapyje, naujame lange)
+    if(d&&d.paid&&(d.qa||[]).length&&!box.querySelector('.kl-view')){
+      const v=document.createElement('a'); v.className='kl-view'; v.href='/klausk?s='+encodeURIComponent(ks); v.textContent='Peržiūrėti atsakymus';
+      v.style.cssText="display:table;margin:12px auto 0;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px";
+      v.addEventListener('click',e=>{ e.preventDefault(); klOpen(v.href); });
+      box.appendChild(v);
+    }
   }).catch(()=>{});
 }
 // Grįžus į šį skirtuką (pvz. iš klausimų lango) — atnaujiname likusių klausimų skaičių
