@@ -6037,6 +6037,15 @@ app.get('/promo/check', pollLimiter, (req, res) => {
       if (prev || email) prefill = { nameA: (prev && prev.nameA) || '', nameB: (prev && prev.nameB) || '', email };
     } catch (e) {}
   }
+  // Asmeninė analizė porų kaina — užsakymo formoje įrašomas vardas, o užsakovui (pirmajam žmogui) — ir el. paštas
+  // (antrojo žmogaus nuoroda gali būti persiųsta, todėl užsakovo el. pašto joje nerodome)
+  if (p.kind === 'duo' && valid && forName) {
+    try {
+      const key = Object.keys(s.byKey).find(k => s.byKey[k] === code && k.startsWith('duo:'));
+      const m = key && key.match(/^duo:(.+):(a|b)$/), o = m && loadPoraOrders()[m[1]];
+      prefill = { name: forName, email: m && m[2] === 'a' && o && isValidEmail(o.email) ? o.email : '' };
+    } catch (e) {}
+  }
   res.json({ valid, used: !!p.usedBy, expired: Date.now() > p.expiresAt, ...promoPublic(p), poraPrice: PORA_PRICE_CENTS, ...(forName ? { forName } : {}), ...(prefill ? { prefill } : {}) });
 });
 
