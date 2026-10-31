@@ -1393,6 +1393,8 @@ function go(id){
   function arm(){ if(armed) return; try{ history.pushState(history.state,''); armed=true; }catch(e){} }
   ['pointerup','touchend','click','keydown'].forEach(t=>window.addEventListener(t,arm,{capture:true,passive:true}));
   window.addEventListener('popstate',()=>{ armed=false; });
+  // Ar šiame skirtuke yra ankstesnis puslapis (be apsaugos įrašo)
+  window.delnasHasPrev=()=>history.length>(armed?2:1);
   // „Grįžti atgal“ mygtukas: praleidžiamas apsaugos įrašas; nėra kur grįžti — langas uždaromas
   window.delnasLeave=function(btn){
     const prev=history.length>(armed?2:1);
@@ -7163,6 +7165,20 @@ async function redeemGiftAndProceed(){
       history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
     }
   }catch(e){}
+})();
+// Atėjus iš porų rezultato (asmeninė analizė porų kaina, naujame skirtuke) — pradžios ekrane „Grįžti į porų suderinamumą“:
+// skirtukas uždaromas (lieka porų rezultatas toje pačioje vietoje); jei uždaryti negalima — atidaromas porų rezultatas prie šio bloko
+(function duoHomeBack(){
+  let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(e){}
+  if(!duo||!duo.sid) return;
+  const add=()=>{
+    const m=document.getElementById('home-mano'); if(!m||document.getElementById('duo-home-back')) return;
+    const a=document.createElement('a'); a.id='duo-home-back'; a.className='home-mano'; a.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine';
+    a.innerHTML='<b>Grįžti į porų suderinamumą</b>';
+    a.addEventListener('click',e=>{ e.preventDefault(); const prev=window.delnasHasPrev?window.delnasHasPrev():history.length>1; if(!prev){ try{ window.close(); }catch(x){} } setTimeout(()=>{ location.href=a.href; },prev?0:300); });
+    m.insertAdjacentElement('afterend',a);
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add); else add();
 })();
 // Pirmiausia — šio skirtuko kodas (sessionStorage): atidarius kelias analizes iš karto, kodai nesusimaišo
 function _promoStored(){ for(const st of [sessionStorage,localStorage]){ try{ const d=JSON.parse(st.getItem('delnasPromo')||'null'); if(d&&d.c&&Date.now()-d.at<31*864e5) return d; }catch(e){} } return null; }
