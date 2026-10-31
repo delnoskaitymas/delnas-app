@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
 (function(){
   const $ = id => document.getElementById(id);
   const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-  const day = ts => { try { const d = new Date(ts); return d.toLocaleDateString('lt-LT', { year:'numeric', month:'long', day:'numeric', timeZone:'Europe/Vilnius' }) + ', ' + d.toLocaleTimeString('lt-LT', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/Vilnius' }); } catch (e) { return ''; } };
+  const day = ts => { try { const d = new Date(ts); return d.toLocaleDateString('lt-LT', { year:'numeric', month:'long', day:'numeric', timeZone:'Europe/Vilnius' }).replace(/(\d+) (m|d)\./g, '$1\u00a0$2.').replace(/ (\d+\u00a0d\.)/, '\u00a0$1') + ', ' + d.toLocaleTimeString('lt-LT', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/Vilnius' }); } catch (e) { return ''; } };
   const t = new URLSearchParams(location.search).get('t');
 
   function showAsk(msg){
