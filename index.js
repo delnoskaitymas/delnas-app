@@ -2281,7 +2281,7 @@ Be precise and objective — do not round everything to convenient default numbe
       valid = false; reason = 'no_hand';
     } else if (facts.orientation === 'side' && facts.fingertips_cropped === true && (facts.palm_percent_visible ?? 0) < 30) {
       // Kadre tik ranka iš dalies (pirštai nukirpti kadro krašto, delno beveik nesimato) — tai ne pasukta ranka,
-      // o ne visas delnas kadre: rodomas pranešimas „Pabandyk atsitraukti“, ne „Pasuk delną į save“
+      // o ne visas delnas kadre: rodomas pranešimas „Delnas netelpa ekrane“, ne „Pasuk delną į save“
       valid = false; reason = 'low_palm_visibility';
     } else if (facts.orientation === 'side') {
       valid = false; reason = 'sideways';
