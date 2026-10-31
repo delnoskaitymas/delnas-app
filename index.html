@@ -1393,8 +1393,6 @@ function go(id){
   function arm(){ if(armed) return; try{ history.pushState(history.state,''); armed=true; }catch(e){} }
   ['pointerup','touchend','click','keydown'].forEach(t=>window.addEventListener(t,arm,{capture:true,passive:true}));
   window.addEventListener('popstate',()=>{ armed=false; });
-  // Ar šiame skirtuke yra ankstesnis puslapis (be apsaugos įrašo)
-  window.delnasHasPrev=()=>history.length>(armed?2:1);
   // „Grįžti atgal“ mygtukas: praleidžiamas apsaugos įrašas; nėra kur grįžti — langas uždaromas
   window.delnasLeave=function(btn){
     const prev=history.length>(armed?2:1);
@@ -7169,7 +7167,8 @@ async function redeemGiftAndProceed(){
       if(c.length>=6){ const v=JSON.stringify({c,at:Date.now()}); localStorage.setItem('delnasPromo',v); try{ sessionStorage.setItem('delnasPromo',v); }catch(e){} }
       // Atėjo iš porų rezultato (asmeninė analizė porų kaina): įsimename porą ir pusę, kad rezultate pasiūlytume kito eilę
       const duo=p.get('duo'), kas=p.get('kas');
-      try{ if(duo&&/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(duo)&&(kas==='a'||kas==='b')) sessionStorage.setItem('delnasDuo',JSON.stringify({sid:duo,side:kas})); else sessionStorage.removeItem('delnasDuo'); }catch(e){}
+      // app — atidaryta iš porų rezultato šiame telefone (naujame skirtuke): grįžtant skirtukas uždaromas, o ne atidaroma antra porų rezultato kopija
+      try{ if(duo&&/^(cs_[A-Za-z0-9_]{4,190}|gp_[a-f0-9]{24})$/.test(duo)&&(kas==='a'||kas==='b')) sessionStorage.setItem('delnasDuo',JSON.stringify({sid:duo,side:kas,app:p.get('utm_source')==='app'})); else sessionStorage.removeItem('delnasDuo'); }catch(e){}
       ['grizk','kartoti','promo','duo','kas'].forEach(k=>p.delete(k)); const qs=p.toString();
       history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
     }
@@ -7184,11 +7183,21 @@ async function redeemGiftAndProceed(){
     const m=document.getElementById('home-mano'); if(!m||document.getElementById('duo-home-back')) return;
     const a=document.createElement('a'); a.id='duo-home-back'; a.className='home-mano'; a.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine';
     a.innerHTML='<b>Grįžti į porų suderinamumą</b>';
-    a.addEventListener('click',e=>{ e.preventDefault(); const prev=window.delnasHasPrev?window.delnasHasPrev():history.length>1; if(!prev){ try{ window.close(); }catch(x){} } setTimeout(()=>{ location.href=a.href; },prev?0:300); });
+    a.addEventListener('click',e=>{ e.preventDefault(); const cl=!!duo.app; if(cl){ try{ window.close(); }catch(x){} } setTimeout(()=>{ location.href=a.href; },cl?300:0); });
     m.insertAdjacentElement('afterend',a);
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add); else add();
 })();
+// Asmeninis rezultatas, atidarytas iš porų rezultato šiame telefone (naujame skirtuke): „… eilė“ ir „Grįžti į porų suderinamumą“
+// pirmiausia uždaro šį skirtuką — grįžtama į pradinį porų rezultatą toje pačioje vietoje; jei uždaryti negalima — atidaromas porų rezultatas
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('#s-result a[href^="/?pora="]'); if(!a) return;
+  let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(x){}
+  if(!duo||!duo.app) return;
+  e.preventDefault(); e.stopPropagation();
+  try{ window.close(); }catch(x){}
+  setTimeout(()=>{ location.href=a.getAttribute('href'); },300);
+},true);
 // Pirmiausia — šio skirtuko kodas (sessionStorage): atidarius kelias analizes iš karto, kodai nesusimaišo
 function _promoStored(){ for(const st of [sessionStorage,localStorage]){ try{ const d=JSON.parse(st.getItem('delnasPromo')||'null'); if(d&&d.c&&Date.now()-d.at<31*864e5) return d; }catch(e){} } return null; }
 // Porų kainos kodas skirtas vienam žmogui — laikomas tik šiame skirtuke (sessionStorage), kad tame pačiame
