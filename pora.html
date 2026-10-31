@@ -459,7 +459,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       } catch (e) {}
       $('price').innerHTML = eur(price) + ' <s style="opacity:.55;font-weight:400">' + eur(d.poraPrice) + '</s>';
       const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
-      const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' });
+      const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' }).replace(/ (\d+) d\./, '\u00a0$1\u00a0d.'); // „lapkričio 1 d.“ nelūžta
       $('gift-note').innerHTML = d.kind === 'bundle'
         ? '<b>💞 Jums — ' + eur(price) + ' vietoj ' + eur(d.poraPrice) + '</b><span>Kaina po gyvenimo žemėlapio analizės · galioja iki ' + day + '</span>'
         : d.kind === 'repeat'

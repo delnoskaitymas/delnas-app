@@ -3551,7 +3551,8 @@ function giftStatus(gift) {
 }
 // Data kaip svetainėje: „2026 m. lapkričio 22 d.“
 function fmtLtDate(ts) {
-  try { return new Date(ts).toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' }); }
+  // Data nelūžta per „30 d.“ ir „2026 m.“ (nelūžtantys tarpai)
+  try { return new Date(ts).toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' }).replace(/(\d+) (m|d)\./g, '$1\u00a0$2.').replace(/ (\d+\u00a0d\.)/, '\u00a0$1'); }
   catch (e) { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 }
 

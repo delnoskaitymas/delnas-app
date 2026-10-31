@@ -7189,7 +7189,8 @@ function getPromoCode(){ const d=_promoStored(); return d&&!d.used&&(!d.exp||Dat
 function _ltTime(ts){ try{ return new Date(ts).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
 // „šiandien 18:30“ arba „rytojaus 14:30“ — be tiksinčio laikmačio
 function _untilText(ts){ const day=t=>{ try{ return new Date(t).toLocaleDateString('lt-LT',{timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }; return (day(ts)===day(Date.now())?'šiandien ':'rytojaus ')+_ltTime(ts); }
-function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}); }catch(e){ return ''; } }
+// Data nelūžta per „30 d.“ ir „2026 m.“
+function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}).replace(/(\d+) (m|d)\./g,'$1\u00a0$2.').replace(/ (\d+\u00a0d\.)/,'\u00a0$1'); }catch(e){ return ''; } }
 // Kodo patikra ir pasveikinimas pradžios ekrane
 (async function promoWelcome(){
   const d=_promoStored(); if(!d) return;
