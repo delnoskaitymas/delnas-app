@@ -2448,13 +2448,13 @@ function cleanupRefs() {
 cleanupRefs();
 setInterval(cleanupRefs, 24 * 60 * 60 * 1000);
 function normalizeRefCode(c) { return typeof c === 'string' ? c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) : ''; }
-// Galiojantis kodas, kuris nepriklauso pačiam pirkėjui
+// Galiojantis kodas, kuris nepriklauso pačiam pirkėjui (tas pats el. paštas — sau nuolaida netaikoma;
+// tame pačiame telefone savo nuoroda neveikia — tai tikrina naršyklė). Tinklas (IP) netikrinamas: tame pačiame
+// namų ar darbo „Wi-Fi“, ar pas tą patį mobilųjį operatorių būna ir tikri draugai, partneriai, šeima.
 function validRef(code, email, req) {
   const c = normalizeRefCode(code); if (c.length < 5) return null;
   const r = loadRefs().codes[c]; if (!r) return null;
   if (email && r.email && r.email.toLowerCase() === String(email).toLowerCase()) return null;
-  // Ta pati naršyklė / tinklas, kuriame kvietimo nuoroda sukurta — sau nuolaida netaikoma
-  const tag = ipTag(req); if (tag && r.ip && r.ip === tag) return null;
   return c;
 }
 // Nuolaidos kodu jau sumokėta kitame lange (ar išnaudotas) — pranešama, kad kaina pasikeitė; mokama tik paspaudus dar kartą
