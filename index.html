@@ -7441,7 +7441,9 @@ document.addEventListener('click',e=>{
         // #asmenine — bloko viršus (kito žmogaus mygtukas); #dovanos — riba tarp šio bloko ir „Pasidalinkite ar padovanokite“ ekrano viduryje
         // Asmeninių analizių blokas paslėptas (abu jau atliko) — tiesiai prie „Pasidalinkite ar padovanokite“
         const gb=blk.nextElementSibling;
-        const y=!blk.offsetParent&&gb ? top(gb)-16 : mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
+        // #dovanos — dovanų dalis („Padovanokite“) ekrano viršutiniame ketvirtyje, kad matytųsi ir dovanų kortelės
+        const gs=[...document.querySelectorAll('#s-pora-result .rb-sec')].find(e=>/Padovanok/i.test(e.textContent)&&e.offsetParent);
+        const y=mode==='#dovanos'&&gs ? top(gs)-Math.round(window.innerHeight*0.2) : !blk.offsetParent&&gb ? top(gb)-16 : mode==='#dovanos' ? top(blk)+blk.offsetHeight-Math.round(window.innerHeight*0.45) : top(blk)-16;
         window.scrollTo(0,Math.max(0,y));
         requestAnimationFrame(delnasReveal);
       },300);
