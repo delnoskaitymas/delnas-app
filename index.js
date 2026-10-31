@@ -4061,7 +4061,7 @@ ${poraNameRules(A, B)}
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
-- Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
+- Kiekvienas skyrius: 14–17 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
