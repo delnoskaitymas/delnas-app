@@ -1596,7 +1596,9 @@ const KNOWN_REGEX_FIXES = [
   // klaida (žodis "tu" reikalauja 2-o asmens) — šios klasės veiksmažodžiams (laikau/laikai,
   // žinau/žinai, matau/matai, rašau/rašai ir pan.) 2-as asmuo visada "-ai". Priešdėlis bent
   // 2 raidžių, kad neužkliūtų trumpi ne-veiksmažodžiai kaip "jau", "sau", "tau".
-  [/\b([Tt])u (\p{L}{2,})au\b/gu, '$1u $2ai'],
+  // Žodžiai su „-iau“ neliečiami — tai aukštesniojo laipsnio prieveiksmiai („Tu labiau/dažniau/geriau/
+  // daugiau/greičiau/mažiau …“), kurie anksčiau būdavo sugadinami į „labiai“, „dažniai“ ir pan.
+  [/\b([Tt])u (\p{L}{2,})(?<!i)au\b/gu, '$1u $2ai'],
 
   // LYTIES NEUTRALUMAS (žodžio lygiu, ne sakinio — veikia bet kuriame kontekste):
   // gimininiai padalyviai "-damas" → neutralus "-ant". Kiekvienas veiksmažodis pridedamas
