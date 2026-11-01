@@ -1032,7 +1032,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
     btn.addEventListener('click',e=>{
       e.preventDefault();
-      if(!d){ if(history.length>1){ history.back(); return; } if(window.opener){ try{ window.close(); }catch(x){} } setTimeout(()=>{ location.href='/'; },300); return; }
+      // Naujas skirtukas be istorijos (pvz. atidarytas iš el. laiško — be window.opener) — uždaromas, kad žmogus grįžtų į laišką;
+      // jei naršyklė uždaryti neleidžia — atidaromas pradžios ekranas
+      if(!d){ if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return; }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;
       // jei uždaryti negalima — atidaromas rezultatas prie to paties bloko
       if(d.b){ try{ window.close(); }catch(x){} setTimeout(()=>{ location.href=d.b; },300); return; }
