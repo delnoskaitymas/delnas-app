@@ -5399,7 +5399,9 @@ app.get('/gift/confirm', sensitiveLimiter, async (req, res) => {
     if (session.payment_status !== 'paid') return res.json({ paid: false });
 
     const { gift } = finalizeGiftSession(session);
-    res.json({ paid: true, ...giftPublicInfo(gift), link: giftRedeemLink(gift), needCardImg: !!(gift.recipientEmail && !gift.recipientSentAt && !gift.cardImg) });
+    // Planuotas siuntimas gavėjui — tik pirkėjui (žino Stripe sesiją): kortelės ekrane parodoma, kam ir kada dovana bus išsiųsta
+    const sched = gift.recipientEmail ? { sendTo: gift.recipientEmail, sendAt: gift.sendAt || '', sendHour: Number.isInteger(gift.sendHour) ? gift.sendHour : 8, sendNow: !!gift.sendAt && (gift.sendAt < ltDate(Date.now()) || (gift.sendAt === ltDate(Date.now()) && ltHour(Date.now()) >= (Number.isInteger(gift.sendHour) ? gift.sendHour : 8))) } : {};
+    res.json({ paid: true, ...giftPublicInfo(gift), ...sched, link: giftRedeemLink(gift), needCardImg: !!(gift.recipientEmail && !gift.recipientSentAt && !gift.cardImg) });
   } catch (err) {
     console.error('/gift/confirm klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patvirtinti mokėjimo' });
