@@ -4097,17 +4097,22 @@ function renderResultExtra(r){
     q:'kl-q', ex:'kl-ex', btn:'kl-btn', err:'kl-err', emailEl:'kl-email', onReset:klCmpPersonal,
     body:email=>({email,name:window.userName||'',result:window._palmResult||r,paymentRef:window._paymentRef||'',orderNumber:window._orderNumber||'',sessionId:window.bgSessionId||''}),
     // Jei klausimai buvo pridėti prie mokėjimo — „jau apmokėta“, klausimų nuoroda paruošiama iš karto
-    prepaid:kref&&!window._manoView?(async()=>{
+    prepaid:(kref&&!window._manoView)||(window._manoView&&window._manoKlausk)?(async()=>{
+      let id, gift;
+      if(window._manoView){ id=window._manoKlausk.id; gift=window._manoKlausk.gift; }
+      else{
       const d=await (await fetch('/order-extras?ref='+encodeURIComponent(kref)+'&token='+encodeURIComponent(window.palmToken||'')+'&sid='+encodeURIComponent(window.bgSessionId||'')+'&kl='+encodeURIComponent(window._klId||''))).json();
       if(!d||!d.addKlausk) return null;
       const res=await fetch('/klausk/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentRef:kref,result:window._palmResult||r,token:window.palmToken||'',sessionId:window.bgSessionId||'',kl:window._klId||''})});
       const dd=await res.json(); if(!res.ok||!dd.id) return null;
-      if(await klLeftOf(dd.id)===0) return null; // visi apmokėti klausimai jau užduoti — siūlome naujus
+      id=dd.id; gift=d.gift;
+      }
+      if(await klLeftOf(id)===0) return null; // visi apmokėti klausimai jau užduoti — siūlome naujus
       const blk=document.querySelector('#r-extra .kl');
-      if(blk){ blk.querySelector('.kl-txt').innerHTML=(d.gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; klCmpPersonal(); }
+      if(blk){ blk.querySelector('.kl-txt').innerHTML=(gift?'<b>✓ 3 klausimai įskaičiuoti į dovaną.</b>':'<b>✓ Tavo 3 klausimai jau apmokėti.</b>')+' Įrašyk klausimą — atsakymas remsis tavo delnų analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; klCmpPersonal(); }
       const e=document.getElementById('kl-email'); if(e) e.classList.add('hidden');
       document.getElementById('kl-btn').textContent='Gauti atsakymus';
-      return '/klausk?s='+dd.id;
+      return '/klausk?s='+id;
     })():null
   });
 }
@@ -7560,6 +7565,8 @@ document.addEventListener('click',e=>{
       // Savo draugo nuoroda: telefone pažymima kaip sava, „Pakviesti draugus“ dalija ją
       (d.ownRefs||[]).forEach(c=>rememberOwnRef('/?ref='+c));
       if(d.refLink&&d.refLink.link) window._refLink=d.refLink;
+      // Klausimai, apmokėti kartu su šia analize ar įskaičiuoti į dovaną — rodomi kaip apmokėti (ne siūlomi pirkti iš naujo)
+      window._manoKlausk=d.klausk&&d.klausk.id?d.klausk:null;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
