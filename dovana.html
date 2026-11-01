@@ -975,7 +975,12 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
   else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
-  else { show('v-form'); if (kind === 'pora') setKind('pora'); restoreForm(); }
+  else {
+    // Kiek įrašų skirtuko istorijoje buvo atėjus į /dovana — po pirkimo „Grįžti atgal“ grąžina į puslapį prieš /dovana (praleidžiant Stripe).
+    // Grįžus iš Stripe neapmokėjus (išsaugota forma) — paliekama pirmojo atėjimo vieta.
+    try { if (!sessionStorage.getItem(FORM_KEY)) sessionStorage.setItem('delnasGiftPre', JSON.stringify({ len: history.length, at: Date.now() })); } catch (x) {}
+    show('v-form'); if (kind === 'pora') setKind('pora'); restoreForm();
+  }
 })();
 </script>
 <script src="/src.js"></script>
@@ -1034,7 +1039,15 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       e.preventDefault();
       // Naujas skirtukas be istorijos (pvz. atidarytas iš el. laiško — be window.opener) — uždaromas, kad žmogus grįžtų į laišką;
       // jei naršyklė uždaryti neleidžia — atidaromas pradžios ekranas
-      if(!d){ if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return; }
+      if(!d){
+        // Po pirkimo (kortelė, grįžus iš Stripe) — į puslapį, kuris buvo prieš /dovana, praleidžiant Stripe; jei /dovana buvo pirmas puslapis — skirtukas uždaromas
+        let pre=null; try{ pre=JSON.parse(sessionStorage.getItem('delnasGiftPre')||'null'); }catch(x){}
+        if(pre&&location.pathname.indexOf('/dovana/kortele')===0&&Date.now()-pre.at<6*3600e3&&history.length>pre.len){
+          if(pre.len>1){ history.go(pre.len-1-history.length); return; }
+          try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return;
+        }
+        if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return;
+      }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;
       // jei uždaryti negalima — atidaromas rezultatas prie to paties bloko
       if(d.b){ try{ window.close(); }catch(x){} setTimeout(()=>{ location.href=d.b; },300); return; }
