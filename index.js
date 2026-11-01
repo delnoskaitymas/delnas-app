@@ -853,7 +853,8 @@ function generateOrderNumber() {
 // (atidarius rezultatų ekraną).
 // Administratoriui (info@) pranešimas apie naują mokėjimą IŠLIEKA čia,
 // nes tai vidinis, ne kliento gaunamas laiškas.
-async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail) {
+// pay — { amount, metadata } iš Stripe: tikra sumokėta suma, priedai ir pritaikyta nuolaida (suvestinei)
+async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail, pay) {
   try {
     let entry = orderNumber ? pendingOrders.get(orderNumber) : null;
     const name = (entry && entry.name) || fallbackName || '';
@@ -865,14 +866,18 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
 
     const displayOrderNumber = orderNumber || '(nėra numerio)';
 
-    // Suma — ta pati, kuri taikoma mokant (PERSONAL_PRICE_CENTS).
-    let amountDisplay = 'žr. Stripe';
-    try {
-      const activePrice = personalPrice();
-      amountDisplay = (activePrice.unit_amount / 100).toFixed(2).replace('.', ',') + ' €';
-    } catch (priceErr) {
-      console.error('[sendPaymentSuccessEmails] nepavyko gauti kainos iš Stripe:', priceErr.message);
+    // Tikra sumokėta suma (Stripe), priedai ir pritaikyta nuolaida
+    const md = (pay && pay.metadata) || {};
+    const paidCents = pay && Number(pay.amount) > 0 ? Number(pay.amount) : personalPrice().unit_amount;
+    const itemTitle = 'Gyvenimo žemėlapis' + (md.addKlausk === '1' ? ' + 3 klausimai' : '');
+    let discountLabel = '';
+    if (md.ref) discountLabel = `draugo nuoroda −${REF_DISCOUNT_PCT} %`;
+    else if (md.promo) {
+      const pr = loadPromos().codes[md.promo];
+      const L = { duo: 'porų kaina po porų analizės', remind: 'pakartotinė analizė', repeat: 'pakartotinė analizė', back: 'nebaigto užsakymo priminimas', bundle: 'rinkinio kaina' };
+      discountLabel = (pr && L[pr.kind] ? L[pr.kind] : 'nuolaidos kodas') + (pr && pr.pct ? ` −${pr.pct} %` : '') + ` (${md.promo})`;
     }
+    const amountDisplay = (paidCents / 100).toFixed(2).replace('.', ',') + ' €' + (discountLabel ? ` (${discountLabel})` : '');
 
     // Administratoriui (info@) — pranešimas apie naują mokėjimą. TAI
     // VIENINTELIS administracinis laiškas apie šį užsakymą —
@@ -881,8 +886,9 @@ async function sendPaymentSuccessEmails(orderNumber, fallbackName, fallbackEmail
     adminDigestAdd('sales', {
       from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
       to: ADMIN_EMAIL,
-      subject: `Naujas užsakymas #${displayOrderNumber}`,
-      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> Delno skaitymo asmeninė analizė</p><p><strong>Suma:</strong> ${escapeHtml(amountDisplay)}</p></div>`
+      subject: `Naujas užsakymas #${displayOrderNumber} — ${itemTitle} · ${(paidCents / 100).toFixed(2).replace('.', ',')} €`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Naujas sėkmingas mokėjimas</h2><p><strong>Užsakymo numeris:</strong> ${escapeHtml(displayOrderNumber)}</p><p><strong>Klientas:</strong> ${escapeHtml(name)}</p><p><strong>El. paštas:</strong> ${escapeHtml(email)}</p><p><strong>Paslauga:</strong> ${escapeHtml(itemTitle)}</p><p><strong>Suma:</strong> ${escapeHtml(amountDisplay)}</p></div>`,
+      amount: paidCents
     }).then(() => console.log(`[sendPaymentSuccessEmails] administratoriui išsiųsta į ${ADMIN_EMAIL}`))
       .catch(e => console.error('[sendPaymentSuccessEmails] klaida siunčiant administratoriui:', e.message));
   } catch (e) {
@@ -2555,6 +2561,10 @@ function rewardReferrer(refCode, paymentRef, buyerEmail, kind) {
       }).catch(e => console.error('[ref] atlygio laiško klaida:', e.message));
     }
     r.uses.push({ paymentRef, at: Date.now(), rewardId, kind: kind || '' });
+    if (rewardId) adminDigestAdd('refs', {
+      subject: `Draugas pirko per kvietimą — kvietėjui ${r.name || r.email} padovanoti 3 klausimai`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Pirkta per kvietimą</h2><p><strong>Kvietėjas:</strong> ${escapeHtml(r.name || '—')} (${escapeHtml(r.email)})${r.pora ? ' — porų kvietimas' : ''}</p><p><strong>Kvietimo kodas:</strong> ${escapeHtml(refCode)}</p><p><strong>Draugas pirko:</strong> ${kind === 'pora' ? 'porų suderinamumą' : 'gyvenimo žemėlapį'} (${escapeHtml(buyerEmail || '—')})</p><p><strong>Kvietėjui:</strong> 3 klausimai dovanų</p></div>`
+    }).catch(() => {});
     saveRefs(st);
     console.log(`[ref] kodas ${refCode} panaudotas (${paymentRef})${rewardId ? ' → atlygis ' + rewardId : ''}`);
   } catch (e) { console.error('[ref] atlygio klaida:', e.message); }
@@ -3302,7 +3312,7 @@ app.post('/verify-payment-intent', sensitiveLimiter, async (req, res) => {
       // tokenas, o ne naujas — apsauga nuo pakartotinio šio endpoint'o
       // iškvietimo (žr. komentarą prie funkcijos aukščiau).
       const token = getOrCreateTokenForPayment(paymentIntentId, finalName, finalEmail);
-      sendPaymentSuccessEmails(orderNumber, finalName, finalEmail);
+      sendPaymentSuccessEmails(orderNumber, finalName, finalEmail, { amount: pi.amount_received || pi.amount, metadata: pi.metadata });
       handlePaidAnalysis(paymentIntentId, pi.metadata, finalEmail);
       markPaidIp(req);
       res.json({ paid: true, token, name: finalName, email: finalEmail, duo: duoOfPromo(pi.metadata.promo) });
@@ -3332,7 +3342,7 @@ app.get('/verify-payment', sensitiveLimiter, async (req, res) => {
       // req.query.session_id tiesiogiai), nes tai Stripe patvirtinta,
       // patikima reikšmė tam pačiam checkout session'ui.
       const token = getOrCreateTokenForPayment(session.id, finalName, finalEmail);
-      sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail);
+      sendPaymentSuccessEmails(finalOrderNumber, finalName, finalEmail, { amount: session.amount_total, metadata: session.metadata });
       handlePaidAnalysis(session.id, session.metadata, finalEmail);
       markPaidIp(req);
       res.json({ paid: true, name: finalName, email: finalEmail, token, bgSessionId: finalBgSessionId, orderNumber: finalOrderNumber, duo: duoOfPromo(session.metadata?.promo) });
@@ -3737,7 +3747,7 @@ const ADMIN_DIGEST_HOUR = parseInt(process.env.ADMIN_DIGEST_HOUR || '21', 10);
 function adminDigestAdd(cat, mail) {
   try {
     const d = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' });
-    d.items.push({ cat, subject: String(mail.subject || ''), html: String(mail.html || ''), at: Date.now() });
+    d.items.push({ cat, subject: String(mail.subject || ''), html: String(mail.html || ''), at: Date.now(), ...(Number.isFinite(mail.amount) && mail.amount > 0 ? { amount: Math.round(mail.amount) } : {}) });
     writeJson(ADMIN_DIGEST_FILE, d);
   } catch (e) { console.error('[digest] įrašymo klaida:', e.message); }
   return Promise.resolve();
@@ -3765,13 +3775,14 @@ function adminDigestHtml(items) {
   const hm = ts => new Date(ts).toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   const block = it => `<div style="border:1px solid #e3d3a6;border-radius:10px;padding:2px 14px;margin:0 0 10px;background:#fffdf6"><div style="font:12px Arial,sans-serif;color:#8a6d1f;margin-top:10px">${hm(it.at)} · ${escapeHtml(it.subject)}</div>${it.html.replace(/padding:20px/, 'padding:4px 0')}</div>`;
   const sec = (title, list) => list.length ? `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">${title} (${list.length})</h2>${list.map(block).join('')}` : '';
+  const eurT = c => (c / 100).toFixed(2).replace('.', ',') + ' €', total = items.reduce((a, i) => a + (i.amount || 0), 0), refs = items.filter(i => i.cat === 'refs');
   const sales = items.filter(i => i.cat === 'sales'), gifts = items.filter(i => i.cat === 'gifts'), ratings = items.filter(i => i.cat === 'ratings');
   // Nepanaudotos (galiojančios) dovanos — sąrašas kiekvieną vakarą
   let unused = [];
   try { unused = Object.values(loadGiftStore().codes).filter(g => giftStatus(g) === 'active').sort((a, b) => a.createdAt - b.createdAt); } catch (e) {}
   const unusedHtml = unused.length ? `<h2 style="font-family:Georgia,serif;color:#5a4410;border-bottom:2px solid #d4a843;padding-bottom:4px;margin:26px 0 12px">Nepanaudotos dovanos (${unused.length})</h2><table style="border-collapse:collapse;font:13px Arial,sans-serif;width:100%">${unused.map(g => `<tr><td style="padding:5px;border-bottom:1px solid #eee"><b>${escapeHtml(g.code)}</b></td><td style="padding:5px;border-bottom:1px solid #eee">${g.kind === 'pora' ? 'Porų' : 'Asmeninė'}</td><td style="padding:5px;border-bottom:1px solid #eee">${escapeHtml(g.buyerEmail || '—')}</td><td style="padding:5px;border-bottom:1px solid #eee">pirkta ${fmtLtDate(g.createdAt)}</td><td style="padding:5px;border-bottom:1px solid #eee">galioja iki ${fmtLtDate(g.expiresAt)}</td></tr>`).join('')}</table>` : '';
-  return `<div style="font-family:Georgia,serif;max-width:640px;padding:16px"><h1 style="font-size:22px;color:#3a2c08;margin:0 0 4px">DELNAS — dienos suvestinė</h1><div style="font:13px Arial,sans-serif;color:#777">${ltDate(Date.now())} · pardavimai: ${sales.length} · dovanos: ${gifts.length} · įvertinimai: ${ratings.length}</div>
-    ${digestFunnelHtml()}${sec('Parduotos analizės ir klausimai', sales)}${sec('Dovanos: parduotos ir panaudotos', gifts)}${unusedHtml}${sec('Įvertinimai', ratings)}</div>`;
+  return `<div style="font-family:Georgia,serif;max-width:640px;padding:16px"><h1 style="font-size:22px;color:#3a2c08;margin:0 0 4px">DELNAS — dienos suvestinė</h1><div style="font:13px Arial,sans-serif;color:#777">${ltDate(Date.now())} · <b>Iš viso: ${eurT(total)}</b> · pardavimai: ${sales.length} · dovanos: ${gifts.length} · kvietimai: ${refs.length} · įvertinimai: ${ratings.length}</div>
+    ${digestFunnelHtml()}${sec('Parduotos analizės ir klausimai', sales)}${sec('Dovanos: parduotos ir panaudotos', gifts)}${unusedHtml}${sec('Kvietimai: draugai pirko, kvietėjams padovanoti klausimai', refs)}${sec('Įvertinimai', ratings)}</div>`;
 }
 function processAdminDigest() {
   try {
@@ -3781,7 +3792,7 @@ function processAdminDigest() {
     if (d.lastSent === today || (!d.items.length && !digestFunnelHtml())) return;
     const items = d.items.slice();
     d.items = []; d.lastSent = today; writeJson(ADMIN_DIGEST_FILE, d);
-    mailer.sendMail({ from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`, to: ADMIN_EMAIL, subject: `DELNAS suvestinė ${today} — ${items.filter(i => i.cat === 'sales').length} pardav., ${items.filter(i => i.cat === 'gifts').length} dovan., ${items.filter(i => i.cat === 'ratings').length} įvert.`, html: adminDigestHtml(items) })
+    mailer.sendMail({ from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`, to: ADMIN_EMAIL, subject: `DELNAS suvestinė ${today} — ${(items.reduce((a, i) => a + (i.amount || 0), 0) / 100).toFixed(2).replace('.', ',')} € — ${items.filter(i => i.cat === 'sales').length} pardav., ${items.filter(i => i.cat === 'gifts').length} dovan., ${items.filter(i => i.cat === 'ratings').length} įvert.`, html: adminDigestHtml(items) })
       .then(() => console.log(`[digest] suvestinė išsiųsta (${items.length} įrašų)`))
       .catch(e => { console.error('[digest] siuntimo klaida:', e.message); const d2 = readJson(ADMIN_DIGEST_FILE, { items: [], lastSent: '' }); d2.items = items.concat(d2.items); d2.lastSent = ''; writeJson(ADMIN_DIGEST_FILE, d2); });
   } catch (e) { console.error('[digest] klaida:', e.message); }
@@ -3988,6 +3999,7 @@ async function getPaidPoraSession(sessionId) {
   const refBy = session.metadata.refBy || session.metadata.ref;
   if (refBy) rewardReferrer(normalizeRefCode(refBy), session.id, session.metadata.email || session.customer_email || '', 'pora');
   markEmailPaid(session.metadata.email || session.customer_email || '');
+  poraSaleDigest(sessionId, { nameA: session.metadata.nameA || '', nameB: session.metadata.nameB || '', email: session.metadata.email || session.customer_email || '', amount: session.amount_total || PORA_PRICE_CENTS, promo: session.metadata.promo || (session.metadata.ref ? 'draugo nuoroda' : '') });
   return {
     nameA: session.metadata.nameA || '',
     nameB: session.metadata.nameB || '',
@@ -3995,6 +4007,32 @@ async function getPaidPoraSession(sessionId) {
     amount: session.amount_total || PORA_PRICE_CENTS,
     promo: session.metadata.promo || ''
   };
+}
+
+// Porų pardavimas į administratoriaus suvestinę — iškart po apmokėjimo (ne tik nufotografavus delnus), vieną kartą
+const PORA_DIGESTED_FILE = path.join(SHARED_STORAGE_DIR, 'pora-digested.json');
+function poraSaleDigest(sessionId, s) {
+  try {
+    if (!s || !sessionId || sessionId.startsWith('gp_')) return; // porų dovana — „Panaudotas porų dovanų kuponas“
+    const d = readJson(PORA_DIGESTED_FILE, {});
+    if (d[sessionId]) return;
+    const now = Date.now();
+    for (const [k, t] of Object.entries(d)) if (now - t > 90 * DAY_MS) delete d[k];
+    d[sessionId] = now; writeJson(PORA_DIGESTED_FILE, d);
+    statInc('pora_paid'); // „Šiandienos kelias“ — apmokėjo (ir nefotografavę)
+    adminDigestAdd('sales', {
+      from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
+      to: ADMIN_EMAIL,
+      subject: `Nauja porų analizė — ${s.nameA} ir ${s.nameB} · ${((s.amount || 0) / 100).toFixed(2).replace('.', ',')} €`,
+      html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Nauja porų analizė (apmokėta)</h2>
+        <p><strong>Užsakymo numeris:</strong> ${poraOrderNo(sessionId)}</p>
+        <p><strong>Pora:</strong> ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)}</p>
+        <p><strong>El. paštas:</strong> ${escapeHtml(s.email)}</p>
+        <p><strong>Suma:</strong> ${((s.amount || 0) / 100).toFixed(2).replace('.', ',')} €${s.promo ? ' (nuolaidos kodas ' + escapeHtml(s.promo) + ')' : ''}</p>
+        <p><strong>Stripe session:</strong> ${escapeHtml(sessionId)}</p></div>`,
+      amount: s.amount || 0
+    }).catch(e => console.error('[pora] admin laiško klaida:', e.message));
+  } catch (e) { console.error('[pora] suvestinės klaida:', e.message); }
 }
 
 function clampScore(n) {
@@ -4416,26 +4454,12 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     }
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
-    const isFirst = !existing || (existing.status === 'waiting_partner' && !existing.gift);
-    if (isFirst && !sessionId.startsWith('gp_')) statInc('pora_paid');
     deletePoraFirstPhotos(sessionId);
     const prevPora = repeatPoraPrev(s.promo, sessionId);
     updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now(), ...(prevPora ? { prevPora } : {}) });
     res.json({ started: true, status: 'pending' });
 
-    if (isFirst) {
-      adminDigestAdd('sales', {
-        from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
-        to: ADMIN_EMAIL,
-        subject: `Nauja porų analizė — ${s.nameA} ir ${s.nameB}`,
-        html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Nauja porų analizė</h2>
-          <p><strong>Užsakymo numeris:</strong> ${poraOrderNo(sessionId)}</p>
-          <p><strong>Pora:</strong> ${escapeHtml(s.nameA)} ir ${escapeHtml(s.nameB)}</p>
-          <p><strong>El. paštas:</strong> ${escapeHtml(s.email)}</p>
-          <p><strong>Suma:</strong> ${(s.amount / 100).toFixed(2).replace('.', ',')} €</p>
-          <p><strong>Stripe session:</strong> ${escapeHtml(sessionId)}</p></div>`
-      }).catch(e => console.error('[pora] admin laiško klaida:', e.message));
-    }
+    poraSaleDigest(sessionId, s);
 
     runPoraJob(sessionId, photos, s);
   } catch (err) {
@@ -5108,7 +5132,8 @@ function markKlauskPaid(id, orders, s) {
     from: `"Delno Skaitymas" <${process.env.EMAIL_USER || process.env.EMAIL_FROM}>`,
     to: ADMIN_EMAIL,
     subject: `Naujas „Klausk savo delnų“${o.kind === 'pora' ? ' (porai)' : ''} užsakymas — ${o.name || o.email}`,
-    html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`
+    html: `<div style="font-family:Georgia,serif;padding:20px"><h2>Klausk savo delnų</h2><p><strong>Klientas:</strong> ${escapeHtml(o.name || '—')} (${escapeHtml(o.email)})</p><p><strong>Suma:</strong> ${((s.amount_total || KLAUSK_PRICE_CENTS) / 100).toFixed(2).replace('.', ',')} €</p><p><strong>Stripe session:</strong> ${escapeHtml(id)}</p></div>`,
+    amount: s.amount_total || KLAUSK_PRICE_CENTS
   }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
 }
 
@@ -5466,7 +5491,8 @@ function finalizeGiftSession(session) {
         <p><strong>Gavėjas:</strong> ${escapeHtml(gift.recipientName || '—')}</p>
         <p><strong>Suma:</strong> ${((gift.amount || 0) / 100).toFixed(2).replace('.', ',')} €</p>
         <p><strong>Galioja iki:</strong> ${fmtLtDate(gift.expiresAt)}</p>
-        <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`
+        <p><strong>Stripe session:</strong> ${escapeHtml(gift.sessionId)}</p></div>`,
+      amount: gift.amount || 0
     }).catch(e => console.error('[gift] admin laiško klaida:', e.message));
   }
   return { gift, isNew };
