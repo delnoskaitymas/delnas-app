@@ -13,7 +13,7 @@ Norint pakeisti tekstą ar spalvas — redaguok `reklamos.html` ir paleisk `node
 | `04-skyriai-1080x1350.png` | 4:5 | IG feed (užima daugiausia ekrano) |
 | `05-story-hero-1080x1920.png` | 9:16 | IG / FB Stories, Reels, TikTok |
 | `06-story-klausimai-1080x1920.png` | 9:16 | IG / FB Stories, Reels, TikTok |
-| `07-garantija-1080x1080.png` | 1:1 | FB / IG feed — pasitikėjimui, kai reklama jau matyta |
+| `07-grazinimas-1080x1080.png` | 1:1 | FB / IG feed — pasitikėjimui, kai reklama jau matyta |
 | `08-landscape-1200x628.png` | 1.91:1 | FB nuorodos reklama, Google Display |
 
 **2 banga (kaitaliojimui):**
@@ -24,7 +24,7 @@ Norint pakeisti tekstą ar spalvas — redaguok `reklamos.html` ir paleisk `node
 | `10-linijos-1080x1350.png` | 4:5 | Tamsus · „Linijos nemeluoja“ (4 delno linijos) |
 | `11-sviesus-hero-1080x1080.png` | 1:1 | Šviesus · „Kas tau lemta?“ |
 | `12-sviesus-story-1080x1920.png` | 9:16 | Šviesus · „Ką pasakoja tavo delnai?“ |
-| `13-sviesus-privalumai-1080x1080.png` | 1:1 | Šviesus · privalumai + garantija |
+| `13-sviesus-privalumai-1080x1080.png` | 1:1 | Šviesus · privalumai + grąžinimo sąlygos |
 | `14-draugems-1080x1080.png` | 1:1 | Tamsus · „Pakviesk draugę — palyginkit“ |
 | `15-draugems-story-1080x1920.png` | 9:16 | Šviesus · „Nustebink draugę“ |
 | `16-ruduo-1080x1350.png` | 4:5 | Sezoninis (ruduo) · „Laikas pokyčiams“ |
@@ -52,7 +52,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 > Ką slepia tavo delnai? ✋
 > Nufotografuok abu delnus telefonu — ir per kelias minutes gauk asmeninį gyvenimo žemėlapį: stiprybės, kryptis, santykiai, finansai ir artėjantys pokyčiai.
 > ✦ 7 skyrių analizė ekrane ir PDF el. paštu
-> ✦ 14 dienų pinigų grąžinimo garantija
+> ✦ Per 14 dienų gali paprašyti grąžinti pinigus
 > 👉 www.delnaskaitymas.lt
 
 **B — klausimai**
@@ -76,7 +76,7 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 
 ### Aprašymas (Description)
 - Asmeninė AI chiromantijos analizė · 16,99 €
-- 14 dienų pinigų grąžinimo garantija
+- 14 dienų pinigų grąžinimo sąlygos
 
 ### Mygtukas (CTA)
 „Sužinoti daugiau“ (Learn more) — veikia geriau nei „Pirkti“ tokio tipo produktui.
@@ -93,14 +93,14 @@ Karuselė (FB/IG): 01 → 02 → 03 → 07.
 5. Nufotografuok Delnus
 6. Rezultatas Per Kelias Min.
 7. PDF Tiesiai Į El. Paštą
-8. 14 d. Pinigų Grąžinimas
+8. 14 d. Grąžinimo Sąlygos
 9. 7 Skyrių Asmeninė Analizė
 10. Tik 16,99 €
 
 **Aprašymai (≤90 simb.)**
 1. Nufotografuok abu delnus ir gauk asmeninį gyvenimo žemėlapį per kelias minutes.
 2. Stiprybės, kryptis, santykiai, finansai ir pokyčiai — 7 skyrių analizė PDF formatu.
-3. Mokėjimas apsaugotas Stripe. 14 dienų pinigų grąžinimo garantija.
+3. Mokėjimas apsaugotas Stripe. 14 dienų pinigų grąžinimo sąlygos.
 4. Apple Pay, Google Pay, Revolut Pay ar kortele. Išbandyk dabar!
 
 **Raktažodžiai (pradžiai):** delnų skaitymas, delno linijos, chiromantija, delnų būrimas, ką reiškia delno linijos, gyvenimo linija delne, likimo linija, būrimas internetu.
@@ -137,7 +137,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 - Visuose vizualuose yra „Pramoginio pobūdžio · 18+“ — **nenaikink** (sutampa su Naudojimosi sąlygomis).
 - **Meta** draudžia tekstus, kurie tiesiogiai teigia apie žmogaus asmenines savybes („Ar tu vieniša?“, „Tavo skolos…“). Klausimai apie *ateitį ir potencialą* yra OK, bet venk „tu turi problemų su…“.
 - Nežadėk garantuotų rezultatų ar tikslių spėjimų („sužinosi, kada praturtėsi“). Formuluok kaip „atskleisk“, „pažvelk“, „sužinok, ką pasakoja delnai“.
-- Garantiją visada vadink „14 dienų pinigų grąžinimo garantija“ — tiksliai taip, kaip svetainėje.
+- Grąžinimą vadink „14 dienų pinigų grąžinimo sąlygos“ — tiksliai taip, kaip svetainėje. Nerašyk „garantija“, „be rizikos“ ar „grąžinsime pinigus“: gavus analizę grąžinimas savanoriškas ir vertinamas individualiai.
 
 ---
 
@@ -154,7 +154,7 @@ Tip: pirmos 2 sekundės svarbiausios — pradėk nuo klausimo ar stipraus delno 
 **G — šviesus, ramus (11, 12, 13)**
 > Kas tau lemta? 🌙
 > Senovinė chiromantija, šiuolaikiškai: užtenka telefono kameros. Stiprybės, santykiai, finansai ir artėjantys pokyčiai — viename asmeniniame žemėlapyje.
-> 14 dienų pinigų grąžinimo garantija.
+> Per 14 dienų gali paprašyti grąžinti pinigus.
 
 **H — su drauge (14, 15)**
 > Merginų vakarui — kažkas naujo ✨
@@ -301,7 +301,7 @@ Gruodį reklamos kaina (CPM) aukščiausia — biudžetą verta padidinti ~20–
 
 **R — dovana sau (26)**
 > Šias Kalėdas — ir dovana sau 🎄
-> Valanda sau ir asmeninis gyvenimo žemėlapis, prie kurio galėsi sugrįžti visus metus. 14 dienų pinigų grąžinimo garantija.
+> Valanda sau ir asmeninis gyvenimo žemėlapis, prie kurio galėsi sugrįžti visus metus. Per 14 dienų gali paprašyti grąžinti pinigus.
 
 **S — šventinis vakaras (27, 28)**
 > Kažkas naujo prie šventinio stalo ✨
