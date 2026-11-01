@@ -2738,7 +2738,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
       // nuo naršyklės saugyklos elgsenos.
       metadata: { name: name || '', email, bgSessionId: bgSessionId || '', orderNumber: orderNumber || '', addKlausk: q.bump ? '1' : '', ref: q.refCode || '', refBy: q.refBy || '', promo: q.promoCode || '' },
       success_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://${process.env.APP_DOMAIN || 'www.delnaskaitymas.lt'}/`,
+      // Be cancel_url: Stripe mokėjimo puslapyje nerodomas mygtukas „← Atgal“ (grįžti iš mokėjimo neapmokėjus nesiūloma)
       ...(q.promoCode ? { expires_at: promoCheckoutExpiry(q.promoCode) } : {})
     });
     if (q.promoCode) promoAddHold(q.promoCode, session.id);
@@ -4300,7 +4300,7 @@ app.post('/pora/create-checkout', sensitiveLimiter, async (req, res) => {
       customer_email: email,
       metadata: { type: 'pora', email, nameA: nameA.trim(), nameB: nameB.trim(), promo: pr ? pr.code : '', ref: useRef ? refCode : '', refBy: refCode || '' },
       success_url: `${base}/?pora={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/pora${pr ? '?promo=' + pr.code : ''}`,
+      // Be cancel_url: Stripe mokėjimo puslapyje nerodomas mygtukas „← Atgal“ (grįžti iš mokėjimo neapmokėjus nesiūloma)
       ...(pr ? { expires_at: promoCheckoutExpiry(pr.code) } : {})
     });
     if (pr) promoAddHold(pr.code, session.id);
@@ -4957,8 +4957,8 @@ async function createKlauskCheckout(record) {
     locale: 'lt',
     customer_email: email,
     metadata: { type: 'klausk', kind: record.kind || 'asmenine', email, name: (name || '').trim().slice(0, 120) },
-    success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/klausk?atsaukta=1`
+    success_url: `${base}/klausk?s={CHECKOUT_SESSION_ID}`
+    // Be cancel_url: Stripe mokėjimo puslapyje nerodomas mygtukas „← Atgal“
   });
   const orders = loadKlauskOrders();
   orders[session.id] = { ...record, qa: [], paid: false, createdAt: Date.now() };
@@ -5341,8 +5341,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
       },
       success_url: `${base}/dovana?session_id={CHECKOUT_SESSION_ID}`,
       ...(pr ? { expires_at: promoCheckoutExpiry(pr.code) } : {}),
-      // Grįžus iš Stripe neapmokėjus — tas pats tipas, šventė ir −20 % pasiūlymas
-      cancel_url: `${base}/dovana` + (() => { const q = new URLSearchParams(); if (kind === 'pora') q.set('tipas', 'pora'); if (season) q.set('sezonas', season); if (pr) q.set('promo', pr.code); const t = q.toString(); return t ? '?' + t : ''; })()
+      // Be cancel_url: Stripe mokėjimo puslapyje nerodomas mygtukas „← Atgal“
     });
     if (pr) promoAddHold(pr.code, session.id, kind);
     res.json({ url: session.url });
