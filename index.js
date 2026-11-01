@@ -5250,9 +5250,9 @@ function poraDuoEmailOffer(o, sessionId) {
 // Mokėjimo patvirtinimas laiškuose (vietoj Stripe kvito): paslauga, suma, data, užsakymo nr., pardavėjas
 // Atsisakymo teisės patvirtinimas „patvariojoje laikmenoje“ (Direktyvos 2011/83/ES 8 str. 7 d.) — po mokėjimo patvirtinimu laiške
 const WAIVER = {
-  asm: 'Prieš pateikiant nuotraukas sutikai, kad analizė būtų pradėta iš karto, ir patvirtinai, kad dėl to netenki 14 d. atsisakymo teisės (Naudojimosi sąlygų 4 sk.). Savanoriška pinigų grąžinimo garantija — 5 sk.',
+  asm: 'Prieš pateikiant nuotraukas sutikai, kad analizė būtų pradėta iš karto, ir patvirtinai, kad dėl to netenki 14 d. atsisakymo teisės (Naudojimosi sąlygų 4 sk.). Savanoriškas pinigų grąžinimas — 5 sk.',
   asmKl: 'Įskaičiuotiems 3 klausimams atsisakymo teisė galioja, kol neužduotas nė vienas klausimas (5c sk.).',
-  pora: 'Prieš pateikiant nuotraukas sutikote, kad analizė būtų pradėta iš karto, ir patvirtinote, kad dėl to netenkate 14 d. atsisakymo teisės (Naudojimosi sąlygų 4 ir 5b sk.). Savanoriška pinigų grąžinimo garantija — 5 sk.',
+  pora: 'Prieš pateikiant nuotraukas sutikote, kad analizė būtų pradėta iš karto, ir patvirtinote, kad dėl to netenkate 14 d. atsisakymo teisės (Naudojimosi sąlygų 4 ir 5b sk.). Savanoriškas pinigų grąžinimas — 5 sk.',
   kl: 'Kol neužduotas nė vienas klausimas, per 14 d. gali atsisakyti užsakymo ir susigrąžinti pinigus (Naudojimosi sąlygų 5c sk.).',
   klPora: 'Kol neužduotas nė vienas klausimas, per 14 d. galite atsisakyti užsakymo ir susigrąžinti pinigus (Naudojimosi sąlygų 5c sk.).',
   gift: 'Per 14 d. nuo įsigijimo, kol kuponas nepanaudotas, gali atsisakyti pirkimo ir susigrąžinti pinigus — parašyk info@delnaskaitymas.lt ir nurodyk kupono kodą (Naudojimosi sąlygų 5a sk.).'

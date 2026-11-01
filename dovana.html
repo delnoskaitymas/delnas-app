@@ -343,7 +343,7 @@ body.form-view.tight #form-err{margin-top:6px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
 body.form-view.tight #v-form .trust{display:none}
 body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
-/* Pinigų grąžinimo garantijos langas (kaip programėlės mokėjimo ekrane, dovanų kuponui — „tu“) */
+/* Pinigų grąžinimo sąlygų langas (kaip programėlės mokėjimo ekrane, dovanų kuponui — „tu“) */
 .rf-link{background:none;border:none;padding:0;font:inherit;color:var(--gold);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(212,168,67,.5);cursor:pointer}
 .rf-bg{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:12px}
 .rf-bg.open{display:flex}
@@ -417,7 +417,7 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
         <input type="email" id="f-email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
         <div class="sched-hint">Kuponą gausi iš karto ekrane ir el. paštu, o gavėjui galėsi nusiųsti kaip patogu.</div>
       </div>
-      <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą. <button type="button" class="rf-link" id="rf-open">14 d. grąžinimo garantija</button></span></label>
+      <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą. <button type="button" class="rf-link" id="rf-open">14 d. pinigų grąžinimo sąlygos</button></span></label>
       <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">16,99 €</span></button>
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe</div>
@@ -1096,10 +1096,10 @@ function delnasEv(e){ try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) 
     else if(c('#pay-btn')) delnasEv(isPora()?'gift_checkout_pora':'gift_checkout_asm'); },true);
 })();
 </script>
-<!-- Pinigų grąžinimo garantija (dovanų kuponas: pirkėjui — kol nepanaudotas; gavėjui — 5 skyriaus garantija) -->
+<!-- Pinigų grąžinimo sąlygos (dovanų kuponas: pirkėjui — kol nepanaudotas; gavėjui — 5 skyriaus sąlygos) -->
 <div class="rf-bg" id="rf-bg" role="dialog" aria-modal="true" aria-labelledby="rf-title">
   <div class="rf">
-    <div class="rf-h"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3 id="rf-title">Pinigų grąžinimo garantija</h3></div>
+    <div class="rf-h"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3 id="rf-title">Pinigų grąžinimo sąlygos</h3></div>
     <div class="rf-body">
       <p><b>Kol kuponas nepanaudotas</b> — per 14 dienų nuo įsigijimo gali atsisakyti pirkimo ir atgauti visą sumą: parašyk info@delnaskaitymas.lt ir nurodyk kupono kodą. Grąžinus pinigus kuponas anuliuojamas.</p>
       <p><b>Gavėjui gavus analizę</b> grąžinimas nėra privalomas. Tai mūsų geranoriškas sprendimas: jei per <b>14 dienų</b> rezultatai neatitiko lūkesčių, galima parašyti mums, o kiekvieną prašymą įvertinsime individualiai. Jei pinigus grąžintume, jie būtų pervesti tau, kaip kupono pirkėjui.</p>
@@ -1111,7 +1111,7 @@ function delnasEv(e){ try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) 
       </ol>
       <p class="rf-sm">Jei dėl techninės klaidos rezultato gauti nepavyko — pinigus grąžinsime patys, prašyti nereikia.</p>
       <div class="rf-note"><b>Svarbu:</b> kupono kodą rasi ekrane po apmokėjimo ir laiške.</div>
-      <div class="rf-legal">Panaudojus kuponą analizė pradedama iš karto, todėl nuo to momento teisinė 14 dienų atsisakymo teisė netaikoma. Garantija po panaudojimo — savanoriška, todėl pasiliekame teisę įvertinti kiekvieną prašymą individualiai bei atsisakyti grąžinimo piktnaudžiavimo atveju (žr. <a href="/naudojimosi-salygos?is=dovana#dovanos" target="_blank">Naudojimosi sąlygas</a>).</div>
+      <div class="rf-legal">Panaudojus kuponą analizė pradedama iš karto, todėl nuo to momento teisinė 14 dienų atsisakymo teisė netaikoma. Grąžinimas po panaudojimo — savanoriškas, todėl pasiliekame teisę įvertinti kiekvieną prašymą individualiai bei atsisakyti grąžinimo piktnaudžiavimo atveju (žr. <a href="/naudojimosi-salygos?is=dovana#dovanos" target="_blank">Naudojimosi sąlygas</a>).</div>
     </div>
     <button type="button" class="btn" id="rf-close">Tęsti užsakymą</button>
   </div>
