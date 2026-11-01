@@ -5137,10 +5137,9 @@ const KLAUSK_REMIND_MS = Number(process.env.KLAUSK_REMIND_MS) || 24 * 60 * 60 * 
 // Laiškų temos su kreipiniu (vardai šauksmininku)
 function vocPrefix(n) { const v = ltPhrase(String(n || '').trim(), 'voc'); return v ? v + ', ' : ''; }
 function capFirst(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
-// Priminimas apie nebaigtą užsakymą — be nuolaidos (tik priminimas, kaip baigti užsakymą)
-function abandonSubject(it) {
-  if (it.kind === 'pora') { const v = it.nameA && it.nameB ? vocPrefix(it.nameA + ' ir ' + it.nameB) : ''; return `${v ? v + 'jūsų' : 'Jūsų'} poros suderinamumas laukia`; }
-  const v = vocPrefix(it.name); return `${v ? v + 'tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
+function abandonSubject(it, p) {
+  if (it.kind === 'pora') { const v = it.nameA && it.nameB ? vocPrefix(it.nameA + ' ir ' + it.nameB) : ''; return `${v ? v + 'jūsų' : 'Jūsų'} poros suderinamumas laukia (−${p.pct} % 24 valandoms)`; }
+  const v = vocPrefix(it.name); return `${v ? v + 'tavo' : 'Tavo'} gyvenimo žemėlapis laukia (−${p.pct} % 24 valandoms)`;
 }
 function klauskDigestSubject(name, pora, n) {
   const v = vocPrefix(name), w = pora ? 'jūsų' : 'tavo';
@@ -5779,8 +5778,8 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   const giftBase = { code: 'TEST-0000', kind: tSeason === 'valentinas' ? 'pora' : 'asmenine', fromName: 'Tomas', recipientName: tSeason === 'valentinas' ? 'Ieva ir Tomas' : 'Ieva', message: tSeason === 'kaledos' ? 'Linksmų Kalėdų! ✨' : tSeason === 'metai' ? 'Laimingų Naujųjų metų! ✨' : tSeason === 'mama' ? 'Su Motinos diena! 🌷' : tSeason === 'valentinas' ? 'Su Valentino diena! 💞' : 'Su gimtadieniu! ✨', season: tSeason, klausk: true, amount: tSeason === 'valentinas' ? PORA_PRICE_CENTS + GIFT_KLAUSK_PORA_CENTS : PERSONAL_PRICE_CENTS + GIFT_KLAUSK_CENTS, createdAt: now, expiresAt: now + 365 * DAY_MS };
   const list = [];
   const add = (label, build) => { try { list.push({ label, ...build() }); } catch (e) { list.push({ label, error: e.message }); } };
-  add('Neužbaigtas užsakymas (asmeninė)', () => ({ subject: abandonSubject({ kind: 'asmenine', name }), html: buildAbandonEmailHtml({ kind: 'asmenine', name, email: to }) }));
-  add('Neužbaigtas užsakymas (porų)', () => ({ subject: abandonSubject({ kind: 'pora', nameA, nameB }), html: buildAbandonEmailHtml({ kind: 'pora', nameA, nameB, email: to }) }));
+  add('Neužbaigtas užsakymas (asmeninė)', () => ({ subject: abandonSubject({ kind: 'asmenine', name }, { pct: BACK_PCT }), html: buildAbandonEmailHtml({ kind: 'asmenine', name, email: to }, fake({ pct: BACK_PCT })) }));
+  add('Neužbaigtas užsakymas (porų)', () => ({ subject: abandonSubject({ kind: 'pora', nameA, nameB }, { pct: BACK_PCT }), html: buildAbandonEmailHtml({ kind: 'pora', nameA, nameB, email: to }, fake({ pct: BACK_PCT })) }));
   add('Asmeninės analizės rezultatas', () => ({ subject: `${ltPhrase(name, 'voc')}, tavo gyvenimo žemėlapis paruoštas ✦ Mokėjimas gautas`, html: buildResultEmailHtml({ isGift: false, name, orderNumber: 'DLN-000000', poraLine: resultPoraLineHtml(fake({ price: PORA_BUNDLE_CENTS, expiresAt: now + 30 * DAY_MS })), receipt: payReceiptHtml({ item: 'Gyvenimo žemėlapis + 3 klausimai', amount: PERSONAL_PRICE_CENTS + KLAUSK_BUMP_CENTS, at: now, orderNo: 'DLN-000000', note: WAIVER.asm + ' ' + WAIVER.asmKl }) }) }));
   add('Porų analizės rezultatas', () => ({ subject: poraResultSubject({ nameA, nameB }), html: buildPoraResultEmailHtml({ nameA, nameB, amount: PORA_PRICE_CENTS, createdAt: now, result: { suderinamumas: 78 } }, `${nameA} ir ${nameB}`, 'cs_test_0000') }));
   add('Klausimai apmokėti (atskiras pirkimas)', () => ({ subject: klauskPaidSubject({ name, kind: 'asmenine' }), html: buildKlauskPaidEmailHtml({ name, kind: 'asmenine', amount: KLAUSK_PRICE_CENTS, paidAt: now }, 'kp_test') }));
@@ -6229,15 +6228,15 @@ function markEmailPaid(email) {
   _paidEmailsNoted.add(k);
   try { const s = loadAbandoned(); s.paid[e] = Date.now(); saveAbandoned(s); } catch (err) {}
 }
-function buildAbandonEmailHtml(it) {
+function buildAbandonEmailHtml(it, p) {
   const base = appBaseUrl();
   const pora = it.kind === 'pora';
-  const link = pora ? `${base}/pora?utm_source=email&utm_campaign=nebaigtas` : `${base}/?utm_source=email&utm_campaign=nebaigtas`;
+  const link = pora ? `${base}/pora?grizk=${p.code}` : `${base}/?grizk=${p.code}`;
   const hi = pora ? (it.nameA && it.nameB ? `${escapeHtml(ltPhrase(it.nameA + ' ir ' + it.nameB, 'voc'))}, jūsų poros suderinamumas laukia` : 'Jūsų poros suderinamumas laukia') : `${it.name ? escapeHtml(ltPhrase(it.name, 'voc')) + ', tavo' : 'Tavo'} gyvenimo žemėlapis laukia`;
   const txt = pora
-    ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų porų suderinamumo liko vienas žingsnis. Užsakymą galite tęsti bet kada.`
-    : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Užsakymą gali tęsti bet kada.`;
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti užsakymą</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
+    ? `Pastebėjome, kad nebaigėte užsakymo — iki jūsų porų suderinamumo liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`
+    : `Pastebėjome, kad nebaigei užsakymo — iki tavo delnų analizės liko vienas žingsnis. Dovanojame <b style="color:#f0d58a">−${p.pct}&nbsp;% nuolaidą</b> — ji galioja 24 valandas.`;
+  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">${hi}</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">${txt}</p><a href="${link}" style="display:inline-block;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#000;text-decoration:none;padding:14px 28px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Tęsti su −${p.pct}&nbsp;%</a><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:18px 0 0">Nuolaida galioja iki ${fmtLtDate(p.expiresAt)}, ${ltHour(p.expiresAt)} val.<br>${pora ? 'Šį laišką gavote, nes pradėjote užsakymą ir jo nebaigėte.' : 'Šį laišką gavai, nes pradėjai užsakymą ir jo nebaigei.'}</p><p style="font-size:12px;color:rgba(245,238,216,.5);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(212,168,67,.15)">${pora ? 'Nenorite gauti tokių laiškų?' : 'Nenori gauti tokių laiškų?'} <a href="${base}/unsubscribe-reminder?email=${encodeURIComponent(it.email)}&amp;t=${unsubSig(it.email)}&amp;k=uzsakymas" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>${EMAIL_FOOTER_HTML}</div>`;
 }
 let _abandonRunning = false;
 async function processAbandoned() {
@@ -6253,7 +6252,7 @@ async function processAbandoned() {
       else if (now - it.createdAt > DAY_MS) skip = 'old';
       else if (isReminderBlacklisted(it.email) || isAbandonOptedOut(it.email)) skip = 'unsub';
       else if (s.items.some(x => x !== it && x.email === it.email && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
-      // Vienas priminimas tam pačiam įrenginiui / tinklui per 30 d. (kad tas pats žmogus negautų kelių laiškų skirtingais el. paštais)
+      // Vienas „−15 %“ laiškas tam pačiam įrenginiui / tinklui per 30 d. (kad nuolaidos nebūtų renkamos kitais el. paštais)
       else if (it.ip && s.items.some(x => x !== it && x.ip === it.ip && x.sentAt && now - x.sentAt < 30 * DAY_MS)) skip = 'recent';
       else if (it.kind === 'pora' && it.ref) {
         try { const cs = await stripe.checkout.sessions.retrieve(it.ref); if (cs && cs.payment_status === 'paid') skip = 'paid'; } catch (e) {}
@@ -6269,14 +6268,15 @@ async function processAbandoned() {
         } catch (e) {}
       }
       if (skip) { done[it.id] = { skip }; continue; }
+      const p = createPromo({ kind: 'back', product: it.kind === 'pora' ? 'pora' : 'asmenine', pct: BACK_PCT, ttlMs: DAY_MS, email: it.email, key: 'back:' + it.id });
       try {
         await mailer.sendMail({
           from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
           to: it.email,
-          subject: abandonSubject(it),
-          html: buildAbandonEmailHtml(it)
+          subject: abandonSubject(it, p),
+          html: buildAbandonEmailHtml(it, p)
         });
-        done[it.id] = { sentAt: Date.now() };
+        done[it.id] = { sentAt: Date.now(), code: p.code };
         it.sentAt = done[it.id].sentAt; // kad tame pačiame cikle tam pačiam tinklui antras laiškas nebūtų siunčiamas
         statInc('abandon_sent');
         console.log(`[abandon] priminimas išsiųstas ${it.email} (${it.kind})`);
