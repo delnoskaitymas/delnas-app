@@ -2678,6 +2678,24 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
   }
 });
 
+// Kvietėjo atlygiai (3 klausimai už kiekvieną pirkusį draugą) — rodomi kvietėjo rezultato kvietimo bloke.
+// Tik pačiam kvietėjui (tas pats apmokėjimo patvirtinimas kaip /ref/create): kvietimo kodas viešas, todėl vien juo atlygių nepasieksi.
+app.post('/ref/rewards', pollLimiter, (req, res) => {
+  try {
+    const { paymentRef } = req.body || {};
+    if (!ownsPaymentRef(paymentRef, req.body)) return res.json({ rewards: [] });
+    const st = loadRefs(), code = st.byPayment[paymentRef], r = code && st.codes[code];
+    if (!r) return res.json({ rewards: [] });
+    const orders = loadKlauskOrders();
+    const rewards = (r.uses || []).filter(u => u.rewardId && orders[u.rewardId] && orders[u.rewardId].paid)
+      .map(u => ({ id: u.rewardId, left: Math.max(0, KLAUSK_MAX_QUESTIONS - (orders[u.rewardId].qa || []).length), at: u.at || 0 }));
+    res.json({ rewards });
+  } catch (err) {
+    console.error('/ref/rewards klaida:', err);
+    res.json({ rewards: [] });
+  }
+});
+
 // Trumpa kvietimo nuoroda, užrašyta ant dalinimosi kortelių (delnaskaitymas.lt/d/KODAS): kai programėlė
 // perduoda tik paveikslėlį (be nuorodos), draugas gali ją įvesti ranka ir vis tiek gauna −10 %
 app.get('/d/:code', (req, res) => {
