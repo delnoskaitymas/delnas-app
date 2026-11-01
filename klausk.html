@@ -104,7 +104,7 @@ a,button{-webkit-tap-highlight-color:transparent}
         <button type="button">Kas man trukdo judėti pirmyn?</button>
       </div>
       <button type="submit" class="btn off" id="go">Gauti atsakymą</button>
-      <div class="note" id="note">Užduodant pirmą klausimą paslauga suteikiama iš karto (žr. <a href="/naudojimosi-salygos?is=klausk#klausk" target="_blank">sąlygų 5c skyrių</a>).</div>
+      <div class="note" id="note"><span id="note-txt">Užduodant pirmą klausimą sutinki, kad atsakymas būtų pateiktas iš karto, ir patvirtini, kad dėl to netenki 14 d. atsisakymo teisės</span> (žr. <a href="/naudojimosi-salygos?is=klausk#klausk" target="_blank">sąlygų 5c skyrių</a>).</div>
       <div class="err" id="err"></div>
     </form>
   </div>
@@ -172,6 +172,8 @@ document.getElementById('back-link').addEventListener('click', e => {
     // Atėjus iš laiško nuorodos „Užduoti dar 3 klausimus“ — iškart prie pasiūlymo
     if (left <= 0 && location.hash === '#daugiau') setTimeout(() => $('daugiau').scrollIntoView({ block: 'center' }), 150);
     $('note').style.display = left === 3 ? '' : 'none';
+    // Sutikimas pradėti teikti iš karto ir atsisakymo teisės praradimas (Dir. 2011/83/ES 16 str. m p.) — porai „jūs“ forma
+    if (window._klKind === 'pora') $('note-txt').textContent = 'Užduodant pirmą klausimą sutinkate, kad atsakymas būtų pateiktas iš karto, ir patvirtinate, kad dėl to netenkate 14 d. atsisakymo teisės';
     $('left').textContent = left === 3 ? (window._klKind === 'pora' ? 'Galite užduoti 3 klausimus' : 'Gali užduoti 3 klausimus') : 'Liko klausimų: ' + left;
   }
   function status(html){ $('status').innerHTML = html; $('status').classList.remove('hidden'); }
