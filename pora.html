@@ -514,6 +514,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const r = await fetch('/pora/redeem-gift', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json();
     if (!r.ok || !d.id) throw new Error(d.error || 'Nepavyko panaudoti dovanos kodo');
+    // Porų analizė pradėta šiame skirtuke — rezultate „Grįžti atgal“ nerodomas (grįžtų į jau panaudoto kupono formą)
+    try { sessionStorage.setItem('delnasPoraOwn', String(Date.now())); } catch (x) {}
     location.href = '/?pora=' + encodeURIComponent(d.id);
   }
   function giftError(msg){
@@ -561,6 +563,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if (d.promoGone) { window._promoCode = ''; window._poraPromoGone = true; $('gift-note').classList.add('hidden'); document.body.classList.remove('has-note'); }
       if (!r.ok || !d.url) throw new Error(d.error || 'Nepavyko pradėti mokėjimo');
       saveForm();
+      // Užsakyta šiame skirtuke — porų rezultate „Grįžti atgal“ nerodomas (grįžtų į apmokėtą Stripe puslapį)
+      try { sessionStorage.setItem('delnasPoraOwn', String(Date.now())); } catch (x) {}
       location.href = d.url;
     } catch (ex) {
       err.textContent = ex.message; err.style.display = 'block';
