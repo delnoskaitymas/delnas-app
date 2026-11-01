@@ -794,6 +794,11 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       $('card-title').innerHTML = 'Tavo <em>dovanų kuponas</em>';
       $('card-lead').textContent = 'Atsisiųsk, atsispausdink arba nusiųsk jį tam, kam dovanoji.';
     }
+    // Planuotas siuntimas gavėjui (tik po pirkimo) — dovaną išsiųs sistema, pirkėjui siųsti nereikia
+    if (g.sendTo) {
+      const when = g.sendNow ? 'per kelias minutes' : (/^\d{4}-\d{2}-\d{2}$/.test(g.sendAt || '') ? fmtDate(Date.parse(g.sendAt + 'T12:00:00Z')) + ' apie ' + String(g.sendHour).padStart(2, '0') + ':00' : '');
+      $('card-lead').textContent = 'Dovaną išsiųsime adresu ' + g.sendTo + (when ? ' ' + when : '') + '. Kuponą gali atsisiųsti ir pats.';
+    }
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
     $('card-lead').classList.toggle('hidden', !!used);
