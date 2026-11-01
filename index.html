@@ -6592,6 +6592,8 @@ async function loadPoraDuo(){
   if(!box||!p.sid) return; box.innerHTML='';
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
   poraOnceGift(d&&d.once);
+  // Priminimas po 3 mėn. jau užregistruotas (pvz. perkrovus puslapį) — vietoj mygtuko patvirtinimas
+  if(d&&d.reminded){ const pb=document.getElementById('pora-plan-btn'), pd=document.getElementById('pora-plan-done'); if(pb&&pd){ pb.style.display='none'; pd.textContent='✦ Priminsime po 3 mėnesių el. paštu.'; pd.style.display='block'; } }
   if(!d||!d.price||!d.a||!d.b) return;
   window._poraDuoPrices={price:d.price,base:d.base};
   const eur=c=>(c/100).toFixed(2).replace('.',',');

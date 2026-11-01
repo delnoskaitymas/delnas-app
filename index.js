@@ -4524,7 +4524,9 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     const ownA = poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm');
     // −ONCE_PCT % dovanai (24 val.), kaip ir Gyvenimo žemėlapio pirkėjui — ir dovanų kuponu gautam rezultatui
     const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + sessionId });
-    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt), once: once && !once.usedBy ? promoPublic(once) : null });
+    // Priminimas po 3 mėn. jau užregistruotas — rezultate vietoj mygtuko rodomas patvirtinimas
+    const reminded = loadReminders().some(r => r.kind === 'pora' && r.sessionId === sessionId);
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt), once: once && !once.usedBy ? promoPublic(once) : null, reminded });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
     res.json({});
