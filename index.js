@@ -2680,14 +2680,20 @@ app.post('/ref/create', sensitiveLimiter, async (req, res) => {
 
 // Kvietėjo atlygiai (3 klausimai už kiekvieną pirkusį draugą) — rodomi kvietėjo rezultato kvietimo bloke.
 // Tik pačiam kvietėjui (tas pats apmokėjimo patvirtinimas kaip /ref/create): kvietimo kodas viešas, todėl vien juo atlygių nepasieksi.
+// Rodomos visos to paties el. pašto asmeninių kvietimo nuorodų dovanos; atsakymai remiasi naujausia analize (klauskResultFor).
 app.post('/ref/rewards', pollLimiter, (req, res) => {
   try {
     const { paymentRef } = req.body || {};
     if (!ownsPaymentRef(paymentRef, req.body)) return res.json({ rewards: [] });
     const st = loadRefs(), code = st.byPayment[paymentRef], r = code && st.codes[code];
-    if (!r) return res.json({ rewards: [] });
+    // Kvietėjo el. paštas — iš šios analizės kvietimo nuorodos, mokėjimo ar dovanų kupono
+    const pt = loadPaymentTokens()[paymentRef], ga = giftAnalysis(paymentRef);
+    const email = String((r && r.email) || (pt && pt.email) || (ga && ga.redeemedEmail) || '').toLowerCase();
+    if (!email) return res.json({ rewards: [] });
+    // Visos šio žmogaus asmeninės kvietimo nuorodos (ir iš ankstesnių analizių) — visos dovanos matomos bet kuriame jo rezultate
+    const uses = Object.values(st.codes).filter(c => c && !c.pora && String(c.email || '').toLowerCase() === email).flatMap(c => c.uses || []);
     const orders = loadKlauskOrders();
-    const rewards = (r.uses || []).filter(u => u.rewardId && orders[u.rewardId] && orders[u.rewardId].paid)
+    const rewards = uses.filter(u => u.rewardId && orders[u.rewardId] && orders[u.rewardId].paid)
       .map(u => ({ id: u.rewardId, left: Math.max(0, KLAUSK_MAX_QUESTIONS - (orders[u.rewardId].qa || []).length), at: u.at || 0 }));
     res.json({ rewards });
   } catch (err) {
@@ -4880,6 +4886,17 @@ GALUTINIS PATIKRINIMAS PRIEŠ ATSAKANT (privalomas): perskaityk KIEKVIENĄ sakin
 Jei bent vienas atsakymas „ne“ — perrašyk sakinį ir patikrink jį dar kartą nuo pradžios.`;
 }
 
+// Naujausia asmens analizė („Mano analizėse“ išsaugotos visos apmokėtos ir dovanų analizės) — pagal el. paštą
+function latestPersonalResult(email) {
+  const e = String(email || '').toLowerCase(); if (!e) return null;
+  const it = Object.values(loadSaved().items).filter(x => x.email === e && x.result && typeof x.result === 'object').sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+  return it ? pickKlauskResult(it.result) : null;
+}
+// Kvietėjo dovanoti klausimai (už draugo pirkimą) remiasi naujausia kvietėjo analize, ne ta, iš kurios buvo pasidalinta nuoroda
+function klauskResultFor(order) {
+  if (order && order.reward && order.kind !== 'pora') { const r = latestPersonalResult(order.email); if (r) return r; }
+  return order.result;
+}
 async function answerKlausk(order, question) {
   if (order.kind === 'pora') return answerKlauskPora(order, question);
   const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
@@ -4887,7 +4904,7 @@ async function answerKlausk(order, question) {
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
 
 ASMENINĖ DELNŲ ANALIZĖ:
-${klauskContextText(order.result)}${klauskCompareText(klauskCompareOf(order), false)}
+${klauskContextText(klauskResultFor(order))}${klauskCompareText(klauskCompareOf(order), false)}
 ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
 KLAUSIMAS: ${question}
 
