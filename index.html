@@ -7603,7 +7603,8 @@ function fitPayScreen(){
   }
   // Šventiniu laikotarpiu — rezultatų ekranų dovanų nuorodose šventė iš karto pažymėta, antraštė šventinė
   try{
-    const d=byDate().replace(/_d$/,''), k=d==='nm'?'metai':d, G={kaledos:'🎄 Padovanok Kalėdoms',metai:'✨ Padovanok Naujiesiems metams',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
+    // Naujųjų metų dovana — tik gruodžio 27–31 d. („nm“); sausio 3–10 d. („metai“) — tik pradžios ekrano sveikinimas, ne šventinė dovana
+    const d=byDate().replace(/_d$/,''), k=d==='nm'?'metai':(d==='metai'?'':d), G={kaledos:'🎄 Padovanok Kalėdoms',metai:'✨ Padovanok Naujiesiems metams',valentinas:'💞 Padovanok Valentino dienai',mama:'🌷 Padovanok mamai'};
     if(G[k]){
       const sec=document.getElementById('rb-gift-sec'); if(sec) sec.textContent=G[k];
       document.querySelectorAll('a[href^="/dovana"]').forEach(a=>{
