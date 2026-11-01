@@ -878,8 +878,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <input type="text" id="o-name" placeholder="Vardas" aria-label="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
       <input type="email" id="o-email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
-    <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
-    <!-- Vienas priminimas su nuolaida siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
+    <!-- Vienas priminimas (be nuolaidos) siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
     <div class="o-remind" id="o-remind-row"><span id="o-remind-txt">Jei užsakymą atidėtum, vieną kartą priminsime. <button type="button" id="o-noremind" onclick="window._noRemind=true;document.getElementById('o-remind-txt').textContent='✓ Gerai, priminimo nesiųsime.';">Nereikia</button></span></div>
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
