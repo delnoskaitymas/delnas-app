@@ -5106,7 +5106,7 @@ async function refRewardsRefresh(){
       const n=rw.length;
       const t=n===1?'🎁 Draugas pasinaudojo tavo kvietimu — tau 3 klausimai dovanų':'🎁 '+n+(n<10?' draugai':' draugų')+' pasinaudojo tavo kvietimu — už kiekvieną 3 klausimai dovanų';
       const lbl=(x,i)=>(n>1?(i+1)+'-oji dovana: ':'')+(x.left>=3?'Užduoti klausimus':x.left>0?'Užduoti likusius klausimus (liko '+x.left+')':'✓ Peržiūrėti atsakymus');
-      box.innerHTML='<div class="ref-rw-t">'+t+'</div>'+rw.map((x,i)=>'<a href="/klausk?s='+encodeURIComponent(x.id)+'" target="_blank" rel="noopener">'+lbl(x,i)+'</a>').join('');
+      box.innerHTML='<div class="ref-rw-t">'+t+'</div><div class="ref-note" style="margin:0 0 4px">Atsakymai remsis tavo naujausiu gyvenimo žemėlapiu.</div>'+rw.map((x,i)=>'<a href="/klausk?s='+encodeURIComponent(x.id)+'" target="_blank" rel="noopener">'+lbl(x,i)+'</a>').join('');
       box.style.display='block';
     }
   }catch(e){}
