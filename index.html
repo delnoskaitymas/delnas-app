@@ -36,7 +36,7 @@ if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnas
 <meta name="twitter:description" content="Asmeninis gyvenimo žemėlapis pagal tavo delnų nuotraukas: stiprybės, jausmai, mąstymas ir kasdienybė. Rezultatas per kelias minutes.">
 <meta name="twitter:image" content="https://www.delnaskaitymas.lt/img/og.jpg"><!--/og-->
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('/vendor/fonts/fonts.css');
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;position:fixed;overflow:hidden}
 #app-wrap{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -2400,14 +2400,14 @@ async function initHandLandmarker(){
   if (_handLandmarkerLoadingPromise) return _handLandmarkerLoadingPromise;
   _handLandmarkerLoadingPromise = (async () => {
     try {
-      const visionModule = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+      const visionModule = await import('/vendor/mp/vision_bundle.mjs');
       const { HandLandmarker, FilesetResolver } = visionModule;
       const filesetResolver = await FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        location.origin+'/vendor/mp/wasm'
       );
       _handLandmarker = await HandLandmarker.createFromOptions(filesetResolver, {
         baseOptions: {
-          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+          modelAssetPath: '/vendor/mp/hand_landmarker.task',
           delegate: 'GPU'
         },
         runningMode: 'IMAGE',

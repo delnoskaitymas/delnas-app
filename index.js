@@ -317,6 +317,47 @@ app.use((req, res, next) => {
   if ((req.method === 'GET' || req.method === 'HEAD') && (PUBLIC_FILES.has(req.path) || PUBLIC_IMG_RE.test(req.path))) return serveStatic(req, res, next);
   next();
 });
+// Šriftai ir rankos atpažinimas (MediaPipe) — iš mūsų serverio, ne iš Google Fonts / jsDelivr / Google Cloud:
+// lankytojo IP adresas trečiosioms šalims neperduodamas (BDAR; LG München I, 2022-01-20, 3 O 17493/20)
+const PUBLIC_FONT_RE = /^\/vendor\/fonts\/([a-z0-9-]+\.woff2|fonts\.css)$/;
+app.get(PUBLIC_FONT_RE, (req, res, next) => { res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); serveStatic(req, res, next); });
+let MP_DIR = '';
+try { MP_DIR = path.dirname(require.resolve('@mediapipe/tasks-vision')); } catch (e) { console.error('[mediapipe] paketas @mediapipe/tasks-vision neįdiegtas — rankos atpažinimas kameroje veiks per serverio patikrą'); }
+const MP_FILES = new Set(['vision_bundle.mjs', 'wasm/vision_wasm_internal.js', 'wasm/vision_wasm_internal.wasm', 'wasm/vision_wasm_nosimd_internal.js', 'wasm/vision_wasm_nosimd_internal.wasm']);
+// Rankos taškų modelis: serveris jį parsisiunčia vieną kartą (iš Google Cloud) ir toliau atiduoda pats
+const MP_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+const mpModelFile = () => path.join(SHARED_STORAGE_DIR, 'mediapipe-hand_landmarker.task');
+let _mpModelP = null;
+function ensureMpModel() {
+  const MP_MODEL_FILE = mpModelFile();
+  if (fs.existsSync(MP_MODEL_FILE) && fs.statSync(MP_MODEL_FILE).size > 100000) return Promise.resolve(true);
+  if (_mpModelP) return _mpModelP;
+  _mpModelP = (async () => {
+    try {
+      const r = await fetchWithTimeout(MP_MODEL_URL, {}, 60000);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length < 100000) throw new Error('per mažas failas');
+      fs.writeFileSync(MP_MODEL_FILE + '.tmp', buf); fs.renameSync(MP_MODEL_FILE + '.tmp', MP_MODEL_FILE);
+      console.log(`[mediapipe] modelis parsisiųstas (${buf.length} B)`);
+      return true;
+    } catch (e) { console.error('[mediapipe] modelio parsisiųsti nepavyko:', e.message); return false; }
+    finally { _mpModelP = null; }
+  })();
+  return _mpModelP;
+}
+setTimeout(ensureMpModel, 5000);
+app.get(/^\/vendor\/mp\/(.+)$/, async (req, res) => {
+  const f = req.params[0];
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  if (f === 'hand_landmarker.task') {
+    if (!(await ensureMpModel())) return res.status(404).end();
+    return res.type('application/octet-stream').sendFile(mpModelFile());
+  }
+  if (!MP_DIR || !MP_FILES.has(f)) return res.status(404).end();
+  if (f.endsWith('.wasm')) res.type('application/wasm'); else res.type('text/javascript');
+  res.sendFile(path.join(MP_DIR, f));
+});
 // PASTABA: anksčiau čia buvo "app.use('/webhook', express.raw(...))" —
 // bet joks realus Stripe webhook handler'is (app.post('/webhook', ...))
 // šiame faile NIEKADA nebuvo registruotas, tad ši eilutė buvo neveikiantis,
