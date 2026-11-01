@@ -6587,9 +6587,10 @@ function poraOnceGift(once){
   if(!once||!gifts||document.getElementById('pora-rb-once')) return;
   giftOnceShow('pora-rb-once',gifts,once);
 }
-async function loadPoraDuo(){
+// live=true — atnaujinama grįžus į langą (pvz. po asmeninės analizės kitame skirtuke): blokas neišvalomas iš anksto (ekranas nešokinėja)
+async function loadPoraDuo(live){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
-  if(!box||!p.sid) return; box.innerHTML='';
+  if(!box||!p.sid) return; if(!live) box.innerHTML='';
   let d; try{ d=await (await fetch('/pora/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:p.sid})})).json(); }catch(e){ return; }
   poraOnceGift(d&&d.once);
   // Priminimas po 3 mėn. jau užregistruotas (pvz. perkrovus puslapį) — vietoj mygtuko patvirtinimas
@@ -6606,12 +6607,23 @@ async function loadPoraDuo(){
   if(recentDone('asm')&&!d.a.used) d.a={...d.a,used:true,code:''};
   const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
   // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
-  if(both){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
+  // Grįžus į langą blokas nepaslepiamas (žmogus grįžta prie jo) — rodoma, kad abiejų analizės paruoštos
+  if(both&&!live){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
   box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Kiekvienam — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
     '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
   if(fb) fb.style.display='none';
 }
+// Grįžus į porų rezultatą iš kito skirtuko (asmeninė analizė atlikta ar nusiųsta) — pasiūlymų blokas atnaujinamas be perkrovimo
+let _poraDuoBusy=false;
+async function poraDuoRefresh(){
+  const box=document.getElementById('pora-duo'), sr=document.getElementById('s-pora-result');
+  if(_poraDuoBusy||document.visibilityState!=='visible'||!box||!sr||!sr.classList.contains('active')||!box.querySelector('a.btn')) return;
+  _poraDuoBusy=true; try{ await loadPoraDuo(true); }catch(e){} _poraDuoBusy=false;
+}
+document.addEventListener('visibilitychange',poraDuoRefresh);
+window.addEventListener('focus',poraDuoRefresh);
+window.addEventListener('pageshow',e=>{ if(e.persisted) poraDuoRefresh(); });
 async function poraPlanRemind(){
   const p=window._pora||{}, btn=document.getElementById('pora-plan-btn'), done=document.getElementById('pora-plan-done');
   if(!p.sid||!btn) return; btn.disabled=true; const t=btn.textContent; btn.textContent='Registruojama…';
