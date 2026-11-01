@@ -5727,17 +5727,17 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
 // ── Administratoriaus nemokami dovanų kuponai (loterijoms, influenceriams) ──
 // /admin/kuponai?key=ADMIN_KEY — forma: tipas, kiekis, pastaba. Kuponai be vardų,
 // galioja kaip įprasti (12 mėn., vienas panaudojimas, asmeninei — su 3 klausimais).
-function adminCouponsHtml(key, created) {
+function adminCouponsHtml(key, created, voided) {
   const store = loadGiftStore();
   const list = Object.values(store.codes).filter(g => g.admin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const st = { active: 'galioja', redeemed: 'panaudotas', expired: 'nebegalioja', void: 'anuliuotas' };
-  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų suderinamumas' : 'Gyvenimo žemėlapis'}${g.season && SEASON_LABELS[g.season] ? ' · ' + SEASON_LABELS[g.season] : ''}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}${g.redeemedAt ? `<br><span style="color:#777">${fmtLtDate(g.redeemedAt)}${g.redeemedName ? '<br>' + escapeHtml(g.redeemedName) : ''}${g.redeemedEmail ? '<br>' + escapeHtml(g.redeemedEmail) : ''}</span>` : ''}</td></tr>`;
+  const row = g => `<tr><td><b style="font-family:monospace;font-size:15px;white-space:nowrap">${escapeHtml(g.code)}</b><br><a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">Nuoroda</a></td><td>${g.kind === 'pora' ? 'Porų suderinamumas' : 'Gyvenimo žemėlapis'}${g.season && SEASON_LABELS[g.season] ? ' · ' + SEASON_LABELS[g.season] : ''}${g.note ? '<br><span style="color:#777">' + escapeHtml(g.note) + '</span>' : ''}</td><td>${fmtLtDate(g.createdAt)}<br>${st[giftStatus(g)] || ''}${g.redeemedAt ? `<br><span style="color:#777">${fmtLtDate(g.redeemedAt)}${g.redeemedName ? '<br>' + escapeHtml(g.redeemedName) : ''}${g.redeemedEmail ? '<br>' + escapeHtml(g.redeemedEmail) : ''}</span>` : ''}${g.status === 'void' && g.voidAt ? `<br><span style="color:#777">${fmtLtDate(g.voidAt)}</span>` : ''}${giftStatus(g) === 'active' ? `<form method="post" action="/admin/kuponai/anuliuoti?key=${k}" style="margin:6px 0 0;padding:0;background:none;border:0" onsubmit="return confirm('Anuliuoti kuponą ${escapeHtml(g.code)}? Jo nebebus galima panaudoti.')"><input type="hidden" name="kodas" value="${escapeHtml(g.code)}"><button type="submit" style="margin:0;padding:5px 10px;font-size:12px;background:#fff;color:#a33;border:1px solid #d9a3a3;border-radius:6px;font-weight:normal">Anuliuoti</button></form>` : ''}</td></tr>`;
   const k = encodeURIComponent(key);
   return `<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Nemokami kuponai — DELNAS</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222;max-width:900px}h1{font-size:20px}form{background:#f6f2e6;border:1px solid #e2d6b0;border-radius:10px;padding:14px;margin:12px 0 20px}label{display:block;margin:8px 0 4px;font-size:13px;color:#555}select,input{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;max-width:320px;box-sizing:border-box}button{margin-top:12px;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:#c98a1f;color:#fff;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #eee;padding:7px 6px;text-align:left;vertical-align:top}td:nth-child(2){overflow-wrap:anywhere}.new{background:#eef8ee;border:1px solid #bfe3bf;border-radius:10px;padding:12px;margin-bottom:16px}.new b{font-family:monospace;font-size:16px}.new a{word-break:break-all}</style></head><body>
 <h1>🎁 Nemokami dovanų kuponai</h1>
 <p style="font-size:13px;color:#666">Kuponai be vardų — loterijoms, konkursams ar influenceriams. Galioja 12 mėn., panaudojami vieną kartą. Abiejuose kuponuose — ir 3 klausimai. Laimėtojui užtenka nusiųsti kodą arba nuorodą; kuponą (paveikslėlį ar PDF) galima atsisiųsti paspaudus „Kuponas“.</p>
-${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
+${voided ? `<div class="new" style="background:#fbeeee;border-color:#e3b5b5">Kuponas <b>${escapeHtml(voided)}</b> anuliuotas — jo nebegalima panaudoti.</div>` : ''}${created && created.length ? `<div class="new"><div style="margin-bottom:6px">Sukurta ${created.length}:</div>${created.map(g => `<div><b>${escapeHtml(g.code)}</b> — ${g.kind === 'pora' ? 'Porų' : 'Asmeninė'} · <a href="/dovana/kortele?kodas=${encodeURIComponent(g.code)}" target="_blank">Kuponas</a> · <a href="${giftRedeemLink(g)}" target="_blank">${escapeHtml(giftRedeemLink(g))}</a></div>`).join('')}</div>` : ''}
 <form method="post" action="/admin/kuponai?key=${k}">
 <label>Analizė</label><select name="tipas"><option value="asmenine">Gyvenimo žemėlapis (+3 klausimai delnams)</option><option value="pora">Porų suderinamumas (+3 klausimai delnams)</option></select>
 <label>Šventė (užrašas kupone, neprivaloma)</label><select name="svente"><option value="">— be šventės —</option><option value="kaledos">Linksmų Kalėdų 🎄</option><option value="metai">Laimingų Naujųjų metų ✨</option><option value="valentinas">Su Valentino diena 💞</option><option value="mama">Su Motinos diena 🌷</option></select>
@@ -5796,7 +5796,21 @@ app.get('/admin/kuponai', sensitiveLimiter, (req, res) => {
   // Ką tik sukurti kuponai (po peradresavimo) — kad perkrovus puslapį jie nebūtų kuriami dar kartą
   const store = loadGiftStore();
   const created = String(req.query.sukurta || '').split(',').slice(0, 20).map(c => store.codes[c]).filter(g => g && g.admin);
-  res.type('html').send(adminCouponsHtml(req.query.key, created));
+  const vd = normalizeGiftCode(String(req.query.anuliuota || '')), voided = vd && store.codes[vd] && store.codes[vd].admin && store.codes[vd].status === 'void' ? vd : '';
+  res.type('html').send(adminCouponsHtml(req.query.key, created, voided));
+});
+// Nemokamo kupono anuliavimas (pvz. kodas paviešintas per klaidą) — tik dar nepanaudotas administratoriaus kuponas
+app.post('/admin/kuponai/anuliuoti', sensitiveLimiter, express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
+  const code = normalizeGiftCode(String((req.body && req.body.kodas) || ''));
+  const store = loadGiftStore(), g = code && store.codes[code];
+  if (g && g.admin && giftStatus(g) === 'active') {
+    g.status = 'void'; g.voidReason = 'admin'; g.voidAt = Date.now();
+    saveGiftStore(store);
+    console.log(`[admin] anuliuotas nemokamas kuponas ${code}`);
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  res.redirect(303, '/admin/kuponai?key=' + encodeURIComponent(req.query.key) + (g && g.admin && g.status === 'void' ? '&anuliuota=' + encodeURIComponent(code) : ''));
 });
 app.post('/admin/kuponai', sensitiveLimiter, express.urlencoded({ extended: false, limit: '10kb' }), (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
