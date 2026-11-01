@@ -7431,6 +7431,8 @@ async function loadCompare(){
 (function resultHome(){
   const q=new URLSearchParams(location.search);
   if(!q.get('pora')&&!q.get('kl')) return;
+  // Porų analizė užsakyta (ar dovana panaudota) šiame skirtuke per /pora — mygtukas nerodomas ir perkrovus (atgal būtų Stripe ar panaudoto kupono forma)
+  if(q.get('pora')&&!q.get('mt')){ let own=0; try{ own=+sessionStorage.getItem('delnasPoraOwn')||0; }catch(e){} if(own&&Date.now()-own<24*3600e3) return; }
   let n=0; const iv=setInterval(()=>{
     const scr=document.querySelector('.screen.active');
     if(scr&&(scr.id==='s-result'||scr.id==='s-pora-result')){
