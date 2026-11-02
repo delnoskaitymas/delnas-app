@@ -234,6 +234,11 @@ body.sched-on .sched-hint{display:none}
 .dt select#f-h{margin-left:6px;width:calc(100% - 6px)}
 .dt-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.4}
 input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:12px 10px;color:#fff;font:400 15px 'DM Sans',sans-serif;outline:none;color-scheme:dark;min-height:46px}
+.brand small.greet{font:italic 400 14px 'Playfair Display',serif;letter-spacing:.02em;color:var(--gold2);margin-top:5px}
+/* Šventės dienos sveikinimas matomas ir suglaudintoje formoje (ikona sumažėja, kad viskas tilptų) */
+body.form-view.tighter .brand small.greet{font-size:12px!important;line-height:1.1!important;margin-top:1px!important}
+body.form-view.tighter .wrap > .brand:has(.greet){margin-bottom:2px!important}
+body.form-view .wrap > .brand small.greet,body.form-view .brand small.greet{display:block!important;font-size:13px!important;line-height:1.2!important;letter-spacing:.02em!important;margin-top:2px!important}
 .season-tag{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#140f02;background:linear-gradient(125deg,#fff0c4,#e0a930);border-radius:999px;padding:4px 12px;margin:0 auto 2px;width:fit-content}
 .season-tag.gone{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.15);text-transform:none;letter-spacing:.02em;font-weight:600}
 .season-tag.pick{cursor:pointer;display:flex;align-items:center;gap:8px;background:rgba(212,168,67,.06);color:var(--gold2);border:1px dashed rgba(212,168,67,.7);text-transform:none;letter-spacing:.02em;font-size:13.5px;padding:5px 14px 5px 8px;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -594,20 +599,28 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     kaledos: { ask: 'Kalėdinė dovana? 🎄', tag: '🎄 Kalėdinė dovana', kind: 'asmenine', label: 'Linksmų Kalėdų 🎄', msg: 'Linksmų Kalėdų! ✨' },
     metai: { ask: 'Dovana Naujiesiems metams? ✨', tag: '✨ Naujųjų metų dovana', kind: 'asmenine', label: 'Laimingų Naujųjų metų ✨', msg: 'Laimingų Naujųjų metų! ✨' }
   };
-  function currentSeason(){
-    const o = params.get('sezonas'); if (SEASONS[o]) return o;
-    // Data — Lietuvos laiku (kaip ir pradžios ekrane)
+  // Sezonas pagal datą (Lietuvos laiku) ir sveikinimas pačią šventės dieną
+  function byDateSeason(){
     let d; try { d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Vilnius' })); } catch (e) { d = new Date(); }
     const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
-    if (m === 2 && day <= 14) return 'valentinas';
-    if ((m === 11 && day >= 15) || (m === 12 && day <= 24)) return 'kaledos';
-    if (m === 12 && day >= 27) return 'metai';
     // Motinos diena Lietuvoje — pirmasis gegužės sekmadienis; tema nuo balandžio 20 d.
     const may1 = new Date(y, 4, 1), mday = 1 + ((7 - may1.getDay()) % 7);
-    if ((m === 4 && day >= 20) || (m === 5 && day <= mday)) return 'mama';
-    return '';
+    if (m === 2 && day <= 14) return { s: 'valentinas', greet: day === 14 ? '💞 Su Valentino diena!' : '' };
+    if ((m === 11 && day >= 15) || (m === 12 && day <= 24)) return { s: 'kaledos', greet: '' };
+    if (m === 12 && (day === 25 || day === 26)) return { s: 'kaledos', greet: '🎄 Jaukių šv. Kalėdų!' };
+    if (m === 12 && day >= 27) return { s: 'metai', greet: '' };
+    if (m === 1 && day <= 2) return { s: 'metai', greet: '✨ Laimingų Naujųjų metų!' };
+    if ((m === 4 && day >= 20) || (m === 5 && day <= mday)) return { s: 'mama', greet: m === 5 && day === mday ? '🌷 Su Motinos diena!' : '' };
+    return { s: '', greet: '' };
+  }
+  const bySeason = byDateSeason();
+  function currentSeason(){
+    const o = params.get('sezonas'); if (SEASONS[o]) return o; // peržiūrai: ?sezonas=valentinas|mama|kaledos|metai
+    return bySeason.s;
   }
   const season = currentSeason();
+  const greet = bySeason.s === season ? bySeason.greet : '';
+  if (greet) { const sm = document.querySelector('.brand small'); if (sm) { sm.textContent = greet; sm.classList.add('greet'); } }
   // Šventinė dovana — tik jei pirkėjas pats pažymi (gal dovanoja gimtadieniui). Atėjus per ?sezonas= nuorodą — pažymėta iš karto.
   let seasonOn = !!(season && params.get('sezonas') === season);
   const defMsg = $('f-msg').placeholder;
