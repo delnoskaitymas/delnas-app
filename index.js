@@ -5105,6 +5105,12 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       const picked = pickKlauskResult(result);
       if (!picked) return res.status(400).json({ error: 'Nerasta asmeninė analizė. Atnaujink rezultato puslapį.' });
       record = { email, name: (name || '').trim(), result: picked, ...(isValidOrderNumber((req.body || {}).orderNumber) ? { orderNumber: req.body.orderNumber } : {}), ...(isAnalysisSid((req.body || {}).sessionId) ? { analysisSession: req.body.sessionId } : {}) };
+      // Pirkta „Mano analizėse“ atidarytoje analizėje — klausimai susiejami su ta analize (rodomi prie jos)
+      if (!record.analysisSession && req.body && typeof req.body.manoId === 'string') {
+        const me = manoEmailFromToken(req.body.manoT), sv = loadSaved(), it = sv.items[req.body.manoId];
+        const sid = me && it && it.email === me ? Object.keys(sv.bySession).find(k => sv.bySession[k] === it.id) : null;
+        if (isAnalysisSid(sid)) record.analysisSession = sid;
+      }
       // Analizės mokėjimo nuoroda — kad iš klausimų puslapio būtų galima grįžti į rezultatą su jo pasiūlymais
       const pr = req.body && req.body.paymentRef;
       if (typeof pr === 'string' && /^(pi|cs)_[A-Za-z0-9_]{4,190}$/.test(pr)) record.paymentRef = pr;
@@ -6561,9 +6567,20 @@ app.get('/mano/item', sensitiveLimiter, async (req, res) => {
   let own = ownRefCodes(email);
   // Dar nėra kvietimo kodo — sukuriamas šiai analizei (el. paštą patvirtina „Mano analizių“ nuoroda), kad draugai gautų −10 %, o kvietėjas — atlygį
   if (!own.length && it.result) { const c = createRefCode({ email, name: it.name || '', paymentRef: 'mano:' + it.id, result: it.result, ip: ipTag(req) }); if (c) own = [c]; }
-  let klausk = null;
-  try { const sv = loadSaved(), sid = Object.keys(sv.bySession).find(k => sv.bySession[k] === it.id); klausk = await manoKlauskFor(it, sid); } catch (e) { console.error('[mano] klausimų klaida:', e.message); }
-  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', klausk, ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
+  let klausk = null, klauskAll = [];
+  try {
+    const sv = loadSaved(), sid = Object.keys(sv.bySession).find(k => sv.bySession[k] === it.id);
+    klausk = await manoKlauskFor(it, sid);
+    // Visi šios analizės klausimai su atsakymais (įskaičiuoti ir atskirai pirkti) — „Mano analizėse“ rodomi kaip rezultatas
+    if (sid) {
+      const pt = loadPaymentTokens(), refs = new Set(Object.keys(pt).filter(k => pt[k] && pt[k].sessionId === sid));
+      klauskAll = Object.entries(loadKlauskOrders())
+        .filter(([, o]) => o.paid && o.kind !== 'pora' && (o.email || '').toLowerCase() === email && (o.analysisSession === sid || refs.has(o.paymentRef)))
+        .sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0))
+        .map(([id, o]) => ({ id, qa: (o.qa || []).filter(x => x && x.q && x.a).map(x => ({ q: x.q, a: x.a })), left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length }));
+    }
+  } catch (e) { console.error('[mano] klausimų klaida:', e.message); }
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', klausk, klauskAll, ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};

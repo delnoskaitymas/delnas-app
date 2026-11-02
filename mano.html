@@ -42,6 +42,7 @@ h1 em{font-style:italic;color:var(--gold)}
 label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 input{width:100%;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.35);border-radius:10px;padding:13px;color:#fff;font:400 16px 'DM Sans',sans-serif;outline:none}
 input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
+.btn.lnk{background:none!important;border:none!important;box-shadow:none!important;color:var(--gold)!important;font-weight:400!important;font-size:13.5px!important;text-decoration:underline;text-underline-offset:2px;padding:8px!important}
 .btn{display:block;width:100%;margin-top:14px;border:none;border-radius:14px;padding:15px;cursor:pointer;text-align:center;text-decoration:none;
   background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:700 16px 'DM Sans',sans-serif;box-shadow:0 0 24px rgba(212,168,67,.3)}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
@@ -217,10 +218,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       const lastA = d.analizes[0], lastP = d.poros[0];
       let txt = 'Naujas gyvenimo žemėlapis', href = '/';
       if (c === 'pora') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      else if (c === 'kl' && lastA) { txt = 'Užduoti dar 3 klausimus'; href = '/?mano=' + encodeURIComponent(lastA.id) + '&t=' + encodeURIComponent(t) + '#klausti'; }
-      else if (c === 'klp' && lastP) { txt = 'Užduoti dar 3 klausimus'; href = '/?pora=' + encodeURIComponent(lastP.id) + '&mt=' + encodeURIComponent(t) + '#klausti'; }
+      // Klausimų skirtukuose pagrindinis — atsakymai; naujų klausimų pirkimas — tik smulki nuoroda
+      else if (c === 'kl' && lastA) { txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/?mano=' + encodeURIComponent(lastA.id) + '&t=' + encodeURIComponent(t) + '#klausti'; }
+      else if (c === 'klp' && lastP) { txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/?pora=' + encodeURIComponent(lastP.id) + '&mt=' + encodeURIComponent(t) + '#klausti'; }
       else if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      nb.textContent = txt; nb.href = href;
+      nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', (c === 'kl' && !!lastA) || (c === 'klp' && !!lastP));
     };
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
     show(first);
