@@ -1273,7 +1273,8 @@ setInterval(()=>{
 function go(id){
   if(id==='s-order') track('order');
   // Porų analizės kelias: pirmas nufotografuotas, nuoroda antrajam, abu nufotografuoti, rezultatas
-  const _pe={'s-pora-next':'pora_first','s-pora-remote':'pora_remote','s-pora-wait':'pora_photos'}[id]; // „Gavo rezultatą“ (poros) skaičiuoja serveris — vieną kartą užsakymui if(_pe) track(_pe);
+  // „Gavo rezultatą“ (poros) skaičiuoja serveris — vieną kartą užsakymui
+  const _pe={'s-pora-next':'pora_first','s-pora-remote':'pora_remote','s-pora-wait':'pora_photos'}[id]; if(_pe) track(_pe);
   if(id==='s-info'&&typeof applyGiftMode==='function') applyGiftMode();
   if(id==='s-home'){
     setTimeout(()=>{
@@ -1643,6 +1644,8 @@ document.addEventListener('click',e=>{
   else if(c('#s-result a[href^="/dovana"], #s-pora-result a[href^="/dovana"]')) track('res_gift_click');
 },true);
 function track(e){
+  // Dovanos kodu gaunama analizė — ne asmeninės analizės pirkimo kelias (jos rezultatas skaičiuojamas atskirai)
+  const gi=window._giftInfo; if(window._giftCode&&!window._giftFailed&&!(gi&&!gi.valid&&!gi.resumable)&&['start','photos','order','pay_view','pay_click'].includes(e)) return;
   try{ const k='delnasEv:'+e; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(err){}
   try{ const body=JSON.stringify({e}); if(navigator.sendBeacon) navigator.sendBeacon('/ev',new Blob([body],{type:'application/json'})); else fetch('/ev',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}); }catch(err){}
 }

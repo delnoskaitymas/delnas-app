@@ -218,11 +218,14 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       const lastA = d.analizes[0], lastP = d.poros[0];
       let txt = 'Naujas gyvenimo žemėlapis', href = '/';
       if (c === 'pora') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      // Klausimų skirtukuose pagrindinis — atsakymai; naujų klausimų pirkimas — tik smulki nuoroda
-      else if (c === 'kl' && lastA) { txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/?mano=' + encodeURIComponent(lastA.id) + '&t=' + encodeURIComponent(t) + '#klausti'; }
-      else if (c === 'klp' && lastP) { txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/?pora=' + encodeURIComponent(lastP.id) + '&mt=' + encodeURIComponent(t) + '#klausti'; }
+      // Klausimų skirtukuose — tik klausimai ir atsakymai; naujų klausimų pirkimas — smulki nuoroda į klausimų puslapį (ne į rezultatą)
+      const lastK = (c === 'kl' || c === 'klp') ? d.klausimai.filter(k => (k.kind === 'pora') === (c === 'klp')).sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0))[0] : null;
+      let lnk = false;
+      if (lastK) { lnk = true; txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/klausk?s=' + encodeURIComponent(lastK.id) + '&mt=' + encodeURIComponent(t) + '#daugiau'; }
       else if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', (c === 'kl' && !!lastA) || (c === 'klp' && !!lastP));
+      // Paskutiniai klausimai dar neišnaudoti — jų mygtukas yra sąraše, papildomos nuorodos nereikia
+      nb.style.display = lastK && lastK.count < 3 ? 'none' : '';
+      nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
     show(first);
