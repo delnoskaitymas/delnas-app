@@ -3553,7 +3553,7 @@ app.get('/preview-reminder-email', sensitiveLimiter, async (req, res) => {
     const { email, name, key } = req.query;
     const expectedKey = process.env.ADMIN_PREVIEW_KEY;
     if (!expectedKey) return res.status(503).send('ADMIN_PREVIEW_KEY nenustatytas Railway Variables — pridėkite jį, kad ši peržiūra veiktų.');
-    if (key !== expectedKey) return res.status(403).send('Neteisingas raktas.');
+    if (typeof key !== 'string' || !crypto.timingSafeEqual(crypto.createHash('sha256').update(key).digest(), crypto.createHash('sha256').update(expectedKey).digest())) return res.status(403).send('Neteisingas raktas.');
     if (!isValidEmail(email)) return res.status(400).send('Neteisingas el. pašto formatas (naudokite ?email=...)');
     await mailer.sendMail({
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
@@ -5730,9 +5730,25 @@ function feedbackToken(id) { return crypto.createHmac('sha256', ADMIN_KEY).updat
 
 // Atsiliepimo ilgis, kuris telpa vienoje eilutėje pradžios ir /pora ekranuose (naršyklė rodo tik tokius)
 const TESTI_MAX = 60;
+// Įvertinti gali tik analizę gavęs klientas: įrodymas — porų užsakymas, analizės raktas, užsakymo numeris, „Mano analizių“ ar klausimų nuoroda
+function feedbackProof(b) {
+  // Vienas raktas vienai analizei, kad ir kokiu keliu įvertinta (rezultato ekranas, „Mano analizės“, užsakymo numeris)
+  const bySid = sid => { const sv = loadSaved(), id = sid && sv.bySession[sid]; return id ? 'm:' + id : (sid ? 's:' + sid : null); };
+  try {
+    if (b.kind === 'pora') { const o = isValidCheckoutSessionId(b.poraSid) ? loadPoraOrders()[b.poraSid] : null; return o && o.status === 'done' ? 'p:' + b.poraSid : null; }
+    const te = typeof b.token === 'string' && b.token ? validTokens.get(b.token) : null;
+    if (te && te.used) return bySid(te.sessionId) || 't:' + crypto.createHash('sha256').update(b.token).digest('hex').slice(0, 16);
+    if (typeof b.manoId === 'string' && b.manoId) { const me = manoEmailFromToken(b.manoT), it = loadSaved().items[b.manoId]; if (me && it && it.email === me) return 'm:' + it.id; }
+    if (isValidKlauskId(b.kl)) { const o = loadKlauskOrders()[b.kl]; if (o && o.paid && o.paymentRef) return bySid(o.analysisSession || (loadPaymentTokens()[o.paymentRef] || {}).sessionId) || 'k:' + o.paymentRef; }
+    if (isValidOrderNumber(b.orderNumber)) { const it = Object.values(loadSaved().items).find(x => x.orderNumber === b.orderNumber); if (it) return 'm:' + it.id; }
+  } catch (e) {}
+  return null;
+}
 app.post('/feedback', sensitiveLimiter, (req, res) => {
   try {
     const { stars, text, allowPublic, name, kind } = req.body || {};
+    const proof = feedbackProof(req.body || {});
+    if (!proof) return res.status(403).json({ error: 'Įvertinti gali tik analizę gavęs klientas' });
     const st = Math.round(Number(stars));
     if (!(st >= 1 && st <= 5)) return res.status(400).json({ error: 'Pasirinkite įvertinimą' });
     const t = typeof text === 'string' ? text.trim().slice(0, 500) : '';
@@ -5742,9 +5758,10 @@ app.post('/feedback', sensitiveLimiter, (req, res) => {
       ? nm.split(/\s+ir\s+/i).map(x => x.split(/\s+/)[0].slice(0, 30)).filter(Boolean).slice(0, 2).join(' ir ')
       : nm.split(/\s+/)[0].slice(0, 30);
     const fb = readJson(FEEDBACK_FILE, { items: [] });
+    if (fb.items.some(x => x.proof === proof)) return res.json({ ok: true, already: true }); // vienas įvertinimas vienai analizei
     const id = crypto.randomBytes(8).toString('hex');
     const on = typeof req.body.orderNumber === 'string' && /^[A-Za-z0-9-]{3,40}$/.test(req.body.orderNumber) ? req.body.orderNumber : '';
-    const item = { id, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', ...(on ? { orderNumber: on } : {}), createdAt: Date.now() };
+    const item = { id, proof, stars: st, text: t, name: first, allowPublic: !!allowPublic && !!t && st >= 4, approved: false, kind: kind === 'pora' ? 'pora' : 'asmenine', ...(on ? { orderNumber: on } : {}), createdAt: Date.now() };
     fb.items.push(item); writeJson(FEEDBACK_FILE, fb); statInc('feedback');
     // Svetainėje rodomi tik trumpi (iki TESTI_MAX ženklų) atsiliepimai — ilgiems patvirtinimo mygtuko nėra
     const tooLong = t.length > TESTI_MAX;
@@ -6104,7 +6121,7 @@ function getValidPromo(code, product, email) {
   const p = loadPromos().codes[code];
   if (!p || p.product !== product || p.usedBy || Date.now() > p.expiresAt) return null;
   // „Tęsti su −15 %“ kodas galioja tik tam el. paštui, kuriam buvo išsiųstas
-  if (p.kind === 'back' && p.email && email && String(email).trim().toLowerCase() !== p.email) return null;
+  if (p.kind === 'back' && p.email && String(email || '').trim().toLowerCase() !== p.email) return null;
   return p;
 }
 function markPromoUsed(code, ref, giftKind) {
