@@ -1698,7 +1698,7 @@ function renderRating(boxId, kind){
     const name=kind==='pora'?[((window._pora||{}).nameA||''),((window._pora||{}).nameB||'')].filter(Boolean).join(' ir '):(window.userName||window._userName||'');
     // Užsakymo numeris — tik administratoriaus laiškui (kad žinotum, kuri tai analizė)
     const orderNumber=kind==='pora'?poraOrderNumber():(window._orderNumber||'');
-    try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind,orderNumber})}); }catch(e){}
+    try{ await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars,text:card.querySelector('textarea').value,allowPublic:card.querySelector('.rate-pub').checked,name,kind,orderNumber,poraSid:kind==='pora'?((window._pora||{}).sid||''):'',token:window.palmToken||'',kl:window._klId||'',manoId:window._manoId||'',manoT:window._manoT||''})}); }catch(e){}
     try{ localStorage.setItem(key,'1'); }catch(e){}
     if(stars<=3) card.querySelector('.rate-thx').textContent=you?'Ačiū — jūsų atsiliepimas padės mums tobulėti. ✦':'Ačiū — tavo atsiliepimas padės mums tobulėti. ✦';
     card.querySelector('.rate-stars').style.display='none'; card.querySelector('.rate-more').style.display='none'; card.querySelector('.rate-thx').style.display='block';
