@@ -409,6 +409,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .result-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;background:linear-gradient(135deg,#fff3cf 0%,#f0c96a 35%,#d4a843 60%,#f0c96a 85%,#fff3cf 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);letter-spacing:.03em;margin-bottom:6px;text-align:center}
 .result-subtitle{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;text-align:center}
 .result-divider{width:60px;height:1px;background:var(--gold);margin:0 auto;opacity:.5}
+.end-back{display:block;margin:18px auto 30px;padding:12px 22px;border-radius:999px;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 14px 'DM Sans',sans-serif;cursor:pointer}
 .result-final{text-align:center;padding:24px 16px;margin:8px 0 14px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
 .result-final-stars{font-size:18px;letter-spacing:8px;color:var(--gold);margin-bottom:8px}
 .result-final-text{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--muted);line-height:1.7}
@@ -1586,7 +1587,8 @@ function rememberOwnRef(link){
   }catch(e){}
 }
 // Trumpas kvietimo adresas kortelėms (delnaskaitymas.lt/d/KODAS); be kodo — įprastas adresas
-function cardRefLabel(link, fallback){ try{ const c=String(new URL(link,location.origin).searchParams.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length>=5) return 'delnaskaitymas.lt/d/'+c; }catch(e){} return fallback; }
+// Kortelių apačioje — tik svetainės adresas (nuolaida pritaikoma per nuorodą žinutėje, kuria dalijamasi)
+function cardRefLabel(){ return 'www.delnaskaitymas.lt'; }
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
 async function refreshPayQuote(){
   try{
@@ -6615,6 +6617,13 @@ function setupPoraKlausk(){
     })() });
 }
 
+// Rezultato pačioje apačioje — grįžimas į ankstesnę analizę (tas pats veiksmas kaip viršutinio mygtuko: langas uždaromas, grįžtama į tą pačią vietą)
+function addEndBack(sr, label, topId){
+  if(!sr||sr.querySelector('.end-back')) return;
+  const b=document.createElement('button'); b.type='button'; b.className='end-back'; b.textContent='← '+label;
+  b.addEventListener('click',()=>{ const t=document.getElementById(topId); if(t) t.click(); });
+  sr.appendChild(b);
+}
 // Asmeninio rezultato viršuje, jei atėjo iš porų rezultato: „Dabar — Karlės eilė“ (tame pačiame telefone)
 async function renderDuoNext(){
   const box=document.getElementById('r-duo-next'); if(!box) return; box.innerHTML='';
@@ -6643,6 +6652,7 @@ async function renderDuoNext(){
       l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       sr.prepend(l);
     }
+    addEndBack(sr,'Grįžti į porų suderinamumą','duo-back');
     return;
   }
   const f=ltForms(name), eur=c=>(c/100).toFixed(2).replace('.',',');
@@ -6659,6 +6669,7 @@ async function renderDuoNext(){
       l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       sr.prepend(l);
     }
+    addEndBack(sr,'Grįžti į porų suderinamumą','duo-back');
     return;
   }
   box.innerHTML='<div class="rs rs-std" style="text-align:center">'+
@@ -6675,6 +6686,7 @@ async function renderDuoNext(){
     l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
     sr.prepend(l);
   }
+  addEndBack(sr,'Grįžti į porų suderinamumą','duo-back');
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
@@ -6858,6 +6870,7 @@ function poraBackToPersonal(){
     setTimeout(()=>{ a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },400);
   });
   sr.prepend(a);
+  addEndBack(sr,'Grįžti į gyvenimo žemėlapį','res-home');
 }
 function renderPoraResult(r){
   markDone('pora');

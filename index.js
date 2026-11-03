@@ -3725,6 +3725,7 @@ function giftPublicInfo(gift) {
     season: gift.season || '',
     klausk: !!gift.klausk,
     emailed: !!gift.recipientEmail, // dovaną gavėjui siunčia sistema (be adreso)
+    emailSent: !!gift.recipientSentAt,
     status: giftStatus(gift)
   };
 }
