@@ -166,6 +166,14 @@ document.getElementById('back-link').addEventListener('click', e => {
     if (qi && first && qi.placeholder === 'pvz. ' + String(qa.q || '').trim()) qi.placeholder = 'pvz. ' + first.textContent.trim();
     return d;
   }
+  // Kitame tos pačios analizės užsakyme (pvz. vėliau pirktuose 3 klausimuose) dar liko neužduotų klausimų
+  let fam = null;
+  const famOther = () => fam && fam.id !== sid && fam.left > 0;
+  function paintMore(){
+    const yo = window._klKind === 'pora';
+    if (famOther()) { $('more-txt').textContent = (yo ? 'Turite dar ' : 'Turi dar ') + fam.left + (fam.left === 1 ? ' apmokėtą neužduotą klausimą.' : ' apmokėtus neužduotus klausimus.'); $('more-btn').textContent = fam.left === 1 ? '✦ Užduoti likusį klausimą' : '✦ Užduoti likusius klausimus (liko ' + fam.left + ')'; }
+  }
+  async function famCheck(){ try { const d = await (await fetch('/klausk/check?s=' + encodeURIComponent(sid))).json(); fam = d && d.family; paintMore(); } catch (e) {} }
   function refresh(){
     $('ask-wrap').classList.toggle('hidden', left <= 0);
     $('all-done').classList.toggle('hidden', left > 0);
@@ -219,7 +227,7 @@ document.getElementById('back-link').addEventListener('click', e => {
       // Pakartotinė analizė su palyginimu — pirmas pavyzdys apie pokyčius
       if (d.compare) $('chips').insertAdjacentHTML('afterbegin', '<button type="button">' + (d.kind === 'pora' ? 'Kaip išlaikyti tai, kas mūsų poroje pagerėjo?' : 'Kaip išlaikyti tai, kas pasikeitė į gerą?') + '</button>');
       (d.qa || []).forEach(x => card(x, false));
-      left = d.left; refresh();
+      left = d.left; fam = d.family || null; refresh(); paintMore();
       if (location.hash === '#klausti' && left > 0) {
         try { history.replaceState(null, '', location.pathname + location.search); } catch (x) {}
         setTimeout(() => { const w = $('ask-wrap'); let y = 0, el = w; while (el) { y += el.offsetTop; el = el.offsetParent; } window.scrollTo(0, Math.max(0, y - 70)); }, 150);
@@ -238,6 +246,8 @@ document.getElementById('back-link').addEventListener('click', e => {
   })(0);
 
   $('more-btn').addEventListener('click', async () => {
+    // Liko apmokėtų klausimų kitame užsakyme — ten ir einama (naujai mokėti nereikia)
+    if (famOther()) { const mt = params.get('mt'); location.href = '/klausk?s=' + encodeURIComponent(fam.id) + (mt ? '&mt=' + encodeURIComponent(mt) : '') + '#klausti'; return; }
     const b = $('more-btn'), err = $('more-err'), t = b.textContent; err.style.display = 'none';
     b.disabled = true; b.textContent = 'Jungiamasi prie Stripe…';
     try {
@@ -273,7 +283,7 @@ document.getElementById('back-link').addEventListener('click', e => {
       if (!r.ok) throw new Error(d.error || 'Nepavyko gauti atsakymo');
       $('wait').classList.add('hidden');
       const el = card({ q: d.q, a: d.a }, true);
-      left = d.left; q.value = ''; $('go').disabled = false; upd(); refresh();
+      left = d.left; q.value = ''; $('go').disabled = false; upd(); refresh(); if (left <= 0) famCheck();
       setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 80);
     } catch (ex) {
       $('wait').classList.add('hidden'); $('ask-wrap').classList.remove('hidden');

@@ -5136,7 +5136,7 @@ app.post('/klausk/more', sensitiveLimiter, async (req, res) => {
     if (!isValidKlauskId(id)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
     const o = loadKlauskOrders()[id];
     if (!o || !o.paid || (o.qa || []).length < KLAUSK_MAX_QUESTIONS || !isValidEmail(o.email)) return res.status(409).json({ error: 'Pirmiausia užduokite visus klausimus' });
-    const record = { kind: o.kind || 'asmenine', email: o.email, name: o.name || '', result: o.result };
+    const record = { kind: o.kind || 'asmenine', email: o.email, name: o.name || '', result: o.result, fam: o.fam || id };
     if (o.kind === 'pora') {
       const po = o.poraSid ? loadPoraOrders()[o.poraSid] : null;
       Object.assign(record, { nameA: o.nameA, nameB: o.nameB, poraSid: o.poraSid, result: (po && po.result) || o.result });
@@ -5170,6 +5170,35 @@ function markKlauskPaid(id, orders, s) {
   }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
 }
 
+// Tos pačios analizės klausimų užsakymai (pirmi 3 ir vėliau pirkti): kur dar liko neužduotų klausimų — naujausias toks
+function klauskFamilyActive(id, o, orders) {
+  try {
+    const em = String(o.email || '').toLowerCase(), kind = o.kind || 'asmenine', fam = o.fam || id;
+    let best = null;
+    for (const [xid, x] of Object.entries(orders)) {
+      if (!x || !x.paid || (x.kind || 'asmenine') !== kind || String(x.email || '').toLowerCase() !== em) continue;
+      const same = xid === id || (x.fam || xid) === fam || (o.analysisSession && x.analysisSession === o.analysisSession) || (o.poraSid && x.poraSid === o.poraSid) || (o.paymentRef && x.paymentRef === o.paymentRef);
+      if (!same) continue;
+      const left = KLAUSK_MAX_QUESTIONS - (x.qa || []).length - (klauskInFlight.has(xid) ? 1 : 0);
+      if (left > 0 && (!best || (x.createdAt || 0) > best.at)) best = { id: xid, left, at: x.createdAt || 0 };
+    }
+    return best ? { id: best.id, left: best.left } : null;
+  } catch (e) { return null; }
+}
+// Rezultato ekranui: ar šiai analizei (asmeninės sesija ar porų užsakymas) yra apmokėtų, dar neužduotų klausimų
+app.get('/klausk/active', pollLimiter, (req, res) => {
+  const sid = String(req.query.sid || ''), pora = String(req.query.pora || '');
+  const okP = pora && isValidCheckoutSessionId(pora), okS = !okP && isAnalysisSid(sid);
+  if (!okP && !okS) return res.json({});
+  let best = null;
+  for (const [id, o] of Object.entries(loadKlauskOrders())) {
+    if (!o || !o.paid) continue;
+    if (okP ? !(o.kind === 'pora' && o.poraSid === pora) : !(o.kind !== 'pora' && o.analysisSession === sid)) continue;
+    const left = KLAUSK_MAX_QUESTIONS - (o.qa || []).length - (klauskInFlight.has(id) ? 1 : 0);
+    if (left > 0 && (!best || (o.createdAt || 0) > best.at)) best = { id, left, at: o.createdAt || 0, gift: !!o.gift };
+  }
+  res.json(best ? { id: best.id, left: best.left, gift: best.gift } : {});
+});
 app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
   try {
     const id = req.query.s;
@@ -5181,7 +5210,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       if (!s) return res.json({ paid: false });
       markKlauskPaid(id, orders, s);
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), family: klauskFamilyActive(id, o, orders), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
