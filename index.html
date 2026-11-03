@@ -2532,6 +2532,13 @@ async function analyzeHandLandmarksLocal(canvasEl){
 
   console.log('[handLandmarker] fingersVisible=', fingersVisible, 'palmBaseFullyVisible=', palmBaseFullyVisible, 'palmFacingCamera=', palmFacingCamera, 'palmSpan=', palmSpan.toFixed(3));
 
+  // Dalis rankos už kadro ribų — tai ne „suglausti pirštai“: pasakoma, į kurią pusę patraukti ranką
+  const outPts = lm.filter(p => !_pointInFrame(p));
+  if (outPts.length) {
+    const m = FRAME_MARGIN, top = outPts.some(p => p.y < m), bottom = outPts.some(p => p.y > 1 - m), side = outPts.some(p => p.x < m || p.x > 1 - m);
+    const edges = (top ? 1 : 0) + (bottom ? 1 : 0) + (side ? 1 : 0);
+    return { ok:true, valid:false, reason: edges > 1 ? 'too_close' : top ? 'partial_top' : bottom ? 'partial_bottom' : 'partial_side' };
+  }
   if (!palmFacingCamera) {
     return { ok:true, valid:false, reason:'back_hand' };
   }
@@ -2867,7 +2874,11 @@ function capturePhoto(){
         // Konkreti klaidos žinutė pagal priežastį
         const msgs={
           'too_close':['Delnas netelpa ekrane','Atitrauk ranką šiek tiek toliau, kad matytųsi visas delnas ir pirštai.'],
-          'fingers_missing':['Išskėsk pirštus','Laikyk pirštus atskirai vienas nuo kito, kad sistema juos aptiktų.'],
+          'fingers_missing':['Ištiesk pirštus','Ištiesk pirštus ir laikyk juos šiek tiek atskirai, kad matytųsi visi penki.'],
+          'partial':['Ranka netelpa kadre','Patrauk ranką į ekrano vidurį ir šiek tiek toliau nuo kameros — turi matytis visi pirštai ir delnas iki riešo.'],
+          'partial_top':['Pirštai netelpa kadre','Nuleisk ranką žemiau arba atitrauk ją toliau nuo kameros — turi matytis pirštų galiukai.'],
+          'partial_bottom':['Delno apačia netelpa kadre','Pakelk ranką aukščiau arba atitrauk ją toliau nuo kameros — turi matytis delnas iki riešo.'],
+          'partial_side':['Ranka netelpa kadre','Patrauk ranką į ekrano vidurį — visa ranka turi matytis kadre.'],
           'sideways':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
           'low_palm_visibility':['Delnas netelpa ekrane','Atitrauk ranką šiek tiek toliau, kad matytųsi visas delnas ir pirštai.'],
           'back_hand':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],

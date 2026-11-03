@@ -2334,7 +2334,10 @@ Be precise and objective — do not round everything to convenient default numbe
       valid = false; reason = 'low_palm_visibility';
     } else if (facts.orientation === 'side') {
       valid = false; reason = 'sideways';
-    } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible || facts.fingertips_cropped === true) {
+    } else if (facts.fingertips_cropped === true) {
+      // Pirštų galiukai už kadro ribų — ranka netelpa (ne „suglausti pirštai“)
+      valid = false; reason = 'partial';
+    } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible) {
       valid = false; reason = 'fingers_missing';
     } else if ((facts.palm_percent_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minPalmPercent) {
       valid = false; reason = 'low_palm_visibility';
