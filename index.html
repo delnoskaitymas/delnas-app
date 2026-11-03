@@ -5138,10 +5138,10 @@ async function buildInviteCardBlob(name, refLink, pora){
   // Pirmiausia — apie tai, ką siuntėjas atliko (porų kortelėje — pora, asmeninėje — pats draugas); antras pasiūlymas — mažesne eilute
   y = drawWrappedCentered(ctx, pora ? 'Jums abiem — kiek procentų derate, kur gali kilti trintis ir kaip žiūrite į pinigus bei ateitį.' : 'Tau — kas stabdo, kur slypi sėkmė ir kokie pokyčiai artėja.', W/2, y, maxWidth, 40) + 10;
   ctx.font = '500 27px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(245,238,216,.7)';
-  y = drawWrappedCentered(ctx, pora ? 'Ir tau — kas stabdo, kur slypi sėkmė ir kokie pokyčiai artėja.' : 'Ir jums dviem — kiek procentų derate su artimu žmogumi.', W/2, y, maxWidth, 36) + 22;
+  y = drawWrappedCentered(ctx, pora ? 'Ir tau — kas stabdo, kur slypi sėkmė ir kokie pokyčiai artėja.' : 'Ir jums dviem — kiek procentų derate, kur gali kilti trintis ir kaip žiūrite į pinigus bei ateitį.', W/2, y, maxWidth, 36) + 22;
   ctx.font = '700 32px "DM Sans", sans-serif';
   ctx.fillStyle = '#f0c96a';
-  y = drawWrappedCentered(ctx, pora ? (name ? name + ' dovanoja jums' : 'Jums dovanojama') + ' −10 % ir porų suderinamumui, ir Gyvenimo žemėlapiui.' : (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % ir Gyvenimo žemėlapiui, ir porų suderinamumui.', W/2, y, maxWidth, 42) + 60;
+  y = drawWrappedCentered(ctx, pora ? (name ? name + ' dovanoja jums' : 'Jums dovanojama') + ' −10 % ir Porų suderinamumui, ir Gyvenimo žemėlapiui.' : (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % ir Gyvenimo žemėlapiui, ir Porų suderinamumui.', W/2, y, maxWidth, 42) + 60;
 
   // Kvietimo kortelėje (asmeninės ir porų) — adresas su kodu: −10 % veikia ir suvedus jį ranka
   const btnLabel = refCodeLabel(refLink);
@@ -5231,7 +5231,7 @@ async function inviteFriend(){
   let text = 'Ką delnai pasakoja apie tave ir jus abu?';
   // Apmokėjusiam klientui — asmeninė draugo nuoroda (draugas gauna nuolaidą)
   const rl=await ensureRefLink();
-  if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mano nuoroda −'+rl.pct+' % ir Gyvenimo žemėlapiui, ir porų suderinamumui 🎁'; }
+  if(rl){ appUrl=rl.link+(rl.link.includes('?')?'&':'?')+'utm_source=dalinimasis&utm_campaign=kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mano nuoroda −'+rl.pct+' % ir Gyvenimo žemėlapiui, ir Porų suderinamumui 🎁'; }
   try{
     const blob = await buildInviteCardBlob(name, rl && rl.link);
     if(blob){
@@ -7140,7 +7140,7 @@ async function poraInviteFriend(btn){
   let url='https://www.delnaskaitymas.lt/?utm_source=dalinimasis&utm_campaign=poru-kvietimas', text='Ką delnai pasakoja apie tave ir jus abu?';
   try{
     await ensurePoraRefLink();
-    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mūsų nuoroda −'+window._poraRefLink.pct+' % ir Gyvenimo žemėlapiui, ir porų suderinamumui 🎁'; }
+    if(window._poraRefLink){ url=window._poraRefLink.link+'&utm_source=dalinimasis&utm_campaign=poru-kvietimas'; text='Ką delnai pasakoja apie tave ir jus abu? Su mūsų nuoroda −'+window._poraRefLink.pct+' % ir Gyvenimo žemėlapiui, ir Porų suderinamumui 🎁'; }
   }catch(e){}
   // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
   try{
