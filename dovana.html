@@ -220,7 +220,7 @@ body.card-view #v-card{margin:auto 0}
 #v-card .how-link{margin:10px auto 0;width:fit-content;text-decoration:underline;text-underline-offset:3px}
 .actions .btn{margin-top:0;font-size:14px;padding:13px}
 .actions .btn.ghost{margin-top:0}
-#card-actions #dl-png{grid-column:1/-1}
+#card-actions .btn.primary{grid-column:1/-1;order:-1}
 .redeemed{margin-top:14px;text-align:center;color:#ffb3a0;font-size:13px}
 .sched-chk{margin-top:14px!important;color:var(--gold2)!important;font-size:15px!important;font-weight:500;align-items:center!important;white-space:nowrap}
 .sched-chk input{width:20px!important;height:20px!important;margin-top:0!important}
@@ -824,6 +824,11 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     // Panaudoto kupono nebėra kam siųsti — lieka tik atsisiuntimas prisiminimui
     $('share').classList.toggle('hidden', !!used); $('copy').classList.toggle('hidden', !!used);
     if (used) $('c-redeemed').textContent = g.status === 'redeemed' ? 'Šis kuponas jau panaudotas.' : 'Šis kuponas nebegalioja.';
+    // Pagrindinis mygtukas: įprastai — „Išsiųsti dovaną“ (dovana iškart perduodama gavėjui); jei dovaną el. paštu siunčia sistema
+    // arba kuponas jau panaudotas — „Atsisiųsti kuponą“ (kopija sau)
+    const dlFirst = !!(g.sendTo || g.emailed || used);
+    $('dl-png').classList.toggle('primary', dlFirst); $('dl-png').classList.toggle('ghost', !dlFirst);
+    $('share').classList.toggle('primary', !dlFirst); $('share').classList.toggle('ghost', dlFirst);
     show('v-card'); fitCard();
   }
 

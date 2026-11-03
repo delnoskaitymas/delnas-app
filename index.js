@@ -3724,6 +3724,7 @@ function giftPublicInfo(gift) {
     kind: gift.kind === 'pora' ? 'pora' : 'asmenine',
     season: gift.season || '',
     klausk: !!gift.klausk,
+    emailed: !!gift.recipientEmail, // dovaną gavėjui siunčia sistema (be adreso)
     status: giftStatus(gift)
   };
 }
