@@ -1206,6 +1206,9 @@ const ANALYSIS_JSON_SCHEMA = [
   ['delnai_greta', 'object']
 ];
 
+// Pastraipų ribos (tuščia eilutė) redaktoriaus užklausoje pažymimos ženklu ¶, kad kiekvienas tekstas liktų vienoje eilutėje
+function paraMark(t) { return String(t || '').replace(/\s*\n\s*\n\s*/g, ' ¶ ').replace(/\s*\n\s*/g, ' '); }
+function paraUnmark(t) { return String(t || '').replace(/\s*¶\s*/g, '\n\n').trim(); }
 function _escapeAllQuotesInside(str) {
   // Pirma "atrišame" jau galimai apsaugotas kabutes, kad neuždvigubintume,
   // tada apsaugome VISAS — tai saugu, nes šis segmentas TURI būti vientisas
@@ -1905,9 +1908,9 @@ SVARBU (parametrų naudojimas): jie skirti TIK vidiniam pagrindimui — GALUTINI
 PRIEŠ atiduodamas kiekvieną skyrių, patikrink: (1) ar VIDINIAI (savo paties apmąstyme, ne tekste) rėmiausi TIK tam skyriui priskirtais parametrų numeriais? (2) ar NĖ VIENAME sakinyje NĖRA tiesioginio fizinio delno/pirštų/nykščio/odos požymio paminėjimo? Jei bent vienas atsakymas "ne" — perrašyk.
 
 TAISYKLĖS:
-- Kiekvienas sakinys = konkretus faktas apie ŠĮ ŽMOGŲ, kurio pagrindas — tai, ką matai šiame delne (bet PATS požymis tekste neminimas, žr. instrukciją aukščiau) — ne bendra tiesa apie žmones apskritai
+- Viskas, ką rašai, — apie ŠĮ ŽMOGŲ, o pagrindas — tai, ką matai šiame delne (bet PATS požymis tekste neminimas, žr. instrukciją aukščiau) — ne bendra tiesa apie žmones apskritai
 - PRIEŠ rašydamas kiekvieną sakinį, patikrink: ar šis sakinys tiktų BET KURIAM kitam žmogui? Jei taip — perrašyk konkrečiau, kad išvada būtų individuali BŪTENT šiam delnui (nerašant paties fizinio požymio)
-- DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys privalo nešti naują, konkretų faktą
+- DRAUDŽIAMA tušti, "vatos" sakiniai, kurie nieko konkretaus nepasako ir neduoda vertės (pvz. bendri apibendrinimai, pripildymo frazės) — kiekvienas sakinys turi ką nors pridėti prie pastraipos minties
 - PAVYZDYS, ko VENGTI (per bendra, tiktų bet kam): "Tu esi žmogus, kurio pamatinė jėga slypi gebėjime išlaikyti vidinę ramybę net chaotiškose situacijose." — tai tuščia, nes bet kas norėtų, kad apie jį taip pasakytų
 - PAVYZDYS, KAIP TURI BŪTI (konkretus faktas, susietas su vizualiniais parametrais): "Sprendimus priimi greitai ir juos retai keiti — net kai aplinkiniai bando tave perkalbėti, laikaisi savo pirminio pasirinkimo." — tiesioginis faktinis teiginys apie šį žmogų, ne hipotetinis scenarijus
 - DRAUDŽIAMA: hipotetiniai scenarijai ar iliustracijos su "jei", "kai", "įsivaizduok" konstrukcijomis (pvz. "kai nutinka X, tu darai Y") — rašyk TIESIOGINIUS FAKTUS apie šį žmogų, ne pavyzdines situacijas ar iliustracijas
@@ -1926,13 +1929,12 @@ TAISYKLĖS:
 - DRAUDŽIAMA žodis "galva" — jei reikia paminėti protą/mąstymą, naudok žodį "protas" (pvz. "tavo protas dirba greitai", ne "tavo galva dirba greitai")
 - KRITIŠKAI SVARBU (JSON formatui): NIEKADA nenaudok tiesioginės kabutės simbolio " teksto viduje, nei akcentuojant žodį/frazę, nei kaip citatos ženklo — NET IR VIENĄ KARTĄ, nes tai sugadina JSON struktūrą. Jei nori pabrėžti ar "iškelti" žodį/frazę, naudok TIK paprastą kablelinę kabutę 'štai taip' (apostrofus), niekada ne „lietuviškas" ar tiesiogines dvigubas kabutes. Tai taikoma VISUR — visuose skyriuose ir insights laukuose.
 - Kiekvienas žodis ir sakinys turi turėti prasmę ir svorį — jokių tuščių, niekuo neprisidedančių žodžių ar sakinio dalių
-- PATIKRINIMAS KIEKVIENAM SAKINIUI: uždenk šį sakinį ranka ir paklausk savęs — "ar be šio sakinio skaitytojas prarastų KONKREČIĄ informaciją apie save, kurios negautų iš likusio teksto?" Jei atsakymas "ne" (t. y. sakinį galima išmesti be jokio informacijos praradimo) — IŠTRINK jį arba perrašyk taip, kad neštų naują faktą
 - PAVYZDYS tuščio sakinio (IŠTRINTI, jei pasitaikytų): "Tai svarbi tavo asmenybės dalis, kuri formuoja tai, kas tu esi." — nieko konkretaus nepasako, galėtų sekti po BET KOKIO teiginio
-- Kiekvienas sakinys privalo atskleisti KONKRETŲ, TIESIOGINĮ FAKTĄ apie šį žmogų — ne hipotetinį pavyzdį, scenarijų ar iliustraciją. Arba (a) atskleidžia NAUJĄ faktą, arba (b) tiesiogiai pagrindžia prieš tai buvusį faktą kitu konkrečiu faktu (ne pramanytu pavyzdžiu) — niekada tik "užpildyti vietą" ar pakartoti jau pasakytą mintį kitais žodžiais
+- SKLANDUMAS (labai svarbu): tekstas — ne atskirų faktų sąrašas, o RIŠLUS pasakojimas. Kiekvienoje pastraipoje sakiniai susiję ir plaukia vienas iš kito: kitas sakinys tęsia, paaiškina ar išplečia ankstesnio mintį (ne pradeda visai kitos temos). Pastraipa plėtoja vieną mintį iki galo. Nerašyk greta nesusijusių teiginių (pvz. vienas sakinys apie darbą, kitas — apie visai ką kita). Rašyk tiesiogiai apie šį žmogų — ne hipotetinius pavyzdžius, scenarijus ar iliustracijas, ir nekartok tos pačios minties kitais žodžiais
 - DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
-- Kiekvienas skyrius: 10–12 sakinių, skyriai nesikartoja tarpusavyje
-- KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
+- Kiekvienas skyrius: kelios trumpos pastraipos (bent trys, gali būti ir daugiau), kiekvienoje po 2 susijusius sakinius (iš viso 10–12 sakinių) — NIEKADA pastraipa iš vieno sakinio; pastraipos atskirtos tuščia eilute (JSON eilutėje — \\n\\n); skyriai nesikartoja tarpusavyje
+- KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — KIEKVIENA potemė atskleidžiama atskiroje pastraipoje (ar keliose): (a), tada (b), tada (c). Visos pastraipos kalba TIK apie to skyriaus temą (ne apie kitų skyrių temas), sklandžiu, natūraliu tekstu (ne sąrašu)
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
 
@@ -1970,7 +1972,7 @@ Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink j�
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"10-12 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"10-12 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"10-12 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"10-12 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"10-12 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"10-12 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"10-12 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
+{"prigimtines_stiprybes":"pastraipos (a, b, c), atskirtos \\n\\n","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"pastraipos (a, b, c), atskirtos \\n\\n","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"pastraipos (a, b, c), atskirtos \\n\\n","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"pastraipos (a, b, c), atskirtos \\n\\n","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"pastraipos (a, b, c), atskirtos \\n\\n","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"pastraipos (a, b, c), atskirtos \\n\\n","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"pastraipos (a, b, c), atskirtos \\n\\n","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
     }
   ];
 
@@ -2145,7 +2147,7 @@ async function palmNeutralPass(r) {
     if (!slots.length) return r;
     // Žodžiai, kurie dažniausiai rodo giminę (padalyviai -damas/-dama, dalyviai -ęs/-usi, „pats/pati“) — pažymimi, kad peržiūra jų nepraleistų
     const suspect = t => [...new Set((t.match(/(?<![\p{L}])(\p{L}+(?:damas|dama|damasi|ęs|usi)|pats|pati)(?![\p{L}])/giu) || []))];
-    const list = slots.map((s, i) => { const w = suspect(s.text); return `${i}: ${s.text}${w.length ? `  [patikrink: ${w.join(', ')}]` : ''}`; }).join('\n');
+    const list = slots.map((s, i) => { const w = suspect(s.text); return `${i}: ${paraMark(s.text)}${w.length ? `  [patikrink: ${w.join(', ')}]` : ''}`; }).join('\n');
     const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — asmeninės delnų analizės tekstai, parašyti skaitytojui „tu“ forma. Skaitytojo LYTIS NEŽINOMA.
 
 Rask tekstus, kuriuose apie skaitytoją pavartotos giminę rodančios formos, ir perrašyk tik tuos sakinius neutraliai, išlaikydamas prasmę, toną, ilgį ir „tu“ kreipinį:
@@ -2157,7 +2159,7 @@ Rask tekstus, kuriuose apie skaitytoją pavartotos giminę rodančios formos, ir
 Tikrink KIEKVIENĄ tekstą žodis po žodžio, ypač žodžius, kurie baigiasi -as, -is, -ęs, -usi, -damas, -dama, -esnis, -esnė, ir „pats“/„pati“: jei jie nusako skaitytoją — taisyk.
 Formos apie daiktus („linija ilga“, „ryšys stiprus“, „sprendimas priimtas“) ir be giminės („žmogus“) — taisyklingos, jų NEKEISK. Neperrašinėk tekstų, kuriuose giminės apie skaitytoją nėra. Kiekvieną pataisytą tekstą grąžink VISĄ.
 
-Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}.
+Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}. Ženklas ¶ žymi pastraipos pabaigą — pataisytame tekste palik jį toje pačioje vietoje.
 
 Prie kai kurių tekstų laužtiniuose skliaustuose [patikrink: …] nurodyti žodžiai, kurie DAŽNAI rodo giminę — jei kuris jų nusako skaitytoją, tą sakinį PRIVALAI perrašyti; jei nusako daiktą — palik. Pastabos [patikrink: …] į atsakymą neįtrauk.
 
@@ -2179,7 +2181,7 @@ ${list}`;
       if (!s || typeof v !== 'string' || !v.trim()) continue;
       const len = v.trim().length, orig = s.text.length;
       if (len < orig * 0.6 || len > orig * 1.6) continue; // saugiklis — neleidžiame stipriai pakeisti teksto
-      s.set(v.trim().replace(/"/g, ''));
+      s.set(paraUnmark(v.trim().replace(/"/g, '')));
       n++;
     }
     console.log(`[runPalmAnalysis] neutralios kalbos peržiūra: pataisyta tekstų ${n}`);
@@ -2334,7 +2336,10 @@ Be precise and objective — do not round everything to convenient default numbe
       valid = false; reason = 'low_palm_visibility';
     } else if (facts.orientation === 'side') {
       valid = false; reason = 'sideways';
-    } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible || facts.fingertips_cropped === true) {
+    } else if (facts.fingertips_cropped === true) {
+      // Pirštų galiukai už kadro ribų — ranka netelpa (ne „suglausti pirštai“)
+      valid = false; reason = 'partial';
+    } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible) {
       valid = false; reason = 'fingers_missing';
     } else if ((facts.palm_percent_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minPalmPercent) {
       valid = false; reason = 'low_palm_visibility';
@@ -4210,7 +4215,7 @@ async function poraNeutralPass(r, nameA, nameB) {
     if (!r || !process.env.ANTHROPIC_API_KEY) return r;
     const slots = poraTextSlots(r);
     if (!slots.length) return r;
-    const list = slots.map((s, i) => `${i}: ${s.text}`).join('\n');
+    const list = slots.map((s, i) => `${i}: ${paraMark(s.text)}`).join('\n');
     const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — porų delnų analizės tekstai apie ${nameA || 'pirmąjį žmogų'} ir ${nameB || 'antrąjį žmogų'}. Šių žmonių LYTIS NEŽINOMA: vardai nieko nereiškia, pora gali būti bet kokia.
 
 Rask tekstus, kuriuose apie ŽMONES (apie kurį nors iš jų ar apie juos kartu, „jūs“) pavartotos giminę rodančios formos, ir perrašyk tik tuos sakinius neutraliai, išlaikydamas prasmę, toną ir „jūs“ kreipinį:
@@ -4219,7 +4224,7 @@ Rask tekstus, kuriuose apie ŽMONES (apie kurį nors iš jų ar apie juos kartu,
 - įvardžiai „jis“, „ji“, „jo“, „jos“, „jam“, „jai“, „pats“, „pati“ apie žmogų → vardas tinkamu linksniu arba perrašytas sakinys.
 Būdvardžiai apie daiktus („linija ilga“, „ryšys stiprus“, „delnai nufotografuoti“) — taisyklingi, jų NEKEISK. Vardų nekeisk. Neperrašinėk tekstų, kuriuose giminės apie žmones nėra. Kiekvieną pataisytą tekstą grąžink VISĄ.
 
-Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}.
+Atsakyk TIK JSON objektu: raktai — pataisytų tekstų numeriai, reikšmės — visas pataisytas tekstas. Jei taisyti nereikia nieko — {}. Ženklas ¶ žymi pastraipos pabaigą — pataisytame tekste palik jį toje pačioje vietoje.
 
 Tekstai:
 ${list}`;
@@ -4239,7 +4244,7 @@ ${list}`;
       if (!s || typeof v !== 'string' || !v.trim()) continue;
       const len = v.trim().length, orig = s.text.length;
       if (len < orig * 0.6 || len > orig * 1.6) continue; // saugiklis — neleidžiame stipriai pakeisti teksto
-      s.set(poraNeutral(v.trim()));
+      s.set(paraUnmark(poraNeutral(v.trim())));
       n++;
     }
     console.log(`[pora] neutralios kalbos peržiūra: pataisyta tekstų ${n}`);
@@ -4282,6 +4287,7 @@ ${poraNameRules(A, B)}
 
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
 - Kiekvienas skyrius: 14–17 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
+- PASTRAIPOS IR SKLANDUMAS (labai svarbu): kiekvieną skyrių rašyk trumpomis pastraipomis (bent trys, gali būti ir daugiau), kiekvienoje po 2 susijusius sakinius — NIEKADA pastraipa iš vieno sakinio; pastraipas atskirk tuščia eilute (JSON eilutėje — \\n\\n). Tekstas — ne atskirų faktų sąrašas, o RIŠLUS pasakojimas: pastraipa plėtoja vieną mintį, kitas sakinys tęsia, paaiškina ar išplečia ankstesnio mintį. Nerašyk greta nesusijusių teiginių. Visos pastraipos kalba TIK apie to skyriaus temą (ne apie kitų skyrių temas) ir remiasi tuo, ką matai ŠIŲ dviejų žmonių delnuose (stebėjimais ir palyginimais).
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
