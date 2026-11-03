@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     <p class="lead">Įrašyk el. paštą, kurį nurodei užsakant analizę. Atsiųsime nuorodą į visas tavo analizes — ir šiandienes, ir atliktas prieš kelis mėnesius. Slaptažodžio nereikia.</p>
     <form class="card" id="ask-form" novalidate>
       <label for="email">El. paštas</label>
-      <input type="email" id="email" maxlength="254" autocomplete="email" inputmode="email" placeholder="vardas@pastas.lt">
+      <input type="email" id="email" name="email" maxlength="254" autocomplete="email" inputmode="email" placeholder="vardas@pastas.lt">
       <button type="submit" class="btn" id="ask-btn">Atsiųsti nuorodą</button>
       <div class="err" id="ask-err"></div>
       <div class="ok hidden" id="ask-ok">✦ Jei šiuo adresu turime tavo analizių, nuoroda jau keliauja į el. paštą.</div>
@@ -297,7 +297,10 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
 (function(){
   const a=document.createElement('a'); a.href='/'; a.id='mano-back-top'; a.textContent='Grįžti atgal';
   a.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:50;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none";
-  a.addEventListener('click',e=>{ e.preventDefault(); if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },300); });
+  // Atidaryta iš rezultato priminimo bloko — adresas grįžti (jei naršyklė neleistų uždaryti lango)
+  const K='delnasManoBack'; let back='';
+  try{ const g=new URLSearchParams(location.search).get('grizti'); if(g&&/^\/\?(kl|mano|pora)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()})); const d=JSON.parse(sessionStorage.getItem(K)||'null'); if(d&&Date.now()-d.at<6*3600e3) back=d.b; }catch(x){}
+  a.addEventListener('click',e=>{ e.preventDefault(); if(history.length>1){ history.back(); return; } try{ if(window.opener&&!window.opener.closed) window.opener.focus(); }catch(x){} try{ window.close(); }catch(x){} setTimeout(()=>{ if(back){ location.href=back; return; } a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },300); });
   document.body.appendChild(a);
   // Senasis „Pradžia“ toje pačioje vietoje — paslinkus išlįsdavo iš po „Grįžti atgal“
   document.querySelectorAll('a.home-back').forEach(x => x.remove());

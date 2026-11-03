@@ -5,7 +5,7 @@
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
 window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
-try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti)$/.test(h));
+try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h));
 if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
 if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
 <style>html.kl-boot body>*{visibility:hidden!important}</style>
@@ -786,7 +786,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
         <div id="gift-pay-msg" style="display:none;font-family:'Playfair Display',serif;font-style:italic;font-size:13px;line-height:1.45;color:rgba(255,255,255,.75);margin-top:8px;overflow-wrap:anywhere"></div>
       </div>
       <div id="gift-pay-err" style="display:none;color:#ff8a7a;font-size:11.5px;text-align:center;margin-top:10px;line-height:1.5"></div>
-      <input type="email" id="gift-resume-email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" style="display:none;margin-top:10px;background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:12px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
+      <input type="email" id="gift-resume-email" name="email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" style="display:none;margin-top:10px;background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:12px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box">
       <button onclick="redeemGiftAndProceed()" id="gift-pay-btn" style="width:100%;margin-top:10px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#1a1204;cursor:pointer">Atskleisti mano žemėlapį</button>
     </div>
 
@@ -880,8 +880,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     </div>
     <!-- Laukeliai -->
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px">
-      <input type="text" id="o-name" placeholder="Vardas" aria-label="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
-      <input type="email" id="o-email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
+      <input type="text" id="o-name" name="name" placeholder="Vardas" aria-label="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
+      <input type="email" id="o-email" name="email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
     </div>
     <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
     <!-- Vienas priminimas su nuolaida siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
@@ -1138,7 +1138,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div class="result-final-stars">✦ ✦ ✦</div>
       <div class="result-final-text" id="pora-final-text">Ši analizė priklauso tik jums. Ji jau atkeliavo į el. paštą PDF formatu.</div>
       <div id="pora-partner-mail" style="display:none;margin-top:12px">
-        <div style="display:flex;gap:8px"><input type="email" id="pora-partner-email" placeholder="Tavo el. paštas" autocomplete="email" inputmode="email" style="flex:1;min-width:0;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:11px 12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif"><button type="button" id="pora-partner-btn" onclick="poraPartnerEmail()" style="flex:none;background:transparent;border:1px solid rgba(212,168,67,.55);border-radius:10px;padding:0 14px;color:var(--gold2);font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Gauti PDF</button></div>
+        <div style="display:flex;gap:8px"><input type="email" id="pora-partner-email" name="email" placeholder="Tavo el. paštas" autocomplete="email" inputmode="email" style="flex:1;min-width:0;background:rgba(255,255,255,.04);border:.5px solid rgba(212,168,67,.35);border-radius:10px;padding:11px 12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif"><button type="button" id="pora-partner-btn" onclick="poraPartnerEmail()" style="flex:none;background:transparent;border:1px solid rgba(212,168,67,.55);border-radius:10px;padding:0 14px;color:var(--gold2);font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Gauti PDF</button></div>
         <div id="pora-partner-msg" style="font-size:12px;color:var(--muted);margin-top:8px;display:none"></div>
       </div>
     </div>
@@ -3953,11 +3953,21 @@ function renderInsights(containerId, insights){
 function textParas(text){
   const t=String(text||'').replace(/\r/g,'').trim(); if(!t) return [];
   const sent=x=>x.split(/(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/).map(y=>y.trim()).filter(Boolean);
-  // Pastraipa → dalys po 2 sakinius (5 → 2+3, 7 → 2+2+3)
-  const chunk=ss=>{ if(ss.length<=3) return [ss.join(' ')]; const out=[]; for(let i=0;i<ss.length;i+=2) out.push(ss.slice(i,i+2).join(' ')); if(ss.length%2){ const l=out.pop(); out[out.length-1]+=' '+l; } return out; };
-  let ps=t.split(/\n\s*\n|\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
-  if(ps.length>1){ const out=[]; ps.forEach(x=>{ if(out.length&&(sent(x).length<2||sent(out[out.length-1]).length<2)) out[out.length-1]+=' '+x; else out.push(x); }); ps=out; }
-  return ps.reduce((a,x)=>a.concat(chunk(sent(x))),[]);
+  // Pastraipos: po du trumpus sakinius arba po vieną ilgesnį (niekada po tris); AI pastraipų ribos išlaikomos
+  const LONG=110, MAX2=180, isLong=x=>x.length>=LONG;
+  const out=[];
+  t.split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).forEach(p=>{
+    // Geriausias padalijimas: kuo mažiau pavienių trumpų sakinių (vienas ilgas sakinys — gerai)
+    const ss=sent(p), n=ss.length, best=new Array(n+1).fill(null); best[n]={c:0,parts:[]};
+    for(let i=n-1;i>=0;i--){
+      const one=best[i+1]; let r={c:one.c+(isLong(ss[i])||n===1?0:3+(LONG-ss[i].length)/LONG),parts:[[ss[i]]].concat(one.parts)};
+      if(i+1<n&&ss[i].length+ss[i+1].length<=MAX2+(isLong(ss[i])||isLong(ss[i+1])?0:40)&&!(isLong(ss[i])&&isLong(ss[i+1]))){ const two=best[i+2], c=two.c+(isLong(ss[i])||isLong(ss[i+1])?1:0); if(c<r.c) r={c,parts:[[ss[i],ss[i+1]]].concat(two.parts)}; }
+      best[i]=r;
+    }
+    const part=best[0].parts;
+    part.forEach(x=>out.push(x.join(' ')));
+  });
+  return out;
 }
 function cleanResultText(v){
   if(typeof v==='string') return v.replace(/[<>]/g,'').replace(/"/g,'”');
@@ -4113,7 +4123,7 @@ function renderResultExtra(r){
     '<div class="kl-txt">Turi klausimą, kuris neduoda ramybės? Užduok iki <b>3 asmeninių klausimų</b> — atsakymai remsis tavo delnų analize.</div>'+
     '<textarea class="kl-q" id="kl-q" maxlength="400" rows="3" placeholder="Įrašyk savo klausimą…"></textarea>'+
     '<div class="kl-ex" id="kl-ex"><button type="button">Ar man verta keisti darbą?</button><button type="button">Kodėl kartojasi tos pačios santykių problemos?</button><button type="button">Kaip man geriau tvarkytis su pinigais?</button></div>'+
-    '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
+    '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" name="email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
     '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymus — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
     '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
@@ -7610,6 +7620,32 @@ document.addEventListener('click',e=>{
   const h=a.getAttribute('href').replace(/[?&]grizti=[^&#]*/,'');
   a.setAttribute('href',back?h+(h.includes('?')?'&':'?')+'grizti='+encodeURIComponent(back):h);
 },true);
+// „Mano analizės“ iš priminimo bloko — atidaroma skriptu (tokį langą naršyklė leidžia uždaryti „Grįžti atgal“ mygtuku)
+// ir perduodamas adresas grįžti prie priminimo bloko, jei langas vis tiek neužsidarytų
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('.px-rem-f a[href^="/mano"]'); if(!a) return;
+  const scr=a.closest('#s-result,#s-pora-result'); if(!scr) return;
+  const q=new URLSearchParams(location.search); let back='';
+  if(scr.id==='s-pora-result'&&window._pora&&window._pora.sid) back='/?pora='+encodeURIComponent(window._pora.sid)+'#priminimas';
+  else if(q.get('kl')||(q.get('mano')&&q.get('t'))) back=location.pathname+location.search+'#priminimas';
+  const url='/mano'+(back?'?grizti='+encodeURIComponent(back):'');
+  e.preventDefault();
+  const w=window.open(url,'_blank'); if(!w) location.href=url;
+},true);
+// Grįžus iš „Mano analizių“ (…#priminimas) — iškart prie priminimo bloko
+(function remJump(){
+  if(location.hash!=='#priminimas') return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector('.screen.active');
+    const g=scr&&(scr.id==='s-pora-result'?document.getElementById('pora-plan'):scr.id==='s-result'?document.querySelector('#s-result .px-rem'):null);
+    if(g&&g.offsetParent){
+      clearInterval(iv);
+      try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+      setTimeout(()=>{ let y=0,el=g; while(el){ y+=el.offsetTop; el=el.offsetParent; } window.scrollTo(0,Math.max(0,y-Math.round(window.innerHeight*0.3))); requestAnimationFrame(delnasReveal); },400);
+    }
+    if(++n>80){ clearInterval(iv); delnasReveal(); }
+  },250);
+})();
 // Asmeninis rezultatas (/?kl=… ar /?mano=…) su #dovanos — grįžus iš dovanų puslapio nuslenkama prie dovanų bloko
 (function giftJump(){
   if(location.hash!=='#dovanos') return;

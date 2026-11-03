@@ -401,7 +401,7 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
         <div><label for="f-to">Gavėjo vardas</label>
         <input type="text" id="f-to" maxlength="60" placeholder="pvz. Ieva" autocomplete="off"></div>
         <div><label for="f-from">Tavo vardas</label>
-        <input type="text" id="f-from" maxlength="60" placeholder="pvz. Tomas" autocomplete="name"></div>
+        <input type="text" id="f-from" name="name" maxlength="60" placeholder="pvz. Tomas" autocomplete="name"></div>
       </div>
       <label for="f-msg">Palinkėjimas <span class="opt">(neprivaloma · <span id="msg-count">0</span>/300)</span></label>
       <textarea id="f-msg" maxlength="300" rows="2" placeholder="Su gimtadieniu! ✨"></textarea>
@@ -415,7 +415,7 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
       </div>
       <div id="buyer-wrap">
         <label for="f-email">Tavo el. paštas</label>
-        <input type="email" id="f-email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
+        <input type="email" id="f-email" name="email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
         <div class="sched-hint">Kuponą gausi iš karto ekrane ir el. paštu, o gavėjui galėsi nusiųsti kaip patogu.</div>
       </div>
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą. <button type="button" class="rf-link" id="rf-open">14 d. pinigų grąžinimo sąlygos</button></span></label>
