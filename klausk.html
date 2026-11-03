@@ -177,6 +177,8 @@ document.getElementById('back-link').addEventListener('click', e => {
   function refresh(){
     $('ask-wrap').classList.toggle('hidden', left <= 0);
     $('all-done').classList.toggle('hidden', left > 0);
+    // Visi klausimai jau užduoti (pvz. atidarius seną laišką) — viršuje ne kvietimas klausti
+    if (left <= 0) $('lead').textContent = 'Visi 3 klausimai užduoti — atsakymai žemiau.';
     // Atėjus iš laiško nuorodos „Užduoti dar 3 klausimus“ — iškart prie pasiūlymo
     if (left <= 0 && location.hash === '#daugiau') setTimeout(() => $('daugiau').scrollIntoView({ block: 'center' }), 150);
     $('note').style.display = left === 3 ? '' : 'none';

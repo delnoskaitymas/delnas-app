@@ -1145,7 +1145,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <!-- „Klauskite savo delnų“ porai — mokėjimas naujame skirtuke -->
     <div class="rs rs-std kl pr-rv" id="pora-kl">
       <div class="rs-label">✦ Klauskite savo delnų</div>
-      <div class="kl-txt">Turite klausimų apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis būtent jūsų poros analize.</div>
+      <div class="kl-txt">Turite klausimų apie savo porą? Užduokite iki <b>3 klausimų</b> — atsakymai remsis jūsų poros analize.</div>
       <textarea class="kl-q" id="pora-kl-q" maxlength="400" rows="3" placeholder="Įrašykite savo klausimą…"></textarea>
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
       <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymus — 4,99 €</button>
@@ -4110,7 +4110,7 @@ function renderResultExtra(r){
   // „Klausk savo delnų“ — mokamas priedas (mokėjimas naujame skirtuke, kad rezultatas liktų)
   const em=window._userEmail||window.userEmail||'';
   h+='<div class="rs rs-std rs-reveal kl"><div class="rs-label">✦ Klausk savo delnų</div>'+
-    '<div class="kl-txt">Turi klausimą, kuris neduoda ramybės? Užduok iki <b>3 asmeninių klausimų</b> — atsakymai remsis būtent tavo delnų analize.</div>'+
+    '<div class="kl-txt">Turi klausimą, kuris neduoda ramybės? Užduok iki <b>3 asmeninių klausimų</b> — atsakymai remsis tavo delnų analize.</div>'+
     '<textarea class="kl-q" id="kl-q" maxlength="400" rows="3" placeholder="Įrašyk savo klausimą…"></textarea>'+
     '<div class="kl-ex" id="kl-ex"><button type="button">Ar man verta keisti darbą?</button><button type="button">Kodėl kartojasi tos pačios santykių problemos?</button><button type="button">Kaip man geriau tvarkytis su pinigais?</button></div>'+
     '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
