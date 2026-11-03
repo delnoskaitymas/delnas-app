@@ -3944,6 +3944,20 @@ function renderInsights(containerId, insights){
 }
 
 // Analizės tekstuose HTML ženklų būti negali — pašaliname (apsauga, jei kas nors įterptų kodą)
+// Skyriaus tekstas — pastraipomis: AI atskirtos pastraipos (tuščia eilutė) išlaikomos; jei jų nėra — sakiniai grupuojami po 3–4
+function textParas(text){
+  const t=String(text||'').replace(/\r/g,'').trim(); if(!t) return [];
+  const sent=x=>x.split(/(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/).map(y=>y.trim()).filter(Boolean);
+  let ps=t.split(/\n\s*\n|\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
+  // Pastraipa iš vieno sakinio prijungiama prie gretimos (pastraipų gali būti ir daugiau, bet ne po vieną sakinį)
+  if(ps.length>1){ const out=[]; ps.forEach(x=>{ if(out.length&&(sent(x).length<2||sent(out[out.length-1]).length<2)) out[out.length-1]+=' '+x; else out.push(x); }); ps=out; }
+  if(ps.length===1){
+    const ss=sent(ps[0]); if(ss.length<=4) return [ss.join(' ')];
+    const k=Math.ceil(ss.length/4), per=Math.ceil(ss.length/k); ps=[];
+    for(let i=0;i<ss.length;i+=per) ps.push(ss.slice(i,i+per).join(' '));
+  }
+  return ps;
+}
 function cleanResultText(v){
   if(typeof v==='string') return v.replace(/[<>]/g,'').replace(/"/g,'”');
   if(Array.isArray(v)) return v.map(cleanResultText);
@@ -3973,7 +3987,7 @@ function displayResult(r){
     sessionStorage.setItem('delnasLastRes',JSON.stringify({at:Date.now(),r,name:window.userName||window._userName||'',email:window._userEmail||'',orderNumber:window._orderNumber||'',paymentRef:pr,gift:!!window._isGiftOrder,giftRef:window._giftRef||'',bg:window.bgSessionId||''}));
   }catch(e){}
   const name=window.userName||'';
-  function formatText(text){if(!text)return'';return text.split(/\.\s+/).filter(s=>s.trim()).map(s=>`<p>${s.trim()}${s.trim().endsWith('.')?'':'.'}</p>`).join('');}
+  function formatText(text){return textParas(text).map(p=>`<p>${p}</p>`).join('');}
   const resNameEl=document.getElementById('res-name');
   resNameEl.textContent=name?`✦ ${ltPhrase(name,'voc')}, tavo asmeninis gyvenimo žemėlapis`:'✦ Tavo asmeninė delnų analizė';
   const rChar=document.getElementById('r-char');
@@ -4718,7 +4732,7 @@ function buildResultPdfDoc(r, name, orderNumber){
     // už dešinės paraštės ir nusikirsdavo.
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
-    const bodyLines = doc.splitTextToSize(text, maxW);
+    const bodyLines = doc.splitTextToSize(textParas(text).join('\n\n'), maxW);
 
     // ─── VISO SKYRIAUS (antraštė + tekstas + įžvalgos + sąrašas) apytikslis
     // aukštis. Naudojamas TIK tam, kad NEVERTA pradėti naujo skyriaus
@@ -6836,7 +6850,7 @@ function renderPoraResult(r){
   const cmp=poraChange(r.palyginimas);
   document.getElementById('pora-change').innerHTML=cmp.box;
   if(cmp.box) klCmpApply(document.getElementById('pora-kl'), true);
-  const para=t=>String(t||'').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).map(s=>'<p>'+poraEsc(s.trim())+'</p>').join('');
+  const para=t=>textParas(t).map(p=>'<p>'+poraEsc(p)+'</p>').join('');
   // Skyriai — lygiai tokia pati struktūra kaip asmeninėje analizėje: antraštė, tekstas, auksinės įžvalgų kortelės, baigiamoji eilutė
   const iz=r.izvalgos||{};
   document.getElementById('pora-sections').innerHTML=PORA_SECTIONS.map(([k,title])=>{
@@ -6945,7 +6959,7 @@ function buildPoraPdfDoc(){
     doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD);
     doc.splitTextToSize(title.toUpperCase(), maxW).forEach(l=>{ doc.text(l, M, y); y+=8; });
     y+=2; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY);
-    doc.splitTextToSize(String(r[k]||''), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
+    doc.splitTextToSize(textParas(r[k]).join('\n\n'), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
     const iz=(r.izvalgos||{})[k]||[];
     if(iz.length){ y+=2; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2);
       iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
