@@ -816,7 +816,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     // Planuotas siuntimas gavėjui (tik po pirkimo) — dovaną išsiųs sistema, pirkėjui siųsti nereikia
     if (g.sendTo) {
       const when = g.sendNow ? 'per kelias minutes' : (/^\d{4}-\d{2}-\d{2}$/.test(g.sendAt || '') ? fmtDate(Date.parse(g.sendAt + 'T12:00:00Z')) + ' apie ' + String(g.sendHour).padStart(2, '0') + ':00' : '');
-      $('card-lead').textContent = 'Dovaną išsiųsime adresu ' + g.sendTo + (when ? ' ' + when : '') + '. Kopiją gali atsisiųsti sau — pavyzdžiui, atsispausdinti ir įteikti asmeniškai.';
+      $('card-lead').textContent = 'Dovaną išsiųsime adresu ' + g.sendTo + (when ? ' ' + when : '') + '.';
     }
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
@@ -827,7 +827,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('dl-png').classList.toggle('hidden', !!used);
     $('share').classList.toggle('hidden', !!used || waiting); $('copy').classList.toggle('hidden', !!used || waiting);
     $('card-actions').classList.toggle('hidden', !!used);
-    if (waiting && !g.sendTo) $('card-lead').textContent = 'Dovaną gavėjui el. paštu išsiųsime nurodytą dieną. Kopiją gali atsisiųsti sau — pavyzdžiui, atsispausdinti ir įteikti asmeniškai.';
+    if (waiting && !g.sendTo) $('card-lead').textContent = 'Dovaną gavėjui el. paštu išsiųsime nurodytą dieną.';
     if (used) $('c-redeemed').textContent = g.status === 'redeemed' ? 'Šis kuponas jau panaudotas.' : 'Šis kuponas nebegalioja.';
     // Pagrindinis mygtukas: įprastai — „Išsiųsti dovaną“ (dovana iškart perduodama gavėjui); jei dovaną el. paštu siunčia sistema
     // arba kuponas jau panaudotas — „Atsisiųsti kuponą“ (kopija sau)
