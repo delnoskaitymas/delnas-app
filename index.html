@@ -3945,12 +3945,12 @@ function renderInsights(containerId, insights){
 
 // Analizės tekstuose HTML ženklų būti negali — pašaliname (apsauga, jei kas nors įterptų kodą)
 // Skyriaus tekstas — pastraipomis: AI atskirtos pastraipos (tuščia eilutė) išlaikomos; jei jų nėra — sakiniai grupuojami po 3–4
-// Skyriaus tekstas — pastraipomis po 2–3 sakinius: AI atskirtos pastraipos išlaikomos, ilgesnės padalijamos, iš vieno sakinio — prijungiamos prie gretimos
+// Skyriaus tekstas — pastraipomis po 2 sakinius (nelyginio skaičiaus atveju paskutinėje — 3; pastraipos iš vieno sakinio nebūna)
 function textParas(text){
   const t=String(text||'').replace(/\r/g,'').trim(); if(!t) return [];
   const sent=x=>x.split(/(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/).map(y=>y.trim()).filter(Boolean);
-  // Pastraipa → dalys po 2–3 sakinius (4 → 2+2, 5 → 3+2, 7 → 3+2+2)
-  const chunk=ss=>{ if(ss.length<=3) return [ss.join(' ')]; const k=Math.ceil(ss.length/3), out=[]; let i=0; for(let j=0;j<k;j++){ const n=Math.ceil((ss.length-i)/(k-j)); out.push(ss.slice(i,i+n).join(' ')); i+=n; } return out; };
+  // Pastraipa → dalys po 2 sakinius (5 → 2+3, 7 → 2+2+3)
+  const chunk=ss=>{ if(ss.length<=3) return [ss.join(' ')]; const out=[]; for(let i=0;i<ss.length;i+=2) out.push(ss.slice(i,i+2).join(' ')); if(ss.length%2){ const l=out.pop(); out[out.length-1]+=' '+l; } return out; };
   let ps=t.split(/\n\s*\n|\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
   if(ps.length>1){ const out=[]; ps.forEach(x=>{ if(out.length&&(sent(x).length<2||sent(out[out.length-1]).length<2)) out[out.length-1]+=' '+x; else out.push(x); }); ps=out; }
   return ps.reduce((a,x)=>a.concat(chunk(sent(x))),[]);
