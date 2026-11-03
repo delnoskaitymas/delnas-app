@@ -5015,13 +5015,15 @@ async function sharePdfToFriend(){
 // programėlę (kad draugas galėtų pats pradėti savo analizę nuo nulio).
 // Sukuria paprastą, BENDRĄ (be asmeninių rezultatų) kvietimo kortelę —
 // tik prekės ženklas, trumpas kvietimas ir mygtukas su adresu.
-async function buildInviteCardBlob(name, refLink){
+// pora=true — porų rezultato kvietimas (antraštė „apie tave ir jus abu“); asmeninės analizės — pirmiausia apie draugą patį
+async function buildInviteCardBlob(name, refLink, pora){
   try{
     await Promise.all([
       document.fonts.load('700 62px "Playfair Display"'),
       document.fonts.load('700 58px "Playfair Display"'),
       document.fonts.load('700 48px "DM Sans"'),
       document.fonts.load('600 32px "DM Sans"'),
+      document.fonts.load('500 27px "DM Sans"'),
       document.fonts.load('700 24px "DM Sans"'),
       document.fonts.ready
     ]);
@@ -5127,12 +5129,13 @@ async function buildInviteCardBlob(name, refLink){
   ctx.fillStyle = '#f7eccb';
   ctx.shadowColor = 'rgba(240,201,106,.4)';
   ctx.shadowBlur = 10;
-  y = drawWrappedCentered(ctx, 'Ką delnai pasakoja apie tave ir jus abu?', W/2, y, W - 120, 60) + 18;
+  y = drawWrappedCentered(ctx, pora ? 'Ką delnai pasakoja apie tave ir jus abu?' : 'Ką delnai pasakoja apie tave?', W/2, y, W - 120, 60) + 18;
   ctx.shadowBlur = 0;
   ctx.font = '600 32px "DM Sans", sans-serif';
   ctx.fillStyle = 'rgba(245,238,216,.85)';
   y = drawWrappedCentered(ctx, 'Tau — kas stabdo, kur slypi sėkmė ir kokie pokyčiai artėja.', W/2, y, maxWidth, 40) + 10;
-  y = drawWrappedCentered(ctx, 'Jums abiem — kiek procentų derate, kur gali kilti trintis ir kaip žiūrite į pinigus bei ateitį.', W/2, y, maxWidth, 40) + 22;
+  if (pora) y = drawWrappedCentered(ctx, 'Jums abiem — kiek procentų derate, kur gali kilti trintis ir kaip žiūrite į pinigus bei ateitį.', W/2, y, maxWidth, 40) + 22;
+  else { ctx.font = '500 27px "DM Sans", sans-serif'; ctx.fillStyle = 'rgba(245,238,216,.7)'; y = drawWrappedCentered(ctx, 'Ir jums dviem — kiek procentų derate su artimu žmogumi.', W/2, y, maxWidth, 36) + 22; }
   ctx.font = '700 32px "DM Sans", sans-serif';
   ctx.fillStyle = '#f0c96a';
   y = drawWrappedCentered(ctx, (name ? name + ' dovanoja tau' : 'Tau dovanojama') + ' −10 % ir Gyvenimo žemėlapiui, ir porų suderinamumui.', W/2, y, maxWidth, 42) + 60;
@@ -7137,7 +7140,7 @@ async function poraInviteFriend(btn){
   }catch(e){}
   // Ta pati kvietimo kortelė kaip asmeniniame rezultate, tik su abiejų vardais
   try{
-    const blob=await buildInviteCardBlob(poraNames(), window._poraRefLink && window._poraRefLink.link);
+    const blob=await buildInviteCardBlob(poraNames(), window._poraRefLink && window._poraRefLink.link, true);
     if(blob){ const file=new File([blob],'delnas-kvietimas.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({ files:[file], title:'DELNAS', text, url }); return; } }
     if(navigator.share){ await navigator.share({ title:'DELNAS', text, url }); return; }
