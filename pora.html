@@ -335,11 +335,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
       <div class="row2">
         <label for="f-a">Tavo vardas</label>
         <label for="f-b">Partnerio (-ės) vardas</label>
-        <input type="text" id="f-a" maxlength="40" placeholder="pvz. Monika" autocomplete="given-name">
+        <input type="text" id="f-a" name="given-name" maxlength="40" placeholder="pvz. Monika" autocomplete="given-name">
         <input type="text" id="f-b" maxlength="40" placeholder="pvz. Tomas" autocomplete="off">
       </div>
       <label for="f-email">Tavo el. paštas</label>
-      <input type="email" id="f-email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
+      <input type="email" id="f-email" name="email" maxlength="254" placeholder="rezultatas bus išsiųstas čia" autocomplete="email" inputmode="email">
       <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Mums yra 18 metų ir sutinkame, kad būtų analizuojamos mūsų delnų nuotraukos. Sutinkame su <a href="/naudojimosi-salygos?is=pora" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=pora" target="_blank">Privatumo politika</a>.</span></label>
       <div class="chk2" id="remind-row"><span id="remind-txt">Jei užsakymą atidėtumėte, vieną kartą priminsime. <button type="button" id="f-noremind">Nereikia</button></span></div>
       <button type="submit" class="btn off" id="pay-btn">Užsakyti — <span id="price">22,99 €</span></button>
