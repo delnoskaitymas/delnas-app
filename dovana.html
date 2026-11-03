@@ -488,7 +488,6 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
     </div></div>
     <div class="actions" id="card-actions">
       <button class="btn" id="dl-png">Atsisiųsti kuponą</button>
-      <button class="btn ghost" id="dl-pdf">Atsisiųsti PDF</button>
       <button class="btn ghost" id="share">Išsiųsti dovaną</button>
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
@@ -833,8 +832,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     if (libsP) return libsP;
     const load = src => new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
     libsP = Promise.all([
-      window.html2canvas ? 0 : load('/vendor/html2canvas.min.js'),
-      window.jspdf ? 0 : load('/vendor/jspdf.umd.min.js')
+      window.html2canvas ? 0 : load('/vendor/html2canvas.min.js')
     ]);
     return libsP;
   }
@@ -872,21 +870,6 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const c = await cardCanvas(); const a = document.createElement('a'); a.download = fileBase() + '.png'; a.href = c.toDataURL('image/png'); a.click();
     }
     catch (e) { alert('Nepavyko paruošti kupono. Pabandyk dar kartą.'); }
-    b.textContent = t;
-  });
-  $('dl-pdf').addEventListener('click', async () => {
-    const b = $('dl-pdf'); const t = b.textContent; b.textContent = 'Ruošiama…';
-    try {
-      const c = await cardCanvas();
-      const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [135, 190] });
-      pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 135, 190);
-      // Paspaudžiamos nuorodos PDF'e: QR → dovanos nuoroda, tekstas → /kodas
-      const k = 135 / 540, R = cardCanvas.rects || {};
-      const link = (r, url) => { if (r) pdf.link(r.x * k, r.y * k, r.w * k, r.h * k, { url: url }); };
-      link(R.qr, redeemLink(current.code));
-      link(R.kodas, location.origin + '/kodas');
-      pdf.save(fileBase() + '.pdf');
-    } catch (e) { alert('Nepavyko paruošti PDF. Pabandyk dar kartą.'); }
     b.textContent = t;
   });
   $('copy').addEventListener('click', async () => {
