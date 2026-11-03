@@ -480,7 +480,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const t = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
       const day = new Date(d.expiresAt).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', timeZone: 'Europe/Vilnius' }).replace(/ (\d+) d\./, '\u00a0$1\u00a0d.'); // „lapkričio 1 d.“ nelūžta
       $('gift-note').innerHTML = d.kind === 'bundle'
-        ? '<b>💞 Jums — ' + eur(price) + ' vietoj ' + eur(d.poraPrice) + '</b><span>Kaina po gyvenimo žemėlapio analizės · galioja iki ' + day + '</span>'
+        ? '<b>💞 Jums — ' + eur(price) + ' vietoj ' + eur(d.poraPrice) + '</b><span>Galioja iki ' + day + '</span>'
         : d.kind === 'repeat'
         ? '<b>✦ Pakartotinis porų suderinamumas −' + d.pct + ' %</b><span>Pažiūrėkite, kaip pasikeitė jūsų suderinamumas · galioja iki ' + day + '</span>'
         : '<b>⏳ Jūsų −' + d.pct + ' % nuolaida</b><span>Galioja iki ' + t + '</span>';
