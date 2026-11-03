@@ -821,8 +821,13 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     const used = g.status && g.status !== 'active';
     $('c-redeemed').classList.toggle('hidden', !used);
     $('card-lead').classList.toggle('hidden', !!used);
-    // Panaudoto kupono nebėra kam siųsti — lieka tik atsisiuntimas prisiminimui
-    $('share').classList.toggle('hidden', !!used); $('copy').classList.toggle('hidden', !!used);
+    // Panaudotas kuponas — mygtukų nebereikia (lieka užrašas ir „Padovanoti dar vieną“).
+    // Dovaną el. paštu nurodytą dieną siunčia sistema — iki išsiuntimo nuoroda nesiūloma (kad nebūtų sugadinta staigmena), lieka kopija sau
+    const waiting = !used && !!(g.sendTo || (g.emailed && !g.emailSent));
+    $('dl-png').classList.toggle('hidden', !!used);
+    $('share').classList.toggle('hidden', !!used || waiting); $('copy').classList.toggle('hidden', !!used || waiting);
+    $('card-actions').classList.toggle('hidden', !!used);
+    if (waiting && !g.sendTo) $('card-lead').textContent = 'Dovaną gavėjui el. paštu išsiųsime nurodytą dieną. Kuponą gali atsisiųsti ir pats.';
     if (used) $('c-redeemed').textContent = g.status === 'redeemed' ? 'Šis kuponas jau panaudotas.' : 'Šis kuponas nebegalioja.';
     // Pagrindinis mygtukas: įprastai — „Išsiųsti dovaną“ (dovana iškart perduodama gavėjui); jei dovaną el. paštu siunčia sistema
     // arba kuponas jau panaudotas — „Atsisiųsti kuponą“ (kopija sau)
