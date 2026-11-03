@@ -1400,7 +1400,8 @@ function go(id){
 // ją sukurti tik paspaudus), todėl du „atgal“ iš eilės be palietimo išveda iš svetainės kaip įprasta.
 (function(){
   let armed=false;
-  function arm(){ if(armed) return; try{ history.pushState(history.state,''); armed=true; }catch(e){} }
+  // Ne paspaudus laukelį ar renkant tekstą: naršyklės įrašas tuo metu paslepia klaviatūros pasiūlymus (išsaugotą el. paštą, vardą)
+  function arm(e){ if(armed) return; const t=e&&e.target; if(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]')) return; try{ history.pushState(history.state,''); armed=true; }catch(x){} }
   ['pointerup','touchend','click','keydown'].forEach(t=>window.addEventListener(t,arm,{capture:true,passive:true}));
   window.addEventListener('popstate',()=>{ armed=false; });
   // „Grįžti atgal“ mygtukas: praleidžiamas apsaugos įrašas; nėra kur grįžti — langas uždaromas
