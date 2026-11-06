@@ -848,7 +848,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
     <button onclick="initiatePayment()" id="pay-btn" class="pay-anim-item" disabled style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:18px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.04em;cursor:pointer;box-shadow:0 3px 12px rgba(212,168,67,.22);opacity:.55;transition:opacity .3s ease,box-shadow .3s ease">Užsakyti ir apmokėti</button>
     <div id="pay-trust-row" style="text-align:center;margin-top:0px;display:flex;flex-direction:column;align-items:center;gap:5px">
       <!-- Vienintelė eilutė: saugumas + grąžinimo sąlygos (frazė yra paspaudžiama nuoroda) -->
-      <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Mokėjimas apsaugotas • <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 dienų pinigų grąžinimo sąlygos</button></span>
+      <span style="font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:.01em">🔒 Saugiai per Stripe · <button onclick="openRefundPopup()" style="background:none;border:none;color:rgba(212,168,67,.75);font-size:9.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'DM Sans',sans-serif;letter-spacing:.01em">14 d. pinigų grąžinimas</button></span>
       <!-- Logotipai -->
       <span style="display:flex;align-items:center;gap:5px;opacity:.2;margin-top:1px;filter:grayscale(.5)">
         <svg width="28" height="18" viewBox="0 0 28 18" fill="none"><rect width="28" height="18" rx="3" fill="#1A1F71"/><text x="4" y="13" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">VISA</text></svg>
@@ -1152,7 +1152,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div class="kl-ex" id="pora-kl-ex"><button type="button">Kaip mums rečiau ginčytis?</button><button type="button">Kaip suderinti požiūrį į pinigus?</button><button type="button">Kaip išlaikyti artumą kasdienybėje?</button></div>
       <button type="button" class="kl-btn" id="pora-kl-btn">Gauti atsakymus — 4,99 €</button>
       <div class="kl-err" id="pora-kl-err"></div>
-      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div>
+      <div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugiai per Stripe</div>
     </div>
     <!-- Asmeninė analizė kiekvienam — pelningiausias pasiūlymas, iškart po „Klauskite“ (porų kaina abiem — /pora/offers) -->
     <div id="pora-personal" style="background:#000;border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin-bottom:12px;text-align:center">
@@ -4155,7 +4155,7 @@ function renderResultExtra(r){
     '<input type="email" class="kl-email'+(em?' hidden':'')+'" id="kl-email" name="email" placeholder="Tavo el. paštas atsakymams" value="'+_xEsc(em)+'" autocomplete="email" inputmode="email">'+
     '<button type="button" class="kl-btn" id="kl-btn">Gauti atsakymus — 4,99 €</button>'+
     '<div class="kl-err" id="kl-err"></div>'+
-    '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugus mokėjimas per Stripe</div></div>';
+    '<div class="kl-fine">Už 4,99 € — 3 klausimai · atsakymai atsidarys naujame lange, o el. paštu ateis vienu laišku · Saugiai per Stripe</div></div>';
   box.innerHTML=h;
   klCmpPersonal();
   { const pl=document.getElementById('r-plan'); if(pl) pl.innerHTML=hPlan; }
