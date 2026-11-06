@@ -2513,6 +2513,23 @@ async function analyzeHandLandmarksLocal(canvasEl){
     return { ok:false, unavailable:true };
   }
 
+  // Ranka labai arti ir užima beveik visą kadrą — modelis jos dažnai neranda. Bandoma dar kartą su
+  // nuotrauka, apvesta tamsiu rėmu (ranka atrodo mažesnė); taškai perskaičiuojami į originalų kadrą,
+  // todėl pasakoma, kur ranka netelpa (o ne „Nematau rankos“)
+  let padded = false;
+  if (!result || !result.landmarks || result.landmarks.length === 0) {
+    for (const k of [0.35, 0.8]) try {
+      if (padded) break;
+      const W = canvasEl.width, H = canvasEl.height, px = Math.round(W * k), py = Math.round(H * k);
+      const pc = document.createElement('canvas'); pc.width = W + 2 * px; pc.height = H + 2 * py;
+      const g = pc.getContext('2d'); g.fillStyle = '#202020'; g.fillRect(0, 0, pc.width, pc.height); g.drawImage(canvasEl, px, py, W, H);
+      const r2 = detector.detect(pc);
+      if (r2 && r2.landmarks && r2.landmarks.length) {
+        r2.landmarks = r2.landmarks.map(l => l.map(p => ({ ...p, x: (p.x * pc.width - px) / W, y: (p.y * pc.height - py) / H })));
+        result = r2; padded = true;
+      }
+    } catch (e) { console.error('[handLandmarker] pakartotinė paieška su rėmu:', e); }
+  }
   if (!result || !result.landmarks || result.landmarks.length === 0) {
     window._palmDbg={ path:'telefonas', ranka:'nerasta' };
     return { ok:true, valid:false, reason:'no_hand' };
@@ -2529,7 +2546,8 @@ async function analyzeHandLandmarksLocal(canvasEl){
   }
 
   const palmBaseFullyVisible = PALM_BASE_LM.every(idx => _pointInFrame(lm[idx]));
-  const palmFacingCamera = _isPalmFacingCamera(lm, handednessLabel);
+  // Modelio žyma „Left/Right“ nepatikima (tą pačią ranką pavadina skirtingai) — tikrinama pagal tai, kurį delną fotografuojame
+  const palmFacingCamera = _isPalmFacingCamera(lm, camHand === 'right' ? 'Right' : 'Left');
 
   // Apytikslis delno "užpildymo" kadre įvertinimas — riešo ir vidurinio
   // piršto MCP sąnario atstumas normalizuotose koordinatėse. Kuo didesnis,
@@ -2538,7 +2556,7 @@ async function analyzeHandLandmarksLocal(canvasEl){
   const midMcp = lm[HAND_LM.MIDDLE_MCP];
   const palmSpan = Math.hypot(wrist.x - midMcp.x, wrist.y - midMcp.y);
 
-  window._palmDbg={ path:'telefonas', ranka:handednessLabel||'?', pirstai:fingersVisible, delnoPagrindas:palmBaseFullyVisible, delnuKamerai:palmFacingCamera, dydis:+palmSpan.toFixed(2) };
+  window._palmDbg={ path:'telefonas'+(padded?' (su rėmu)':''), ranka:handednessLabel||'?', pirstai:fingersVisible, delnoPagrindas:palmBaseFullyVisible, delnuKamerai:palmFacingCamera, dydis:+palmSpan.toFixed(2) };
   console.log('[handLandmarker] fingersVisible=', fingersVisible, 'palmBaseFullyVisible=', palmBaseFullyVisible, 'palmFacingCamera=', palmFacingCamera, 'palmSpan=', palmSpan.toFixed(3));
 
   // Dalis rankos už kadro ribų — tai ne „suglausti pirštai“: pasakoma, į kurią pusę patraukti ranką
@@ -2573,6 +2591,14 @@ async function getPalmValidation(dataURL, canvasEl){
   try {
     const localResult = await analyzeHandLandmarksLocal(canvasEl);
     if (!localResult.unavailable) {
+      // Telefono modelis rankos nerado (pvz. kadre tik pirštai ar ranka labai arti) — serverio patikra pasako konkrečią priežastį
+      if (!localResult.valid && localResult.reason === 'no_hand') {
+        try {
+          const r = await fetch('/validate-palm', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({photos:[{type:'image/jpeg',data:dataURL.split(',')[1]}]}) });
+          const d = await r.json();
+          if (d && !d.unchecked && (d.valid || (d.reason && d.reason !== 'no_hand'))) { window._palmDbg = { ...(window._palmDbg||{}), path:'serveris (telefono modelis rankos nerado)', ats:d.valid?'tinka':d.reason }; return { valid: !!d.valid, reason: d.reason || null }; }
+        } catch (e) {}
+      }
       return { valid: localResult.valid, reason: localResult.reason };
     }
   } catch (e) {
@@ -2898,6 +2924,8 @@ function capturePhoto(){
           'back_hand':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
           'no_hand':['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.']
         };
+        // Nugarėlė arba ne tas delnas — pasakoma, kurio delno vidinė pusė turi matytis
+        msgs.back_hand=['Pasuk delną į save','Kamera turi matyti vidinę '+(isLeftHand?'kairiojo':'dešiniojo')+' delno pusę.'];
         let [title,msg]=msgs[v.reason]||['Nematau rankos','Įeik į šviesesnę vietą ir laikyk delną tiesiai prieš kamerą.'];
         const encourage='<div style="font-size:10.5px;color:rgba(212,168,67,.85);margin-top:6px;font-style:italic">Beveik pavyko – bandyk dar kartą ✨</div>';
         // Rodyti klaidos laukelį frozen apačioje
