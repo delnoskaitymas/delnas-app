@@ -4611,6 +4611,7 @@ ${brief(prev)}
 NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Bendravimas, Vertybės, Kasdienybė, Trauka, Trintis, Pinigai ir ateitis). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur pora pajudėjo ir kam verta skirti dėmesio toliau. Papildomai skyriai: 2–4 analizės skyriams (raktai: ${PORA_REPEAT_KEYS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
+KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia jūsų porai. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
 Rašyk taisyklinga, paprasta lietuvių kalba, „jūs“ forma apie porą, esamuoju laiku apie dabartį. Iš vardų lyties nespręsk: nevartok giminę turinčių dalyvių ir būdvardžių apie žmones, neatskirk žmonių žodžiais „vienas… kitas…“ (rašyk „jūs“, „jūsų poroje“, „tarpusavyje“). Vardų nenaudok. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -6597,7 +6598,8 @@ NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Mąstymas, Santykiai, Darbas ir pinigai, Pasitikėjimas savimi, Gyvenimo tempas). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur žmogus pajudėjo ir kam verta skirti dėmesio toliau. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
 Papildomai skyriai: 2–4 analizės skyriams (raktai: ${KLAUSK_RESULT_FIELDS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize (pvz. „Anksčiau … , dabar …“). Skyrių, kuriuose pokyčių nėra, nerašyk.
-Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę turinčių dalyvių. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
+KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia tau. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
+Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę rodančių žodžių apie skaitytoją („pats/pati“, -damas/-dama, -ęs/-usi, būdvardžių kaip „ramus“). Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
