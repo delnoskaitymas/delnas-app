@@ -6687,7 +6687,7 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
     const s = loadSaved();
     if (s.lastLink[email] && Date.now() - s.lastLink[email] < 10 * 60 * 1000) return; // ne dažniau kaip kas 10 min. vienam adresui
     const t = 'mt_' + crypto.randomBytes(16).toString('hex');
-    s.tokens[t] = { email, exp: Date.now() + 7 * DAY_MS };
+    s.tokens[t] = { email, exp: Date.now() + DAY_MS }; // 24 val. — asmeninių analizių saugumui
     s.lastLink[email] = Date.now();
     saveSavedStore(s);
     statInc('mano');
@@ -6695,7 +6695,7 @@ app.post('/mano/link', sensitiveLimiter, async (req, res) => {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: email,
       subject: '✦ Tavo DELNAS analizės',
-      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Tavo analizės</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Paspausk mygtuką — atsidarys visos šiuo el. paštu išsaugotos tavo analizės.</p><a href="${appBaseUrl()}/mano?t=${t}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti mano analizes</a><p style="font-size:12px;color:rgba(245,238,216,.5);margin:16px 0 0">Nuoroda galioja 7 dienas. Jei jos neprašei — tiesiog ignoruok šį laišką.</p>${EMAIL_FOOTER_HTML}</div>`
+      html: `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 24px;max-width:480px;margin:0 auto;text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:20px;font-weight:700;color:#d4a843;margin-bottom:10px">Tavo analizės</div><p style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.85);margin:0 0 20px">Paspausk mygtuką — atsidarys visos šiuo el. paštu išsaugotos tavo analizės.</p><a href="${appBaseUrl()}/mano?t=${t}" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:14px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Atidaryti mano analizes</a><p style="font-size:12px;line-height:1.6;color:rgba(245,238,216,.55);margin:16px 0 0">Šį laišką gavai, nes kažkas „Mano analizių“ puslapyje įvedė tavo el. pašto adresą. Nuoroda siunčiama tik tau, todėl tavo analizės saugios — be šio laiško jų niekas negali atidaryti. Nuoroda asmeninė ir galioja 24 valandas, niekam jos neperduok. Kilus klausimų, rašyk info@delnaskaitymas.lt.</p>${EMAIL_FOOTER_HTML}</div>`
     }).catch(e => console.error('[mano] laiško klaida:', e.message));
   } catch (err) {
     console.error('/mano/link klaida:', err);
