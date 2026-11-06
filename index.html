@@ -7273,6 +7273,42 @@ function giftConfetti(){
   }catch(e){}
 }
 
+// Dovanos atidarymo ekranas gavėjui (atėjus per dovanos nuorodą ar laišką): pirmiausia — dovanų kortelė,
+// paspaudus „Atidaryti dovaną“ — programa. Rodoma vieną kartą tame pačiame skirtuke.
+function giftOpenScreen(d, onOpen){
+  try{
+    const key='delnasGiftOpened:'+(d.code||'');
+    let seen=false; try{ seen=sessionStorage.getItem(key)==='1'; }catch(e){}
+    if(seen){ if(onOpen) onOpen(false); return; }
+    const E=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const pora=d.kind==='pora';
+    const to=d.recipientName?E(ltPhrase(d.recipientName,'dat')):(pora?'Jums':'Tau');
+    let until=''; try{ until=new Date(d.expiresAt).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}).replace(/ (\d+) d\./,' $1 d.'); }catch(e){}
+    const o=document.createElement('div'); o.id='gift-open';
+    o.style.cssText="position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;padding:20px 16px;background:radial-gradient(ellipse at 50% 30%,rgba(212,168,67,.16),transparent 60%),#000;font-family:'DM Sans',sans-serif;transition:opacity .45s ease";
+    o.innerHTML='<div style="width:100%;max-width:360px;text-align:center">'+
+      '<div style="border:1px solid rgba(212,168,67,.45);border-radius:20px;padding:26px 20px 22px;background:linear-gradient(160deg,rgba(212,168,67,.08),rgba(0,0,0,.6));box-shadow:0 0 40px rgba(212,168,67,.12)">'+
+        '<div style="font:700 15px \'Playfair Display\',serif;letter-spacing:.35em;color:#d4a843">DELNAS</div>'+
+        '<div style="font-size:10px;letter-spacing:.3em;color:rgba(232,226,212,.55);margin-top:4px">DOVANŲ KUPONAS</div>'+
+        '<div style="font-size:42px;margin:18px 0 6px">🎁</div>'+
+        '<div style="font:600 30px \'Playfair Display\',serif;color:#f5eed8">'+to+'</div>'+
+        '<div style="font:400 17px \'Playfair Display\',serif;color:#e8e2d4;margin-top:8px;line-height:1.35">'+(pora?'<em style="color:#f0c96a">Porų suderinamumas</em><br>pagal jūsų delnus':'Asmeninis <em style="color:#f0c96a">Gyvenimo žemėlapis</em><br>pagal tavo delnus')+'</div>'+
+        (d.klausk?'<div style="font-size:12.5px;color:#f0c96a;margin-top:6px">+ ✋ 3 klausimai delnams</div>':'')+
+        (d.message?'<div style="font:italic 15px \'Playfair Display\',serif;color:rgba(245,238,216,.85);margin-top:16px;line-height:1.5">„'+E(d.message)+'“</div>':'')+
+        (d.fromName?'<div style="font-size:13px;color:rgba(232,226,212,.7);margin-top:10px">— nuo '+E(ltPhrase(d.fromName,'gen'))+'</div>':'')+
+        (until?'<div style="font-size:11px;color:rgba(232,226,212,.45);margin-top:14px">Galioja iki '+E(until)+'</div>':'')+
+      '</div>'+
+      '<button type="button" id="gift-open-btn" style="width:100%;margin-top:18px;border:0;border-radius:16px;padding:17px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:700 16px \'DM Sans\',sans-serif;box-shadow:0 0 24px rgba(212,168,67,.3);cursor:pointer">Atidaryti dovaną</button>'+
+      '<div style="font-size:11.5px;color:rgba(232,226,212,.5);margin-top:10px">'+(pora?'Mokėti nereikia — nufotografuosite delnus ir gausite analizę.':'Mokėti nereikia — nufotografuosi delnus ir gausi analizę.')+'</div>'+
+    '</div>';
+    document.body.appendChild(o);
+    document.getElementById('gift-open-btn').addEventListener('click',()=>{
+      try{ sessionStorage.setItem(key,'1'); }catch(e){}
+      o.style.opacity='0'; setTimeout(()=>o.remove(),450);
+      if(onOpen) onOpen(true);
+    });
+  }catch(e){ if(onOpen) onOpen(false); }
+}
 function showGiftWelcome(d){
   const home=document.getElementById('s-home');
   if(!home||document.getElementById('gift-welcome')) return;
@@ -7289,9 +7325,11 @@ function showGiftWelcome(d){
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">Nufotografuok delnus — žemėlapis jau apmokėtas.</div>';
     // Dovana jau apmokėta — priminimo apie nebaigtą užsakymą nerodome ir nesiunčiame
     { const rr=document.getElementById('o-remind-row'); if(rr) rr.style.display='none'; }
-    // Konfeti tik vieną kartą (grįžus iš „Mano analizių“ nebekrenta)
-    let seen=false; try{ const k='delnasConfetti:'+(window._giftCode||''); seen=sessionStorage.getItem(k)==='1'; sessionStorage.setItem(k,'1'); }catch(e){}
-    if(!seen) giftConfetti();
+    // Pirmiausia — dovanos atidarymo ekranas; konfeti paspaudus „Atidaryti dovaną“ (tik vieną kartą)
+    giftOpenScreen(d,opened=>{
+      let seen=false; try{ const k='delnasConfetti:'+(window._giftCode||''); seen=sessionStorage.getItem(k)==='1'; sessionStorage.setItem(k,'1'); }catch(e){}
+      if(!seen) giftConfetti();
+    });
   }else{
     const why=d.status==='redeemed'?'Šis dovanos kodas jau panaudotas.':d.status==='expired'?'Šio dovanos kodo galiojimas baigėsi.':'Dovanos kodas nerastas arba nebegalioja.';
     n.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">'+why+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manai, kad tai klaida — parašyk info@delnaskaitymas.lt</div>';

@@ -541,6 +541,42 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     $('gift-note').innerHTML = '<b>' + esc(msg) + '</b><span>Galite užsisakyti porų suderinamumą žemiau arba parašyti info@delnaskaitymas.lt</span>';
     $('gift-note').classList.remove('hidden');
   }
+// Dovanos atidarymo ekranas gavėjui (atėjus per dovanos nuorodą ar laišką): pirmiausia — dovanų kortelė,
+// paspaudus „Atidaryti dovaną“ — programa. Rodoma vieną kartą tame pačiame skirtuke.
+function giftOpenScreen(d, onOpen){
+  try{
+    const key='delnasGiftOpened:'+(d.code||'');
+    let seen=false; try{ seen=sessionStorage.getItem(key)==='1'; }catch(e){}
+    if(seen){ if(onOpen) onOpen(false); return; }
+    const E=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const pora=d.kind==='pora';
+    const to=d.recipientName?E(ltPhrase(d.recipientName,'dat')):(pora?'Jums':'Tau');
+    let until=''; try{ until=new Date(d.expiresAt).toLocaleDateString('lt-LT',{year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Vilnius'}).replace(/ (\d+) d\./,' $1 d.'); }catch(e){}
+    const o=document.createElement('div'); o.id='gift-open';
+    o.style.cssText="position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;padding:20px 16px;background:radial-gradient(ellipse at 50% 30%,rgba(212,168,67,.16),transparent 60%),#000;font-family:'DM Sans',sans-serif;transition:opacity .45s ease";
+    o.innerHTML='<div style="width:100%;max-width:360px;text-align:center">'+
+      '<div style="border:1px solid rgba(212,168,67,.45);border-radius:20px;padding:26px 20px 22px;background:linear-gradient(160deg,rgba(212,168,67,.08),rgba(0,0,0,.6));box-shadow:0 0 40px rgba(212,168,67,.12)">'+
+        '<div style="font:700 15px \'Playfair Display\',serif;letter-spacing:.35em;color:#d4a843">DELNAS</div>'+
+        '<div style="font-size:10px;letter-spacing:.3em;color:rgba(232,226,212,.55);margin-top:4px">DOVANŲ KUPONAS</div>'+
+        '<div style="font-size:42px;margin:18px 0 6px">🎁</div>'+
+        '<div style="font:600 30px \'Playfair Display\',serif;color:#f5eed8">'+to+'</div>'+
+        '<div style="font:400 17px \'Playfair Display\',serif;color:#e8e2d4;margin-top:8px;line-height:1.35">'+(pora?'<em style="color:#f0c96a">Porų suderinamumas</em><br>pagal jūsų delnus':'Asmeninis <em style="color:#f0c96a">Gyvenimo žemėlapis</em><br>pagal tavo delnus')+'</div>'+
+        (d.klausk?'<div style="font-size:12.5px;color:#f0c96a;margin-top:6px">+ ✋ 3 klausimai delnams</div>':'')+
+        (d.message?'<div style="font:italic 15px \'Playfair Display\',serif;color:rgba(245,238,216,.85);margin-top:16px;line-height:1.5">„'+E(d.message)+'“</div>':'')+
+        (d.fromName?'<div style="font-size:13px;color:rgba(232,226,212,.7);margin-top:10px">— nuo '+E(ltPhrase(d.fromName,'gen'))+'</div>':'')+
+        (until?'<div style="font-size:11px;color:rgba(232,226,212,.45);margin-top:14px">Galioja iki '+E(until)+'</div>':'')+
+      '</div>'+
+      '<button type="button" id="gift-open-btn" style="width:100%;margin-top:18px;border:0;border-radius:16px;padding:17px;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);color:#140f02;font:700 16px \'DM Sans\',sans-serif;box-shadow:0 0 24px rgba(212,168,67,.3);cursor:pointer">Atidaryti dovaną</button>'+
+      '<div style="font-size:11.5px;color:rgba(232,226,212,.5);margin-top:10px">'+(pora?'Mokėti nereikia — nufotografuosite delnus ir gausite analizę.':'Mokėti nereikia — nufotografuosi delnus ir gausi analizę.')+'</div>'+
+    '</div>';
+    document.body.appendChild(o);
+    document.getElementById('gift-open-btn').addEventListener('click',()=>{
+      try{ sessionStorage.setItem(key,'1'); }catch(e){}
+      o.style.opacity='0'; setTimeout(()=>o.remove(),450);
+      if(onOpen) onOpen(true);
+    });
+  }catch(e){ if(onOpen) onOpen(false); }
+}
   if (giftCode) (async () => {
     try {
       const d = await (await fetch('/gift/check?code=' + encodeURIComponent(giftCode))).json();
@@ -549,6 +585,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       // Jau pradėtas kuponas (pvz. uždarė langą prieš fotografuojant) — tęsti galima įrašius tą patį el. paštą
       if (d.status !== 'active' && d.status !== 'redeemed') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
       if (d.poraDone) { $('gift-note').innerHTML = '<b>Šis kuponas jau panaudotas</b><span>Rezultatą rasite el. pašte ir <a href="/mano" style="color:var(--gold2)">„Mano analizėse“</a>.</span>'; $('gift-note').classList.remove('hidden'); return; }
+      if (d.status === 'active') giftOpenScreen(d);
       window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
       $('gift-note').innerHTML = (d.message ? '<i>„' + esc(d.message) + '“</i>' : '') + (d.fromName ? '<span>— nuo ' + esc(ltPhrase(d.fromName, 'gen')) + '</span>' : '') ;
