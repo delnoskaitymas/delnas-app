@@ -6568,7 +6568,7 @@ function poraPoll(){
         poraStopProgress(); poraShowError('Analizė nepavyko.'); return;
       }
     }catch(e){}
-    if(Date.now()-t0>9*60*1000){ poraStopProgress(); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
+    if(Date.now()-t0>14*60*1000){ poraStopProgress(); poraShowError('Analizė užtrunka ilgiau nei įprastai.'); return; }
     setTimeout(tick,3000);
   })();
 }

@@ -4378,7 +4378,7 @@ ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos para
 - VISUR (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): tik tai, kas išplaukia iš ŠIŲ delnų ir jų analizės — konkrečiai, kiek įmanoma tiksliau, tiesiai, be užuolankų, be pavyzdžių, be papildomų žodžių ir sakinių, kurie nieko nepridėtų.
 - TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie jus — veiksmažodžiu, ką darote, kaip elgiatės, ko norite ar vengiate (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Jūsų ryšyje slypi kažkas, kas…“, „Tai, kaip žiūrite vienas į kitą, atskleidžia…“).
 
-STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
+STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 8–12 sakinių, iki 1500 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
 PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Tai LENTELĖ — rašyk trumpai, konkrečiai ir aiškiai, BE VARDŲ (vardai jau užrašyti lentelės langelių antraštėse). Kiekvienai sričiai:
 - a: ${gA} delnai — objektas {"p":"…","r":"…"}:
@@ -4413,8 +4413,8 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] }, 'medium')
-      }, 280000);
+        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] }, 'high')
+      }, 420000); // aukščiausias mąstymo lygis — ilgesnė analizė
       data = await r.json();
     } catch (e) {
       console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
