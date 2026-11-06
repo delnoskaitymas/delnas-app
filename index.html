@@ -5,7 +5,6 @@
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
 window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
-try{if(/[?&]derinti=1/.test(location.search))sessionStorage.setItem("delnasDerinti","1")}catch(e){}
 try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h));
 if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
 if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
@@ -2905,8 +2904,6 @@ function capturePhoto(){
   // funkciją aukščiau — nebe AI Vision spėjimas, o realus sąnarių matavimas)
   setTimeout(()=>{
     getPalmValidation(dataURL, canvas).then(v=>{
-      // Derinimas (?derinti=1): ekrane parodoma, ką atpažino patikra
-      try{ if(/[?&]derinti=1/.test(location.search)) sessionStorage.setItem('delnasDerinti','1'); if(sessionStorage.getItem('delnasDerinti')==='1'){ const d=document.createElement('div'); d.className='palm-dbg'; d.style.cssText='position:fixed;top:4px;left:4px;right:4px;z-index:99999;background:rgba(0,0,0,.85);color:#9f9;font:11px monospace;padding:6px;border-radius:6px;white-space:pre-wrap'; d.textContent=(isLeftHand?'KAIRYS':'DEŠINYS')+' → '+(v.valid?'tinka':'netinka: '+v.reason)+'\n'+JSON.stringify(window._palmDbg||{}); document.body.appendChild(d); setTimeout(()=>d.remove(),9000); } }catch(x){}
       if(!v.valid){
         // Sekame nesėkmingų bandymų skaičių, kad po 2-3 klaidų parodytume
         // švelnią palaikančią frazę — vartotojas nepasiduotų.
@@ -2915,10 +2912,10 @@ function capturePhoto(){
         const msgs={
           'too_close':['Delnas netelpa ekrane','Atitrauk ranką šiek tiek toliau, kad matytųsi visas delnas ir pirštai.'],
           'fingers_missing':['Ištiesk pirštus','Ištiesk pirštus ir laikyk juos šiek tiek atskirai, kad matytųsi visi penki.'],
-          'partial':['Ranka netelpa kadre','Patrauk ranką į ekrano vidurį ir šiek tiek toliau nuo kameros — turi matytis visi pirštai ir delnas iki riešo.'],
+          'partial':['Ranka netelpa kadre','Pabandyk ranką laikyti ekrano viduryje ir šiek tiek toliau nuo kameros — tada matysis visi pirštai ir delnas iki riešo.'],
           'partial_top':['Pirštai netelpa kadre','Nuleisk ranką žemiau arba atitrauk ją toliau nuo kameros — turi matytis pirštų galiukai.'],
           'partial_bottom':['Delno apačia netelpa kadre','Pakelk ranką aukščiau arba atitrauk ją toliau nuo kameros — turi matytis delnas iki riešo.'],
-          'partial_side':['Ranka netelpa kadre','Patrauk ranką į ekrano vidurį — visa ranka turi matytis kadre.'],
+          'partial_side':['Ranka netelpa kadre','Pabandyk ranką laikyti ekrano viduryje, kad visa ji tilptų kadre.'],
           'sideways':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
           'low_palm_visibility':['Delnas netelpa ekrane','Atitrauk ranką šiek tiek toliau, kad matytųsi visas delnas ir pirštai.'],
           'back_hand':['Pasuk delną į save','Reikia, kad kamera matytų vidinę rankos pusę.'],
