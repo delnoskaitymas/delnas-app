@@ -1842,7 +1842,7 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
         }
       ]
     }]
-  });
+  }, 'high'); // aukščiausias mąstymo lygis — kruopštesnis delnų nagrinėjimas
 
   let step1Data;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -1855,7 +1855,7 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
           'anthropic-version': '2023-06-01'
         },
         body: step1Body
-      }, 90000);
+      }, 180000);
       step1Data = await r.json();
     } catch (networkErr) {
       // Laiko limitas suveikė (užklausa "pakibo") arba kitas tinklo trikdis —
@@ -2023,8 +2023,8 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
             { role: 'user', content: step2Content },
             { role: 'assistant', content: '{' }
           ]
-        }, 'medium')
-      }, 240000);
+        }, 'high')
+      }, 420000); // aukščiausias mąstymo lygis — ilgesnė analizė
       step2Data = await r.json();
     } catch (networkErr) {
       // Trumpalaikis tinklo trikdis (fetch() pats metė klaidą) — taip
@@ -4378,7 +4378,7 @@ ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos para
 - VISUR (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): tik tai, kas išplaukia iš ŠIŲ delnų ir jų analizės — konkrečiai, kiek įmanoma tiksliau, tiesiai, be užuolankų, be pavyzdžių, be papildomų žodžių ir sakinių, kurie nieko nepridėtų.
 - TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie jus — veiksmažodžiu, ką darote, kaip elgiatės, ko norite ar vengiate (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Jūsų ryšyje slypi kažkas, kas…“, „Tai, kaip žiūrite vienas į kitą, atskleidžia…“).
 
-STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
+STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 8–12 sakinių, iki 1500 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
 PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies (širdies linija: jausmai), galvos (galvos linija: mąstymas ir sprendimai), gyvenimo (gyvenimo linija: gyvenimo tempas ir jėgos), forma (delnų forma ir pirštai: charakteris). Tai LENTELĖ — rašyk trumpai, konkrečiai ir aiškiai, BE VARDŲ (vardai jau užrašyti lentelės langelių antraštėse). Kiekvienai sričiai:
 - a: ${gA} delnai — objektas {"p":"…","r":"…"}:
@@ -4413,8 +4413,8 @@ ATSAKYK TIKTAI JSON (laukų tvarka svarbi):
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] }, 'medium')
-      }, 280000);
+        body: aiBody({ max_tokens: 16000, temperature: 0.2, messages: [{ role: 'user', content }, { role: 'assistant', content: '{' }] }, 'high')
+      }, 420000); // aukščiausias mąstymo lygis — ilgesnė analizė
       data = await r.json();
     } catch (e) {
       console.log(`[pora] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`);
@@ -4601,6 +4601,11 @@ async function runPoraCompare(prev, cur, nameA, nameB) {
   const brief = r => {
     let t = `Suderinamumas: ${clampScore(r.suderinamumas)} %\n`;
     if (r.sritys) t += 'Sritys: ' + Object.entries(r.sritys).map(([k, v]) => `${k} ${v && v.balas}`).join(', ') + '\n';
+    // Kas matyti delnuose (abiejų žmonių) — kad palyginimas remtųsi delnų pokyčiais, ne vien tekstu
+    if (r.palyginimai) {
+      const cell = x => x && typeof x === 'object' ? `${x.p} — ${x.r}` : String(x || '');
+      t += 'Delnai: ' + Object.entries(r.palyginimai).map(([k, c]) => c ? `${k}: ${nameA} — ${cell(c.a)}; ${nameB} — ${cell(c.b)}` : '').filter(Boolean).join(' | ') + '\n';
+    }
     for (const k of PORA_REPEAT_KEYS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 600)}\n`;
     return t;
   };
@@ -4611,7 +4616,7 @@ ${brief(prev)}
 NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Bendravimas, Vertybės, Kasdienybė, Trauka, Trintis, Pinigai ir ateitis). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur pora pajudėjo ir kam verta skirti dėmesio toliau. Papildomai skyriai: 2–4 analizės skyriams (raktai: ${PORA_REPEAT_KEYS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
-KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia jūsų porai. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
+KONKREČIAI IR TIESIAI: pirmiausia kruopščiai palygink, kas pasikeitė DELNUOSE (eilutės „Delnai“), ir tik tuo remdamasis rašyk; rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia jūsų porai. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
 Rašyk taisyklinga, paprasta lietuvių kalba, „jūs“ forma apie porą, esamuoju laiku apie dabartį. Iš vardų lyties nespręsk: nevartok giminę turinčių dalyvių ir būdvardžių apie žmones, neatskirk žmonių žodžiais „vienas… kitas…“ (rašyk „jūs“, „jūsų poroje“, „tarpusavyje“). Vardų nenaudok. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -4619,8 +4624,8 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
-      }, 60000);
+        body: aiBody({ max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] }, 'high')
+      }, 180000);
       const d = await r.json();
       const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
@@ -6585,7 +6590,7 @@ async function runCompareAnalysis(prev, cur, name) {
   const brief = r => {
     let t = '';
     const dg = r.delnai_greta;
-    if (dg && dg.sirdis) t += `Delnai: jausmai — ${dg.sirdis.desinys}; mąstymas — ${dg.protas && dg.protas.desinys}; gyvenimo tempas — ${dg.gyvenimas && dg.gyvenimas.desinys}. ${dg.isvada || ''}\n`;
+    if (dg && dg.sirdis) t += `Delnai (kairysis / dešinysis): jausmai — ${dg.sirdis.kairys} / ${dg.sirdis.desinys}; mąstymas — ${dg.protas && dg.protas.kairys} / ${dg.protas && dg.protas.desinys}; gyvenimo tempas — ${dg.gyvenimas && dg.gyvenimas.kairys} / ${dg.gyvenimas && dg.gyvenimas.desinys}. ${dg.isvada || ''}\n`;
     for (const k of KLAUSK_RESULT_FIELDS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 700)}\n`;
     if (Array.isArray(r.stiprybes_sarasas)) t += `Stiprybės: ${r.stiprybes_sarasas.join(', ')}\n`;
     return t;
@@ -6598,7 +6603,7 @@ NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Mąstymas, Santykiai, Darbas ir pinigai, Pasitikėjimas savimi, Gyvenimo tempas). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur žmogus pajudėjo ir kam verta skirti dėmesio toliau. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
 Papildomai skyriai: 2–4 analizės skyriams (raktai: ${KLAUSK_RESULT_FIELDS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize (pvz. „Anksčiau … , dabar …“). Skyrių, kuriuose pokyčių nėra, nerašyk.
-KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia tau. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
+KONKREČIAI IR TIESIAI: pirmiausia kruopščiai palygink, kas pasikeitė DELNUOSE (eilutės „Delnai“), ir tik tuo remdamasis rašyk; rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia tau. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
 Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę rodančių žodžių apie skaitytoją („pats/pati“, -damas/-dama, -ęs/-usi, būdvardžių kaip „ramus“). Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -6606,8 +6611,8 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
-      }, 60000);
+        body: aiBody({ max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] }, 'high')
+      }, 180000);
       const d = await r.json();
       const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
