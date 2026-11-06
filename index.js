@@ -4601,6 +4601,11 @@ async function runPoraCompare(prev, cur, nameA, nameB) {
   const brief = r => {
     let t = `Suderinamumas: ${clampScore(r.suderinamumas)} %\n`;
     if (r.sritys) t += 'Sritys: ' + Object.entries(r.sritys).map(([k, v]) => `${k} ${v && v.balas}`).join(', ') + '\n';
+    // Kas matyti delnuose (abiejų žmonių) — kad palyginimas remtųsi delnų pokyčiais, ne vien tekstu
+    if (r.palyginimai) {
+      const cell = x => x && typeof x === 'object' ? `${x.p} — ${x.r}` : String(x || '');
+      t += 'Delnai: ' + Object.entries(r.palyginimai).map(([k, c]) => c ? `${k}: ${nameA} — ${cell(c.a)}; ${nameB} — ${cell(c.b)}` : '').filter(Boolean).join(' | ') + '\n';
+    }
     for (const k of PORA_REPEAT_KEYS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 600)}\n`;
     return t;
   };
@@ -4611,7 +4616,7 @@ ${brief(prev)}
 NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Bendravimas, Vertybės, Kasdienybė, Trauka, Trintis, Pinigai ir ateitis). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur pora pajudėjo ir kam verta skirti dėmesio toliau. Papildomai skyriai: 2–4 analizės skyriams (raktai: ${PORA_REPEAT_KEYS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
-KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia jūsų porai. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
+KONKREČIAI IR TIESIAI: pirmiausia kruopščiai palygink, kas pasikeitė DELNUOSE (eilutės „Delnai“), ir tik tuo remdamasis rašyk; rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia jūsų porai. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
 Rašyk taisyklinga, paprasta lietuvių kalba, „jūs“ forma apie porą, esamuoju laiku apie dabartį. Iš vardų lyties nespręsk: nevartok giminę turinčių dalyvių ir būdvardžių apie žmones, neatskirk žmonių žodžiais „vienas… kitas…“ (rašyk „jūs“, „jūsų poroje“, „tarpusavyje“). Vardų nenaudok. Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -6585,7 +6590,7 @@ async function runCompareAnalysis(prev, cur, name) {
   const brief = r => {
     let t = '';
     const dg = r.delnai_greta;
-    if (dg && dg.sirdis) t += `Delnai: jausmai — ${dg.sirdis.desinys}; mąstymas — ${dg.protas && dg.protas.desinys}; gyvenimo tempas — ${dg.gyvenimas && dg.gyvenimas.desinys}. ${dg.isvada || ''}\n`;
+    if (dg && dg.sirdis) t += `Delnai (kairysis / dešinysis): jausmai — ${dg.sirdis.kairys} / ${dg.sirdis.desinys}; mąstymas — ${dg.protas && dg.protas.kairys} / ${dg.protas && dg.protas.desinys}; gyvenimo tempas — ${dg.gyvenimas && dg.gyvenimas.kairys} / ${dg.gyvenimas && dg.gyvenimas.desinys}. ${dg.isvada || ''}\n`;
     for (const k of KLAUSK_RESULT_FIELDS) if (typeof r[k] === 'string') t += `${k}: ${r[k].slice(0, 700)}\n`;
     if (Array.isArray(r.stiprybes_sarasas)) t += `Stiprybės: ${r.stiprybes_sarasas.join(', ')}\n`;
     return t;
@@ -6598,7 +6603,7 @@ NAUJA ANALIZĖ:
 ${brief(cur)}
 Užduotis: išrink 3 sritis, kuriose skirtumas ryškiausias (pvz. Jausmai, Mąstymas, Santykiai, Darbas ir pinigai, Pasitikėjimas savimi, Gyvenimo tempas). Kiekvienai: tema (1–3 žodžiai), anksciau (iki 100 simbolių — kas buvo), dabar (iki 100 simbolių — kas yra dabar). Tada isvada: 2–3 sakiniai apie tai, kur žmogus pajudėjo ir kam verta skirti dėmesio toliau. Jei kurioje srityje pokyčių beveik nėra — taip ir parašyk (pvz. „Ši stiprybė išliko tvirta“). Nieko neišgalvok, remkis tik abiem analizėmis.
 Papildomai skyriai: 2–4 analizės skyriams (raktai: ${KLAUSK_RESULT_FIELDS.join(', ')}), kuriuose skirtumas ryškiausias, po vieną sakinį (iki 150 simbolių), kas pasikeitė lyginant su ankstesne analize (pvz. „Anksčiau … , dabar …“). Skyrių, kuriuose pokyčių nėra, nerašyk.
-KONKREČIAI IR TIESIAI: rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia tau. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
+KONKREČIAI IR TIESIAI: pirmiausia kruopščiai palygink, kas pasikeitė DELNUOSE (eilutės „Delnai“), ir tik tuo remdamasis rašyk; rašyk tik tai, kas išplaukia iš naujai nufotografuotų delnų analizės ir jos palyginimo su ankstesne — tiesiai, kas konkrečiai pasikeitė ir ką tai reiškia tau. Jokių užuolankų, užuominų, aplinkinių pasakymų, pavyzdžių, bendrų frazių ar žodžių, kurie nieko nepridėtų; kiekvienas sakinys veiksmažodžiu tiesiai pasako faktą.
 Rašyk taisyklinga, paprasta lietuvių kalba, „tu“ forma, esamuoju laiku apie dabartį. Skaitytojo lytis nežinoma — nevartok giminę rodančių žodžių apie skaitytoją („pats/pati“, -damas/-dama, -ęs/-usi, būdvardžių kaip „ramus“). Nenaudok tiesioginių kabučių simbolio " teksto viduje.
 ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"skyriai":{"raktas":"..."},"isvada":"..."}`;
   for (let attempt = 1; attempt <= 2; attempt++) {
