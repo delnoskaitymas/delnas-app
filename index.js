@@ -1944,7 +1944,7 @@ TAISYKLĖS:
 - Kiekvienas sakinys privalo atskleisti KONKRETŲ, TIESIOGINĮ FAKTĄ apie šį žmogų — ne hipotetinį pavyzdį, scenarijų ar iliustraciją. Arba (a) atskleidžia NAUJĄ faktą, arba (b) tiesiogiai pagrindžia prieš tai buvusį faktą kitu konkrečiu faktu (ne pramanytu pavyzdžiu) — niekada tik "užpildyti vietą" ar pakartoti jau pasakytą mintį kitais žodžiais
 - DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
-- Kiekvienas skyrius: 10–12 sakinių, skyriai nesikartoja tarpusavyje
+- Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
@@ -1983,7 +1983,7 @@ Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink j�
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"10-12 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"10-12 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"10-12 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"10-12 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"10-12 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"10-12 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"10-12 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
+{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
     }
   ];
 
@@ -4231,7 +4231,7 @@ ${poraNameRules(A, B)}
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
-- Kiekvienas skyrius: 14–17 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
+- Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
