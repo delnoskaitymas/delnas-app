@@ -349,6 +349,12 @@ body.form-view.tight #v-form .trust{display:none}
 body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
 /* Rodoma nuolaidos juosta — delnų ikonų nerodome (forma telpa laisviau) */
 body.promo-on #v-form .intro > .hero,body.promo-on #v-form .hero2{display:none!important}
+/* Su nuolaida: „DELNAS“ — atskiras logotipas su plona auksine linija; po jo antraštė, po antrašte — nuolaidos juosta */
+body.promo-on.form-view.fit .wrap > .brand{font-size:15px!important;letter-spacing:.42em;margin-bottom:0!important}
+body.promo-on.form-view .wrap > .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 18px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
+body.promo-on #v-form .intro{display:flex;flex-direction:column}
+body.promo-on #v-form #form-h1{order:2;margin:0}
+body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
 /* „Grįžti atgal“ ir „Kaip tai veikia?“ — vienoje eilutėje */
 #v-form .links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;margin-top:8px}
 #v-form .links-row .how-link{margin:0!important;display:inline-block;width:auto}
@@ -428,10 +434,10 @@ body.promo-on #v-form .intro > .hero,body.promo-on #v-form .hero2{display:none!i
         <input type="email" id="f-email" name="email" maxlength="254" placeholder="kuponas bus išsiųstas čia" autocomplete="email" inputmode="email">
         <div class="sched-hint">Kuponą gausi iš karto ekrane ir el. paštu, o gavėjui galėsi nusiųsti kaip patogu.</div>
       </div>
-      <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą. <button type="button" class="rf-link" id="rf-open">14 d. pinigų grąžinimo sąlygos</button></span></label>
+      <label class="chk" for="f-ok"><input type="checkbox" id="f-ok"><span>Sutinku su <a href="/naudojimosi-salygos?is=dovana" target="_blank">Naudojimosi sąlygomis</a> ir <a href="/privatumo-politika?is=dovana" target="_blank">Privatumo politika</a>. Kuponas galioja 12 mėn., panaudojamas vieną kartą. <button type="button" class="rf-link" id="rf-open">14 d. pinigų grąžinimas</button></span></label>
       <button type="submit" class="btn off" id="pay-btn">Apmokėti <span id="price">16,99 €</span></button>
       <div class="err" id="form-err"></div>
-      <div class="trust">🔒 Saugus mokėjimas per Stripe</div>
+      <div class="trust">🔒 Saugiai per Stripe</div>
     </form>
     <div class="links-row"><a class="how-link back-res hidden" href="/" style="width:fit-content">Grįžti į rezultatą</a><span class="dot">·</span><button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button></div>
     <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
