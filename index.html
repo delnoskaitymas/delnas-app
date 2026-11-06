@@ -2295,41 +2295,9 @@ function _startAppReal(){
       video.play();cameraReady=true;
       // Cross-fade: video švelniai atsiranda
       setTimeout(()=>{video.style.opacity='1';},50);
-      // Siluetas: 1s su kamera, tada švelniai išblėsta per 0.5s
-      setTimeout(()=>{
-        const guide=document.getElementById('cam-guide');
-        if(guide){
-          // Pulsavimas prieš išnykimą
-          const guideSvgEl=document.getElementById('cam-guide-svg');
-          if(guideSvgEl){
-            guideSvgEl.style.animation='none';
-            guideSvgEl.style.transition='filter 0.3s ease, opacity 0.3s ease';
-            guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(255,255,255,.7)) drop-shadow(0 0 6px rgba(255,255,255,.5))';
-            guideSvgEl.style.opacity='0.85';
-          }
-          setTimeout(()=>{
-            guide.style.transition='opacity 0.5s ease';
-            guide.style.opacity='0';
-            setTimeout(()=>{guide.style.display='none';},500);
-          },400);
-        }
-        // Tuo pačiu metu — hint tekstas "Sistema paruošta"
-        const hint=document.getElementById('cam-hint-txt');
-        if(hint){
-          hint.style.opacity='0';
-          hint.textContent='';
-          hint.style.color='rgba(212,168,67,.85)';
-          hint.style.transition='opacity 0.5s ease';
-          setTimeout(()=>{hint.style.opacity='1';},200);
-        }
-      },1000);
       // Wake lock — ekranas nemiega
       navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});
-
-      const shutter=document.getElementById('cam-shutter');
-      _shutterLock(shutter);
-      // Pradėti skin detection po 1s kad kamera stabilizuotusi
-      setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
+      camGuideIntro();
     };
   })
   .catch((err)=>{
@@ -2586,6 +2554,45 @@ async function getPalmValidation(dataURL, canvasEl){
   }
 }
 
+// Kameros pradžia (tokia pati kairiajam ir dešiniajam delnui): rankos siluetas 1 s, tada sušvinta ir išblėsta;
+// mygtukas tuo metu užrakintas, po 1 s — delno aptikimas atrakina
+function camGuideIntro(){
+  const guide0=document.getElementById('cam-guide'), svg0=document.getElementById('cam-guide-svg');
+  if(guide0){ guide0.style.transition='none'; guide0.style.display='flex'; guide0.style.opacity='1'; }
+  if(svg0){ svg0.style.animation=''; svg0.style.transition=''; svg0.style.filter=''; svg0.style.opacity='.55'; }
+  // Siluetas: 1s su kamera, tada švelniai išblėsta per 0.5s
+  setTimeout(()=>{
+    const guide=document.getElementById('cam-guide');
+    if(guide){
+      // Pulsavimas prieš išnykimą
+      const guideSvgEl=document.getElementById('cam-guide-svg');
+      if(guideSvgEl){
+        guideSvgEl.style.animation='none';
+        guideSvgEl.style.transition='filter 0.3s ease, opacity 0.3s ease';
+        guideSvgEl.style.filter='drop-shadow(0 0 18px rgba(255,255,255,.7)) drop-shadow(0 0 6px rgba(255,255,255,.5))';
+        guideSvgEl.style.opacity='0.85';
+      }
+      setTimeout(()=>{
+        guide.style.transition='opacity 0.5s ease';
+        guide.style.opacity='0';
+        setTimeout(()=>{guide.style.display='none';},500);
+      },400);
+    }
+    // Tuo pačiu metu — hint tekstas "Sistema paruošta"
+    const hint=document.getElementById('cam-hint-txt');
+    if(hint){
+      hint.style.opacity='0';
+      hint.textContent='';
+      hint.style.color='rgba(212,168,67,.85)';
+      hint.style.transition='opacity 0.5s ease';
+      setTimeout(()=>{hint.style.opacity='1';},200);
+    }
+  },1000);
+  const shutter=document.getElementById('cam-shutter');
+  _shutterLock(shutter);
+  // Pradėti skin detection po 1s kad kamera stabilizuotusi
+  setTimeout(()=>startSkinDetection(shutter, document.getElementById('cam-hint-txt')), 1000);
+}
 let handDetector=null;let handDetectLoop=null;
 
 async function startHandDetection(){
@@ -2959,19 +2966,8 @@ function capturePhoto(){
             camTitleSet(document.getElementById('cam-title'),false);
             camHand='right';
             updateCameraUI();
-            // Tiesiogiai aktyvuoti — toks pat dizainas kaip kairysis
-            const shutterR=document.getElementById('cam-shutter');
-            if(shutterR){
-              _shutterUnlock(shutterR);
-              shutterR.style.opacity='1';
-              shutterR.style.pointerEvents='auto';
-              shutterR.style.background='linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%)';
-              shutterR.style.boxShadow='0 2px 16px rgba(212,168,67,.2)';
-              shutterR.style.color='#000000';
-              shutterR.style.animation='camBreathing 2s ease-in-out infinite';
-            }
-            const vpR=document.getElementById('cam-viewport');
-            if(vpR) vpR.style.animation='camGoldGlow 2.5s ease-in-out infinite';
+            // Toks pat pradžios vaizdas kaip kairiajam: siluetas, tada delno aptikimas atrakina mygtuką
+            camGuideIntro();
           },300);
         },1500);
       } else {
