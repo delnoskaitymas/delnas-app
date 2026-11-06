@@ -5115,8 +5115,8 @@ async function klauskCallAI(prompt) {
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] })
-      }, 90000);
+        body: aiBody({ max_tokens: 1800, temperature: 0.2, messages: [{ role: 'user', content: prompt }] }, 'medium')
+      }, 120000);
       data = await r.json();
     } catch (e) { data = null; console.log(`[klausk] AI tinklo klaida, bandymas ${attempt}/3: ${e.message}`); }
     if (data && !data.error && data.content && data.content.length) break;
