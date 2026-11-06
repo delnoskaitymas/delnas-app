@@ -295,6 +295,11 @@ body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!impo
 .pora-testi .st{color:var(--gold2,#f0d58a);letter-spacing:1px;margin-right:5px;font-size:11px}
 .pora-testi i{font-family:'Playfair Display',serif}
 .pora-testi .nm{color:rgba(255,255,255,.4)}
+/* „Padovanoti porai“ ir „Grįžti atgal“ — vienoje eilutėje (taškas tik kai matomos abi) */
+.links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 6px;margin-top:6px}
+.links-row .how-link{margin:0!important;display:inline-block;width:auto}
+.links-row .dot{display:none;color:var(--muted)}
+.links-row:has(#gift-link:not(.hidden)):has(.back-res:not(.hidden)) .dot{display:inline}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{ try{
@@ -347,8 +352,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
       <div class="trust">🔒 Saugus mokėjimas per Stripe · <button type="button" class="rf-link" id="rf-open">14 d. pinigų grąžinimo sąlygos</button></div>
     </form>
     <button type="button" class="how-link" id="how-open">✦ Ką gausite ir kaip tai veikia?</button>
-    <a class="how-link" id="gift-link" href="/dovana?tipas=pora" style="width:fit-content;margin-top:2px">🎁 Padovanoti porai</a>
-    <a class="how-link back-res hidden" href="/" style="width:fit-content;margin-top:2px">Grįžti į gyvenimo žemėlapį</a>
+    <div class="links-row"><a class="how-link" id="gift-link" href="/dovana?tipas=pora">🎁 Padovanoti porai</a><span class="dot">·</span><a class="how-link back-res hidden" href="/">Grįžti į gyvenimo žemėlapį</a></div>
     <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:6px">Gyvenimo žemėlapis liko ankstesniame lange — šį langą gali uždaryti.</div>
     <div class="pora-testi" id="pora-testi" style="display:none"></div>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
@@ -697,7 +701,7 @@ function giftOpenScreen(d, onOpen){
       if(d.b){ try{ window.close(); }catch(x){} setTimeout(()=>{ location.href=d.b; },300); return; }
       try{ if(window.opener&&!window.opener.closed){ window.opener.focus(); } }catch(x){}
       try{ window.close(); }catch(x){}
-      setTimeout(()=>{ btn.classList.add('hidden'); const n=btn.nextElementSibling; if(n&&n.classList.contains('back-res-note')) n.classList.remove('hidden'); },400);
+      setTimeout(()=>{ btn.classList.add('hidden'); const row=btn.closest('.links-row'); const n=(row||btn).nextElementSibling; if(n&&n.classList.contains('back-res-note')) n.classList.remove('hidden'); },400);
     });
   });
 })();
