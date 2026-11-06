@@ -1996,7 +1996,7 @@ async function fetchResultsAndNavigate(sessionId,paymentIntent){
     // persikrauna (deploy'us), analizė paleidžiama iš naujo ir gali trukti
     // kelias minutes — 20 greitų bandymų (~1 min.) tam neužtekdavo.
     const _pollStart=Date.now();
-    for(let attempt=0;Date.now()-_pollStart<300000;attempt++){
+    for(let attempt=0;Date.now()-_pollStart<600000;attempt++){
       updatePayDiag('analizė, bandymas #'+(attempt+1)+'...');
       try{
         const ar=await fetchWithTimeout('/analyze-palm',{

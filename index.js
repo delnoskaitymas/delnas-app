@@ -1842,7 +1842,7 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
         }
       ]
     }]
-  });
+  }, 'high'); // aukščiausias mąstymo lygis — kruopštesnis delnų nagrinėjimas
 
   let step1Data;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -1855,7 +1855,7 @@ Grąžink TIKTAI JSON (BE numerių pačiuose aprašymuose — tik grynas tekstas
           'anthropic-version': '2023-06-01'
         },
         body: step1Body
-      }, 90000);
+      }, 180000);
       step1Data = await r.json();
     } catch (networkErr) {
       // Laiko limitas suveikė (užklausa "pakibo") arba kitas tinklo trikdis —
@@ -2023,8 +2023,8 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
             { role: 'user', content: step2Content },
             { role: 'assistant', content: '{' }
           ]
-        }, 'medium')
-      }, 240000);
+        }, 'high')
+      }, 420000); // aukščiausias mąstymo lygis — ilgesnė analizė
       step2Data = await r.json();
     } catch (networkErr) {
       // Trumpalaikis tinklo trikdis (fetch() pats metė klaidą) — taip
@@ -4624,8 +4624,8 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
-      }, 60000);
+        body: aiBody({ max_tokens: 1500, temperature: 0.4, messages: [{ role: 'user', content: prompt }] }, 'high')
+      }, 180000);
       const d = await r.json();
       const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
@@ -6611,8 +6611,8 @@ ATSAKYK TIK JSON: {"sritys":[{"tema":"...","anksciau":"...","dabar":"..."}],"sky
       const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: aiBody({ max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] })
-      }, 60000);
+        body: aiBody({ max_tokens: 1200, temperature: 0.4, messages: [{ role: 'user', content: prompt }] }, 'high')
+      }, 180000);
       const d = await r.json();
       const txt = aiText(d);
       const m = txt.match(/\{[\s\S]*\}/);
