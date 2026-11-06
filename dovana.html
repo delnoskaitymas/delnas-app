@@ -349,6 +349,12 @@ body.form-view.tight #v-form .trust{display:none}
 body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
 /* Rodoma nuolaidos juosta — delnų ikonų nerodome (forma telpa laisviau) */
 body.promo-on #v-form .intro > .hero,body.promo-on #v-form .hero2{display:none!important}
+/* Su nuolaida: „DELNAS“ — atskiras logotipas su plona auksine linija; po jo antraštė, po antrašte — nuolaidos juosta */
+body.promo-on.form-view.fit .wrap > .brand{font-size:15px!important;letter-spacing:.42em;margin-bottom:0!important}
+body.promo-on.form-view .wrap > .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 18px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
+body.promo-on #v-form .intro{display:flex;flex-direction:column}
+body.promo-on #v-form #form-h1{order:2;margin:0}
+body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
 /* „Grįžti atgal“ ir „Kaip tai veikia?“ — vienoje eilutėje */
 #v-form .links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;margin-top:8px}
 #v-form .links-row .how-link{margin:0!important;display:inline-block;width:auto}
