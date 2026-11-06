@@ -5,6 +5,7 @@
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
 window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
+try{if(/[?&]derinti=1/.test(location.search))sessionStorage.setItem("delnasDerinti","1")}catch(e){}
 try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h));
 if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
 if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
@@ -2513,6 +2514,7 @@ async function analyzeHandLandmarksLocal(canvasEl){
   }
 
   if (!result || !result.landmarks || result.landmarks.length === 0) {
+    window._palmDbg={ path:'telefonas', ranka:'nerasta' };
     return { ok:true, valid:false, reason:'no_hand' };
   }
 
@@ -2536,6 +2538,7 @@ async function analyzeHandLandmarksLocal(canvasEl){
   const midMcp = lm[HAND_LM.MIDDLE_MCP];
   const palmSpan = Math.hypot(wrist.x - midMcp.x, wrist.y - midMcp.y);
 
+  window._palmDbg={ path:'telefonas', ranka:handednessLabel||'?', pirstai:fingersVisible, delnoPagrindas:palmBaseFullyVisible, delnuKamerai:palmFacingCamera, dydis:+palmSpan.toFixed(2) };
   console.log('[handLandmarker] fingersVisible=', fingersVisible, 'palmBaseFullyVisible=', palmBaseFullyVisible, 'palmFacingCamera=', palmFacingCamera, 'palmSpan=', palmSpan.toFixed(3));
 
   // Dalis rankos už kadro ribų — tai ne „suglausti pirštai“: pasakoma, į kurią pusę patraukti ranką
@@ -2566,6 +2569,7 @@ async function analyzeHandLandmarksLocal(canvasEl){
 // naršyklės palaikymas, WASM/GPU nepasiekiamas), tada — TIK TADA — grįžta
 // prie senesnio serverio AI Vision patikrinimo kaip atsarginio varianto.
 async function getPalmValidation(dataURL, canvasEl){
+  window._palmDbg={ path:'?' };
   try {
     const localResult = await analyzeHandLandmarksLocal(canvasEl);
     if (!localResult.unavailable) {
@@ -2573,7 +2577,9 @@ async function getPalmValidation(dataURL, canvasEl){
     }
   } catch (e) {
     console.error('[getPalmValidation] vietinės patikros klaida:', e);
+    window._palmDbg={ path:'klaida: '+String(e&&e.message||e).slice(0,60) };
   }
+  if(window._palmDbg.path==='?') window._palmDbg={ path:'serveris (telefono modelis nepasiekiamas)' };
   try {
     const r = await fetch('/validate-palm', {
       method:'POST',
@@ -2873,6 +2879,8 @@ function capturePhoto(){
   // funkciją aukščiau — nebe AI Vision spėjimas, o realus sąnarių matavimas)
   setTimeout(()=>{
     getPalmValidation(dataURL, canvas).then(v=>{
+      // Derinimas (?derinti=1): ekrane parodoma, ką atpažino patikra
+      try{ if(/[?&]derinti=1/.test(location.search)) sessionStorage.setItem('delnasDerinti','1'); if(sessionStorage.getItem('delnasDerinti')==='1'){ const d=document.createElement('div'); d.className='palm-dbg'; d.style.cssText='position:fixed;top:4px;left:4px;right:4px;z-index:99999;background:rgba(0,0,0,.85);color:#9f9;font:11px monospace;padding:6px;border-radius:6px;white-space:pre-wrap'; d.textContent=(isLeftHand?'KAIRYS':'DEŠINYS')+' → '+(v.valid?'tinka':'netinka: '+v.reason)+'\n'+JSON.stringify(window._palmDbg||{}); document.body.appendChild(d); setTimeout(()=>d.remove(),9000); } }catch(x){}
       if(!v.valid){
         // Sekame nesėkmingų bandymų skaičių, kad po 2-3 klaidų parodytume
         // švelnią palaikančią frazę — vartotojas nepasiduotų.
