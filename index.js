@@ -2128,9 +2128,144 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
   // Galutinis, DETERMINISTINIS saugiklis — taikomas VISADA, nepriklausomai
   // nuo to, ar žingsnis 3 pavyko, ar ne (žr. KNOWN_GRAMMAR_FIXES aukščiau).
+  // Redaktoriaus peržiūra: klaidos, pasikartojimai tarp blokų, atitikimas pavadinimui, tušti sakiniai
+  await palmEditorPass(result);
   applyKnownGrammarFixes(result);
 
   return result;
+}
+// ═══ Redaktoriaus peržiūra (antra AI užklausa po analizės: asmeninės ir porų) ═══
+// Tikslas: be klaidų, be pasikartojimų tarp blokų, tekstas atitinka bloko pavadinimą, be tuščių sakinių.
+// Ankstesnė AI korektūra (pašalinta 2026-09-24) pati kurdavo klaidų, todėl čia griežti apribojimai:
+// redaktorius gali tik IŠBRAUKTI sakinį arba NEDAUG PATAISYTI sakinį (pakeista ≤ ~35 % raidžių);
+// didesni perrašymai atmetami, skyriuje lieka ≥ 5 sakiniai, trumpi elementai (įžvalgos, lentelės) tik taisomi.
+// Bet kokios klaidos atveju paliekamas originalas.
+const EDITOR_SENT_RE = /(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/;
+function editDistance(a, b) {
+  if (a === b) return 0;
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j), cur = new Array(n + 1);
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
+}
+function editorFixOk(orig, fixed) {
+  if (typeof fixed !== 'string') return false;
+  const f = fixed.trim(); if (!f || /["<>{}]/.test(f)) return false;
+  const r = f.length / Math.max(1, orig.length); if (r < 0.6 || r > 1.4) return false;
+  return editDistance(orig, f) / Math.max(orig.length, f.length) <= 0.35;
+}
+// blocks: [{ title, sections: [{ get, set }], items: [{ label, get, set }] }]
+async function textEditorPass(blocks, who, tag) {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) return;
+    const units = {}; const lines = []; let si = 0, ii = 0;
+    const secs = [];
+    for (const b of blocks) {
+      lines.push(`\n### ${b.title}`);
+      for (const sec of b.sections || []) {
+        const t = sec.get(); if (typeof t !== 'string' || !t.trim()) continue;
+        const sents = t.replace(/\s+/g, ' ').trim().split(EDITOR_SENT_RE).map(x => x.trim()).filter(Boolean);
+        const S = { sec, sents, del: new Set(), fix: {} }; secs.push(S); si++;
+        sents.forEach((x, k) => { const id = `S${si}.${k + 1}`; units[id] = { S, k }; lines.push(`[${id}] ${x}`); });
+      }
+      for (const it of b.items || []) {
+        const t = it.get(); if (typeof t !== 'string' || !t.trim()) continue;
+        const id = `E${++ii}`; units[id] = { it, text: t.trim() }; lines.push(`[${id}] (${it.label}) ${t.trim()}`);
+      }
+    }
+    if (!lines.length) return;
+    const prompt = `Tu — kruopštus lietuvių kalbos redaktorius. Žemiau — delnų analizės rezultatas, parašytas ${who} forma, suskirstytas į blokus (### pavadinimas). Kiekviena eilutė pažymėta numeriu [..].
+
+Užduotis — rasti ir pašalinti TIK tikras problemas:
+1. KLAIDOS: gramatikos, rašybos, linksnių, derinimo, skyrybos, neegzistuojantys ar iškraipyti žodžiai, nelogiški ar nebaigti sakiniai. Taisyk minimaliai — pakeisk tik klaidingus žodžius, sakinio prasmės ir stiliaus nekeisk.
+2. PASIKARTOJIMAI: jei ta pati mintis (net kitais žodžiais) yra keliuose blokuose ar tame pačiame bloke — palik ją ten, kur ji labiausiai atitinka bloko pavadinimą, kitur sakinį (S…) išbrauk.
+3. NEATITIKIMAS PAVADINIMUI: sakinys (S…), kuris kalba ne apie savo bloko temą — išbrauk.
+4. TUŠTI SAKINIAI: sakinys (S…), kuris nieko konkretaus nepasako (bendra frazė, tiktų bet kam) — išbrauk.
+
+GRIEŽTI APRIBOJIMAI: nerašyk naujų minčių, nekeisk skaičių, procentų ir vardų; ${who === '„jūs“' ? 'žmonių' : 'skaitytojo'} lytis nežinoma — nenaudok giminę rodančių būdvardžių ir dalyvių; nenaudok kabučių ženklo ". Elementų E… neišbraukinėk — juos galima tik pataisyti. Jei problemų nėra — grąžink tuščius sąrašus. Geriau nieko nekeisti nei pakeisti be reikalo.
+
+Atsakyk TIK JSON: {"isbraukti":["S1.4",...],"pataisyti":{"S2.3":"visas pataisytas sakinys","E5":"visas pataisytas tekstas"}}
+
+Tekstas:
+${lines.join('\n')}`;
+    const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: aiBody({ max_tokens: 4000, messages: [{ role: 'user', content: prompt }] }, 'medium')
+    }, 90000);
+    const d = await r.json();
+    const t = aiJsonText(d), js = firstJsonObject(t || '');
+    if (!js) { console.log(`[${tag}] redaktorius: atsakymas be JSON`); return; }
+    const out = JSON.parse(js);
+    let nDel = 0, nFix = 0, nRej = 0;
+    for (const id of Array.isArray(out.isbraukti) ? out.isbraukti : []) { const u = units[id]; if (u && u.S) u.S.del.add(u.k); }
+    const fx = out.pataisyti && typeof out.pataisyti === 'object' ? out.pataisyti : {};
+    for (const id of Object.keys(fx)) {
+      const u = units[id]; if (!u) continue;
+      const orig = u.S ? u.S.sents[u.k] : u.text;
+      if (editorFixOk(orig, fx[id])) { if (u.S) u.S.fix[u.k] = fx[id].trim(); else { u.it.set(fx[id].trim()); nFix++; } }
+      else nRej++;
+    }
+    for (const S of secs) {
+      // Skyriuje lieka bent 5 sakiniai, išbraukiama ne daugiau kaip 3
+      const maxDel = Math.min(3, Math.max(0, S.sents.length - 5));
+      const del = [...S.del].slice(0, maxDel); nDel += del.length;
+      const kept = S.sents.map((x, k) => del.includes(k) ? null : (S.fix[k] != null ? (nFix++, S.fix[k]) : x)).filter(Boolean);
+      if (del.length || Object.keys(S.fix).length) S.sec.set(kept.join(' '));
+    }
+    console.log(`[${tag}] redaktorius: išbraukta ${nDel}, pataisyta ${nFix}, atmesta pataisymų ${nRej}`);
+  } catch (e) { console.log(`[${tag}] redaktoriaus peržiūra nepavyko:`, e.message); }
+}
+const PALM_EDITOR_SECTIONS = [
+  ['prigimtines_stiprybes', 'Prigimtinės stiprybės ir charakteris', 'prigimtines_insights'],
+  ['gyvenimo_tikslas', 'Gyvenimo kryptis ir tikslai', 'gyvenimo_insights'],
+  ['santykiai', 'Bendravimo būdas ir įtaka santykiams', 'santykiai_insights'],
+  ['finansai', 'Finansinis potencialas', 'finansai_insights'],
+  ['galimybes', 'Unikalus sėkmės raktas', 'galimybes_insights'],
+  ['pokyciai', 'Svarbiausi artėjantys pokyčiai', 'pokyciai_insights'],
+  ['klutys', 'Pažangą stabdančios kliūtys', 'klutys_insights']
+];
+async function palmEditorPass(r) {
+  if (!r || typeof r !== 'object') return;
+  const blocks = PALM_EDITOR_SECTIONS.filter(([k]) => typeof r[k] === 'string').map(([k, title, ik]) => ({
+    title,
+    sections: [{ get: () => r[k], set: v => { r[k] = v; } }],
+    items: Array.isArray(r[ik]) ? r[ik].map((_, i) => ({ label: 'trumpa įžvalga', get: () => r[ik][i], set: v => { r[ik][i] = v; } })) : []
+  }));
+  const dg = r.delnai_greta;
+  if (dg && typeof dg === 'object') {
+    const items = [];
+    const NM = { sirdis: 'širdies linija', protas: 'proto linija', gyvenimas: 'gyvenimo linija' };
+    for (const a of DG_AREAS) if (dg[a] && typeof dg[a] === 'object') for (const s of ['kairys', 'desinys']) items.push({ label: `lentelė: ${NM[a]}, ${s === 'kairys' ? 'kairysis' : 'dešinysis'} delnas`, get: () => dg[a][s], set: v => { dg[a][s] = v; } });
+    items.push({ label: 'lentelės išvada', get: () => dg.isvada, set: v => { dg.isvada = v; } });
+    blocks.push({ title: 'Kairysis ir dešinysis delnas (lentelė)', sections: [], items });
+  }
+  await textEditorPass(blocks, '„tu“', 'runPalmAnalysis');
+}
+const PORA_EDITOR_TITLES = { traukia: 'Kas jus traukia ir sieja', bendravimas: 'Kaip bendraujate ir sprendžiate nesutarimus', papildo: 'Kaip jūsų savybės dera tarpusavyje', trintis: 'Kur gali kilti trintis', ateitis: 'Požiūris į pinigus, namus ir ateitį', stiprybe: 'Jūsų poros stiprybė', patarimai: 'Patarimai jūsų porai' };
+async function poraEditorPass(r) {
+  if (!r || typeof r !== 'object') return r;
+  const blocks = PORA_RESULT_KEYS.filter(k => typeof r[k] === 'string').map(k => ({
+    title: PORA_EDITOR_TITLES[k] || k,
+    sections: [{ get: () => r[k], set: v => { r[k] = v; } }],
+    items: r.izvalgos && Array.isArray(r.izvalgos[k]) ? r.izvalgos[k].map((_, i) => ({ label: 'trumpa įžvalga', get: () => r.izvalgos[k][i], set: v => { r.izvalgos[k][i] = v; } })) : []
+  }));
+  const items = [];
+  if (r.palyginimai) for (const k of Object.keys(r.palyginimai)) {
+    const c = r.palyginimai[k]; if (!c) continue;
+    for (const f of ['a', 'b']) { if (c[f] && typeof c[f] === 'object') { const o = c[f]; items.push({ label: `lentelė ${k}, ${f}`, get: () => o.p, set: v => { o.p = v; } }, { label: `lentelė ${k}, ${f}, reikšmė`, get: () => o.r, set: v => { o.r = v; } }); } else items.push({ label: `lentelė ${k}, ${f}`, get: () => c[f], set: v => { c[f] = v; } }); }
+    items.push({ label: `lentelė ${k}, išvada`, get: () => c.isvada, set: v => { c.isvada = v; } });
+  }
+  if (r.sritys) for (const k of Object.keys(r.sritys)) { const d = r.sritys[k]; if (d) for (const f of ['fraze', 'aprasymas']) items.push({ label: `sritis ${k}`, get: () => d[f], set: v => { d[f] = v; } }); }
+  if (Array.isArray(r.poros_bruozai)) r.poros_bruozai.forEach((_, i) => items.push({ label: 'poros bruožas', get: () => r.poros_bruozai[i], set: v => { r.poros_bruozai[i] = v; } }));
+  if (items.length) blocks.push({ title: 'Delnų palyginimo lentelės ir sritys', sections: [], items });
+  await textEditorPass(blocks, '„jūs“', 'pora');
+  if (typeof poraNeutral === 'function') for (const s of poraTextSlots(r)) s.set(poraNeutral(s.text));
+  return r;
 }
 // Papildomi rezultato blokai (kairysis ir dešinysis delnas greta) —
 // neprivalomi: jei AI juos pateikė netvarkingai, jie tiesiog nerodomi.
@@ -4111,7 +4246,7 @@ function poraNeutral(t) {
 async function runCoupleAnalysis(photos, nameA, nameB) {
   let last;
   for (let attempt = 1; attempt <= 2; attempt++) {
-    try { return await poraNeutralPass(await runCoupleAnalysisOnce(photos, nameA, nameB), nameA, nameB); }
+    try { return await poraEditorPass(await poraNeutralPass(await runCoupleAnalysisOnce(photos, nameA, nameB), nameA, nameB)); }
     catch (e) {
       last = e;
       console.log(`[pora] analizė nepavyko, bandymas ${attempt}/2: ${e.message}`);
