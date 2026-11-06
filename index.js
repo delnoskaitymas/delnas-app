@@ -1930,7 +1930,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: minėti linijų pavadinimus ar delno anatomiją
 - DRAUDŽIAMA: abstrakčios, bendrinės frazės kurios tiktų bet kuriam žmogui (pvz. "kiekvienas žmogus turi savo stiprybes", "gyvenimas kupinas iššūkių") — VISKAS turi būti konkretu ir asmeniška
 - Rašyk taisyklinga, natūralia lietuvių kalba, kreipdamasis "tu" esamuoju laiku. Jei abejoji dėl retesnio žodžio formos, rinkis paprastesnį, tau gerai žinomą.
-- Skaitytojo lytis nežinoma, tad geriau vengti aiškiai giminę turinčių žodžių apie jį (pvz. "pasirengęs", "laukdamas") — rink neutralią formą, kai natūraliai išeina.
+- LYTIS NEŽINOMA (analizę daro ir vyrai, ir moterys): apie skaitytoją NIEKADA nerašyk giminę rodančių žodžių — nei įvardžių „pats/pati“, nei padalyvių -damas/-dama („atsukdamas“, „laukdamas“), nei dalyvių -ęs/-usi („pasirengęs“, „linkęs“), nei būdvardžių apie skaitytoją („ramus“, „atsargesnis“). Rašyk asmenuojamu veiksmažodžiu ar šalutiniu sakiniu: „kai atsuki“, „savarankiškai“, „esi linkęs“ → „tau būdinga“.
 - Rašyk taip, kaip natūraliai kalbėtų gimtakalbis lietuvis.
 - Žodis "akcija" lietuviškai reiškia akcijų paketą/nuolaidą, NE "action" — naudok "veiksmas".
 - Stiliaus lygis: VIDUTINIS — nei sudėtingas/knyginis/mokslinis, nei gatvės/šnekamosios kalbos stilius su žargonu. Rašyk taip, kaip protingas, kultūringas žmogus kalbėtų rimtame, bet šiltame pokalbyje
@@ -1944,7 +1944,8 @@ TAISYKLĖS:
 - Kiekvienas sakinys privalo atskleisti KONKRETŲ, TIESIOGINĮ FAKTĄ apie šį žmogų — ne hipotetinį pavyzdį, scenarijų ar iliustraciją. Arba (a) atskleidžia NAUJĄ faktą, arba (b) tiesiogiai pagrindžia prieš tai buvusį faktą kitu konkrečiu faktu (ne pramanytu pavyzdžiu) — niekada tik "užpildyti vietą" ar pakartoti jau pasakytą mintį kitais žodžiais
 - DRAUDŽIAMA: metaforos, palyginimai ("kaip...", "tarsi...", "panašiai kaip...", "lyg...") ir bendro pobūdžio, niekam konkrečiai netinkantys teiginiai (pvz. "gyvenimas kupinas galimybių", "viskas įmanoma, jei tik tiki savimi", "kiekviena diena – naujas puslapis"). Rašyk KONKREČIAI ir TIESIAI, be užuolankų ir be pritemptų palyginimų — kiekvienas sakinys turi būti toks specifiškas, kad iš karto būtų aišku, KĄ TIKSLIAI apie ŠĮ ŽMOGŲ jis sako, o ne tik skambiai nuskambėti
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
-- Kiekvienas skyrius: 7–9 sakiniai, skyriai nesikartoja tarpusavyje
+- Kiekvienas skyrius: 10–12 sakinių (NIEKADA mažiau nei 9), skyriai nesikartoja tarpusavyje
+- SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška pagal skyriaus pavadinimą — tokius konkrečius dalykus apie šį žmogų, kad jis atpažintų save („tai tikrai apie mane“); be pagyrų, be bendrų frazių ir be pažadų
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
@@ -1965,7 +1966,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - pokyciai (Svarbiausi artėjantys pokyčiai): SVARBU — šis skyrius NĖRA apie bendrą gyvenimo kryptį ar ilgalaikius tikslus (tai jau atskleista II skyriuje) — jis apie KONKREČIUS, ARTIMIAUSIU METU (ne apskritai ateityje) vyksiančius įvykius ar aplinkybių pasikeitimus: (a) koks konkretus, laiku apibrėžtas posūkis ar nauja galimybė artėja NETRUKUS (ne bendra kryptis, o konkretus artėjantis įvykis/situacija); (b) kokia IŠORINĖ aplinkybė ar situacija tavo gyvenime greitai pasikeis; (c) kokie KONKRETŪS ženklai (ne bendri jausmai) jau dabar rodo, kad ši permaina artėja
 
-- klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių pats dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
+- klutys (Pažangą stabdančios kliūtys): (a) kokie tavo įpročiai ir nuostatos, kurių dažnai nepastebi, lėtina tavo pažangą; (b) kuri viena konkreti kliūtis šiuo metu labiausiai atitolina tave nuo tikslo; (c) ką tau verta paleisti, kad kelias pirmyn taptų lengvesnis
 
 - stiprybes_sarasas: 5 savybių pavadinimai (2–4 žodžiai, konkretūs ir prasmingi)
 - delnai_greta (Kairysis ir dešinysis delnas): ŠIS BLOKAS — VIENINTELĖ IŠIMTIS iš draudimo minėti linijas ir delno anatomiją: čia PRIVALAI trumpai įvardyti, KĄ matai. Chiromantijoje kairysis delnas rodo prigimtį (su kuo žmogus gimė), dešinysis — kokiu žmogus tapo dabar. Palygink TIKRUS skirtumus tarp ŠIŲ dviejų nuotraukų trijose srityse: sirdis (širdies linija — jausmai), protas (galvos linija — mąstymas), gyvenimas (gyvenimo linija — gyvenimo tempas ir jėgos). Kiekvienai sričiai: kairys ir desinys — po vieną frazę (iki 80 simbolių) formatu „trumpas, ką matai — ką tai reiškia“, „tu“ forma, pvz. kairys: „Ilga, švelniai lenkta — iš prigimties jausmus reiški atvirai“, desinys: „Tiesesnė ir ramesnė — dabar jausmus labiau saugai sau“. Jei kurioje srityje delnai beveik vienodi — taip ir parašyk (pvz. „Beveik tokia pati — šią savybę išlaikei nepakitusią“). Žodžio „galva“ nenaudok — rašyk „mąstymas“ ar „protas“. isvada: 2 sakiniai — ką žmogus per gyvenimą išsiugdė ar pakeitė, palyginus su prigimtimi (konkretu, šilta). LYTIS NEŽINOMA: šiame bloke (ir kairys/desinys frazėse) NIEKADA nerašyk giminę turinčių būdvardžių ar dalyvių apie žmogų — NE „buvai atviras/atvira“, „esi ramus“, „tapai santūresnis“, „gimęs“, „išmokęs“; VIETOJ jų — veiksmažodis + prieveiksmis: „iš prigimties jausmus reiškei atvirai“, „dabar elgiesi ramiau“, „tapo lengviau susivaldyti“
@@ -1978,12 +1979,12 @@ Prieš išvesdamas galutinį JSON, perskaityk KIEKVIENĄ savo parašytą sakinį
 2. Ar šis sakinys AIŠKUS — suprantamas iš pirmo skaitymo, be dviprasmybių, be miglotų formuluočių?
 3. Ar šis sakinys KONKRETUS — vidiniai pagrįstas tuo, kas realiai matoma ŠIUOSE delnuose (1 etapo vizualiniais parametrais), o ne bendrais chiromantijos štampais?
 4. Ar šiame sakinyje NĖRA jokio TIESIOGINIO fizinio delno/pirštų/nykščio/odos požymio paminėjimo (pvz. "nykščio storis", "delno plotis", "pirštų ilgis")? Rašai TIK išvadą, ne fizinį aprašymą. (Vienintelė išimtis — delnai_greta kairys/desinys frazės, kur trumpai įvardyti, ką matai, PRIVALOMA.)
-5. Ar šiame sakinyje NĖRA giminę turinčio dalyvio (pasirengęs/-usi, atradęs/-usi, likęs/-usi ir pan.)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
+5. Ar šiame sakinyje NĖRA giminę rodančio žodžio apie skaitytoją — „pats/pati“, padalyvio -damas/-dama (atsukdamas, laukdamas), dalyvio (pasirengęs/-usi, atradęs/-usi, linkęs/-usi), būdvardžio (ramus, atsargesnis)? Skaitytojo lytis nežinoma — naudok tik giminės neturinčias, asmenuojamas veiksmažodžio formas.
 Jei BENT VIENAS atsakymas iš 1-5 yra "ne" — sakinys NETINKA. Arba ištrink jį, arba perrašyk taip, kad visi atsakymai būtų "taip", PRIEŠ tęsdamas toliau. JEI PERRAŠEI BENT VIENĄ SAKINĮ PATAISYDAMAS KLAIDĄ — prieš atiduodamas galutinį atsakymą, PERSKAITYK TĄ PATAISYTĄ SAKINĮ DAR KARTĄ NUO PRADŽIOS per visus 5 klausimus (pataisymas pats gali įnešti naują klaidą). Šis patikrinimas svarbesnis už bet kurią kitą taisyklę aukščiau — jei kyla konfliktas tarp "gražiai skamba" ir "tikslus/aiškus/konkretus/be fizinio aprašymo/lyčiai neutralus/taisyklingas faktas", VISADA rink antrąjį.
 
 ATSAKYK TIKTAI JSON. Pradėk nuo {.
 
-{"prigimtines_stiprybes":"7-9 sakiniai","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"7-9 sakiniai","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"7-9 sakiniai","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"7-9 sakiniai","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"7-9 sakiniai","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"7-9 sakiniai","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"7-9 sakiniai","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
+{"prigimtines_stiprybes":"10-12 sakinių","prigimtines_insights":["Faktas 1","Faktas 2","Faktas 3"],"gyvenimo_tikslas":"10-12 sakinių","gyvenimo_insights":["Faktas 1","Faktas 2","Faktas 3"],"santykiai":"10-12 sakinių","santykiai_insights":["Faktas 1","Faktas 2","Faktas 3"],"finansai":"10-12 sakinių","finansai_insights":["Faktas 1","Faktas 2","Faktas 3"],"pokyciai":"10-12 sakinių","pokyciai_insights":["Faktas 1","Faktas 2","Faktas 3"],"galimybes":"10-12 sakinių","galimybes_insights":["Faktas 1","Faktas 2","Faktas 3"],"stiprybes_sarasas":["Savybė 1","Savybė 2","Savybė 3","Savybė 4","Savybė 5"],"klutys":"10-12 sakinių","klutys_insights":["Faktas 1","Faktas 2","Faktas 3"],"delnai_greta":{"sirdis":{"kairys":"...","desinys":"..."},"protas":{"kairys":"...","desinys":"..."},"gyvenimas":{"kairys":"...","desinys":"..."},"isvada":"2 sakiniai"}}`
     }
   ];
 
@@ -2138,7 +2139,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 // Tikslas: be klaidų, be pasikartojimų tarp blokų, tekstas atitinka bloko pavadinimą, be tuščių sakinių.
 // Ankstesnė AI korektūra (pašalinta 2026-09-24) pati kurdavo klaidų, todėl čia griežti apribojimai:
 // redaktorius gali tik IŠBRAUKTI sakinį arba NEDAUG PATAISYTI sakinį (pakeista ≤ ~35 % raidžių);
-// didesni perrašymai atmetami, skyriuje lieka ≥ 5 sakiniai, trumpi elementai (įžvalgos, lentelės) tik taisomi.
+// didesni perrašymai atmetami, skyriuje lieka ≥ 9 sakiniai, trumpi elementai (įžvalgos, lentelės) tik taisomi.
 // Bet kokios klaidos atveju paliekamas originalas.
 const EDITOR_SENT_RE = /(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/;
 function editDistance(a, b) {
@@ -2178,6 +2179,9 @@ async function textEditorPass(blocks, who, tag) {
       }
     }
     if (!lines.length) return;
+    // Žodžiai, kurie dažnai rodo giminę — pažymimi, kad redaktorius jų nepraleistų
+    const sus = [...new Set((lines.join(' ').match(/(?<![\p{L}])(\p{L}+(?:damas|dama|damasi|ęs|usi|esnis|esnė)|pats|pati|linkęs|linkusi|ramus|rami)(?![\p{L}])/giu) || []))];
+    const hints = sus.length ? `\n   Patikrink šiuos žodžius: ${sus.slice(0, 60).join(', ')}.` : '';
     const prompt = `Tu — kruopštus lietuvių kalbos redaktorius. Žemiau — delnų analizės rezultatas, parašytas ${who} forma, suskirstytas į blokus (### pavadinimas). Kiekviena eilutė pažymėta numeriu [..].
 
 Užduotis — rasti ir pašalinti TIK tikras problemas:
@@ -2185,6 +2189,7 @@ Užduotis — rasti ir pašalinti TIK tikras problemas:
 2. PASIKARTOJIMAI: jei ta pati mintis (net kitais žodžiais) yra keliuose blokuose ar tame pačiame bloke — palik ją ten, kur ji labiausiai atitinka bloko pavadinimą, kitur sakinį (S…) išbrauk.
 3. NEATITIKIMAS PAVADINIMUI: sakinys (S…), kuris kalba ne apie savo bloko temą — išbrauk.
 4. TUŠTI SAKINIAI: sakinys (S…), kuris nieko konkretaus nepasako (bendra frazė, tiktų bet kam) — išbrauk.
+5. GIMINĖ: ${who === '„jūs“' ? 'žmonių' : 'skaitytojo'} lytis nežinoma (analizę daro ir vyrai, ir moterys). Kiekvieną sakinį, kuriame apie ${who === '„jūs“' ? 'žmones' : 'skaitytoją'} pavartotas giminę rodantis žodis — „pats/pati“, padalyvis -damas/-dama („atsukdamas“), dalyvis -ęs/-usi („linkęs“, „pasirengęs“), būdvardis („ramus“, „atsargesnis“) — PATAISYK neutraliai mažiausiu pakeitimu („kai atsuki“, „savarankiškai“, „tau būdinga“). Žodžių apie daiktus („linija ilga“) nekeisk.${hints}
 
 GRIEŽTI APRIBOJIMAI: nerašyk naujų minčių, nekeisk skaičių, procentų ir vardų; ${who === '„jūs“' ? 'žmonių' : 'skaitytojo'} lytis nežinoma — nenaudok giminę rodančių būdvardžių ir dalyvių; nenaudok kabučių ženklo ". Elementų E… neišbraukinėk — juos galima tik pataisyti. Jei problemų nėra — grąžink tuščius sąrašus. Geriau nieko nekeisti nei pakeisti be reikalo.
 
@@ -2211,8 +2216,8 @@ ${lines.join('\n')}`;
       else nRej++;
     }
     for (const S of secs) {
-      // Skyriuje lieka bent 5 sakiniai, išbraukiama ne daugiau kaip 3
-      const maxDel = Math.min(3, Math.max(0, S.sents.length - 5));
+      // Skyriuje lieka bent 9 sakiniai, išbraukiama ne daugiau kaip 3
+      const maxDel = Math.min(3, Math.max(0, S.sents.length - 9));
       const del = [...S.del].slice(0, maxDel); nDel += del.length;
       const kept = S.sents.map((x, k) => del.includes(k) ? null : (S.fix[k] != null ? (nFix++, S.fix[k]) : x)).filter(Boolean);
       if (del.length || Object.keys(S.fix).length) S.sec.set(kept.join(' '));
@@ -4366,7 +4371,8 @@ ${poraNameRules(A, B)}
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
-- Kiekvienas skyrius: 9–12 sakinių, išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
+- Kiekvienas skyrius: 10–13 sakinių (NIEKADA mažiau nei 9), išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
+- SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška jūsų porai pagal skyriaus pavadinimą — tokius konkrečius dalykus, kad pora atpažintų save („tai tikrai apie mus“); be pagyrų, be bendrų frazių ir be pažadų.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
