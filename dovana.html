@@ -347,6 +347,13 @@ body.form-view.tight #form-err{margin-top:6px}
 body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .5 + 4px))!important}
 body.form-view.tight #v-form .trust{display:none}
 body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
+/* Rodoma nuolaidos juosta — delnų ikonų nerodome (forma telpa laisviau) */
+body.promo-on #v-form .intro > .hero,body.promo-on #v-form .hero2{display:none!important}
+/* „Grįžti atgal“ ir „Kaip tai veikia?“ — vienoje eilutėje */
+#v-form .links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;margin-top:8px}
+#v-form .links-row .how-link{margin:0!important;display:inline-block;width:auto}
+#v-form .links-row .back-res:not(.hidden) + .dot{display:inline}
+#v-form .links-row .dot{display:none;color:var(--muted)}
 /* Pinigų grąžinimo sąlygų langas (kaip programėlės mokėjimo ekrane, dovanų kuponui — „tu“) */
 .rf-link{background:none;border:none;padding:0;font:inherit;color:var(--gold);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(212,168,67,.5);cursor:pointer}
 .rf-bg{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:12px}
@@ -426,9 +433,8 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
       <div class="err" id="form-err"></div>
       <div class="trust">🔒 Saugus mokėjimas per Stripe</div>
     </form>
-    <a class="how-link back-res hidden" href="/" style="width:fit-content">Grįžti į rezultatą</a>
+    <div class="links-row"><a class="how-link back-res hidden" href="/" style="width:fit-content">Grįžti į rezultatą</a><span class="dot">·</span><button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button></div>
     <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
-    <button type="button" class="how-link" id="how-open">✦ Kaip tai veikia?</button>
     <div class="sheet-bg" id="how-sheet" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Kaip tai veikia">
     <button type="button" class="sheet-x" id="how-close" aria-label="Uždaryti">✕</button>
@@ -709,14 +715,14 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       const day = t => new Date(t).toLocaleDateString('lt-LT', { timeZone: 'Europe/Vilnius' });
       const hm = new Date(d.expiresAt).toLocaleTimeString('lt-LT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vilnius' });
       tag.textContent = '−' + d.pct + ' % dovanai · iki ' + (day(d.expiresAt) === day(Date.now()) ? 'šiandien ' : 'rytojaus ') + hm + (d.left ? ' · liko ' + d.left + (d.left === 1 ? ' dovana' : ' dovanos') : '');
-      tag.classList.remove('hidden');
+      tag.classList.remove('hidden'); document.body.classList.add('promo-on');
     } catch (e) {}
   })();
 
   function promoGoneTag(why){
     const tag = $('promo-tag');
     tag.textContent = why === 'used' ? '−20 % pasiūlymas jau išnaudotas — kaina įprasta' : '−20 % pasiūlymo laikas baigėsi — kaina įprasta';
-    tag.classList.remove('hidden'); tag.classList.add('gone');
+    tag.classList.remove('hidden'); tag.classList.add('gone'); document.body.classList.add('promo-on');
   }
   $('gift-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -1076,7 +1082,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
       if(d.b){ try{ window.close(); }catch(x){} setTimeout(()=>{ location.href=d.b; },300); return; }
       try{ if(window.opener&&!window.opener.closed){ window.opener.focus(); } }catch(x){}
       try{ window.close(); }catch(x){}
-      setTimeout(()=>{ btn.classList.add('hidden'); const n=btn.nextElementSibling; if(n&&n.classList.contains('back-res-note')) n.classList.remove('hidden'); },400);
+      setTimeout(()=>{ btn.classList.add('hidden'); const row=btn.closest('.links-row'); const n=(row||btn).nextElementSibling; if(n&&n.classList.contains('back-res-note')) n.classList.remove('hidden'); },400);
     });
   });
 })();
