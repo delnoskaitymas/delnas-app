@@ -195,6 +195,9 @@ a{color:var(--gold)}
 .gcard .b{font:700 20px 'Playfair Display',serif;letter-spacing:.34em;color:var(--gold)}
 .gcard .k{font-size:10.5px;letter-spacing:.34em;color:rgba(255,255,255,.5);margin-top:6px}
 .gcard .to{font:400 40px/1.1 'Playfair Display',serif;margin-top:40px}
+/* Vardas centruojamas pats vienas, dovanėlė — kairėje šalia jo (kad vardas būtų tiesiai virš kitų eilučių) */
+.gcard .to .to-n{position:relative;display:inline-block}
+.gcard .to .to-ic{position:absolute;right:100%;top:0;margin-right:.22em}
 .gcard .what{font:400 21px/1.35 'Playfair Display',serif;color:rgba(255,255,255,.85);margin-top:12px}
 .gcard .what em{color:var(--gold)}
 .gcard .msg{font:italic 400 17px/1.5 'Playfair Display',serif;color:var(--gold2);margin-top:24px;max-width:430px;word-wrap:break-word}
@@ -472,7 +475,7 @@ body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .he
           <div class="b">DELNAS</div>
           <div class="k">DOVANŲ KUPONAS</div>
           <div class="season" id="c-season"></div>
-          <div class="to" id="c-to">🎁 Tau</div>
+          <div class="to" id="c-to"><span class="to-n"><span class="to-ic">🎁</span>Tau</span></div>
           <div class="what" id="c-what">Asmeninis <em>Gyvenimo žemėlapis</em><br>pagal tavo delnus</div>
           <div class="msg" id="c-msg"></div>
           <div class="from" id="c-from"></div>
@@ -790,7 +793,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
 
   function renderCard(g, opts){
     current = g;
-    $('c-to').textContent = '🎁 ' + (g.recipientName ? ltPhrase(g.recipientName, 'dat') : (g.kind === 'pora' ? 'Jums' : 'Tau'));
+    { const n = g.recipientName ? ltPhrase(g.recipientName, 'dat') : (g.kind === 'pora' ? 'Jums' : 'Tau');
+      const wrap = document.createElement('span'), ic = document.createElement('span'); wrap.className = 'to-n'; ic.className = 'to-ic'; ic.textContent = '🎁';
+      wrap.appendChild(ic); wrap.appendChild(document.createTextNode(n)); $('c-to').replaceChildren(wrap); }
     $('c-msg').textContent = g.message ? '„' + g.message + '“' : '';
     // Palinkėjimo dydis pagal ilgį: trumpas — didelis, ilgas — mažesnis
     const ml = (g.message || '').length;
