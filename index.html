@@ -879,17 +879,18 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
       <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;max-width:320px;margin:0 auto">Puiku — tavo delnai jau nufotografuoti! Nurodyk vardą ir el. paštą, kad galėtume jį paruošti ir atsiųsti.</div>
     </div>
     <!-- Laukeliai -->
-    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px">
+    <!-- Tikra forma — kad naršyklė ir klaviatūra siūlytų išsaugotą vardą ir el. paštą („Go“ klaviatūroje = „Tęsti“) -->
+    <form id="o-form" method="post" action="/" autocomplete="on" novalidate onsubmit="event.preventDefault();proceedToPayment();" style="display:flex;flex-direction:column;gap:14px;margin:0 0 10px">
       <input type="text" id="o-name" name="name" placeholder="Vardas" aria-label="Vardas" autocomplete="name" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
       <input type="email" id="o-email" name="email" placeholder="El. paštas" aria-label="El. paštas" autocomplete="email" oninput="checkOrderForm()" style="background:#000000;border:1px solid rgba(212,168,67,.5);border-radius:12px;padding:14px 16px;color:#e8e2d4;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s,box-shadow .2s">
-    </div>
+    </form>
     <!-- Neprivalomas sutikimas: vienas priminimas su nuolaida, jei mokėjimas nebus baigtas -->
     <!-- Vienas priminimas su nuolaida siunčiamas automatiškai, jei užsakymas neapmokamas; galima atsisakyti vienu paspaudimu -->
     <div class="o-remind" id="o-remind-row"><span id="o-remind-txt">Jei užsakymą atidėtum, vieną kartą priminsime. <button type="button" id="o-noremind" onclick="window._noRemind=true;document.getElementById('o-remind-txt').textContent='✓ Gerai, priminimo nesiųsime.';">Nereikia</button></span></div>
     <!-- Konfidencialumo eilutė -->
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;letter-spacing:.01em">🔒 Duomenys tvarkomi konfidencialiai</div>
     <!-- Mygtukas -->
-    <button id="order-btn" onclick="proceedToPayment()" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Tęsti</button>
+    <button id="order-btn" type="submit" form="o-form" style="width:100%;background:linear-gradient(125deg,#fff0c4 0%,#f5d061 22%,#e0a930 45%,#c98a1f 68%,#8a5a0f 100%);border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;color:#000000;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 24px rgba(212,168,67,.4);opacity:.45;transition:opacity .3s">Tęsti</button>
     <div id="order-err" style="color:#ff6b6b;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 </div>
@@ -3954,20 +3955,9 @@ function renderInsights(containerId, insights){
 function textParas(text){
   const t=String(text||'').replace(/\r/g,'').trim(); if(!t) return [];
   const sent=x=>x.split(/(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/).map(y=>y.trim()).filter(Boolean);
-  // Pastraipos: po du trumpus sakinius arba po vieną ilgesnį (niekada po tris); AI pastraipų ribos išlaikomos
-  const LONG=110, MAX2=180, isLong=x=>x.length>=LONG;
+  // Kaip anksčiau (Sonnet 4.5 laikais): kiekvienas sakinys — atskira pastraipa
   const out=[];
-  t.split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).forEach(p=>{
-    // Geriausias padalijimas: kuo mažiau pavienių trumpų sakinių (vienas ilgas sakinys — gerai)
-    const ss=sent(p), n=ss.length, best=new Array(n+1).fill(null); best[n]={c:0,parts:[]};
-    for(let i=n-1;i>=0;i--){
-      const one=best[i+1]; let r={c:one.c+(isLong(ss[i])||n===1?0:3+(LONG-ss[i].length)/LONG),parts:[[ss[i]]].concat(one.parts)};
-      if(i+1<n&&ss[i].length+ss[i+1].length<=MAX2+(isLong(ss[i])||isLong(ss[i+1])?0:40)&&!(isLong(ss[i])&&isLong(ss[i+1]))){ const two=best[i+2], c=two.c+(isLong(ss[i])||isLong(ss[i+1])?1:0); if(c<r.c) r={c,parts:[[ss[i],ss[i+1]]].concat(two.parts)}; }
-      best[i]=r;
-    }
-    const part=best[0].parts;
-    part.forEach(x=>out.push(x.join(' ')));
-  });
+  t.split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).forEach(p=>sent(p).forEach(x=>out.push(x)));
   return out;
 }
 function cleanResultText(v){
@@ -4777,7 +4767,7 @@ function buildResultPdfDoc(r, name, orderNumber){
     // už dešinės paraštės ir nusikirsdavo.
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
-    const bodyLines = doc.splitTextToSize(textParas(text).join('\n\n'), maxW);
+    const bodyLines = doc.splitTextToSize(textParas(text).join(' '), maxW);
 
     // ─── VISO SKYRIAUS (antraštė + tekstas + įžvalgos + sąrašas) apytikslis
     // aukštis. Naudojamas TIK tam, kad NEVERTA pradėti naujo skyriaus
@@ -7022,7 +7012,7 @@ function buildPoraPdfDoc(){
     doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD);
     doc.splitTextToSize(title.toUpperCase(), maxW).forEach(l=>{ doc.text(l, M, y); y+=8; });
     y+=2; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY);
-    doc.splitTextToSize(textParas(r[k]).join('\n\n'), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
+    doc.splitTextToSize(textParas(r[k]).join(' '), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
     const iz=(r.izvalgos||{})[k]||[];
     if(iz.length){ y+=2; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2);
       iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
