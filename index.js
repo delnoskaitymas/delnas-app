@@ -1946,6 +1946,7 @@ TAISYKLĖS:
 - DRAUDŽIAMA: ilgi, pernelyg susiraizgę, keliais šalutiniais sakiniais apkrauti sakiniai — rašyk aiškiais, tvirtais sakiniais
 - Kiekvienas skyrius: 10–12 sakinių (NIEKADA mažiau nei 9), skyriai nesikartoja tarpusavyje
 - SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška pagal skyriaus pavadinimą — tokius konkrečius dalykus apie šį žmogų, kad jis atpažintų save („tai tikrai apie mane“); be pagyrų, be bendrų frazių ir be pažadų
+- TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie skaitytoją — veiksmažodžiu, kas jis daro, kaip elgiasi, ko nori ar vengia (pvz. „Sprendimus priimi greitai ir retai juos keiti.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Tavyje slypi kažkas, kas leidžia kitiems jaustis saugiai.“, „Tai, kaip tu žiūri į pasaulį, atskleidžia gilų vidinį pasaulį.“, „Tavo prigimtyje glūdi jėga, kuri…“)
 - KIEKVIENAME skyriuje žemiau nurodytos 3 potemių grupės — atskleisk visas 3, sklandžiu, natūraliu tekstu (ne sąrašu)
 
 SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurodytas potemių grupes:
@@ -1954,7 +1955,7 @@ SKYRIAI — kiekvienas kalba tik apie savo temą ir atskleidžia 3 žemiau nurod
 
 - KRITIŠKAI SVARBU: skyriai NIEKADA nesikartoja tarpusavyje — nei ta pačia mintimi, nei tuo pačiu pavyzdžiu, nei kitais žodžiais perfrazuota ta pati esmė. Prieš rašydamas KIEKVIENĄ naują skyrių, peržiūrėk, KAS JAU BUVO PASAKYTA ankstesniuose skyriuose (charakterio bruožai, sėkmės formulė, kliūtys ir t. t.), ir įsitikink, kad šis skyrius atskleidžia TIK NAUJĄ, dar niekur šiame atsakyme nepaminėtą turinį. Jei pastebi, kad rašai apie tą pačią savybę/temą, kuri jau buvo I skyriuje (pvz. "analitinis protas"), PERRAŠYK sakinį apie ką nors kitą, atitinkantį TIK šio konkretaus skyriaus temą
 
-- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): (a) tavo unikalų asmenybės branduolį ir pamatinius, tave apibrėžiančius charakterio bruožus; (b) gilų vidinį/psichologinį portretą ir tai, kokia vidinė jėga/prigimtis tave veda; (c) tavo natūralų, įgimtą potencialą ir tai, kas konkrečiai tave išskiria iš kitų
+- prigimtines_stiprybes (Prigimtinės stiprybės ir charakteris): STIPRIAUSIAS, TIESIAUSIAS skyrius. (a) IŠKART pirmame sakinyje tiesiai įvardyk 2–3 ryškiausias charakterio savybes daiktavardžiais (pvz. „Tavo stipriausios savybės — atkaklumas ir įžvalgumas.“), o tolesniuose sakiniuose — kaip kiekviena jų konkrečiai pasireiškia: sprendimuose, darbe, su žmonėmis; (b) kas tau suteikia jėgų ir kas jas atima, kaip reaguoji spaudžiamas laiko ar kitų žmonių; (c) kuo konkrečiai skiriesi nuo daugumos ir kokį įgimtą gebėjimą verta naudoti daugiau. Jokių aplinkinių apibūdinimų, metaforų ar abstrakčių sąvokų grandinių
 
 - gyvenimo_tikslas (Gyvenimo kryptis ir tikslai): (a) kryptį, kuria natūraliai judi gyvenime, ir kas tave iš vidaus veda pirmyn; (b) giliau slypinčius tavo tikslus ir kryptį, kuria augi kaip asmenybė; (c) svarbiausius tavo gyvenimo kelio posūkius ir gaires, kurias sau keli ateičiai
 
@@ -2188,7 +2189,7 @@ Užduotis — rasti ir pašalinti TIK tikras problemas:
 1. KLAIDOS: gramatikos, rašybos, linksnių, derinimo, skyrybos, neegzistuojantys ar iškraipyti žodžiai, nelogiški ar nebaigti sakiniai. Taisyk minimaliai — pakeisk tik klaidingus žodžius, sakinio prasmės ir stiliaus nekeisk.
 2. PASIKARTOJIMAI: jei ta pati mintis (net kitais žodžiais) yra keliuose blokuose ar tame pačiame bloke — palik ją ten, kur ji labiausiai atitinka bloko pavadinimą, kitur sakinį (S…) išbrauk.
 3. NEATITIKIMAS PAVADINIMUI: sakinys (S…), kuris kalba ne apie savo bloko temą — išbrauk.
-4. TUŠTI SAKINIAI: sakinys (S…), kuris nieko konkretaus nepasako (bendra frazė, tiktų bet kam) — išbrauk.
+4. TUŠTI IR APLINKINIAI SAKINIAI: sakinys (S…), kuris nieko konkretaus nepasako (bendra frazė, tiktų bet kam) arba apsako kažką aplinkui, užuot tiesiai pasakęs faktą („Tavyje slypi kažkas, kas…“, „Tai, kaip tu…, atskleidžia…“) — išbrauk.
 5. GIMINĖ: ${who === '„jūs“' ? 'žmonių' : 'skaitytojo'} lytis nežinoma (analizę daro ir vyrai, ir moterys). Kiekvieną sakinį, kuriame apie ${who === '„jūs“' ? 'žmones' : 'skaitytoją'} pavartotas giminę rodantis žodis — „pats/pati“, padalyvis -damas/-dama („atsukdamas“), dalyvis -ęs/-usi („linkęs“, „pasirengęs“), būdvardis („ramus“, „atsargesnis“) — PATAISYK neutraliai mažiausiu pakeitimu („kai atsuki“, „savarankiškai“, „tau būdinga“). Žodžių apie daiktus („linija ilga“) nekeisk.${hints}
 
 GRIEŽTI APRIBOJIMAI: nerašyk naujų minčių, nekeisk skaičių, procentų ir vardų; ${who === '„jūs“' ? 'žmonių' : 'skaitytojo'} lytis nežinoma — nenaudok giminę rodančių būdvardžių ir dalyvių; nenaudok kabučių ženklo ". Elementų E… neišbraukinėk — juos galima tik pataisyti. Jei problemų nėra — grąžink tuščius sąrašus. Geriau nieko nekeisti nei pakeisti be reikalo.
@@ -4373,6 +4374,7 @@ ${poraNameRules(A, B)}
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
 - Kiekvienas skyrius: 10–13 sakinių (NIEKADA mažiau nei 9), išsamus ir sklandus tekstas (ne sąrašas), su konkrečiais kasdienio gyvenimo pavyzdžiais, kaip tai pasireiškia jūsų santykiuose; skyriai nesikartoja tarpusavyje.
 - SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška jūsų porai pagal skyriaus pavadinimą — tokius konkrečius dalykus, kad pora atpažintų save („tai tikrai apie mus“); be pagyrų, be bendrų frazių ir be pažadų.
+- TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie jus — veiksmažodžiu, ką darote, kaip elgiatės, ko norite ar vengiate (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Jūsų ryšyje slypi kažkas, kas…“, „Tai, kaip žiūrite vienas į kitą, atskleidžia…“).
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 5–8 sakiniai, iki 900 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
