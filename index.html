@@ -2890,9 +2890,7 @@ function capturePhoto(){
   if(window._liveLoop){clearInterval(window._liveLoop);window._liveLoop=null;}
   // hint tekstas lieka
 
-  // Flash
-  flash.style.opacity='1';
-  setTimeout(()=>{flash.style.opacity='0';},100);
+  // Fotografavimo garsas; baltas blyksnis nerodomas (ekranas nebepabąla)
   shutterSound();
 
   // Nufotografuoti — apribojame didžiausią matmenį iki 1600px prieš
