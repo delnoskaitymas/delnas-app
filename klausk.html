@@ -82,6 +82,7 @@ a,button{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
+<script src="/kl-pavyzdziai.js"></script>
 <div class="wrap">
   <div class="brand">DELNAS</div>
   <div class="hero"><i></i></div>
@@ -97,12 +98,7 @@ a,button{-webkit-tap-highlight-color:transparent}
       <label for="q" id="qlabel">Tavo klausimas</label>
       <textarea id="q" maxlength="400" placeholder="pvz. Ar man verta keisti darbą?"></textarea>
       <div class="hint"><span>Kuo konkretesnis klausimas — tuo tikslesnis atsakymas</span><span id="cnt">0/400</span></div>
-      <div class="chips" id="chips">
-        <button type="button">Ar man verta keisti darbą?</button>
-        <button type="button">Kodėl kartojasi tos pačios santykių problemos?</button>
-        <button type="button">Kaip man geriau tvarkytis su pinigais?</button>
-        <button type="button">Kas man trukdo judėti pirmyn?</button>
-      </div>
+      <div class="chips" id="chips"></div>
       <button type="submit" class="btn off" id="go">Gauti atsakymą</button>
       <div class="note" id="note"><span id="note-txt">Užduodant pirmą klausimą sutinki, kad atsakymas būtų pateiktas iš karto, ir patvirtini, kad dėl to netenki 14 d. atsisakymo teisės</span> (žr. <a href="/naudojimosi-salygos?is=klausk#klausk" target="_blank">sąlygų 5c skyrių</a>).</div>
       <div class="err" id="err"></div>
@@ -224,8 +220,6 @@ document.getElementById('back-link').addEventListener('click', e => {
         $('h1').innerHTML = 'Klauskite savo <em>delnų</em>';
         $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų poros suderinamumo analize' + (d.compare ? ' ir palyginimu su ankstesne.' : '.');
         $('qlabel').textContent = 'Jūsų klausimas';
-        q.placeholder = 'pvz. Kaip mums rečiau ginčytis?';
-        $('chips').innerHTML = ['Kaip mums rečiau ginčytis?', 'Kaip suderinti požiūrį į pinigus?', 'Kaip išlaikyti artumą kasdienybėje?', 'Ar mums laikas gyventi kartu?'].map(t => '<button type="button">' + t + '</button>').join('');
         $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
         $('more-txt').textContent = 'Norėtumėte paklausti dar? 3 nauji klausimai — 4,99\u00a0€';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
@@ -234,6 +228,13 @@ document.getElementById('back-link').addEventListener('click', e => {
       } else {
         $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduok iki 3 klausimų — atsakymai remiasi tavo asmenine delnų analize' + (d.compare ? ' ir palyginimu su ankstesne.' : '.');
       }
+      // Pavyzdžiai: dar neužduoti visuose šios analizės pirkimuose; kitam pirkimui — kiti
+      const fq = Array.isArray(d.famQa) ? d.famQa : [];
+      const asked = fq.reduce((a, g) => a.concat((g.qa || []).map(x => x.q)), (d.qa || []).map(x => x.q));
+      const round = Math.max(0, fq.findIndex(g => g.id === sid));
+      const picks = window.klExPick ? window.klExPick(d.kind, asked, round, 4) : [];
+      $('chips').innerHTML = picks.map(t => '<button type="button">' + esc(t) + '</button>').join('');
+      if (picks[0]) q.placeholder = 'pvz. ' + picks[0];
       // Pakartotinė analizė su palyginimu — pirmas pavyzdys apie pokyčius
       if (d.compare) $('chips').insertAdjacentHTML('afterbegin', '<button type="button">' + (d.kind === 'pora' ? 'Kaip išlaikyti tai, kas mūsų poroje pagerėjo?' : 'Kaip išlaikyti tai, kas pasikeitė į gerą?') + '</button>');
       // Visų šios analizės pirkimų klausimai (seniausi pirmi), ne tik šio užsakymo

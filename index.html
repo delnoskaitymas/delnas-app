@@ -1190,6 +1190,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
   </div>
 </div>
 
+<script src="/kl-pavyzdziai.js"></script>
 <script src="/src.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script src="/vendor/jspdf.umd.min.js"></script>
@@ -4182,6 +4183,7 @@ function renderResultExtra(r){
       const kLeft=await klLeftOf(id);
       if(kLeft===0){ // visi apmokėti klausimai jau užduoti — nuoroda į atsakymus, po ja siūlomi nauji
         const kb=document.querySelector('#r-extra .kl'), kt=kb&&kb.querySelector('.kl-txt');
+        klExRender(document.getElementById('kl-ex'),'asm',window._klFamQa);
         if(kt&&!window._manoView&&!kb.querySelector('.kl-answered')){ const d=document.createElement('div'); d.className='kl-answered'; d.innerHTML='<b>✓ Į tavo 3 klausimus jau atsakyta</b> — <a href="/klausk?s='+encodeURIComponent(id)+'" target="_blank" rel="noopener">peržiūrėti atsakymus</a>'; kt.parentNode.insertBefore(d,kt); }
         return null;
       }
@@ -4220,7 +4222,8 @@ function manoKlView(){
     h=qa.map((x,i)=>'<div class="kl-qa"><div class="kl-qa-n">✦ '+(nth[i]||(i+1)+'-as')+' klausimas</div><div class="kl-qa-q">„'+_xEsc(x.q)+'“</div><div class="kl-qa-a">'+_xEsc(x.a).replace(/\n+/g,'<br>')+'</div></div>').join('');
   }
   if(rest) h+='<button type="button" class="kl-btn" id="kl-rest">'+(qa.length?'Užduoti likusius klausimus (liko '+rest.left+')':'Užduoti apmokėtus klausimus (liko '+rest.left+')')+'</button>';
-  else h+='<button type="button" class="kl-more" id="kl-more">'+(qa.length?'Norėtum paklausti dar? 3 nauji klausimai — 4,99&nbsp;€':'✋ Turi klausimą? Užduok 3 klausimus delnams — 4,99&nbsp;€')+'</button>';
+  else klExRender(form.querySelector('.kl-ex'),'asm',all);
+  if(!rest) h+='<button type="button" class="kl-more" id="kl-more">'+(qa.length?'Norėtum paklausti dar? 3 nauji klausimai — 4,99&nbsp;€':'✋ Turi klausimą? Užduok 3 klausimus delnams — 4,99&nbsp;€')+'</button>';
   top.innerHTML=h;
   blk.appendChild(top); blk.appendChild(form);
   const rb=document.getElementById('kl-rest'); if(rb) rb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(rest.id)+'#klausti'));
@@ -4242,7 +4245,16 @@ async function klActive(sel, q, you){
   }catch(e){ return null; }
 }
 async function klLeftOf(id){ try{ const d=await (await fetch('/klausk/check?s='+encodeURIComponent(id))).json(); if(!d||!d.paid||typeof d.left!=='number') return null;
+  window._klFamQa=d.famQa||null;
   window._klFam=window._klFam||{}; if(d.family&&d.family.left>0){ window._klFam[id]=d.family.id; return d.family.left; } delete window._klFam[id]; return Math.max(0,d.left-(d.answering?1:0)); }catch(e){ return null; } }
+// Pavyzdiniai klausimai bloke: be jau užduotų (visuose šios analizės pirkimuose); naujam pirkimui — kiti iš sąrašo
+function klExRender(ex, kind, famQa){
+  if(!ex||!window.klExPick) return;
+  const fq=Array.isArray(famQa)?famQa:[], asked=fq.reduce((a,g)=>a.concat((g.qa||[]).map(x=>x.q)),[]);
+  const picks=window.klExPick(kind,asked,fq.length,3); if(!picks.length) return;
+  ex.querySelectorAll('button:not([data-cmp])').forEach(b=>b.remove());
+  picks.forEach(t=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; ex.appendChild(b); });
+}
 function klDraftSave(q){ try{ localStorage.setItem('delnasKlDraft',JSON.stringify({q,at:Date.now()})); }catch(e){} }
 // Grįžus iš klausimų puslapio — rodoma tai, kas yra PO klausimų bloku (dalinimasis, dovanos), o ne vėl klausimų blokas
 function klScrollAfter(ks){
@@ -4289,6 +4301,7 @@ function klRefreshLeft(kl){
       nb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(target)+'#klausti'));
     } else {
       if(kl._klResetPaid) kl._klResetPaid();
+      if(d&&d.paid) klExRender(kl.querySelector('.kl-ex'),kl.id==='pora-kl'?'pora':'asm',d.famQa);
       nb.textContent='✦ Užduoti dar 3 klausimus — 4,99 €';
       nb.addEventListener('click',()=>klNewRound(kl));
     }
@@ -6653,7 +6666,7 @@ function setupPoraKlausk(){
     prepaid:(async()=>{ const u=/^gp_/.test(sid)?await (async()=>{
       const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
       const d=await r.json(); if(!r.ok||!d.id) return null;
-      if(await klLeftOf(d.id)===0) return null;
+      if(await klLeftOf(d.id)===0){ klExRender(document.getElementById('pora-kl-ex'),'pora',window._klFamQa); return null; }
       const blk=document.getElementById('pora-kl');
       if(blk){ blk.querySelector('.kl-txt').innerHTML='<b>✓ 3 klausimai įskaičiuoti į dovaną.</b> Įrašykite klausimą apie savo porą — atsakymas remsis jūsų poros analize.'; blk.querySelector('.kl-fine').textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku'; if((window._poraResult||{}).palyginimas) klCmpApply(blk, true); }
       btn.textContent='Gauti atsakymus';

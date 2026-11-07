@@ -297,7 +297,7 @@ app.get('/sitemap.xml', (req, res) => {
 // jokių variantų su „//“, %2f ar didžiosiomis raidėmis). Serverio kodas,
 // duomenų failai, nuotraukos, .git, reklamos aplankas ir visa kita — 404.
 const PUBLIC_FILES = new Set(['/index.html', '/pora.html', '/dovana.html', '/mano.html', '/klausk.html',
-  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/manifest.json',
+  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/kl-pavyzdziai.js', '/manifest.json',
   // PDF, paveikslėlio ir QR bibliotekos — iš mūsų serverio (ne iš svetimo CDN), versijos užfiksuotos
   '/vendor/jspdf.umd.min.js', '/vendor/html2canvas.min.js', '/vendor/qrcode.min.js']);
 const PUBLIC_IMG_RE = /^\/img\/[a-z0-9_-]+\.(jpg|png|webp)$/;
@@ -5084,9 +5084,11 @@ function klauskResultFor(order) {
   if (order && order.reward && order.kind !== 'pora') { const r = latestPersonalResult(order.email); if (r) return r; }
   return order.result;
 }
+// Ankstesni klausimai ir atsakymai AI kontekstui: ir kitų tos pačios analizės pirkimų (order.qaPrev), kad atsakymai nesikartotų
+function klauskPrevQa(order) { return [...(order.qaPrev || []), ...(order.qa || [])].filter(x => x && x.q && x.a).slice(-12); }
 async function answerKlausk(order, question) {
   if (order.kind === 'pora') return answerKlauskPora(order, question);
-  const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
+  const prev = klauskPrevQa(order).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
   const name = order.name || '';
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
 
@@ -5131,7 +5133,7 @@ async function klauskCallAI(prompt) {
 
 async function answerKlauskPora(order, question) {
   const A = order.nameA || 'Pirmasis žmogus', B = order.nameB || 'Antrasis žmogus';
-  const prev = (order.qa || []).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
+  const prev = klauskPrevQa(order).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
   const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Atsakyk remdamasis BŪTENT šia analize.
 
 PORŲ ANALIZĖ:
@@ -5547,7 +5549,9 @@ app.post('/klausk/ask', sensitiveLimiter, async (req, res) => {
     const o = loadKlauskOrders()[id];
     if (!o || !o.paid) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
     if ((o.qa || []).length >= KLAUSK_MAX_QUESTIONS) return res.status(409).json({ error: 'Visi 3 klausimai jau užduoti.' });
-    const a = await answerKlausk(o, q);
+    let qaPrev = [];
+    try { const all = loadKlauskOrders(); for (const [xid, x] of klauskFamilyOrders(id, o, all)) if (xid !== id) qaPrev = qaPrev.concat(x.qa || []); } catch (e) { qaPrev = []; }
+    const a = await answerKlausk({ ...o, qaPrev }, q);
     const orders = loadKlauskOrders(), cur = orders[id];
     cur.qa = [...(cur.qa || []), { q, a, at: Date.now() }];
     // Visi atsakymai el. paštu VIENU laišku: iš karto, kai užduoti visi 3, arba
@@ -6680,9 +6684,17 @@ function manoItems(email) {
   const poros = Object.entries(loadPoraOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.status === 'done')
     .map(([id, o]) => ({ id, nameA: o.nameA || '', nameB: o.nameB || '', pct: Math.round(Number(o.result && o.result.suderinamumas)) || null, createdAt: o.finishedAt || o.createdAt || 0 }))
     .sort((a, b) => b.createdAt - a.createdAt);
-  const klausimai = Object.entries(loadKlauskOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.paid)
-    .map(([id, o]) => ({ id, kind: o.kind || 'asmenine', name: o.name || '', count: (o.qa || []).length, createdAt: o.paidAt || o.createdAt || 0 }))
-    .sort((a, b) => b.createdAt - a.createdAt);
+  // Tos pačios analizės klausimų pirkimai — viena eilutė (id — užsakymas, kuriame dar liko klausimų, arba naujausias)
+  const ko = loadKlauskOrders(), seen = new Set(), klausimai = [];
+  for (const [id, o] of Object.entries(ko).filter(([, o]) => (o.email || '').toLowerCase() === e && o.paid).sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0))) {
+    if (seen.has(id)) continue;
+    const fam = klauskFamilyOrders(id, o, ko).filter(([xid]) => !seen.has(xid));
+    fam.forEach(([xid]) => seen.add(xid));
+    const count = fam.reduce((n, [, x]) => n + (x.qa || []).length, 0), total = fam.length * KLAUSK_MAX_QUESTIONS;
+    const act = klauskFamilyActive(id, o, ko), last = fam[fam.length - 1];
+    klausimai.push({ id: act && seen.has(act.id) ? act.id : last[0], kind: o.kind || 'asmenine', name: o.name || '', count, total, left: Math.max(0, total - count), createdAt: Math.max(...fam.map(([, x]) => x.paidAt || x.createdAt || 0)) });
+  }
+  klausimai.sort((a, b) => b.createdAt - a.createdAt);
   return { analizes, poros, klausimai };
 }
 function manoEmailFromToken(t) {
@@ -6772,11 +6784,13 @@ app.post('/mano/delete', sensitiveLimiter, (req, res) => {
     const key = String(id || '');
     const orders = type === 'pora' ? loadPoraOrders() : loadKlauskOrders(), o = orders[key];
     if (!o || (o.email || '').toLowerCase() !== email) return res.status(404).json({ error: 'Įrašas nerastas' });
-    delete orders[key];
+    // Klausimai: ištrinami visi tos pačios analizės pirkimai (sąraše jie rodomi viena eilute)
+    const gone = type === 'kl' && o.paid ? klauskFamilyOrders(key, o, orders).map(([xid, x]) => [xid, x]) : [[key, o]];
+    for (const [xid] of gone) delete orders[xid];
     // Žymė (be turinio), kad tuo pačiu mokėjimu ar kuponu analizė ar klausimai nebūtų gauti iš naujo
     try {
       if (type === 'pora') { if (o.status === 'done' || o.result) { const u = loadPoraUsed(); u[key] = Date.now(); writeFileSafe(PORA_USED_FILE, JSON.stringify(u)); } }
-      else if (o.paid) { const u = loadKlauskUsed(); if (o.paymentRef) u[o.paymentRef] = Date.now(); if (o.poraSid && o.gift) u['pora:' + o.poraSid] = Date.now(); writeFileSafe(KLAUSK_USED_FILE, JSON.stringify(u)); }
+      else { const u = loadKlauskUsed(); let ch = false; for (const [, x] of gone) if (x.paid) { if (x.paymentRef) u[x.paymentRef] = Date.now(); if (x.poraSid && x.gift) u['pora:' + x.poraSid] = Date.now(); ch = true; } if (ch) writeFileSafe(KLAUSK_USED_FILE, JSON.stringify(u)); }
     } catch (e) { console.error('[mano] žymės klaida:', e.message); }
     if (type === 'pora') {
       savePoraOrders(orders); try { deletePoraFirstPhotos(key); } catch (e) {}
