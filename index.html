@@ -271,6 +271,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .kl-qa{border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:13px 14px;margin:10px 0;background:rgba(0,0,0,.35)}.kl-qa-n{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.kl-qa-q{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:#f3e7c6;margin-bottom:6px}.kl-qa-a{font-size:14px;line-height:1.6;color:rgba(255,255,255,.78)}
 /* „Mano analizės“: klausimai matomi visi, atsakymas atsiveria paspaudus */
 .kl-qa .kl-qa-a{display:none}.kl-qa.open .kl-qa-a{display:block;margin-bottom:8px}
+.kl-done-ok .kl-mano{color:var(--gold2);text-decoration:underline;text-underline-offset:3px;font-weight:600}
 .kl-qa-t{background:none;border:0;padding:2px 0;cursor:pointer;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px}
 .kl-more{display:block;margin:12px auto 2px;background:none;border:none;padding:4px 6px;color:var(--gold);font:400 13px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:center}
 #r-extra .kl-answered{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8);margin:0 0 10px;padding:9px 12px;border-radius:10px;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3)}#r-extra .kl-answered b{color:var(--gold2)}#r-extra .kl-answered a{color:var(--gold);text-decoration:underline;text-underline-offset:2px}
@@ -4273,7 +4274,9 @@ function klScrollAfter(ks){
   // Suskleidžiame klausimų bloką: patvirtinimas ir mygtukas užduoti daugiau klausimų
   if(!kl.querySelector('.kl-done-box')){
     const pora=kl.id==='pora-kl', b=document.createElement('div'); b.className='kl-done-box';
-    b.innerHTML='<div class="kl-done-ok">✓ Atsakymai atkeliaus ir į '+(pora?'jūsų':'tavo')+' el. paštą</div><button type="button" class="kl-btn">✦ Užduoti dar 3 klausimus — 4,99 €</button>';
+    // El. paštas įsimenamas šiame telefone — „Mano analizėse“ jis jau bus įrašytas
+    { const em=window._userEmail||window.userEmail||''; if(!pora&&em) try{ localStorage.setItem('delnasManoEmail',JSON.stringify({e:em,at:Date.now()})); }catch(e){} }
+    b.innerHTML='<div class="kl-done-ok">✓ Atsakymai atkeliaus ir į '+(pora?'jūsų':'tavo')+' el. paštą, juos visada '+(pora?'rasite':'rasi')+' ir <a class="kl-mano" href="/mano" target="_blank" rel="noopener">Mano analizėse</a></div><button type="button" class="kl-btn">✦ Užduoti dar 3 klausimus — 4,99 €</button>';
     b.querySelector('button').addEventListener('click',()=>klNewRound(kl));
     kl.appendChild(b);
   }

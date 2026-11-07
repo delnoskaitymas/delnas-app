@@ -49,6 +49,7 @@ h1 em{font-style:italic;color:var(--gold)}
 .qa .q{font:italic 400 17px/1.4 'Playfair Display',serif;color:var(--gold2);margin-bottom:14px}
 .qa .a p{font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.68);margin-bottom:16px}
 .qa .a p:last-child{margin-bottom:0}
+.done .kl-mano{color:var(--gold2,#f0d58a);text-decoration:underline;text-underline-offset:3px;font-weight:600}
 /* Jau užduotų klausimų atsakymai — suskleisti (matomas klausimas), atsiveria paspaudus */
 .qa.fold .a{display:none}.qa.fold.open .a{display:block;margin-bottom:12px}
 .qa .tg{background:none;border:0;padding:2px 0;cursor:pointer;font:600 13.5px 'DM Sans',sans-serif;color:var(--gold2,#f0d58a);text-decoration:underline;text-underline-offset:3px}
@@ -112,7 +113,7 @@ a,button{-webkit-tap-highlight-color:transparent}
     <div class="think"><div class="orb"></div><span id="think-txt">Ruošiamas atsakymas… tai užtrunka apie 20–40 sekundžių</span></div></div>
 
   <div id="all-done" class="hidden">
-    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku.</div>
+    <div class="done" id="done-txt">✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti tavo el. paštu vienu laišku. Juos visada rasi ir <a class="kl-mano" href="/mano" target="_blank" rel="noopener">Mano analizėse</a>.</div>
     <!-- Dar 3 klausimai: naujas mokėjimas, analizė ta pati -->
     <div class="more" id="daugiau">
       <p id="more-txt">Norėtum paklausti dar? 3 nauji klausimai — 4,99&nbsp;€</p>
@@ -223,7 +224,7 @@ document.getElementById('back-link').addEventListener('click', e => {
         $('h1').innerHTML = 'Klauskite savo <em>delnų</em>';
         $('lead').textContent = (d.name ? ltVocAll(d.name) + ', u' : 'U') + 'žduokite iki 3 klausimų apie savo porą — atsakymai remiasi jūsų poros suderinamumo analize' + (d.compare ? ' ir palyginimu su ankstesne.' : '.');
         $('qlabel').textContent = 'Jūsų klausimas';
-        $('done-txt').textContent = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku.';
+        $('done-txt').innerHTML = '✦ Visi 3 klausimai užduoti. Visi atsakymai išsiųsti jūsų el. paštu vienu laišku. Juos visada rasite ir <a class="kl-mano" href="/mano" target="_blank" rel="noopener">Mano analizėse</a>.';
         $('more-txt').textContent = 'Norėtumėte paklausti dar? 3 nauji klausimai — 4,99\u00a0€';
         document.querySelector('.hint span').textContent = 'Kuo konkretesnis klausimas — tuo tikslesnis atsakymas';
         $('fine').innerHTML = 'Atsakymus pagal jūsų poros suderinamumo analizę sugeneruoja dirbtinis intelektas. Tai savęs pažinimo priemonė, ne psichologinė, medicininė, teisinė ar finansinė konsultacija. 18+ · info@delnaskaitymas.lt';
