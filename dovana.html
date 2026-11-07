@@ -323,6 +323,9 @@ body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!importa
 /* Apačioje po nuorodomis — oras kaip porų formoje (bent ~20px nuo ekrano krašto) */
 body.form-view.fit .wrap{padding-bottom:max(20px,calc(var(--bt,12px) * .6))}
 body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!important}
+/* Įskaitomumas: sąlygos ir kupono pastaba — ne smulkiau nei 12px, „(neprivaloma · 0/300)“ — šviesesnis */
+#v-form .chk:not(.sched-chk),#v-form .sched-hint{font-size:12px}
+#v-form .opt{color:var(--muted)}
 /* Kompaktiška forma — kai kitaip DELNAS ir ikona būtų per maži (įjungia fitHeader()) */
 body.form-view.tight #gift-form{padding-top:10px;padding-bottom:9px}
 body.form-view.tight #form-h1{font-size:24px;line-height:1.08}
