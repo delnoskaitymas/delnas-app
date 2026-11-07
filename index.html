@@ -2890,7 +2890,7 @@ function capturePhoto(){
   if(window._liveLoop){clearInterval(window._liveLoop);window._liveLoop=null;}
   // hint tekstas lieka
 
-  // Fotografavimo garsas; baltas blyksnis nerodomas (ekranas nebepabąla)
+  // Fotografavimo garsas; vietoj balto blyksnio — auksinis kameros lango sušvitimas užfiksavus kadrą (žr. žemiau)
   shutterSound();
 
   // Nufotografuoti — apribojame didžiausią matmenį iki 1600px prieš
@@ -2923,6 +2923,10 @@ function capturePhoto(){
     frozen.style.opacity='1';
     video.style.display='none';
   }
+  // Užfiksuota: kameros langas trumpam auksiškai sušvyti (vietoj balto blyksnio) — aišku, kad delnas jau nufotografuotas
+  { const vpG=document.getElementById('cam-viewport');
+    if(vpG){ vpG.style.transition='box-shadow .12s ease-out'; vpG.style.boxShadow='inset 0 0 0 3px rgba(240,201,106,.95),0 0 28px 6px rgba(240,201,106,.55)';
+      setTimeout(()=>{ vpG.style.transition='box-shadow .5s ease-in'; vpG.style.boxShadow=''; setTimeout(()=>{ vpG.style.transition=''; },550); },380); } }
   // PASTABA: antraštė, paantraštė ir mygtukas DABAR NEBESLEPIAMI ir
   // NEKEIČIAMI analizės/sėkmės/nesėkmės metu — taip garantuojama, kad
   // išdėstymas (ir kameros lango dydis) niekada nepasikeičia.
