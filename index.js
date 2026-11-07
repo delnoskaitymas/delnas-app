@@ -5107,7 +5107,44 @@ KAIP ATSAKYTI:
 ${klauskLangRules('tu')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
-  return klauskCallAI(prompt);
+  return klauskGenderFix(await klauskCallAI(prompt), 'tu');
+}
+
+// Giminės patikrinimas „Klausk“ atsakymui: sakiniai su giminę dažnai rodančiais žodžiais pataisomi neutraliai (tik jei tokių yra).
+// Antra AI užklausa siunčiama tik radus įtartinų žodžių; pataisymas priimamas, jei sakinys pakeistas ne per daug (≤ ~60 % —
+// neutraliai perrašant „būtum ekspertas“ ar „nelaukdamas“ reikia daugiau pakeitimų nei įprastai), kitaip paliekamas originalas.
+function klauskGenderFixOk(orig, fixed) {
+  if (typeof fixed !== 'string') return false;
+  const f = fixed.trim(); if (!f || /["<>{}]/.test(f)) return false;
+  const r = f.length / Math.max(1, orig.length); if (r < 0.5 || r > 1.6) return false;
+  return editDistance(orig, f) / Math.max(orig.length, f.length) <= 0.6;
+}
+const KLAUSK_GENDER_RE = /(?<![\p{L}])(\p{L}+(?:damas|dama|damasi|ęs|usi|esnis|esnė|esni|esnės)|pats|pati|pačiam|pačiai|linkęs|linkusi|ramus|rami|vienas|viena|vienam|vienai|abu|abi|abiem|abiejų|ekspert\p{L}*|konsultant\p{L}*|vadov\p{L}*|lyder\p{L}*|specialist\p{L}*|vykdytoj\p{L}*|kūrėj\p{L}*|savinink\p{L}*|atsaking\p{L}*|pasiruoš\p{L}*|pasireng\p{L}*)(?![\p{L}])/giu;
+async function klauskGenderFix(text, you) {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY || typeof text !== 'string') return text;
+    const paras = text.split(/\n+/), units = [];
+    paras.forEach((p, pi) => p.trim().split(EDITOR_SENT_RE).forEach((x, si) => { if (x.match(KLAUSK_GENDER_RE)) units.push({ pi, si, x }); }));
+    if (!units.length) return text;
+    const pl = you === 'jūs';
+    const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — sakiniai iš atsakymo, parašyto „${pl ? 'jūs' : 'tu'}“ forma. ${pl ? 'Šių žmonių (poros)' : 'Skaitytojo'} LYTIS NEŽINOMA, todėl apie ${pl ? 'juos' : 'skaitytoją'} negali būti giminę rodančių žodžių: „pats/pati“, padalyvių -damas/-dama („nelaukdamas“), dalyvių -ęs/-usi („linkęs“, „pasirengęs“), būdvardžių („ramus“, „atsargesnis“), giminę turinčių daiktavardžių apie ${pl ? 'juos' : 'skaitytoją'} („būtum ekspertas“, „tapsi vadovu“)${pl ? ', „vienas kitą“, „abu“, „abi“, „abiem“ apie žmones' : ''}.
+Kiekvieną sakinį, kuriame tokių žodžių apie ${pl ? 'žmones' : 'skaitytoją'} YRA, pataisyk neutraliai mažiausiu pakeitimu (pvz. „nelaukdamas“ → „ir nelauk“, „kur pats sprendi“ → „kur savarankiškai sprendi“, „būtum ekspertas“ → „tavo žinios būtų vertinamos“${pl ? ', „vienas kitą“ → „tarpusavyje“' : ''}). Žodžių apie daiktus, kitus žmones ar sąvokas („linija ilga“, „vienas žingsnis“, „seno pažįstamo“) NEKEISK. Prasmės, stiliaus ir kitų žodžių nekeisk. Nenaudok kabučių ženklo ".
+Atsakyk TIK JSON: {"N":"visas pataisytas sakinys"} — tik tiems sakiniams, kuriuos taisei; jei taisyti nereikia — {}.
+
+${units.map((u, i) => `[${i + 1}] ${u.x}`).join('\n')}`;
+    const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: aiBody({ max_tokens: 1500, messages: [{ role: 'user', content: prompt }] }, 'low')
+    }, 60000);
+    const js = firstJsonObject(aiJsonText(await r.json()) || '');
+    if (!js) return text;
+    const out = JSON.parse(js); let nFix = 0, nRej = 0;
+    const P = paras.map(p => p.trim().split(EDITOR_SENT_RE));
+    units.forEach((u, i) => { const f = out[String(i + 1)]; if (f == null) return; if (klauskGenderFixOk(u.x, f)) { P[u.pi][u.si] = f.trim(); nFix++; } else nRej++; });
+    console.log(`[klausk] giminės patikrinimas: įtartinų sakinių ${units.length}, pataisyta ${nFix}, atmesta ${nRej}`);
+    return P.map(x => x.join(' ')).join('\n');
+  } catch (e) { console.log('[klausk] giminės patikrinimas nepavyko:', e.message); return text; }
 }
 
 async function klauskCallAI(prompt) {
@@ -5153,7 +5190,7 @@ ${poraNameRules(A, B)}
 ${klauskLangRules('jūs')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
-  return klauskCallAI(prompt);
+  return klauskGenderFix(await klauskCallAI(prompt), 'jūs');
 }
 
 // Grįžimas iš klausimų puslapio į asmeninės analizės rezultatą (kai pradinis langas jau uždarytas)

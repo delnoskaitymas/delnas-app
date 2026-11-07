@@ -269,6 +269,9 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 /* Pasiūlymas prie mokėjimo ir draugo nuolaida */
 #r-extra .kl-form{display:none}#r-extra .kl-form.open,#r-extra .kl:not(:has(.kl-mine)) .kl-form{display:block}
 .kl-qa{border:1px solid rgba(212,168,67,.35);border-radius:12px;padding:13px 14px;margin:10px 0;background:rgba(0,0,0,.35)}.kl-qa-n{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.kl-qa-q{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:#f3e7c6;margin-bottom:6px}.kl-qa-a{font-size:14px;line-height:1.6;color:rgba(255,255,255,.78)}
+/* „Mano analizės“: klausimai matomi visi, atsakymas atsiveria paspaudus */
+.kl-qa .kl-qa-a{display:none}.kl-qa.open .kl-qa-a{display:block;margin-bottom:8px}
+.kl-qa-t{background:none;border:0;padding:2px 0;cursor:pointer;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px}
 .kl-more{display:block;margin:12px auto 2px;background:none;border:none;padding:4px 6px;color:var(--gold);font:400 13px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:center}
 #r-extra .kl-answered{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8);margin:0 0 10px;padding:9px 12px;border-radius:10px;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3)}#r-extra .kl-answered b{color:var(--gold2)}#r-extra .kl-answered a{color:var(--gold);text-decoration:underline;text-underline-offset:2px}
 #kl-bump{display:flex;gap:11px;align-items:center;margin:8px 0;padding:13px 14px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
@@ -4219,13 +4222,16 @@ function manoKlView(){
   let h='';
   if(qa.length){
     if(lbl) lbl.textContent='✦ Tavo klausimai delnams';
-    h=qa.map((x,i)=>'<div class="kl-qa"><div class="kl-qa-n">✦ '+(nth[i]||(i+1)+'-as')+' klausimas</div><div class="kl-qa-q">„'+_xEsc(x.q)+'“</div><div class="kl-qa-a">'+_xEsc(x.a).replace(/\n+/g,'<br>')+'</div></div>').join('');
+    h=qa.map((x,i)=>'<div class="kl-qa"><div class="kl-qa-n">✦ '+(nth[i]||(i+1)+'-as')+' klausimas</div><div class="kl-qa-q">„'+_xEsc(x.q)+'“</div><div class="kl-qa-a">'+_xEsc(x.a).replace(/\n+/g,'<br>')+'</div><button type="button" class="kl-qa-t" aria-expanded="false">Skaityti atsakymą ▾</button></div>').join('');
   }
   if(rest) h+='<button type="button" class="kl-btn" id="kl-rest">'+(qa.length?'Užduoti likusius klausimus (liko '+rest.left+')':'Užduoti apmokėtus klausimus (liko '+rest.left+')')+'</button>';
   else klExRender(form.querySelector('.kl-ex'),'asm',all);
   if(!rest) h+='<button type="button" class="kl-more" id="kl-more">'+(qa.length?'Norėtum paklausti dar? 3 nauji klausimai — 4,99&nbsp;€':'✋ Turi klausimą? Užduok 3 klausimus delnams — 4,99&nbsp;€')+'</button>';
   top.innerHTML=h;
   blk.appendChild(top); blk.appendChild(form);
+  top.addEventListener('click',e=>{ const t=e.target.closest('.kl-qa-t'); if(!t) return; const c=t.closest('.kl-qa'), o=c.classList.toggle('open'); t.textContent=o?'Suskleisti ▴':'Skaityti atsakymą ▾'; t.setAttribute('aria-expanded',o?'true':'false');
+    // Suskleidus ilgą atsakymą — klausimas lieka matomas ekrane
+    if(!o&&c.getBoundingClientRect().top<0) c.scrollIntoView({block:'start'}); });
   const rb=document.getElementById('kl-rest'); if(rb) rb.addEventListener('click',()=>klOpen('/klausk?s='+encodeURIComponent(rest.id)+'#klausti'));
   const mb=document.getElementById('kl-more');
   const openForm=()=>{ form.classList.add('open'); if(mb) mb.remove(); };
@@ -7913,8 +7919,12 @@ function fitPayScreen(){
     const a=document.createElement('a');
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
     a.style.cssText="position:fixed;top:calc(10px + var(--sat));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+    a.style.transition='opacity .25s,transform .25s';
     const add=()=>document.body.appendChild(a);
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+    // Slenkant žemyn mygtukas paslepiamas (neuždengia teksto), slenkant aukštyn ar viršuje — vėl matomas
+    let y0=window.scrollY||0;
+    window.addEventListener('scroll',()=>{ const y=window.scrollY||0, hide=y>80&&y>y0+4; if(Math.abs(y-y0)>4||y<80){ a.style.opacity=hide?'0':'1'; a.style.transform=hide?'translateY(-120%)':'none'; a.style.pointerEvents=hide?'none':'auto'; y0=y; } },{passive:true});
   }catch(e){}
 })();
 </script>
