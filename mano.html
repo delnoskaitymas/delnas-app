@@ -202,9 +202,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       h += '<div class="sec" data-cat="pora">Porų suderinamumas</div>';
       h += d.poros.map(p => '<div class="item" data-cat="pora" data-type="pora" data-id="' + esc(p.id) + '"><div class="ic">💞</div><div class="tx"><b>' + esc(p.nameA) + ' ir ' + esc(p.nameB) + (p.pct ? ' <span class="pct">' + p.pct + '\u00a0%</span>' : '') + '</b><small>' + day(p.createdAt) + '</small></div><div class="act"><a class="open" href="/?pora=' + encodeURIComponent(p.id) + '&mt=' + encodeURIComponent(t) + '">Atidaryti</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
+    // Neužduotų apmokėtų klausimų skaičius (visuose tos analizės pirkimuose)
+    const kLeft = k => typeof k.left === 'number' ? k.left : Math.max(0, 3 - k.count);
     if (d.klausimai.length) {
       h += '<div class="sec" data-cat="kl">Klausk savo delnų</div>';
-      h += d.klausimai.map(k => '<div class="item" data-cat="' + (k.kind === 'pora' ? 'klp' : 'kl') + '" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš 3</small></div><div class="act"><a class="open' + (k.count < 3 ? ' more' : '') + '" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + (k.count < 3 ? '#klausti' : '') + '">' + (k.count >= 3 ? 'Atidaryti' : k.count === 2 ? 'Užduoti likusį klausimą' : k.count === 1 ? 'Užduoti likusius klausimus' : 'Užduoti klausimus') + '</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
+      h += d.klausimai.map(k => '<div class="item" data-cat="' + (k.kind === 'pora' ? 'klp' : 'kl') + '" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš ' + (k.total || 3) + '</small></div><div class="act"><a class="open' + (kLeft(k) ? ' more' : '') + '" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + (kLeft(k) ? '#klausti' : '') + '">' + (!kLeft(k) ? 'Atidaryti' : !k.count ? 'Užduoti klausimus' : kLeft(k) === 1 ? 'Užduoti likusį klausimą' : 'Užduoti likusius klausimus') + '</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
     // Keturi skirtukai — paspaudus rodoma būtent tai, ko reikia
     const kAsm = d.klausimai.filter(k => k.kind !== 'pora').length, kPora = d.klausimai.length - kAsm;
@@ -224,7 +226,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       if (lastK) { lnk = true; txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/klausk?s=' + encodeURIComponent(lastK.id) + '&mt=' + encodeURIComponent(t) + '#daugiau'; }
       else if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
       // Paskutiniai klausimai dar neišnaudoti — jų mygtukas yra sąraše, papildomos nuorodos nereikia
-      nb.style.display = lastK && lastK.count < 3 ? 'none' : '';
+      nb.style.display = lastK && kLeft(lastK) ? 'none' : '';
       nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
@@ -254,7 +256,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {
       const it = b.closest('.item');
       const ty = it.dataset.type || 'asm';
-      if (!confirm(ty === 'kl' ? 'Ištrinti šiuos klausimus ir atsakymus? To atšaukti nebus galima.' : 'Ištrinti šią analizę? To atšaukti nebus galima.')) return;
+      const k = ty === 'kl' ? d.klausimai.find(x => x.id === it.dataset.id) : null, kl = k ? kLeft(k) : 0;
+      const msg = !k ? 'Ištrinti šią analizę? To atšaukti nebus galima.'
+        : (k.count ? 'Ištrinti visus šios analizės klausimus ir atsakymus (' + k.count + ')? To atšaukti nebus galima.' + (kl ? '\n\nNeužduoti apmokėti klausimai (' + kl + ') taip pat bus ištrinti.' : '')
+          : 'Ištrinti neužduotus apmokėtus klausimus (' + kl + ')? To atšaukti nebus galima.');
+      if (!confirm(msg)) return;
       try {
         const r = await fetch('/mano/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t, id: it.dataset.id, type: ty }) });
         if (!r.ok) throw new Error((await r.json()).error || 'Nepavyko ištrinti');
