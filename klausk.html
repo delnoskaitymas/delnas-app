@@ -315,8 +315,12 @@ document.getElementById('back-link').addEventListener('click', e => {
     const a=document.createElement('a');
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
     a.style.cssText="position:fixed;top:calc(10px + var(--sat,0px));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+    a.style.transition='opacity .25s,transform .25s';
     const add=()=>document.body.appendChild(a);
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+    // Slenkant žemyn mygtukas paslepiamas (neuždengia teksto), slenkant aukštyn ar viršuje — vėl matomas
+    let y0=window.scrollY||0;
+    window.addEventListener('scroll',()=>{ const y=window.scrollY||0, hide=y>80&&y>y0+4; if(Math.abs(y-y0)>4||y<80){ a.style.opacity=hide?'0':'1'; a.style.transform=hide?'translateY(-120%)':'none'; a.style.pointerEvents=hide?'none':'auto'; y0=y; } },{passive:true});
   }catch(e){}
 })();
 </script>
