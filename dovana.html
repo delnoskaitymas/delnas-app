@@ -359,10 +359,10 @@ body.form-view.fit #v-form .intro{margin-bottom:min(14px,calc(var(--bt,12px) * .
 body.form-view.tight #v-form .trust{display:none}
 body.form-view.tighter #v-form .intro > .hero,body.form-view.tighter #v-form .hero2{display:none!important}
 /* Rodoma nuolaidos juosta — delnų ikonų nerodome (forma telpa laisviau) */
-body.promo-on #v-form .intro > .hero,body.promo-on #v-form .hero2{display:none!important}
-/* Su nuolaida: „DELNAS“ — atskiras logotipas su plona auksine linija; po jo antraštė, po antrašte — nuolaidos juosta */
-body.promo-on.form-view.fit .wrap > .brand{font-size:15px!important;letter-spacing:.42em;margin-bottom:0!important}
-body.promo-on.form-view .wrap > .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 18px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
+/* Dovanų forma — be delnų ikonų: „DELNAS“ — atskiras logotipas su plona auksine linija, po jo antraštė (su nuolaida — po antrašte nuolaidos juosta) */
+#v-form .intro > .hero,#v-form .hero2{display:none!important}
+body.form-view:has(#v-form:not(.hidden)).fit .wrap > .brand{font-size:15px!important;letter-spacing:.42em;margin-bottom:0!important}
+body.form-view:has(#v-form:not(.hidden)) .wrap > .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 18px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
 body.promo-on #v-form .intro{display:flex;flex-direction:column}
 body.promo-on #v-form #form-h1{order:2;margin:0}
 body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
