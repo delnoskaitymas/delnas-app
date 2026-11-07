@@ -320,7 +320,8 @@ body.form-view.fit .wrap{padding-top:var(--bt,12px)}
 body.form-view.fit .wrap > .brand{font-size:var(--bf,14px)!important;margin-bottom:var(--bg,8px)!important}
 body.form-view.fit #v-form .intro > .hero,body.form-view.fit #v-redeem .intro > .hero{width:var(--hs,70px)!important;height:var(--hs,70px)!important}
 body.form-view.fit #v-form .hero2 .hero{width:calc(var(--hs,70px) * .92)!important;height:calc(var(--hs,70px) * .92)!important}
-body.form-view.fit .wrap{padding-bottom:calc(var(--bt,12px) * .6)}
+/* Apačioje po nuorodomis — oras kaip porų formoje (bent ~20px nuo ekrano krašto) */
+body.form-view.fit .wrap{padding-bottom:max(20px,calc(var(--bt,12px) * .6))}
 body.fitting *,body.fitting *::before,body.fitting *::after{transition:none!important}
 /* Kompaktiška forma — kai kitaip DELNAS ir ikona būtų per maži (įjungia fitHeader()) */
 body.form-view.tight #gift-form{padding-top:10px;padding-bottom:9px}
