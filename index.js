@@ -2349,13 +2349,15 @@ app.post('/validate-palm', sensitiveLimiter, async (req, res) => {
 IMPORTANT: Many rejected photos show only 1-2 fingers with most of the hand out of frame, or only a small sliver of palm. Do NOT assume a finger is present just because a hand is generally in the photo — you must actually see each specific finger to count it as visible. If you are unsure whether a finger is really there, mark it as NOT visible (false). Judge each finger separately and independently; do not let a general impression of "there's a hand here" inflate the count.
 
 Reply with ONLY this JSON object, no other text, no markdown formatting:
-{"thumb_visible": true|false, "index_visible": true|false, "middle_visible": true|false, "ring_visible": true|false, "pinky_visible": true|false, "palm_percent_visible": <integer 0-100>, "orientation": "palm" | "back" | "side", "fingertips_cropped": true | false, "hand_present": true | false}
+{"thumb_visible": true|false, "index_visible": true|false, "middle_visible": true|false, "ring_visible": true|false, "pinky_visible": true|false, "palm_percent_visible": <integer 0-100>, "orientation": "palm" | "back" | "side", "fingertips_cropped": true | false, "palm_bottom_cropped": true | false, "thumb_folded": true | false, "hand_present": true | false}
 
 Field definitions:
 - {finger}_visible: true ONLY if that specific finger can be clearly seen and identified in the frame, from roughly its base to its tip. If most of a finger is out of frame or hidden, mark it false, even if you can see other fingers clearly.
 - palm_percent_visible: your best estimate of what percentage of the total palm surface area is actually shown in the frame (0 = none visible, 100 = entire palm visible). If only a corner or sliver of the palm is in frame, this should be a LOW number (10-30), not a default like 50.
 - orientation: "palm" if the palm (not back of hand) is facing the camera and reasonably flat to it; "side" if the hand is rotated showing mostly its edge; "back" if the back of the hand faces the camera.
 - fingertips_cropped: true if any of the visible fingers has its tip genuinely cut off by the frame edge (not just close to it).
+- palm_bottom_cropped: true if the lower part of the palm (towards the wrist) is cut off by the frame edge, so the palm is not visible down to the wrist.
+- thumb_folded: true if the thumb is bent across the palm, tucked in or hidden, instead of being extended away from the palm.
 - hand_present: false if no hand is visible at all in the image.
 
 Be precise and objective — do not round everything to convenient default numbers.`;
@@ -2414,16 +2416,24 @@ Be precise and objective — do not round everything to convenient default numbe
     if (facts.hand_present === false) {
       valid = false; reason = 'no_hand';
     } else if (facts.orientation === 'back') {
-      valid = false; reason = 'no_hand';
+      // Nugarėlė — tas pats pranešimas kaip telefono patikroje („Pasuk delną į save“)
+      valid = false; reason = 'back_hand';
     } else if (facts.orientation === 'side' && facts.fingertips_cropped === true && (facts.palm_percent_visible ?? 0) < 30) {
       // Kadre tik ranka iš dalies (pirštai nukirpti kadro krašto, delno beveik nesimato) — tai ne pasukta ranka,
       // o ne visas delnas kadre: rodomas pranešimas „Delnas netelpa ekrane“, ne „Pasuk delną į save“
       valid = false; reason = 'low_palm_visibility';
     } else if (facts.orientation === 'side') {
       valid = false; reason = 'sideways';
+    } else if (facts.fingertips_cropped === true && facts.palm_bottom_cropped === true) {
+      valid = false; reason = 'too_close';
     } else if (facts.fingertips_cropped === true) {
-      // Pirštų galiukai už kadro ribų — ranka netelpa (ne „suglausti pirštai“)
-      valid = false; reason = 'partial';
+      // Pirštų galiukai už kadro ribų — tas pats pranešimas kaip telefono patikroje („Pirštai netelpa kadre“)
+      valid = false; reason = 'partial_top';
+    } else if (facts.palm_bottom_cropped === true) {
+      // Delno apačia už kadro ribų — „Delno apačia netelpa kadre“
+      valid = false; reason = 'partial_bottom';
+    } else if (facts.thumb_folded === true) {
+      valid = false; reason = 'fingers_missing';
     } else if (fingersVisibleCount < PALM_VALIDATION_THRESHOLDS.minFingersVisible) {
       valid = false; reason = 'fingers_missing';
     } else if ((facts.palm_percent_visible ?? 0) < PALM_VALIDATION_THRESHOLDS.minPalmPercent) {
