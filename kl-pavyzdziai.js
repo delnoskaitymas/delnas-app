@@ -21,7 +21,7 @@ window.KL_EX = {
     'Kaip mums rečiau ginčytis?',
     'Kaip suderinti požiūrį į pinigus?',
     'Kaip išlaikyti artumą kasdienybėje?',
-    'Ar mums laikas gyventi kartu?',
+    'Kaip mums kurti bendrus tikslus?',
     'Kaip mums kartu priimti svarbius sprendimus?',
     'Kaip mums geriau suprasti, ko reikia kiekvienam iš mūsų?',
     'Kaip pasidalyti namų darbus be įtampos?',
