@@ -249,11 +249,12 @@ input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgb
 /* Dovanos tipo pasirinkimas: asmeninė / porų */
 .kind{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
 .kind-inc{text-align:center;font-size:12px;color:var(--gold2);margin:0 0 12px;line-height:1.35}
-.kind button{border:1px solid rgba(212,168,67,.3);background:transparent;color:var(--muted);border-radius:12px;padding:12px 6px 11px;cursor:pointer;
-  font:600 14px/1.25 'DM Sans',sans-serif;transition:all .2s}
-.kind button small{display:block;font-size:14px;font-weight:500;color:var(--faint);margin-top:3px}
-.kind button.on{background:rgba(212,168,67,.13);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 14px rgba(212,168,67,.18)}
-.kind button.on small{color:var(--gold)}
+/* Dovanos rūšies pasirinkimas — labiau išsiskiria nei laukeliai (storesnis rėmelis, šviesesnis fonas, švytėjimas) */
+.kind button{border:1.5px solid rgba(212,168,67,.5);background:transparent;color:#e8e2d4;border-radius:12px;padding:12px 6px 11px;cursor:pointer;
+  font:700 14px/1.25 'DM Sans',sans-serif;transition:all .2s}
+.kind button small{display:block;font-size:14px;font-weight:500;color:rgba(255,255,255,.6);margin-top:3px}
+.kind button.on{border:2px solid var(--gold);background:linear-gradient(180deg,rgba(212,168,67,.26),rgba(212,168,67,.10));color:#f7e3a4;box-shadow:0 0 22px rgba(212,168,67,.35),inset 0 0 0 1px rgba(255,230,160,.12)}
+.kind button.on small{color:var(--gold2);font-weight:600}
 @media (max-height:700px){ .kind button{padding:7px 4px;font-size:13.5px} .kind button small{display:block;margin:2px 0 0;font-size:13px} #v-form .kind{margin-bottom:5px} #v-form .kind-inc{font-size:11px;margin-bottom:8px} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
 .hero2{display:flex;justify-content:center}
 .hero2 .hero{margin:0 -8px!important}
