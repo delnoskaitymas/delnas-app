@@ -4739,7 +4739,9 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + sessionId });
     // Priminimas po 3 mėn. jau užregistruotas — rezultate vietoj mygtuko rodomas patvirtinimas
     const reminded = loadReminders().some(r => r.kind === 'pora' && r.sessionId === sessionId);
-    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt), once: once && !once.usedBy ? promoPublic(once) : null, reminded });
+    // Porų kaina asmeninėms analizėms (30 d.) pasibaigė — nebesiūloma (rodomas įprastas blokas)
+    if (Math.min(a.expiresAt, b.expiresAt) <= Date.now()) return res.json({ once: promoLive(once), reminded });
+    res.json({ price: PORA_DUO_CENTS, base, a: pub(a, ownA), b: pub(b), nameA: o.nameA || '', nameB: o.nameB || '', remote: !!o.firstSavedAt, expiresAt: Math.min(a.expiresAt, b.expiresAt), once: promoLive(once), reminded });
   } catch (err) {
     console.error('/pora/offers klaida:', err.message);
     res.json({});
@@ -6345,6 +6347,8 @@ function markPromoUsed(code, ref, giftKind) {
 }
 function promoAmount(p, base) { return p.price ? Math.max(50, Math.min(base, p.price)) : Math.round(base * (100 - p.pct) / 100); }
 const PROMO_LABELS = { back: 'Tavo nuolaida', once: 'Pasiūlymas po analizės', bundle: 'Rinkinio kaina', repeat: 'Pakartotinė analizė', duo: 'Tavo kaina' };
+// Pasiūlymas rodomas tik kol galioja ir nepanaudotas (pasibaigusio laiko nuolaidos nebesiūlomos)
+function promoLive(p) { return p && !p.usedBy && p.expiresAt > Date.now() ? promoPublic(p) : null; }
 function promoPublic(p) { return p ? { code: p.code, kind: p.kind, product: p.product, pct: p.pct, price: p.price, expiresAt: p.expiresAt, label: PROMO_LABELS[p.kind] || 'Nuolaida', ...(p.product === 'dovana' ? { left: p.usedBy ? 0 : Math.max(0, GIFT_PROMO_MAX - (p.uses || []).length) } : {}) } : null; }
 // Porų kainos kodas → kam jis skirtas (vardas iš porų užsakymo pagal raktą duo:<sid>:a|b)
 function duoForName(code) {
@@ -6441,8 +6445,7 @@ function manoOffers(email, manoId) {
   const ps = loadPromos(), now = Date.now();
   const find = kind => { for (const r of refs) { const c = ps.byKey[kind + ':' + r], p = c && ps.codes[c]; if (p) return p; } return null; };
   const bundle = find('bundle'), once = find('once');
-  const live = p => p && !p.usedBy && p.expiresAt > now ? promoPublic(p) : null;
-  return { once: live(once), bundle: live(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!(bundle && bundle.usedBy) || recentDone(email, 'pora') };
+  return { once: promoLive(once), bundle: promoLive(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!(bundle && bundle.usedBy) || recentDone(email, 'pora') };
 }
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
@@ -6455,7 +6458,7 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
       const email = isValidEmail(ga.redeemedEmail) ? ga.redeemedEmail : '';
       const bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
       const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + paymentRef });
-      return res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle.usedBy ? null : promoPublic(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!bundle.usedBy || recentDone(email, 'pora') });
+      return res.json({ once: promoLive(once), bundle: promoLive(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!bundle.usedBy || recentDone(email, 'pora') });
     }
     const p = await getPaidAnalysisPayment(paymentRef);
     if (!p) return res.json({});
@@ -6464,7 +6467,7 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
     const bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
     // Porų analizė jau užsakyta šia kaina — jos nebesiūlome
     const hasPora = !!bundle.usedBy || recentDone(email, 'pora');
-    res.json({ once: once.usedBy ? null : promoPublic(once), bundle: bundle.usedBy ? null : promoPublic(bundle), poraPrice: PORA_PRICE_CENTS, hasPora });
+    res.json({ once: promoLive(once), bundle: promoLive(bundle), poraPrice: PORA_PRICE_CENTS, hasPora });
   } catch (err) {
     console.error('/promo/offers klaida:', err);
     res.json({});
