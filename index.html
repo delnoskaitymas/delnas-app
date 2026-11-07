@@ -2487,6 +2487,25 @@ const PALM_BASE_LM = [HAND_LM.WRIST, HAND_LM.THUMB_CMC, HAND_LM.INDEX_MCP, HAND_
 // Nedidelis saugos tarpas nuo kadro krašto — taškas per arti absoliutaus
 // 0/1 krašto laikomas jau "už kadro ribų praktine prasme"
 const FRAME_MARGIN = 0.015;
+// Ar pirštai ištiesti (ne tik „yra kadre“): modelis visada pažymi visus 5 pirštus — ir sulenktą ar paslėptą nykštį
+// (tada jo taškai delno viduryje). Ribos atsargios: atmetama tik aiškiai sulenktas pirštas ar prie delno prispaustas nykštis.
+const FINGER_EXT_RATIO = 1.08;   // piršto galiukas nuo riešo turi būti bent 8 % toliau nei vidurinis sąnarys (PIP)
+const THUMB_AWAY_RATIO = 0.2;    // nykščio galiukas nuo smiliaus pagrindo — bent 20 % delno dydžio (riešas–vidurinio piršto pagrindas)
+const WRIST_BOTTOM_MARGIN = 0.03; // riešas arčiau nei 3 % iki apatinio kadro krašto — delno apačia laikoma netelpančia
+function _fingersExtended(lm){
+  const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y), w=lm[HAND_LM.WRIST], palm=d(w,lm[HAND_LM.MIDDLE_MCP])||1e-6;
+  const bent=[];
+  for(const [k,pip,tip] of [['index',HAND_LM.INDEX_PIP,HAND_LM.INDEX_TIP],['middle',HAND_LM.MIDDLE_PIP,HAND_LM.MIDDLE_TIP],['ring',HAND_LM.RING_PIP,HAND_LM.RING_TIP],['pinky',HAND_LM.PINKY_PIP,HAND_LM.PINKY_TIP]])
+    if(d(w,lm[tip]) < d(w,lm[pip])*FINGER_EXT_RATIO) bent.push(k);
+  // Nykštis: galiukas turi būti UŽ delno (nykščio pusėje nuo linijos riešas–smiliaus pagrindas), ne sulenktas per delną;
+  // priglaustas prie smiliaus, bet ištiestas nykštis tinka
+  const tt=lm[HAND_LM.THUMB_TIP], im=lm[HAND_LM.INDEX_MCP], pm=lm[HAND_LM.PINKY_MCP];
+  const side=p=>(im.x-w.x)*(p.y-w.y)-(im.y-w.y)*(p.x-w.x);
+  const insidePalm=side(tt)*side(pm)>0;
+  if(insidePalm || d(tt,im) < palm*THUMB_AWAY_RATIO || d(w,tt) < d(w,lm[HAND_LM.THUMB_MCP])*1.05) bent.push('thumb');
+  return { ok: !bent.length, bent };
+}
+
 function _pointInFrame(pt){
   return pt && pt.x>=FRAME_MARGIN && pt.x<=(1-FRAME_MARGIN) && pt.y>=FRAME_MARGIN && pt.y<=(1-FRAME_MARGIN);
 }
@@ -2592,10 +2611,20 @@ async function analyzeHandLandmarksLocal(canvasEl){
     const edges = (top ? 1 : 0) + (bottom ? 1 : 0) + (side ? 1 : 0);
     return { ok:true, valid:false, reason: edges > 1 ? 'too_close' : top ? 'partial_top' : bottom ? 'partial_bottom' : 'partial_side' };
   }
+  // Riešas prie pat apatinio krašto — delno apačia nukirpta (modelis riešą „atspėja“ kadro viduje)
+  if (wrist.y > 1 - WRIST_BOTTOM_MARGIN) {
+    return { ok:true, valid:false, reason:'partial_bottom' };
+  }
   if (!palmFacingCamera) {
     return { ok:true, valid:false, reason:'back_hand' };
   }
   if (fingersVisible < 5) {
+    return { ok:true, valid:false, reason:'fingers_missing' };
+  }
+  // Visi 5 pirštai turi būti ištiesti (sulenktas ar paslėptas nykštis, sulenktas pirštas — „Ištiesk pirštus“)
+  const ext = _fingersExtended(lm);
+  window._palmDbg = { ...(window._palmDbg||{}), istiesti: ext.ok ? 'taip' : 'ne: '+ext.bent.join(',') };
+  if (!ext.ok) {
     return { ok:true, valid:false, reason:'fingers_missing' };
   }
   if (!palmBaseFullyVisible) {
