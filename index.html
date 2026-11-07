@@ -414,6 +414,10 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .result-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;background:linear-gradient(135deg,#fff3cf 0%,#f0c96a 35%,#d4a843 60%,#f0c96a 85%,#fff3cf 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);letter-spacing:.03em;margin-bottom:6px;text-align:center}
 .result-subtitle{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;text-align:center}
 .result-divider{width:60px;height:1px;background:var(--gold);margin:0 auto;opacity:.5}
+/* Rezultatų ekranuose grįžimo mygtukai viršuje nerodomi (uždengdavo rezultatą) — grįžimas tik rezultato pabaigoje
+   su aiškiu užrašu („← Grįžti į …“); viršutiniai elementai lieka paslėpti, juos paspaudžia apatinis mygtukas */
+#s-result > #duo-back,#s-result > #res-home,#s-pora-result > #res-home,#s-pora-result > #duo-back{display:none!important}
+body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back{display:none!important}
 .end-back{display:block;margin:18px auto 30px;padding:12px 22px;border-radius:999px;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 14px 'DM Sans',sans-serif;cursor:pointer}
 .result-final{text-align:center;padding:24px 16px;margin:8px 0 14px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
 .result-final-stars{font-size:18px;letter-spacing:8px;color:var(--gold);margin-bottom:8px}
@@ -7705,6 +7709,8 @@ async function loadCompare(){
       a.addEventListener('click',e=>{ e.preventDefault(); window.delnasLeave(a); });
       a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       scr.prepend(a);
+      // Atėjus iš klausimų puslapio — rezultato pabaigoje „← Grįžti į klausimus“ (iš laiško ar kitos nuorodos grįžti nėra kur — telefono „atgal“)
+      if(q.get('kl')||q.get('kls')) setTimeout(()=>{ if(!document.getElementById('duo-back')) addEndBack(scr,'Grįžti į klausimus','res-home'); },600);
       // Vėliau atsiradus „Grįžti į porų suderinamumą“ / „… eilė“ — paliekame tik jį
       const t=setInterval(()=>{ if(document.getElementById('duo-back')){ a.remove(); clearInterval(t); } },500); setTimeout(()=>clearInterval(t),15000);
     }
@@ -7935,6 +7941,8 @@ function fitPayScreen(){
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
     a.style.cssText="position:fixed;top:calc(10px + var(--sat));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
     a.style.transition='opacity .25s,transform .25s';
+    // Rezultato ekrane viršuje nerodomas — rezultato pabaigoje „← Grįžti į Mano analizes“
+    let n=0; const iv=setInterval(()=>{ const scr=document.querySelector('#s-result.active,#s-pora-result.active'); if(scr){ clearInterval(iv); setTimeout(()=>addEndBack(scr,'Grįžti į Mano analizes','mano-back'),600); } if(++n>120) clearInterval(iv); },250);
     const add=()=>document.body.appendChild(a);
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
     // Slenkant žemyn mygtukas paslepiamas (neuždengia teksto), slenkant aukštyn ar viršuje — vėl matomas
