@@ -418,6 +418,10 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
    su aiškiu užrašu („← Grįžti į …“); viršutiniai elementai lieka paslėpti, juos paspaudžia apatinis mygtukas */
 #s-result > #duo-back,#s-result > #res-home,#s-pora-result > #res-home,#s-pora-result > #duo-back{display:none!important}
 body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back{display:none!important}
+/* Rezultato pabaigoje su grįžimo mygtuku — be didelio tuščio tarpo virš jo (tuščias užsakymo numeris nerodomas, apačios paraštė mažesnė) */
+.screen :has(+ .end-back){padding-bottom:6px!important}
+#r-order-number:empty,#pora-order-number:empty{display:none}
+.screen:has(.end-back) #r-rate > :last-child,.screen:has(.end-back) #pora-rate > :last-child{margin-bottom:0}
 .end-back{display:block;margin:18px auto 30px;padding:12px 22px;border-radius:999px;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 14px 'DM Sans',sans-serif;cursor:pointer}
 .result-final{text-align:center;padding:24px 16px;margin:8px 0 14px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
 .result-final-stars{font-size:18px;letter-spacing:8px;color:var(--gold);margin-bottom:8px}
