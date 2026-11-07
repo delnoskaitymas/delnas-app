@@ -151,15 +151,23 @@ document.getElementById('back-link').addEventListener('click', e => {
   const sid = params.get('s');
   const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const paras = t => String(t || '').split(/\n+/).filter(x => x.trim()).map(x => '<p>' + esc(x.trim()) + '</p>').join('');
-  let left = 0, n = 0;
-  const ORD = ['Pirmas', 'Antras', 'Trečias', 'Ketvirtas', 'Penktas'];
+  let left = 0, total = 0;
+  const ORD = ['Pirmas', 'Antras', 'Trečias', 'Ketvirtas', 'Penktas', 'Šeštas', 'Septintas', 'Aštuntas', 'Devintas', 'Dešimtas', 'Vienuoliktas', 'Dvyliktas'];
+  const ordOf = i => (ORD[i] || (i + 1) + '-as') + ' klausimas';
+  // Šio užsakymo klausimai — savo vietoje tarp kitų tos pačios analizės pirkimų klausimų
+  let curBox = null;
+  const box = () => curBox || $('list');
+  // Klausimų numeriai — per visus tos pačios analizės pirkimus (4-as, 5-as… ir antrą kartą pirkus)
+  function renumber(){ $('list').querySelectorAll('.qa .lbl').forEach((l, i) => { l.textContent = '✦ ' + ordOf(i); }); }
+  // Kelintas bus kitas šio užsakymo klausimas
+  function nextNo(){ const all = [...$('list').querySelectorAll('.qa')], c = box().querySelectorAll('.qa'); return c.length ? all.indexOf(c[c.length - 1]) + 1 : all.filter(x => box().compareDocumentPosition(x) & Node.DOCUMENT_POSITION_PRECEDING).length; }
 
   function card(qa, isNew){
-    n++;
+    total++;
     const d = document.createElement('div');
     d.className = 'qa' + (isNew ? ' new' : '');
-    d.innerHTML = '<div class="lbl">✦ ' + ORD[n - 1] + ' klausimas</div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
-    $('list').appendChild(d);
+    d.innerHTML = '<div class="lbl"></div><div class="q">„' + esc(qa.q) + '“</div><div class="a">' + paras(qa.a) + '</div>';
+    box().appendChild(d); renumber();
     // Jau užduotas pavyzdinis klausimas tarp pavyzdžių nebesiūlomas
     $('chips').querySelectorAll('button').forEach(c => { if (c.textContent.trim() === String(qa.q || '').trim()) c.remove(); });
     const qi = $('q'), first = $('chips').querySelector('button');
@@ -178,7 +186,7 @@ document.getElementById('back-link').addEventListener('click', e => {
     $('ask-wrap').classList.toggle('hidden', left <= 0);
     $('all-done').classList.toggle('hidden', left > 0);
     // Visi klausimai jau užduoti (pvz. atidarius seną laišką) — viršuje ne kvietimas klausti
-    if (left <= 0) $('lead').textContent = 'Visi 3 klausimai užduoti — atsakymai žemiau.';
+    if (left <= 0) $('lead').textContent = famOther() ? (window._klKind === 'pora' ? 'Jūsų' : 'Tavo') + ' klausimai ir atsakymai — žemiau.' : (total > 3 ? 'Visi apmokėti klausimai užduoti' : 'Visi 3 klausimai užduoti') + ' — atsakymai žemiau.';
     // Atėjus iš laiško nuorodos „Užduoti dar 3 klausimus“ — iškart prie pasiūlymo
     if (left <= 0 && location.hash === '#daugiau') setTimeout(() => $('daugiau').scrollIntoView({ block: 'center' }), 150);
     $('note').style.display = left === 3 ? '' : 'none';
@@ -228,7 +236,10 @@ document.getElementById('back-link').addEventListener('click', e => {
       }
       // Pakartotinė analizė su palyginimu — pirmas pavyzdys apie pokyčius
       if (d.compare) $('chips').insertAdjacentHTML('afterbegin', '<button type="button">' + (d.kind === 'pora' ? 'Kaip išlaikyti tai, kas mūsų poroje pagerėjo?' : 'Kaip išlaikyti tai, kas pasikeitė į gerą?') + '</button>');
-      (d.qa || []).forEach(x => card(x, false));
+      // Visų šios analizės pirkimų klausimai (seniausi pirmi), ne tik šio užsakymo
+      const groups = Array.isArray(d.famQa) && d.famQa.some(g => g.id === sid) ? d.famQa : [{ id: sid, qa: d.qa || [] }];
+      groups.forEach(g => { const el = document.createElement('div'); $('list').appendChild(el); curBox = el; g.qa.forEach(x => card(x, false)); if (g.id === sid) curBox._me = 1; });
+      curBox = [...$('list').children].find(el => el._me) || null;
       left = d.left; fam = d.family || null; refresh(); paintMore();
       if (location.hash === '#klausti' && left > 0) {
         try { history.replaceState(null, '', location.pathname + location.search); } catch (x) {}
@@ -276,7 +287,7 @@ document.getElementById('back-link').addEventListener('click', e => {
     }
     $('err').style.display = 'none'; $('go').disabled = true;
     // Laukelis paslepiamas — jo vietoje sukasi ratukas su užduotu klausimu
-    $('wait-lbl').textContent = '✦ ' + ORD[n] + ' klausimas'; $('wait-q').textContent = '„' + question + '“';
+    $('wait-lbl').textContent = '✦ ' + ordOf(nextNo()); $('wait-q').textContent = '„' + question + '“';
     $('ask-wrap').classList.add('hidden'); $('wait').classList.remove('hidden');
     setTimeout(() => $('wait').scrollIntoView({ behavior:'smooth', block:'center' }), 60);
     try {
