@@ -5265,15 +5265,25 @@ function markKlauskPaid(id, orders, s) {
   }).catch(e => console.error('[klausk] admin laiško klaida:', e.message));
 }
 
+// Tos pačios analizės apmokėti klausimų užsakymai (pirmi 3 ir vėliau pirkti), seniausias pirmas
+function klauskFamilyOrders(id, o, orders) {
+  const em = String(o.email || '').toLowerCase(), kind = o.kind || 'asmenine', fam = o.fam || id;
+  return Object.entries(orders).filter(([xid, x]) => {
+    if (!x || !x.paid || (x.kind || 'asmenine') !== kind || String(x.email || '').toLowerCase() !== em) return false;
+    return xid === id || (x.fam || xid) === fam || (o.analysisSession && x.analysisSession === o.analysisSession) || (o.poraSid && x.poraSid === o.poraSid) || (o.paymentRef && x.paymentRef === o.paymentRef);
+  }).sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0));
+}
+// Visi tos pačios analizės klausimai su atsakymais (visų pirkimų) — kad „Peržiūrėti atsakymus“ rodytų ne tik pirmus 3
+function klauskFamilyQa(id, o, orders) {
+  try {
+    return klauskFamilyOrders(id, o, orders).map(([xid, x]) => ({ id: xid, qa: (x.qa || []).filter(y => y && y.q && y.a).map(y => ({ q: y.q, a: y.a })) })).filter(g => g.id === id || g.qa.length);
+  } catch (e) { return [{ id, qa: o.qa || [] }]; }
+}
 // Tos pačios analizės klausimų užsakymai (pirmi 3 ir vėliau pirkti): kur dar liko neužduotų klausimų — naujausias toks
 function klauskFamilyActive(id, o, orders) {
   try {
-    const em = String(o.email || '').toLowerCase(), kind = o.kind || 'asmenine', fam = o.fam || id;
     let best = null;
-    for (const [xid, x] of Object.entries(orders)) {
-      if (!x || !x.paid || (x.kind || 'asmenine') !== kind || String(x.email || '').toLowerCase() !== em) continue;
-      const same = xid === id || (x.fam || xid) === fam || (o.analysisSession && x.analysisSession === o.analysisSession) || (o.poraSid && x.poraSid === o.poraSid) || (o.paymentRef && x.paymentRef === o.paymentRef);
-      if (!same) continue;
+    for (const [xid, x] of klauskFamilyOrders(id, o, orders)) {
       const left = KLAUSK_MAX_QUESTIONS - (x.qa || []).length - (klauskInFlight.has(xid) ? 1 : 0);
       if (left > 0 && (!best || (x.createdAt || 0) > best.at)) best = { id: xid, left, at: x.createdAt || 0 };
     }
@@ -5305,7 +5315,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       if (!s) return res.json({ paid: false });
       markKlauskPaid(id, orders, s);
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), family: klauskFamilyActive(id, o, orders), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), family: klauskFamilyActive(id, o, orders), famQa: klauskFamilyQa(id, o, orders), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
@@ -5445,8 +5455,10 @@ function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, gi
   const mano = `<a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">„Mano analizės“</a>`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto"><div style="text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:21px;font-weight:700;color:#d4a843;margin-bottom:8px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:16px;color:rgba(245,238,216,.88)">Tavo gyvenimo žemėlapis paruoštas.</div></div>${EMC.card(EMC.p('Visą gyvenimo žemėlapį rasi <b style="color:#f5eed8">pridėtame PDF faile</b>.', 6) + EMC.p('Jis taip pat išsaugotas skiltyje ' + mano + '.', 0), true)}${kl}${receipt ? `<div style="margin-top:16px">${receipt}</div>` : ''}${!receipt && orderNumber ? `<p style="font-family:Arial,sans-serif;text-align:center;font-size:13px;color:rgba(245,238,216,.6);margin:14px 0 0">Užsakymo numeris: <b style="color:#d4a843;letter-spacing:.05em">${escapeHtml(orderNumber)}</b></p>` : ''}${poraLine || ''}${giftEmailCard(gp, false, 'rezultatas')}${EMAIL_FOOTER_HTML}</div>`;
 }
-function klauskDigestItems(qa, para) {
-  return qa.map((x, i) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS'][i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
+// off — kiek tos pačios analizės klausimų užduota ankstesniuose pirkimuose (numeracija tęsiasi: ketvirtas, penktas…)
+function klauskDigestItems(qa, para, off = 0) {
+  const ORD = ['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS', 'ŠEŠTAS', 'SEPTINTAS', 'AŠTUNTAS', 'DEVINTAS', 'DEŠIMTAS', 'VIENUOLIKTAS', 'DVYLIKTAS'];
+  return qa.map((x, j, _a, i = j + off) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${ORD[i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
 }
 function klauskPaidSubject(o) {
   const pora = o.kind === 'pora', v = vocPrefix(o.name);
@@ -5466,7 +5478,9 @@ async function sendKlauskDigest(id) {
     if (!cur || !cur.email || !cur.digestPending || !(cur.qa || []).length) return;
     const pora = cur.kind === 'pora', n = cur.qa.length, left = KLAUSK_MAX_QUESTIONS - n;
     const para = klauskPara;
-    const items = klauskDigestItems(cur.qa, para);
+    let off = 0;
+    try { for (const [xid, x] of klauskFamilyOrders(id, cur, orders)) { if (xid === id) break; off += (x.qa || []).length; } } catch (e) { off = 0; }
+    const items = klauskDigestItems(cur.qa, para, off);
     const btn = left > 1 ? `Užduoti kitą klausimą (liko ${left})` : left === 1 ? 'Užduoti paskutinį klausimą' : 'Peržiūrėti atsakymus svetainėje';
     // Pažymima prieš siunčiant — kad vienas atsakymas nebūtų išsiųstas du kartus
     cur.digestPending = false; cur.digestSentAt = Date.now(); cur.digestCount = n;
