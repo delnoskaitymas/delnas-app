@@ -255,6 +255,12 @@ input[type=date]{width:100%;background:rgba(212,168,67,.06);border:1px solid rgb
 .kind button small{display:block;font-size:14px;font-weight:500;color:rgba(255,255,255,.6);margin-top:3px}
 .kind button.on{border:2px solid var(--gold);background:linear-gradient(180deg,rgba(212,168,67,.26),rgba(212,168,67,.10));color:#f7e3a4;box-shadow:0 0 22px rgba(212,168,67,.35),inset 0 0 0 1px rgba(255,230,160,.12)}
 .kind button.on small{color:var(--gold2);font-weight:600}
+/* Antraštė virš pasirinkimo ir pasirinkimo apskritimai prie kainos — aišku, kad reikia rinktis vieną */
+#v-form label.kind-lbl{margin:0 0 7px;text-align:center}
+/* Su nuolaida ir siuntimu gavėjui vietos mažiausiai — antraštė nerodoma (apskritimai lieka) */
+body.promo-on.sched-on #v-form label.kind-lbl{display:none}
+.kind button small::before{content:'';display:inline-block;width:12px;height:12px;box-sizing:border-box;border:1.5px solid rgba(212,168,67,.7);border-radius:50%;margin-right:7px;vertical-align:-1px}
+.kind button.on small::before{border-color:var(--gold2);background:radial-gradient(circle,var(--gold2) 0 3px,transparent 3.5px)}
 @media (max-height:700px){ .kind button{padding:7px 4px;font-size:13.5px} .kind button small{display:block;margin:2px 0 0;font-size:13px} #v-form .kind{margin-bottom:5px} #v-form .kind-inc{font-size:11px;margin-bottom:8px} #v-form #form-lead{display:none} #v-form .intro{margin-bottom:10px!important} }
 .hero2{display:flex;justify-content:center}
 .hero2 .hero{margin:0 -8px!important}
@@ -413,7 +419,8 @@ body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
     </div>
     <p class="lead sm" id="form-lead">Gyvenimo žemėlapis ir ✋ 3 klausimai delnams — dovanų. Kuponas su kodu — iškart į tavo el. paštą.</p>
     <form class="card-form" id="gift-form" novalidate>
-      <div class="kind" role="radiogroup" aria-label="Ką dovanoji">
+      <label class="kind-lbl" id="kind-lbl">Ką dovanoji? Pasirink</label>
+      <div class="kind" role="radiogroup" aria-labelledby="kind-lbl">
         <button type="button" id="k-asm" class="on" role="radio" aria-checked="true">Gyvenimo žemėlapis<small id="k-asm-p">16,99 €</small></button>
         <button type="button" id="k-pora" role="radio" aria-checked="false">Porų suderinamumas<small id="k-pora-p">💞 22,99 €</small></button>
       </div>
