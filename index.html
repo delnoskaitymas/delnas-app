@@ -378,6 +378,15 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .pora-orbs.sm{width:118px;height:72px}
 #s-pora-wait .pora-orbs{width:150px;height:94px}
 #s-pora-wait .pora-orb{width:94px;height:94px;border-width:2.5px}
+/* Porų analizės laukimas: temų laukeliai ir pavadinimai didesni (dera prie antraštės ir delnų ikonų); viršuje mažiau tuščios vietos, kad visi tilptų */
+#s-pora-wait .load-wrap{padding-top:40px!important}
+#s-pora-wait .load-steps{gap:5px!important}
+#s-pora-wait .ls{padding:8px 12px;gap:10px;border-radius:10px;border-top-color:rgba(255,255,255,.05)}
+#s-pora-wait .ls-icon{width:24px;height:24px;border-radius:6px}
+#s-pora-wait .ls-icon svg{width:14px;height:14px}
+/* Plonas šriftas — didesnis tekstas neatrodo grubiai (aktyviems punktams storis nustatomas ir kode, todėl !important) */
+#s-pora-wait .ls-text{font-size:12.5px;line-height:1.35;letter-spacing:.01em;font-weight:400!important}
+#s-pora-wait div:has(> .load-steps) > div:first-child{height:12px!important}
 .pora-orbs.sm .pora-orb{width:72px;height:72px;animation:none;border-width:2.5px}
 /* Perdavimo ir nuorodos ekranai — užrašas DELNAS ir didesnės delnų ikonos */
 .pora-brand{font:700 18px 'Playfair Display',serif;letter-spacing:.32em;padding-left:.32em;color:var(--gold);margin-bottom:22px}
