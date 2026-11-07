@@ -2141,7 +2141,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 // Tikslas: be klaidų, be pasikartojimų tarp blokų, tekstas atitinka bloko pavadinimą, be tuščių sakinių.
 // Ankstesnė AI korektūra (pašalinta 2026-09-24) pati kurdavo klaidų, todėl čia griežti apribojimai:
 // redaktorius gali tik IŠBRAUKTI sakinį arba NEDAUG PATAISYTI sakinį (pakeista ≤ ~35 % raidžių);
-// didesni perrašymai atmetami, skyriuje lieka ≥ 9 sakiniai, trumpi elementai (įžvalgos, lentelės) tik taisomi.
+// didesni perrašymai atmetami, skyriuje lieka ≥ 9 sakiniai (porų — ≥ 11), trumpi elementai (įžvalgos, lentelės) tik taisomi.
 // Bet kokios klaidos atveju paliekamas originalas.
 const EDITOR_SENT_RE = /(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/;
 function editDistance(a, b) {
@@ -2162,7 +2162,7 @@ function editorFixOk(orig, fixed) {
   return editDistance(orig, f) / Math.max(orig.length, f.length) <= 0.35;
 }
 // blocks: [{ title, sections: [{ get, set }], items: [{ label, get, set }] }]
-async function textEditorPass(blocks, who, tag) {
+async function textEditorPass(blocks, who, tag, minKeep = 9) {
   try {
     if (!process.env.ANTHROPIC_API_KEY) return;
     const units = {}; const lines = []; let si = 0, ii = 0;
@@ -2218,8 +2218,8 @@ ${lines.join('\n')}`;
       else nRej++;
     }
     for (const S of secs) {
-      // Skyriuje lieka bent 9 sakiniai, išbraukiama ne daugiau kaip 3
-      const maxDel = Math.min(3, Math.max(0, S.sents.length - 9));
+      // Skyriuje lieka bent minKeep sakinių (asmeninėje 9, porų 11), išbraukiama ne daugiau kaip 3
+      const maxDel = Math.min(3, Math.max(0, S.sents.length - minKeep));
       const del = [...S.del].slice(0, maxDel); nDel += del.length;
       const kept = S.sents.map((x, k) => del.includes(k) ? null : (S.fix[k] != null ? (nFix++, S.fix[k]) : x)).filter(Boolean);
       if (del.length || Object.keys(S.fix).length) S.sec.set(kept.join(' '));
@@ -2270,7 +2270,7 @@ async function poraEditorPass(r) {
   if (r.sritys) for (const k of Object.keys(r.sritys)) { const d = r.sritys[k]; if (d) for (const f of ['fraze', 'aprasymas']) items.push({ label: `sritis ${k}`, get: () => d[f], set: v => { d[f] = v; } }); }
   if (Array.isArray(r.poros_bruozai)) r.poros_bruozai.forEach((_, i) => items.push({ label: 'poros bruožas', get: () => r.poros_bruozai[i], set: v => { r.poros_bruozai[i] = v; } }));
   if (items.length) blocks.push({ title: 'Delnų palyginimo lentelės ir sritys', sections: [], items });
-  await textEditorPass(blocks, '„jūs“', 'pora');
+  await textEditorPass(blocks, '„jūs“', 'pora', 11);
   if (typeof poraNeutral === 'function') for (const s of poraTextSlots(r)) s.set(poraNeutral(s.text));
   return r;
 }
@@ -4373,10 +4373,11 @@ ${poraNameRules(A, B)}
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
 ${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
-- Kiekvienas skyrius: 10–13 sakinių (NIEKADA mažiau nei 9), išsamus ir sklandus tekstas (ne sąrašas) iš konkrečių tiesioginių faktų apie jūsų santykius — be pavyzdžių, scenarijų ir iliustracijų; skyriai nesikartoja tarpusavyje.
+- Kiekvienas skyrius: 12–15 sakinių (NIEKADA mažiau nei 11), išsamus ir sklandus tekstas (ne sąrašas) iš konkrečių tiesioginių faktų apie jūsų santykius — be pavyzdžių, scenarijų ir iliustracijų; skyriai nesikartoja tarpusavyje.
 - SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška jūsų porai pagal skyriaus pavadinimą — tokius konkrečius dalykus, kad pora atpažintų save („tai tikrai apie mus“); be pagyrų, be bendrų frazių ir be pažadų.
 - VISUR (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): tik tai, kas išplaukia iš ŠIŲ delnų ir jų analizės — konkrečiai, kiek įmanoma tiksliau, tiesiai, be užuolankų, be pavyzdžių, be papildomų žodžių ir sakinių, kurie nieko nepridėtų.
 - TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie jus — veiksmažodžiu, ką darote, kaip elgiatės, ko norite ar vengiate (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Jūsų ryšyje slypi kažkas, kas…“, „Tai, kaip žiūrite vienas į kitą, atskleidžia…“).
+- NE TRUMPI SAKINIAI: skyriuose kiekvienas sakinys išsamus — paprastai 12–22 žodžiai: faktas ir tai, kaip jis pasireiškia jūsų santykiuose ar ką jums reiškia (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate, nes jums svarbiau vėl susikalbėti nei įrodyti savo tiesą.“). DRAUDŽIAMA trumpi, kapoti sakiniai iš 4–8 žodžių. Ilgesnis sakinys vis tiek turi būti aiškus, be vatos ir be kelių šalutinių sakinių grandinės.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 8–12 sakinių, iki 1500 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
 
