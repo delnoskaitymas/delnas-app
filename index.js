@@ -5337,14 +5337,16 @@ app.get('/klausk/active', pollLimiter, (req, res) => {
   const sid = String(req.query.sid || ''), pora = String(req.query.pora || '');
   const okP = pora && isValidCheckoutSessionId(pora), okS = !okP && isAnalysisSid(sid);
   if (!okP && !okS) return res.json({});
-  let best = null;
+  let best = null, answered = 0, view = null;
   for (const [id, o] of Object.entries(loadKlauskOrders())) {
     if (!o || !o.paid) continue;
     if (okP ? !(o.kind === 'pora' && o.poraSid === pora) : !(o.kind !== 'pora' && o.analysisSession === sid)) continue;
-    const left = KLAUSK_MAX_QUESTIONS - (o.qa || []).length - (klauskInFlight.has(id) ? 1 : 0);
+    const n = (o.qa || []).length, left = KLAUSK_MAX_QUESTIONS - n - (klauskInFlight.has(id) ? 1 : 0);
     if (left > 0 && (!best || (o.createdAt || 0) > best.at)) best = { id, left, at: o.createdAt || 0, gift: !!o.gift };
+    // Jau užduoti klausimai — perkrovus rezultatą rodoma, kiek atsakyta, ir nuoroda juos peržiūrėti
+    if (n) { answered += n; if (!view || (o.createdAt || 0) > view.at) view = { id, at: o.createdAt || 0 }; }
   }
-  res.json(best ? { id: best.id, left: best.left, gift: best.gift } : {});
+  res.json({ ...(best ? { id: best.id, left: best.left, gift: best.gift } : {}), ...(answered ? { answered, viewId: view.id } : {}) });
 });
 app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
   try {
