@@ -426,7 +426,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 /* Rezultatų ekranuose grįžimo mygtukai viršuje nerodomi (uždengdavo rezultatą) — grįžimas tik rezultato pabaigoje
    su aiškiu užrašu („← Grįžti į …“); viršutiniai elementai lieka paslėpti, juos paspaudžia apatinis mygtukas */
 #s-result > #duo-back,#s-result > #res-home,#s-pora-result > #res-home,#s-pora-result > #duo-back{display:none!important}
-body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back{display:none!important}
+body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back,body:has(#s-home.active) #mano-back{display:none!important}
 /* Rezultato pabaigoje su grįžimo mygtuku — be didelio tuščio tarpo virš jo (tuščias užsakymo numeris nerodomas, apačios paraštė mažesnė) */
 .screen :has(+ .end-back){padding-bottom:6px!important}
 #r-order-number:empty,#pora-order-number:empty{display:none}
