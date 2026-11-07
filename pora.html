@@ -607,6 +607,8 @@ function giftOpenScreen(d, onOpen){
   $('pora-form').addEventListener('submit', async e => {
     e.preventDefault();
     if (!validForm()) { showMissing(); return; }
+    // El. paštas įsimenamas šiame telefone — „Mano analizėse“ jis jau bus įrašytas
+    try { localStorage.setItem('delnasManoEmail', JSON.stringify({ e: $('f-email').value.trim(), at: Date.now() })); } catch (x) {}
     const err = $('form-err'); err.style.display = 'none';
     const btn = $('pay-btn'), label = btn.innerHTML; btn.disabled = true;
     if (window._giftCode) {

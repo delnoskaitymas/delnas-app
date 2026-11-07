@@ -276,6 +276,8 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     }));
   }
   if (t) load(); else showAsk();
+  // Atėjus iš klausimų ar rezultato — šiame telefone įsimintas el. paštas jau įrašytas (iki 30 d.)
+  if (!t) try { const m = JSON.parse(localStorage.getItem('delnasManoEmail') || 'null'); if (m && m.e && Date.now() - m.at < 30 * 864e5 && !$('email').value) $('email').value = m.e; } catch (x) {}
 })();
 </script>
 <script>
