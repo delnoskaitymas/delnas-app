@@ -6430,9 +6430,24 @@ app.get('/promo/check', pollLimiter, (req, res) => {
 });
 
 // Pasiūlymai rezultato ekrane apmokėjusiam klientui: −20 % dovana (24 val.) ir porų analizė rinkinio kaina
+// „Mano analizės“: atidarytos analizės pasiūlymai — tik jau sukurti rezultato ekrane ir dar galiojantys (nauji nekuriami,
+// galiojimas nepratęsiamas): porų rinkinio kaina (30 d.) ir −20 % dovanai (24 val.)
+function manoOffers(email, manoId) {
+  const it = loadSaved().items[String(manoId || '')];
+  if (!it || it.email !== email) return null;
+  const sv = loadSaved(), sid = Object.keys(sv.bySession).find(k => sv.bySession[k] === it.id);
+  if (!sid) return null;
+  const pt = loadPaymentTokens(), refs = Object.keys(pt).filter(k => pt[k] && pt[k].sessionId === sid);
+  const ps = loadPromos(), now = Date.now();
+  const find = kind => { for (const r of refs) { const c = ps.byKey[kind + ':' + r], p = c && ps.codes[c]; if (p) return p; } return null; };
+  const bundle = find('bundle'), once = find('once');
+  const live = p => p && !p.usedBy && p.expiresAt > now ? promoPublic(p) : null;
+  return { once: live(once), bundle: live(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!(bundle && bundle.usedBy) || recentDone(email, 'pora') };
+}
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};
+    if (req.body && req.body.manoId) { const me = manoEmailFromToken(req.body.manoT); return res.json((me && manoOffers(me, req.body.manoId)) || {}); }
     if (!ownsPaymentRef(paymentRef, req.body)) return res.json({});
     // Dovanų kuponu gautas Gyvenimo žemėlapis — tik porų suderinamumas rinkinio kaina
     const ga = giftAnalysis(paymentRef);
