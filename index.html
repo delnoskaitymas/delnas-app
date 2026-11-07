@@ -274,7 +274,7 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .kl-done-ok .kl-mano{color:var(--gold2);text-decoration:underline;text-underline-offset:3px;font-weight:600}
 .kl-qa-t{background:none;border:0;padding:2px 0;cursor:pointer;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px}
 .kl-more{display:block;margin:12px auto 2px;background:none;border:none;padding:4px 6px;color:var(--gold);font:400 13px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:center}
-#r-extra .kl-answered{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8);margin:0 0 10px;padding:9px 12px;border-radius:10px;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3)}#r-extra .kl-answered b{color:var(--gold2)}#r-extra .kl-answered a{color:var(--gold);text-decoration:underline;text-underline-offset:2px}
+.kl .kl-answered{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8);margin:0 0 10px;padding:9px 12px;border-radius:10px;background:rgba(212,168,67,.08);border:.5px solid rgba(212,168,67,.3)}.kl .kl-answered b{color:var(--gold2)}.kl .kl-answered a{color:var(--gold);text-decoration:underline;text-underline-offset:2px}
 #kl-bump{display:flex;gap:11px;align-items:center;margin:8px 0;padding:13px 14px;border:1px dashed rgba(212,168,67,.55);border-radius:10px;background:rgba(212,168,67,.06);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif}
 #kl-bump input{margin:0;width:18px;height:18px;flex-shrink:0;accent-color:#d4a843;cursor:pointer}
 #kl-bump span{font-size:13px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.75)}
@@ -4188,7 +4188,8 @@ function renderResultExtra(r){
       if(kLeft===0){ // visi apmokėti klausimai jau užduoti — nuoroda į atsakymus, po ja siūlomi nauji
         const kb=document.querySelector('#r-extra .kl'), kt=kb&&kb.querySelector('.kl-txt');
         klExRender(document.getElementById('kl-ex'),'asm',window._klFamQa);
-        if(kt&&!window._manoView&&!kb.querySelector('.kl-answered')){ const d=document.createElement('div'); d.className='kl-answered'; d.innerHTML='<b>✓ Į tavo 3 klausimus jau atsakyta</b> — <a href="/klausk?s='+encodeURIComponent(id)+'" target="_blank" rel="noopener">peržiūrėti atsakymus</a>'; kt.parentNode.insertBefore(d,kt); }
+        // (kai žinoma analizės sesija — pastabą su visų pirkimų skaičiumi įdeda klActive)
+        if(kt&&!window._manoView&&!window.bgSessionId&&!kb.querySelector('.kl-answered')){ const d=document.createElement('div'); d.className='kl-answered'; d.innerHTML='<b>✓ Į tavo 3 klausimus jau atsakyta</b> — <a href="/klausk?s='+encodeURIComponent(id)+'" target="_blank" rel="noopener">peržiūrėti atsakymus</a>'; kt.parentNode.insertBefore(d,kt); }
         return null;
       }
       const blk=document.querySelector('#r-extra .kl');
@@ -4240,10 +4241,20 @@ function manoKlView(){
 }
 // Kiek apmokėtų klausimų liko — ir vėliau pirktuose tos pačios analizės užsakymuose (window._klFam[id] — užsakymas, kuriame jų dar liko)
 // Apmokėti, dar neužduoti šios analizės klausimai (pvz. nupirkti anksčiau šiame rezultate) — blokas rodomas kaip apmokėtas
+// „Į tavo N klausimų jau atsakyta — peržiūrėti atsakymus“ (galininkas: 1 klausimą, 3 klausimus, 10 klausimų)
+function klAnsweredNote(blk, n, viewId, you){
+  if(!blk||!n||!viewId||blk.querySelector('.kl-answered')) return;
+  const w=(n%10===1&&n%100!==11)?'klausimą':(n%10===0||(n%100>10&&n%100<20))?'klausimų':'klausimus';
+  const d=document.createElement('div'); d.className='kl-answered';
+  d.innerHTML='<b>✓ Į '+(you?'jūsų':'tavo')+' '+n+' '+w+' jau atsakyta</b> — <a href="/klausk?s='+encodeURIComponent(viewId)+'" target="_blank" rel="noopener">peržiūrėti atsakymus</a>';
+  const kt=blk.querySelector('.kl-txt'); if(kt) kt.parentNode.insertBefore(d,kt);
+}
 async function klActive(sel, q, you){
   try{
-    const d=await (await fetch('/klausk/active?'+new URLSearchParams(q).toString())).json(); if(!d||!d.id) return null;
-    const blk=document.querySelector(sel); if(!blk) return null;
+    const d=await (await fetch('/klausk/active?'+new URLSearchParams(q).toString())).json();
+    const blk=document.querySelector(sel); if(!blk||!d) return null;
+    if(d.answered) klAnsweredNote(blk,d.answered,d.viewId,you);
+    if(!d.id) return null;
     blk.querySelector('.kl-txt').innerHTML=(you?'<b>✓ Jūsų klausimai jau apmokėti — liko '+d.left+'.</b> Įrašykite klausimą — atsakymas remsis jūsų poros analize.':'<b>✓ Tavo klausimai jau apmokėti — liko '+d.left+'.</b> Įrašyk klausimą — atsakymas remsis tavo delnų analize.');
     const f=blk.querySelector('.kl-fine'); if(f) f.textContent='Atsakymas atsidarys naujame lange, o visus atsakymus atsiųsime vienu laišku';
     const e=blk.querySelector('.kl-email'); if(e) e.classList.add('hidden');
