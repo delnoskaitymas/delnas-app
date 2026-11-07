@@ -2890,9 +2890,8 @@ function capturePhoto(){
   if(window._liveLoop){clearInterval(window._liveLoop);window._liveLoop=null;}
   // hint tekstas lieka
 
-  // Flash
-  flash.style.opacity='1';
-  setTimeout(()=>{flash.style.opacity='0';},100);
+  // Garsas iškart; baltas blyksnis — tik užfiksavus kadrą (žr. žemiau): nuotraukos apdorojimas telefone užtrunka,
+  // ir anksčiau įjungtas blyksnis tiek laiko likdavo baltas (atrodė, kad ekranas sekundei pabąla)
   shutterSound();
 
   // Nufotografuoti — apribojame didžiausią matmenį iki 1600px prieš
@@ -2912,6 +2911,9 @@ function capturePhoto(){
   canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
   const dataURL=canvas.toDataURL('image/jpeg',0.85);
   const isLeftHand=camHand==='left';
+  // Trumpas blyksnis (0,1 s) — jau po apdorojimo, todėl ekranas nebepabąla ilgam
+  flash.style.opacity='1';
+  setTimeout(()=>{flash.style.opacity='0';},100);
 
   // Analizė jau atlikta liveLoop — jei mygtukas pasiekiamas, tęsiame
 
