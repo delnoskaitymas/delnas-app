@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Atsiųsti nuorodą'; }
   });
 
+  // Puslapiai, atidaryti iš „Mano analizių“ — grįžus iš jų „Grįžti atgal“ vis tiek veda ten, iš kur atėjo į „Mano analizes“
+  function manoOut(a){ try { const u = new URL(a.href, location.href); if (u.origin !== location.origin) return; const o = JSON.parse(sessionStorage.getItem('delnasManoOut') || '[]') || []; if (!o.includes(u.pathname) && u.pathname !== '/') o.push(u.pathname); sessionStorage.setItem('delnasManoOut', JSON.stringify(o.slice(-10))); } catch (e) {} }
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#v-ask a[href], .fine a[href]'); if (a) manoOut(a); }, true);
   const VIEW_KEY = 'delnasManoView';
   function saveView(cat, y){ try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ cat, y, at: Date.now() })); } catch (e) {} }
   async function load(){
@@ -251,7 +254,17 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     } catch (e) {}
     // Išeinant iš sąrašo (analizė, klausimai, dovana ar kita nuoroda) — įsimenama, kuris skirtukas ir kur sąraše
     const keep = () => { const on = tb && tb.querySelector('button.on'); saveView(on ? on.dataset.cat : '', Math.round(window.scrollY)); };
-    document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href]'); if (a && a.id !== 'mano-back-top') keep(); }, true);
+    // „Mano analizės“ atidarytos naujame lange (iš el. laiško, klausimų ar rezultato) — analizės, klausimai ir dovanos atidaromi atskirame lange:
+    // grįžus jis uždaromas ir lieka šis sąrašas toje pačioje vietoje, o „Grįžti atgal“ gali uždaryti ir šį langą (grįžtama į laišką ar ankstesnį langą)
+    let child = null;
+    const solo = () => { try { const f = JSON.parse(sessionStorage.getItem('delnasManoFrom') || 'null'); return !!(f && f.solo); } catch (x) { return false; } };
+    document.addEventListener('click', e => {
+      const a = e.target.closest && e.target.closest('a[href]'); if (!a || a.id === 'mano-back-top') return;
+      keep(); manoOut(a);
+      if (solo() && !a.target && new URL(a.href, location.href).origin === location.origin) { const w = window.open(a.href, '_blank'); if (w) { e.preventDefault(); child = w; } }
+    }, true);
+    // Uždarius iš čia atidarytą langą — sąrašas atnaujinamas (atsakytų klausimų skaičius), skirtukas ir vieta lieka
+    document.addEventListener('visibilitychange', () => { if (child && document.visibilityState === 'visible' && child.closed) { child = null; location.reload(); } });
     window.addEventListener('pagehide', keep);
     $('list').querySelectorAll('button.del').forEach(b => b.addEventListener('click', async () => {
       const it = b.closest('.item');
@@ -313,16 +326,25 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
   const F='delnasManoFrom'; let from=null;
   try{
     const r=document.referrer?new URL(document.referrer):null, same=r&&r.origin===location.origin;
-    const child=same&&(/[?&](mano|mt)=/.test(r.search)||/^\/(dovana|mano|privatumo)/.test(r.pathname));
-    if(!child) sessionStorage.setItem(F,JSON.stringify({u:same?r.pathname+r.search+r.hash:'',solo:history.length<=1,at:Date.now()}));
+    // Iš „Mano analizių“ atidarytas puslapis (analizė, klausimai, dovanų ar kita nuoroda) — ne vieta, iš kurios atėjo
+    let out=[]; try{ out=JSON.parse(sessionStorage.getItem('delnasManoOut')||'[]')||[]; }catch(x){}
+    const child=same&&(/[?&](mano|mt)=/.test(r.search)||r.pathname==='/mano'||out.includes(r.pathname));
+    // key — naršyklės istorijos įrašas, iš kurio atėjo (tame pačiame lange): grįžtama tiesiai į jį, toje pačioje vietoje
+    let key=''; try{ const nv=window.navigation, ci=nv&&nv.currentEntry?nv.currentEntry.index:-1; if(same&&ci>0){ const pe=nv.entries().find(x=>x.index===ci-1); if(pe) key=pe.key; } }catch(x){}
+    // solo — atidaryta naujame lange arba iš kitur (el. laiškas, kita svetainė): pirmas svetainės puslapis šiame lange
+    let first=history.length<=1; try{ const nv=window.navigation; if(!same&&nv&&nv.currentEntry&&nv.currentEntry.index===0) first=true; }catch(x){}
+    if(!child) sessionStorage.setItem(F,JSON.stringify({u:same?r.pathname+r.search+r.hash:'',solo:first,key,at:Date.now()}));
     from=JSON.parse(sessionStorage.getItem(F)||'null'); if(from&&Date.now()-from.at>6*3600e3) from=null;
   }catch(x){}
   a.addEventListener('click',e=>{
     e.preventDefault();
+    // Tame pačiame lange — tiesiai į tą istorijos įrašą, iš kurio atėjo (kiek žingsnių bebūtų „Mano analizėse“ ir iš jų atidarytuose puslapiuose)
+    try{ const nv=window.navigation; if(from&&!from.solo&&from.key&&nv&&nv.entries().some(x=>x.key===from.key)){ nv.traverseTo(from.key); return; } }catch(x){}
     const go=back||(from&&from.u)||'';
     // Atidaryta naujame lange (be istorijos) — pirmiausia langas uždaromas: lieka ankstesnis langas toje pačioje vietoje
     if(!from||from.solo){ if(!from&&history.length>1){ history.back(); return; } try{ if(window.opener&&!window.opener.closed) window.opener.focus(); }catch(x){} try{ window.close(); }catch(x){} }
-    setTimeout(()=>{ if(go){ location.href=go; return; } a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },(!from||from.solo)?300:0);
+    // Langas neužsidarė: grįžtama į ankstesnį puslapį (pvz. kitą svetainę), jei jo nėra — į adresą, iš kurio atėjo
+    setTimeout(()=>{ if(go){ location.href=go; return; } if(from&&from.solo&&history.length>1){ history.back(); return; } a.textContent='Šį langą gali uždaryti'; a.style.pointerEvents='none'; },(!from||from.solo)?300:0);
   });
   document.body.appendChild(a);
   // Senasis „Pradžia“ toje pačioje vietoje — paslinkus išlįsdavo iš po „Grįžti atgal“

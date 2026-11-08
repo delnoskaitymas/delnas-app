@@ -7753,14 +7753,15 @@ document.addEventListener('click',e=>{
   const h=a.getAttribute('href').replace(/[?&]grizti=[^&#]*/,'');
   a.setAttribute('href',back?h+(h.includes('?')?'&':'?')+'grizti='+encodeURIComponent(back):h);
 },true);
-// „Mano analizės“ iš priminimo bloko — atidaroma skriptu (tokį langą naršyklė leidžia uždaryti „Grįžti atgal“ mygtuku)
+// „Mano analizės“ naujame lange (priminimo, klausimų blokai) — atidaroma skriptu (tokį langą naršyklė leidžia uždaryti „Grįžti atgal“ mygtuku)
 // ir perduodamas adresas grįžti prie priminimo bloko, jei langas vis tiek neužsidarytų
 document.addEventListener('click',e=>{
-  const a=e.target.closest&&e.target.closest('.px-rem-f a[href^="/mano"]'); if(!a) return;
-  const scr=a.closest('#s-result,#s-pora-result'); if(!scr) return;
+  const a=e.target.closest&&e.target.closest('a[href^="/mano"][target="_blank"]'); if(!a) return;
+  // Grįžimo adresas (jei langas neužsidarytų) — rezultatas prie to paties bloko
+  const scr=a.closest('#s-result,#s-pora-result'), hs=a.closest('.px-rem-f')?'#priminimas':'';
   const q=new URLSearchParams(location.search); let back='';
-  if(scr.id==='s-pora-result'&&window._pora&&window._pora.sid) back='/?pora='+encodeURIComponent(window._pora.sid)+'#priminimas';
-  else if(q.get('kl')||(q.get('mano')&&q.get('t'))) back=location.pathname+location.search+'#priminimas';
+  if(scr&&scr.id==='s-pora-result'&&window._pora&&window._pora.sid) back='/?pora='+encodeURIComponent(window._pora.sid)+hs;
+  else if(scr&&(q.get('kl')||(q.get('mano')&&q.get('t')))) back=location.pathname+location.search+hs;
   const url='/mano'+(back?'?grizti='+encodeURIComponent(back):'');
   e.preventDefault();
   const w=window.open(url,'_blank'); if(!w) location.href=url;
@@ -7965,6 +7966,8 @@ function fitPayScreen(){
     if(!t||!/^mt_[a-f0-9]{32}$/.test(t)) return;
     const a=document.createElement('a');
     a.href='/mano?t='+encodeURIComponent(t); a.id='mano-back'; a.textContent='Mano analizės';
+    // Atidaryta atskirame lange iš „Mano analizių“ — langas uždaromas, lieka sąrašas toje pačioje vietoje
+    a.addEventListener('click',e=>{ try{ const o=window.opener; if(o&&!o.closed&&o.location.origin===location.origin&&o.location.pathname==='/mano'){ e.preventDefault(); o.focus(); window.close(); setTimeout(()=>{ location.href=a.href; },400); } }catch(x){} });
     a.style.cssText="position:fixed;top:calc(10px + var(--sat));left:12px;z-index:9999;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
     a.style.transition='opacity .25s,transform .25s';
     // Rezultato ekrane viršuje nerodomas — rezultato pabaigoje „← Grįžti į Mano analizes“
@@ -7975,6 +7978,24 @@ function fitPayScreen(){
     let y0=window.scrollY||0;
     window.addEventListener('scroll',()=>{ const y=window.scrollY||0, hide=y>80&&y>y0+4; if(Math.abs(y-y0)>4||y<80){ a.style.opacity=hide?'0':'1'; a.style.transform=hide?'translateY(-120%)':'none'; a.style.pointerEvents=hide?'none':'auto'; y0=y; } },{passive:true});
   }catch(e){}
+})();
+</script>
+<script>
+// Grįžus atgal į rezultatą (pvz. iš „Mano analizių“ „Grįžti atgal“) — ta pati vieta puslapyje, kai naršyklė puslapį įkelia iš naujo
+(function(){
+  const K='delnasPageY';
+  const U=location.pathname+location.search, all=()=>{ try{ return JSON.parse(sessionStorage.getItem(K)||'{}')||{}; }catch(e){ return {}; } };
+  // Kiekvienam puslapio adresui — sava vieta (paskutiniai 10)
+  addEventListener('pagehide',()=>{ try{ const m=all(); delete m[U]; m[U]={y:Math.round(scrollY),at:Date.now()}; const k=Object.keys(m); k.slice(0,Math.max(0,k.length-10)).forEach(x=>delete m[x]); sessionStorage.setItem(K,JSON.stringify(m)); }catch(e){} });
+  let nav=''; try{ nav=performance.getEntriesByType('navigation')[0].type; }catch(e){}
+  if(nav!=='back_forward') return;
+  const d=all()[U];
+  if(!d||!(d.y>0)||Date.now()-d.at>6*3600e3) return;
+  let n=0; const iv=setInterval(()=>{
+    const scr=document.querySelector(location.search?'.screen.active:not(#s-home)':'.screen.active');
+    if(scr&&document.documentElement.scrollHeight>=d.y+innerHeight*.5){ clearInterval(iv); scrollTo(0,d.y); setTimeout(()=>{ if(Math.abs(scrollY-d.y)>40) scrollTo(0,d.y); },700); }
+    if(++n>60) clearInterval(iv);
+  },150);
 })();
 </script>
 <script src="/awake.js"></script>
