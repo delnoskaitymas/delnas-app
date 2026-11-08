@@ -1078,6 +1078,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   const K='delnasGiftBack';
   let d=null; try{ d=JSON.parse(sessionStorage.getItem(K)||'null'); }catch(e){}
   if(d&&Date.now()-d.at>6*3600e3) d=null;
+  // Atėjus iš „Mano analizių“ — grįžtama į jas (žingsniu atgal), ne į anksčiau atidarytą rezultatą
+  try{ const r=document.referrer?new URL(document.referrer):null; if(r&&r.origin===location.origin&&r.pathname==='/mano') d=null; }catch(e){}
   // Ne iš rezultato — „Grįžti atgal“ ten, iš kur atėjo (ir į laišką ar kitą svetainę); naujame lange be istorijos — langas uždaromas
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
