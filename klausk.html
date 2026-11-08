@@ -253,7 +253,8 @@ document.getElementById('back-link').addEventListener('click', e => {
       $('list').addEventListener('click', e => { const t = e.target.closest('.tg'); if (!t) return; const c = t.closest('.qa'), o = c.classList.toggle('open'); t.textContent = o ? 'Suskleisti ▴' : 'Skaityti atsakymą ▾'; if (!o && c.getBoundingClientRect().top < 0) c.scrollIntoView({ block: 'start' }); });
       // Naujai apmokėti klausimai (dar neužduoti), o virš jų — ankstesni atsakymai: iškart prie laukelio
       const jump = location.hash === '#klausti' || (earlier.length && !(d.qa || []).length);
-      if (jump && left > 0) {
+      // Virš laukelio nėra atsakymų (dar neužduotas nė vienas klausimas) — puslapis rodomas nuo viršaus, laukelis ir taip matomas
+      if (jump && left > 0 && $('list').querySelector('.qa')) {
         try { history.replaceState(null, '', location.pathname + location.search); } catch (x) {}
         setTimeout(() => { const w = $('ask-wrap'); let y = 0, el = w; while (el) { y += el.offsetTop; el = el.offsetParent; } window.scrollTo(0, Math.max(0, y - 70)); }, 150);
       }

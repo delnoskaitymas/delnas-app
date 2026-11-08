@@ -5419,7 +5419,7 @@ function resultPoraLineHtml(pr) {
 const KLAUSK_ORD = ['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS', 'ŠEŠTAS', 'SEPTINTAS', 'AŠTUNTAS', 'DEVINTAS', 'DEŠIMTAS', 'VIENUOLIKTAS', 'DVYLIKTAS'];
 function buildRefRewardHtml(rewardId, kind, pora) {
   const txt = pora ? `Draugai su jūsų nuoroda įsigijo ${kind === 'pora' ? 'Porų suderinamumą' : 'Gyvenimo žemėlapį'}. Dovanojame jums <b style="color:#f0c96a">3 klausimus apie jūsų porą</b> — atsakymai remsis jūsų poros analize.` : `Draugas su tavo nuoroda įsigijo ${kind === 'pora' ? 'Porų suderinamumą' : 'Gyvenimo žemėlapį'}. Dovanojame tau <b style="color:#f0c96a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.`;
-  return EMC.wrap(EMC.head('🎁', pora ? 'Ačiū, kad pasidalijote!' : 'Ačiū, kad pasidalijai!') + EMC.card(EMC.p(txt, 14) + EMC.main(`${appBaseUrl()}/klausk?s=${rewardId}`, 'Užduoti klausimus'), true));
+  return EMC.wrap(EMC.head('🎁', pora ? 'Ačiū, kad pasidalijote!' : 'Ačiū, kad pasidalijai!') + EMC.card(EMC.p(txt, 14) + EMC.main(`${appBaseUrl()}/klausk?s=${rewardId}#klausti`, 'Užduoti klausimus'), true));
 }
 function buildGiftRecipientReminderHtml(g) {
   const pora = g.kind === 'pora', from = g.fromName ? escapeHtml(g.fromName) : '';
@@ -5438,7 +5438,7 @@ function buildKlauskFinalHtml({ pora, qa, off, id, left = 0 }) {
     const one = qa.length === 1, w = pora ? 'jūsų' : 'tavo';
     const liko = left === 1 ? 'Liko užduoti 1 klausimą' : `Liko užduoti ${left} klausimus`;
     return EMC.wrap(EMC.head('✋', one ? `Atsakymas į ${w} klausimą` : `Atsakymai į ${w} klausimus`, liko) + toc + cards
-      + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}`, left === 1 ? 'Užduoti paskutinį klausimą' : `Užduoti kitą klausimą (liko ${left})`)}</div>`
+      + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#klausti`, left === 1 ? 'Užduoti paskutinį klausimą' : `Užduoti kitą klausimą (liko ${left})`)}</div>`
       + EMC.note(pora ? 'Atsakymus taip pat rasite skiltyje „Mano analizės“.' : 'Atsakymus taip pat rasi skiltyje „Mano analizės“.') + foot);
   }
   return EMC.wrap(EMC.head('✋', pora ? 'Visi jūsų atsakymai' : 'Visi tavo atsakymai', `${qa.length} klausimai ir atsakymai viename laiške`) + toc + cards
@@ -5514,7 +5514,7 @@ function giftEmailCard(gp, pora, camp) {
 function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, giftPromo, klauskId }) {
   const gp = giftEmailPromo(giftPromo);
   // Klausimai įskaičiuoti (pirkti kartu su analize arba dovanoje) — mygtukas jiems užduoti
-  const kl = klauskId ? `<div style="text-align:center;margin:16px 0 0;padding:20px 18px;border:1px solid rgba(212,168,67,.55);border-radius:16px;background:rgba(212,168,67,.07)"><p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:rgba(245,238,216,.85);margin:0 0 14px">${isGift ? 'Į dovaną įskaičiuoti' : 'Tavo apmokėti'} <b style="color:#f0c96a">✋ 3 klausimai delnams</b> laukia — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(klauskId)}&amp;utm_source=email&amp;utm_campaign=rezultatas" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:13px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a></div>` : '';
+  const kl = klauskId ? `<div style="text-align:center;margin:16px 0 0;padding:20px 18px;border:1px solid rgba(212,168,67,.55);border-radius:16px;background:rgba(212,168,67,.07)"><p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:rgba(245,238,216,.85);margin:0 0 14px">${isGift ? 'Į dovaną įskaičiuoti' : 'Tavo apmokėti'} <b style="color:#f0c96a">✋ 3 klausimai delnams</b> laukia — atsakymai remsis tavo delnų analize.</p><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(klauskId)}&amp;utm_source=email&amp;utm_campaign=rezultatas#klausti" style="display:inline-block;background:#d4a843;color:#140f02;text-decoration:none;padding:13px 26px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold">Užduoti klausimus</a></div>` : '';
   const mano = `<a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">„Mano analizės“</a>`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto"><div style="text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:21px;font-weight:700;color:#d4a843;margin-bottom:8px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:16px;color:rgba(245,238,216,.88)">Tavo gyvenimo žemėlapis paruoštas.</div></div>${EMC.card(EMC.p('Visą gyvenimo žemėlapį rasi <b style="color:#f5eed8">pridėtame PDF faile</b>.', 6) + EMC.p('Jis taip pat išsaugotas skiltyje ' + mano + '.', 0), true)}${kl}${receipt ? `<div style="margin-top:16px">${receipt}</div>` : ''}${!receipt && orderNumber ? `<p style="font-family:Arial,sans-serif;text-align:center;font-size:13px;color:rgba(245,238,216,.6);margin:14px 0 0">Užsakymo numeris: <b style="color:#d4a843;letter-spacing:.05em">${escapeHtml(orderNumber)}</b></p>` : ''}${poraLine || ''}${giftEmailCard(gp, false, 'rezultatas')}${EMAIL_FOOTER_HTML}</div>`;
 }
@@ -5526,7 +5526,7 @@ function klauskPaidSubject(o) {
 function buildKlauskPaidEmailHtml(o, id) {
   const pora = o.kind === 'pora';
   return EMC.wrap(EMC.head('✦', `Mokėjimas gautas, ačiū${o.name ? ', ' + escapeHtml(ltPhrase(o.name, 'voc')) : ''}!`, pora ? 'Galite užduoti 3 klausimus delnams.' : 'Gali užduoti 3 klausimus delnams.')
-    + EMC.card(EMC.p(pora ? 'Atsakymai remsis jūsų poros delnų analize.' : 'Atsakymai remsis tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}`, 'Užduoti klausimus'), true)
+    + EMC.card(EMC.p(pora ? 'Atsakymai remsis jūsų poros delnų analize.' : 'Atsakymai remsis tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#klausti`, 'Užduoti klausimus'), true)
     + EMC.receipt(payReceiptHtml({ item: pora ? 'Klauskite savo delnų — 3 klausimai porai' : 'Klausk savo delnų — 3 klausimai', amount: o.amount, at: o.paidAt, note: pora ? WAIVER.klPora : WAIVER.kl })));
 }
 const klauskDigestSending = new Set();
@@ -5561,7 +5561,7 @@ function klauskReminderSubject(o) {
 }
 function buildKlauskReminderHtml(o, id) {
   const pora = o.kind === 'pora';
-  return EMC.wrap(EMC.head('✋', `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas`, 'Užduoti klausimus'), true));
+  return EMC.wrap(EMC.head('✋', `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas#klausti`, 'Užduoti klausimus'), true));
 }
 async function sendKlauskReminder(id) {
   const orders = loadKlauskOrders(), o = orders[id];
