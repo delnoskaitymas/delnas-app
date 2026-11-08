@@ -5415,7 +5415,8 @@ function resultPoraLineHtml(pr) {
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
   return EMC.card(EMC.h('💞 Kaip derate poroje?') + EMC.p('Kiek procentų derate, kur gali kilti trintis ir kaip žiūrite į pinigus bei ateitį.') + EMC.price(eur(pr.price), eur(PORA_PRICE_CENTS)) + EMC.small('Tau · kaina galioja iki ' + fmtLtDate(pr.expiresAt)) + EMC.btn(`${appBaseUrl()}/pora?promo=${encodeURIComponent(pr.code)}&amp;utm_source=email&amp;utm_campaign=rezultatas`, 'Sužinoti, kaip derate'));
 }
-function klauskPara(t) { return escapeHtml(t).split(/\n+/).filter(Boolean).map(x => `<p style="margin:0 0 10px">${x}</p>`).join(''); }
+// Klausimų eilė laiškuose; numeracija tęsiasi per visus tos pačios analizės pirkimus (ketvirtas, penktas…)
+const KLAUSK_ORD = ['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS', 'ŠEŠTAS', 'SEPTINTAS', 'AŠTUNTAS', 'DEVINTAS', 'DEŠIMTAS', 'VIENUOLIKTAS', 'DVYLIKTAS'];
 function buildRefRewardHtml(rewardId, kind, pora) {
   const txt = pora ? `Draugai su jūsų nuoroda įsigijo ${kind === 'pora' ? 'Porų suderinamumą' : 'Gyvenimo žemėlapį'}. Dovanojame jums <b style="color:#f0c96a">3 klausimus apie jūsų porą</b> — atsakymai remsis jūsų poros analize.` : `Draugas su tavo nuoroda įsigijo ${kind === 'pora' ? 'Porų suderinamumą' : 'Gyvenimo žemėlapį'}. Dovanojame tau <b style="color:#f0c96a">3 asmeninius klausimus</b> — atsakymai remsis tavo delnų analize.`;
   return EMC.wrap(EMC.head('🎁', pora ? 'Ačiū, kad pasidalijote!' : 'Ačiū, kad pasidalijai!') + EMC.card(EMC.p(txt, 14) + EMC.main(`${appBaseUrl()}/klausk?s=${rewardId}`, 'Užduoti klausimus'), true));
@@ -5426,18 +5427,24 @@ function buildGiftRecipientReminderHtml(g) {
   const txt = from ? `${from} ${pora ? 'jums' : 'tau'} padovanojo ${what}.` : (pora ? 'Jums padovanotas porų suderinamumas pagal poros delnus.' : 'Tau padovanotas asmeninis Gyvenimo žemėlapis pagal delnus.');
   return EMC.wrap(EMC.head('🎁', 'Dovana dar laukia') + EMC.card(EMC.p(`${txt} ${pora ? 'Nufotografuokite savo delnus' : 'Nufotografuok abu delnus'} — mokėti nereikės.`, 14) + EMC.main(giftRedeemLink(g), 'Atidaryti dovaną') + EMC.code(escapeHtml(g.code), fmtLtDate(g.expiresAt)), true) + EMC.note('Tai vienintelis priminimas apie šią dovaną.'));
 }
-// Paskutinis laiškas (užduoti visi pirkimo klausimai): „Visi tavo atsakymai“ — klausimų sąrašas viršuje, kiekvienas atsakymas atskiroje kortelėje
-function buildKlauskFinalHtml({ pora, qa, off, id }) {
+// Klausimų atsakymų laiškas: kiekvienas atsakymas atskiroje kortelėje, kai jų daugiau nei vienas — sąrašas viršuje.
+// left — kiek klausimų liko šiame pirkime (0 — paskutinis laiškas „Visi tavo atsakymai“)
+function buildKlauskFinalHtml({ pora, qa, off, id, left = 0 }) {
   const cards = qa.map((x, j) => `<div style="margin:20px 0 0;border:1px solid rgba(212,168,67,.45);border-radius:16px;padding:20px 18px 8px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${KLAUSK_ORD[j + off] || j + off + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;line-height:1.4;color:#f0d58a;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(212,168,67,.2)">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${escapeHtml(x.a).split(/\n+/).filter(Boolean).map(t => `<p style="margin:0 0 12px">${t}</p>`).join('')}</div></div>`).join('');
-  const toc = `<div style="margin:16px 0 0;padding:16px 18px;border:1px solid rgba(212,168,67,.3);border-radius:16px;background:#0d0a16"><div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:.14em;color:#d4a843;font-weight:bold;margin-bottom:6px">ŠIAME LAIŠKE</div><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;line-height:1.5">${qa.map((x, j) => `<tr><td style="padding:4px 10px 4px 0;color:#d4a843;font-weight:bold;vertical-align:top">${j + off + 1}.</td><td style="padding:4px 0;color:rgba(245,238,216,.88)">${escapeHtml(x.q)}</td></tr>`).join('')}</table></div>`;
+  const toc = qa.length < 2 ? '' : `<div style="margin:16px 0 0;padding:16px 18px;border:1px solid rgba(212,168,67,.3);border-radius:16px;background:#0d0a16"><div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:.14em;color:#d4a843;font-weight:bold;margin-bottom:6px">ŠIAME LAIŠKE</div><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;line-height:1.5">${qa.map((x, j) => `<tr><td style="padding:4px 10px 4px 0;color:#d4a843;font-weight:bold;vertical-align:top">${j + off + 1}.</td><td style="padding:4px 0;color:rgba(245,238,216,.88)">${escapeHtml(x.q)}</td></tr>`).join('')}</table></div>`;
   const price = (KLAUSK_PRICE_CENTS / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
+  const foot = '<p style="font-family:Arial,sans-serif;text-align:center;font-size:11px;color:rgba(245,238,216,.45);margin:12px 0 0">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>';
+  if (left > 0) {
+    const one = qa.length === 1, w = pora ? 'jūsų' : 'tavo';
+    const liko = left === 1 ? 'Liko užduoti 1 klausimą' : `Liko užduoti ${left} klausimus`;
+    return EMC.wrap(EMC.head('✋', one ? `Atsakymas į ${w} klausimą` : `Atsakymai į ${w} klausimus`, liko) + toc + cards
+      + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}`, left === 1 ? 'Užduoti paskutinį klausimą' : `Užduoti kitą klausimą (liko ${left})`)}</div>`
+      + EMC.note(pora ? 'Atsakymus taip pat rasite skiltyje „Mano analizės“.' : 'Atsakymus taip pat rasi skiltyje „Mano analizės“.') + foot);
+  }
   return EMC.wrap(EMC.head('✋', pora ? 'Visi jūsų atsakymai' : 'Visi tavo atsakymai', `${qa.length} klausimai ir atsakymai viename laiške`) + toc + cards
     + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#daugiau`, `Užduoti dar 3 klausimus — ${price}`)}</div>`
     + EMC.note(pora ? 'Šį laišką verta išsaugoti — jame visi trys atsakymai.<br>Atsakymus taip pat rasite skiltyje „Mano analizės“.' : 'Šį laišką verta išsaugoti — jame visi trys atsakymai.<br>Atsakymus taip pat rasi skiltyje „Mano analizės“.')
-    + '<p style="font-family:Arial,sans-serif;text-align:center;font-size:11px;color:rgba(245,238,216,.45);margin:12px 0 0">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>');
-}
-function buildKlauskDigestHtml({ pora, n, items, id, btn, more }) {
-  return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto"><div style="text-align:center;font-size:13px;letter-spacing:.3em;color:#d4a843;margin-bottom:8px">${pora ? 'KLAUSKITE SAVO DELNŲ' : 'KLAUSK SAVO DELNŲ'}</div><div style="text-align:center;font-size:14px;color:rgba(245,238,216,.7);margin-bottom:22px">${n === 1 ? (pora ? 'Jūsų klausimas ir atsakymas' : 'Tavo klausimas ir atsakymas') : n >= KLAUSK_MAX_QUESTIONS ? (pora ? `Visi jūsų klausimai ir atsakymai (${n})` : `Visi tavo klausimai ir atsakymai (${n})`) : (pora ? `Jūsų klausimai ir atsakymai (${n})` : `Tavo klausimai ir atsakymai (${n})`)}</div>${items}<div style="text-align:center;margin-top:22px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}" style="display:inline-block;border:1px solid #d4a843;border-radius:999px;padding:10px 20px;color:#d4a843;font-size:14px;font-weight:700;text-decoration:none">${btn}</a>${more ? `<div style="margin-top:12px;font-family:Arial,sans-serif;font-size:12.5px"><a href="${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#daugiau" style="color:#d4a843">Užduoti dar 3 klausimus — ${(KLAUSK_PRICE_CENTS / 100).toFixed(2).replace('.', ',')}&nbsp;€</a></div>` : ''}</div><p style="font-size:11px;color:rgba(245,238,216,.45);text-align:center;margin-top:18px">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>${EMAIL_FOOTER_HTML}</div>`;
+    + foot);
 }
 function poraResultSubject(o) {
   return `${ltPhrase(o.nameA + ' ir ' + o.nameB, 'voc')}, jūsų poros suderinamumas paruoštas 💞`;
@@ -5511,12 +5518,6 @@ function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, gi
   const mano = `<a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">„Mano analizės“</a>`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto"><div style="text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:21px;font-weight:700;color:#d4a843;margin-bottom:8px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:16px;color:rgba(245,238,216,.88)">Tavo gyvenimo žemėlapis paruoštas.</div></div>${EMC.card(EMC.p('Visą gyvenimo žemėlapį rasi <b style="color:#f5eed8">pridėtame PDF faile</b>.', 6) + EMC.p('Jis taip pat išsaugotas skiltyje ' + mano + '.', 0), true)}${kl}${receipt ? `<div style="margin-top:16px">${receipt}</div>` : ''}${!receipt && orderNumber ? `<p style="font-family:Arial,sans-serif;text-align:center;font-size:13px;color:rgba(245,238,216,.6);margin:14px 0 0">Užsakymo numeris: <b style="color:#d4a843;letter-spacing:.05em">${escapeHtml(orderNumber)}</b></p>` : ''}${poraLine || ''}${giftEmailCard(gp, false, 'rezultatas')}${EMAIL_FOOTER_HTML}</div>`;
 }
-// off — kiek tos pačios analizės klausimų užduota ankstesniuose pirkimuose (numeracija tęsiasi: ketvirtas, penktas…)
-const KLAUSK_ORD = ['PIRMAS', 'ANTRAS', 'TREČIAS', 'KETVIRTAS', 'PENKTAS', 'ŠEŠTAS', 'SEPTINTAS', 'AŠTUNTAS', 'DEVINTAS', 'DEŠIMTAS', 'VIENUOLIKTAS', 'DVYLIKTAS'];
-function klauskDigestItems(qa, para, off = 0) {
-  const ORD = KLAUSK_ORD;
-  return qa.map((x, j, _a, i = j + off) => `<div style="border:1px solid rgba(212,168,67,.45);border-radius:14px;padding:18px 16px;margin:0 0 16px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${ORD[i] || i + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;color:#f0d58a;margin-bottom:14px">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${para(x.a)}</div></div>`).join('');
-}
 function klauskPaidSubject(o) {
   const pora = o.kind === 'pora', v = vocPrefix(o.name);
   const t = pora ? 'galite užduoti 3 klausimus savo delnams ✦' : 'gali užduoti 3 klausimus savo delnams ✦';
@@ -5536,11 +5537,8 @@ async function sendKlauskDigest(id) {
     const orders = loadKlauskOrders(), cur = orders[id];
     if (!cur || !cur.email || !cur.digestPending || !(cur.qa || []).length) return;
     const pora = cur.kind === 'pora', n = cur.qa.length, left = KLAUSK_MAX_QUESTIONS - n;
-    const para = klauskPara;
     let off = 0;
     try { for (const [xid, x] of klauskFamilyOrders(id, cur, orders)) { if (xid === id) break; off += (x.qa || []).length; } } catch (e) { off = 0; }
-    const items = klauskDigestItems(cur.qa, para, off);
-    const btn = left > 1 ? `Užduoti kitą klausimą (liko ${left})` : left === 1 ? 'Užduoti paskutinį klausimą' : 'Peržiūrėti atsakymus svetainėje';
     // Pažymima prieš siunčiant — kad vienas atsakymas nebūtų išsiųstas du kartus
     cur.digestPending = false; cur.digestSentAt = Date.now(); cur.digestCount = n;
     saveKlauskOrders(orders);
@@ -5548,7 +5546,7 @@ async function sendKlauskDigest(id) {
       from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`,
       to: cur.email,
       subject: klauskDigestSubject(cur.name, pora, n),
-      html: left <= 0 ? buildKlauskFinalHtml({ pora, qa: cur.qa, off, id }) : buildKlauskDigestHtml({ pora, n, items, id, btn, more: false })
+      html: buildKlauskFinalHtml({ pora, qa: cur.qa, off, id, left: Math.max(0, left) })
     });
     console.log(`[klausk] suvestinė (${n} atsak.) išsiųsta į ${cur.email}`);
   } catch (e) {
@@ -6080,7 +6078,7 @@ app.get('/admin/test-laiskai', sensitiveLimiter, async (req, res) => {
   add('Klausimai apmokėti (atskiras pirkimas)', () => ({ subject: klauskPaidSubject({ name, kind: 'asmenine' }), html: buildKlauskPaidEmailHtml({ name, kind: 'asmenine', amount: KLAUSK_PRICE_CENTS, paidAt: now }, 'kp_test') }));
   add('Priminimas: dovanos klausimai neužduoti (asmeninė)', () => ({ subject: klauskReminderSubject({ name }), html: buildKlauskReminderHtml({ name }, 'kp_test') }));
   add('Priminimas: dovanos klausimai neužduoti (porų)', () => ({ subject: klauskReminderSubject({ kind: 'pora', name: nameA + ' ir ' + nameB }), html: buildKlauskReminderHtml({ kind: 'pora' }, 'kp_test') }));
-  add('Atsakymai į klausimus', () => ({ subject: klauskDigestSubject(name, false, qa.length), html: buildKlauskDigestHtml({ pora: false, n: qa.length, items: klauskDigestItems(qa, klauskPara), id: 'cs_test_0000', btn: 'Užduoti paskutinį klausimą' }) }));
+  add('Atsakymai į klausimus (užduoti 2 iš 3)', () => ({ subject: klauskDigestSubject(name, false, qa.length), html: buildKlauskFinalHtml({ pora: false, qa, off: 0, id: 'cs_test_0000', left: 1 }) }));
   add('Visi atsakymai (paskutinis laiškas, užduoti visi 3)', () => ({ subject: klauskDigestSubject(name, false, 3), html: buildKlauskFinalHtml({ pora: false, qa: [...qa, { q: 'Ko man vertėtų saugotis artimiausiu metu?', a: 'Tai pavyzdinis atsakymas.\nAntra pastraipa.' }], off: 0, id: 'cs_test_0000' }) }));
   add('Priminimas po 3 mėn. (asmeninė, su palyginimu)', () => buildReminderMail({ name, email: to, savedId: 'TEST' }, fake({ pct: REPEAT_PCT, expiresAt: now + 30 * DAY_MS })));
   add('Priminimas po 3 mėn. (asmeninė, be išsaugotos analizės)', () => buildReminderMail({ name, email: to }, fake({ pct: REPEAT_PCT })));
