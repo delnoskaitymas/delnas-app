@@ -283,9 +283,9 @@ app.use((req, res, next) => {
   }
   if (req.method !== 'GET' || typeof req.query.dovana !== 'string') return next();
   if (req.path === '/' || req.path === '/index.html')
-    return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.');
+    return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.', 'og-dovana-tau.jpg');
   if (req.path === '/pora')
-    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanotas porų suderinamumas pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.');
+    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanotas porų suderinamumas pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.', 'og-dovana-jums.jpg');
   next();
 });
 

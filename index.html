@@ -10,7 +10,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted&&st())location.rep
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
 window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
-try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h));
+try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h))||/[?&]dovana=/.test(q);
 if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
 if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
 <style>html.kl-boot body>*{visibility:hidden!important}</style>
@@ -7420,18 +7420,18 @@ async function poraShareCard(){
   try{ code=sessionStorage.getItem('delnasGiftCode'); }catch(e){}
   // Kodas jau panaudotas šiame skirtuke, bet rezultatas dar nerodytas (pvz. puslapis perkrautas analizės metu)
   if(!code){ try{ code=sessionStorage.getItem('delnasGiftPending'); pending=!!code; window._giftPrevSid=sessionStorage.getItem('delnasGiftPrevSid')||''; }catch(e){} }
-  if(!code) return;
+  if(!code){ if(window.delnasReveal) delnasReveal(); return; }
   window._giftCode=code;
   fetch('/gift/check?code='+encodeURIComponent(code)+(window._giftPrevSid?'&sid='+encodeURIComponent(window._giftPrevSid):'')).then(r=>r.json()).then(d=>{
     // Porų kuponas panaudojamas /pora puslapyje (reikia abiejų vardų)
     if(d.kind==='pora'){ try{ sessionStorage.removeItem('delnasGiftCode'); sessionStorage.removeItem('delnasGiftPending'); }catch(e){} location.href='/pora?dovana='+encodeURIComponent(d.code||code); return; }
-    if(pending&&!d.resumable){ try{ sessionStorage.removeItem('delnasGiftPending'); }catch(e){} window._giftCode=null; return; }
+    if(pending&&!d.resumable){ try{ sessionStorage.removeItem('delnasGiftPending'); }catch(e){} window._giftCode=null; if(window.delnasReveal) delnasReveal(); return; }
     window._giftInfo=d;
     if(!d.valid&&!d.resumable){ try{ sessionStorage.removeItem('delnasGiftCode'); }catch(e){} }
     showGiftWelcome(d);
     const si=document.getElementById('s-info');
     if(si&&si.classList.contains('active')) applyGiftMode();
-  }).catch(()=>{});
+  }).catch(()=>{ if(window.delnasReveal) delnasReveal(); });
 })();
 
 function _giftEsc(t){ return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -7512,7 +7512,7 @@ function giftOpenScreen(d, onOpen){
 }
 function showGiftWelcome(d){
   const home=document.getElementById('s-home');
-  if(!home||document.getElementById('gift-welcome')) return;
+  if(!home||document.getElementById('gift-welcome')){ if(window.delnasReveal) delnasReveal(); return; }
   const n=document.createElement('div');
   n.id='gift-welcome';
   n.style.cssText='margin:14px 16px 0;padding:12px 14px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.35);border-radius:12px;text-align:center;font-family:\'DM Sans\',sans-serif;position:relative;z-index:5';
@@ -7536,6 +7536,8 @@ function showGiftWelcome(d){
     n.innerHTML='<div style="color:var(--gold2);font-size:13px;font-weight:600">'+why+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">Jei manai, kad tai klaida — parašyk info@delnaskaitymas.lt</div>';
   }
   home.prepend(n);
+  // Dovanos nuoroda: puslapis buvo paslėptas, kol paruošta dovanos kortelė — atidengiamas jau su ja (be pradžios ekrano mirktelėjimo)
+  requestAnimationFrame(()=>window.delnasReveal&&delnasReveal());
 }
 
 function applyGiftMode(){
