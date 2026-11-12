@@ -4742,7 +4742,8 @@ app.post('/pora/offers', sensitiveLimiter, async (req, res) => {
     base = PERSONAL_PRICE_CENTS;
     // Porų analizė užsakyta po asmeninės (rinkinio kaina ar rinkinio kuponas) — pirkėjas (A) asmeninę analizę jau turi
     const pub = (p, own) => ({ code: own ? '' : p.code, used: own || !!p.usedBy, expiresAt: p.expiresAt });
-    const ownA = poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm');
+    // Tik tikrai šiai porai atlikta (rinkinio kaina) — ne bet kuri neseniai atlikta to el. pašto analizė
+    const ownA = poraBuyerHasPersonal(sessionId, o);
     // −ONCE_PCT % dovanai (24 val.), kaip ir Gyvenimo žemėlapio pirkėjui — ir dovanų kuponu gautam rezultatui
     const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + sessionId });
     // Priminimas po 3 mėn. jau užregistruotas — rezultate vietoj mygtuko rodomas patvirtinimas
@@ -5361,7 +5362,10 @@ function klauskFamilyActive(id, o, orders) {
 }
 // Rezultato ekranui: ar šiai analizei (asmeninės sesija ar porų užsakymas) yra apmokėtų, dar neužduotų klausimų
 app.get('/klausk/active', pollLimiter, (req, res) => {
-  const sid = String(req.query.sid || ''), pora = String(req.query.pora || ''), em = String(req.query.em || '').trim().toLowerCase();
+  const sid = String(req.query.sid || ''), pora = String(req.query.pora || '');
+  let em = String(req.query.em || '').trim().toLowerCase();
+  // Pirmasis poros žmogus (be el. pašto laukelio) — jo klausimai porų užsakymo el. paštu
+  if (!em && req.query.buyer && pora && isValidCheckoutSessionId(pora)) { const po = loadPoraOrders()[pora]; em = String((po && po.email) || '').toLowerCase(); }
   const okP = pora && isValidCheckoutSessionId(pora), okS = !okP && isAnalysisSid(sid);
   if (!okP && !okS) return res.json({});
   let best = null, answered = 0, view = null;
@@ -5491,7 +5495,7 @@ function poraDuoEmailOffer(o, sessionId) {
     for (const side of ['a', 'b']) { const c = st.byKey['duo:' + sessionId + ':' + side]; used[side] = !!(c && st.codes[c] && st.codes[c].usedBy); }
   } catch (e) {}
   // Pirkėjas (A) asmeninę analizę jau turi: užsakyta kartu ar atlikta šio apsilankymo metu
-  if (!used.a && (poraBuyerHasPersonal(sessionId, o) || recentDone(o.email, 'asm'))) used.a = true;
+  if (!used.a && poraBuyerHasPersonal(sessionId, o)) used.a = true;
   if (used.a && used.b) return '';
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
   // Kiekvienam — savas mygtukas su vardu (tie patys vienkartiniai kodai kaip porų rezultate, /pora/offers)
