@@ -1101,10 +1101,10 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
         // Po pirkimo (kortelė, grįžus iš Stripe) — į puslapį, kuris buvo prieš /dovana, praleidžiant Stripe; jei /dovana buvo pirmas puslapis — skirtukas uždaromas
         let pre=null; try{ pre=JSON.parse(sessionStorage.getItem('delnasGiftPre')||'null'); }catch(x){}
         if(pre&&location.pathname.indexOf('/dovana/kortele')===0&&Date.now()-pre.at<6*3600e3&&history.length>pre.len){
-          if(pre.len>1&&!ext){ history.go(pre.len-1-history.length); return; }
+          if(pre.len>1){ history.go(pre.len-1-history.length); return; }
           closeOrNote(btn); return;
         }
-        if(history.length>1&&!ext){ history.back(); return; } closeOrNote(btn); return;
+        if(history.length>1){ history.back(); return; } closeOrNote(btn); return;
       }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;
       // jei uždaryti negalima — atidaromas rezultatas prie to paties bloko
