@@ -229,6 +229,7 @@ if (window._klPay) setTimeout(() => { const w = document.querySelector('.wrap');
   (async function check(attempt){
     try {
       const d = await (await fetch('/klausk/check?s=' + encodeURIComponent(sid))).json();
+      if (d && d.email) window._klEmail = d.email;
       window._klBack = d.poraSid ? '/?pora=' + encodeURIComponent(d.poraSid) + '&kls=' + encodeURIComponent(sid) + '#klausk' : '/?kl=' + encodeURIComponent(sid) + '#klausk';
       if (!d.paid) {
         if (attempt < 6 && !d.notfound) { setTimeout(() => check(attempt + 1), 2000); return; }
@@ -357,6 +358,8 @@ if (window._klPay) setTimeout(() => { const w = document.querySelector('.wrap');
 </script>
 <script>
 // „Mano analizės“ naujame lange — atidaroma skriptu, kad „Grįžti atgal“ galėtų langą uždaryti (lieka šis puslapis toje pačioje vietoje)
+// „Mano analizės“ iš klausimų puslapio — atsidaro su šių klausimų pirkėjo el. paštu (ne su paskutiniu šiame telefone naudotu)
+document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[href^="/mano"]'); if(!a||!window._klEmail) return; try{ localStorage.setItem('delnasManoPrefill',JSON.stringify({e:window._klEmail,at:Date.now()})); }catch(x){} },true);
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[href^="/mano"][target="_blank"]'); if(!a) return; e.preventDefault(); const w=window.open(a.getAttribute('href'),'_blank'); if(!w) location.href=a.getAttribute('href'); },true);
 </script>
 <script src="/awake.js"></script>

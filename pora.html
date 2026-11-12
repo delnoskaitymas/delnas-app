@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>DELNAS — Porų suderinamumas</title>
+<script>/* Dovanos nuoroda (?dovana=…): puslapis nerodomas, kol paruošta dovanos kortelė — be formos mirktelėjimo */
+window.pdReveal=function(){try{document.documentElement.classList.remove("pd-boot")}catch(e){}};
+try{if(/[?&]dovana=/.test(location.search)){document.documentElement.classList.add("pd-boot");setTimeout(window.pdReveal,6000);}}catch(e){}</script>
+<style>html.pd-boot body>*{visibility:hidden!important}</style>
 <!--og-->
 <meta name="description" content="Porų suderinamumo analizė pagal abiejų delnus: kas jus sieja, kaip jūsų savybės dera ir kur verta susitarti.">
 <link rel="canonical" href="https://www.delnaskaitymas.lt/pora">
@@ -558,6 +562,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     location.href = '/?pora=' + encodeURIComponent(d.id);
   }
   function giftError(msg){
+    if(window.pdReveal) pdReveal();
     $('gift-note').innerHTML = '<b>' + esc(msg) + '</b><span>Galite užsisakyti porų suderinamumą žemiau arba parašyti info@delnaskaitymas.lt</span>';
     $('gift-note').classList.remove('hidden');
   }
@@ -567,7 +572,7 @@ function giftOpenScreen(d, onOpen){
   try{
     const key='delnasGiftOpened:'+(d.code||'');
     let seen=false; try{ seen=sessionStorage.getItem(key)==='1'; }catch(e){}
-    if(seen){ if(onOpen) onOpen(false); return; }
+    if(seen){ if(window.pdReveal) pdReveal(); if(onOpen) onOpen(false); return; }
     const E=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const pora=d.kind==='pora';
     const to=d.recipientName?E(ltPhrase(d.recipientName,'dat')):(pora?'Jums':'Tau');
@@ -590,6 +595,7 @@ function giftOpenScreen(d, onOpen){
       '<div style="font-size:11.5px;color:rgba(232,226,212,.5);margin-top:10px">'+(pora?'Dovana jau apmokėta — jums beliks nufotografuoti delnus.':'Dovana jau apmokėta — tau beliks nufotografuoti delnus.')+'</div>'+
     '</div>';
     document.body.appendChild(o);
+    requestAnimationFrame(()=>window.pdReveal&&pdReveal());
     document.getElementById('gift-open-btn').addEventListener('click',()=>{
       try{ sessionStorage.setItem(key,'1'); }catch(e){}
       o.style.opacity='0'; setTimeout(()=>o.remove(),450);
@@ -604,7 +610,7 @@ function giftOpenScreen(d, onOpen){
       if (d.kind !== 'pora') { location.href = '/?dovana=' + encodeURIComponent(d.code); return; }
       // Jau pradėtas kuponas (pvz. uždarė langą prieš fotografuojant) — tęsti galima įrašius tą patį el. paštą
       if (d.status !== 'active' && d.status !== 'redeemed') return giftError(d.status === 'expired' ? 'Dovanos kodo galiojimas baigėsi' : 'Dovanos kodas nebegalioja');
-      if (d.poraDone) { $('gift-note').innerHTML = '<b>Šis kuponas jau panaudotas</b><span>Rezultatą rasite el. pašte ir <a href="/mano" style="color:var(--gold2)">„Mano analizėse“</a>.</span>'; $('gift-note').classList.remove('hidden'); return; }
+      if (d.poraDone) { if (window.pdReveal) pdReveal(); $('gift-note').innerHTML = '<b>Šis kuponas jau panaudotas</b><span>Rezultatą rasite el. pašte ir <a href="/mano" style="color:var(--gold2)">„Mano analizėse“</a>.</span>'; $('gift-note').classList.remove('hidden'); return; }
       if (d.status === 'active') giftOpenScreen(d);
       window._giftCode = d.code; $('gift-link').classList.add('hidden'); $('remind-row').classList.add('hidden');
       document.querySelector('#v-form h1').innerHTML = '🎁 Jums dovana —<br><em>porų suderinamumas</em>';
@@ -616,6 +622,7 @@ function giftOpenScreen(d, onOpen){
       $('how1-h').innerHTML = 'Pradėkite <em>kartu</em>';
       $('how1-p').textContent = 'Įrašykite abu vardus ir el. paštą. Mokėti nereikia — porų suderinamumas jums padovanotas.';
       document.querySelector('#pora-form .trust').textContent = '🎁 Apmokėta dovanų kuponu ' + d.code;
+      if (window.pdReveal) requestAnimationFrame(pdReveal);
     } catch (e) { giftError('Nepavyko patikrinti dovanos kodo'); }
   })();
 

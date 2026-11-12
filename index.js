@@ -283,9 +283,9 @@ app.use((req, res, next) => {
   }
   if (req.method !== 'GET' || typeof req.query.dovana !== 'string') return next();
   if (req.path === '/' || req.path === '/index.html')
-    return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.');
+    return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.', 'og-dovana-tau.jpg');
   if (req.path === '/pora')
-    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanotas porų suderinamumas pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.');
+    return sendHtmlWithOg(res, 'pora.html', '🎁 Jums dovana — DELNAS porų suderinamumas', 'Jums padovanotas porų suderinamumas pagal abiejų delnus. Atidarykite dovaną ir nufotografuokite delnus — mokėti nereikės.', 'og-dovana-jums.jpg');
   next();
 });
 
@@ -5397,7 +5397,7 @@ app.get('/klausk/check', sensitiveLimiter, async (req, res) => {
       if (!s) return res.json({ paid: false });
       markKlauskPaid(id, orders, s);
     }
-    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), family: klauskFamilyActive(id, o, orders), famQa: klauskFamilyQa(id, o, orders), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
+    res.json({ paid: true, kind: o.kind || 'asmenine', name: o.name, email: o.email || '', qa: o.qa || [], left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length, answering: klauskInFlight.has(id), family: klauskFamilyActive(id, o, orders), famQa: klauskFamilyQa(id, o, orders), ...(o.kind === 'pora' && o.poraSid ? { poraSid: o.poraSid } : {}), ...((o.kind === 'pora' ? o.result && o.result.palyginimas : klauskCompareOf(o)) ? { compare: true } : {}) });
   } catch (err) {
     console.error('/klausk/check klaida:', err);
     res.status(500).json({ paid: false, error: 'Nepavyko patikrinti užsakymo' });
