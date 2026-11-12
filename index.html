@@ -6636,8 +6636,14 @@ function poraProgress(start){
       // Kaip asmeninėje analizėje — visi 7 punktai užsidega švelnia banga
       // Šviesos fazė skaičiuojama pagal REALŲ laiką nuo bangos pradžios — kol siunčiamos nuotraukos,
       // telefono laikmačiai vėluoja nevienodai, todėl kitaip šviesa per punktus bėgtų paeiliui, o ne visais kartu
-      const w0=performance.now();
-      for(let n=1;n<=7;n++) setTimeout(()=>{ if(!window._poraDone) activateStep(n,false,performance.now()-w0,'pls'); },(n-1)*180);
+      window._poraW0=performance.now(); window._poraOn=0;
+    }
+    // Punktai įjungiami šiame pačiame laikmatyje (ne atskirais setTimeout): jei telefonas laikmačius sulėtino
+    // (dalijantis nuoroda, langas fone), visi jau „laiku“ turėję užsidegti punktai įjungiami kartu, o šviesa per juos
+    // eina viena faze (vienu spinduliu), ne paeiliui
+    if(window._poraPhase===2&&!window._poraDone&&(window._poraOn||0)<7){
+      const el=performance.now()-window._poraW0;
+      while((window._poraOn||0)<7&&el>=(window._poraOn||0)*180){ window._poraOn=(window._poraOn||0)+1; activateStep(window._poraOn,false,el,'pls'); }
     }
     // Pakopomis pagal tikrą trukmę (~2–3 min.): 0–1 min. 20→60 %, 1–2 min. 60→85 %, 2–3 min. 85→94 %, toliau ~1 % kas 20 s iki 97 %
     const e=Math.max(0,s-4.5);
@@ -6919,7 +6925,7 @@ async function loadPoraDuo(live){
   const eur=c=>(c/100).toFixed(2).replace('.',',');
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
     return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' gyvenimo žemėlapis paruoštas</div>'
-      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — '+eur(d.price)+' €</a>'+
+      : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — <span style="white-space:nowrap">'+eur(d.price)+'\u00a0€</span></a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
         (d.remote?'':'<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button>')+'</div>'; };
   // Pirkėjas (A) asmeninę analizę atliko šio apsilankymo metu šiame telefone
@@ -6928,7 +6934,7 @@ async function loadPoraDuo(live){
   // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
   // Grįžus į langą blokas nepaslepiamas (žmogus grįžta prie jo) — rodoma, kad abiejų analizės paruoštos
   if(both&&!live&&!_poraDuoReturn){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
-  box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Kiekvienam — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
+  box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Kiekvienam — po <b style="color:var(--gold2);white-space:nowrap">'+eur(d.price)+'\u00a0€</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55;white-space:nowrap">'+eur(d.base)+'\u00a0€</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
     '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
   if(fb) fb.style.display='none';
