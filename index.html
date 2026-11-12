@@ -4423,7 +4423,8 @@ function klRefreshLeft(kl){
 function klRefreshAll(){ document.querySelectorAll('.kl.kl-done,#pora-kl.kl-done').forEach(k=>{ if(k.dataset.ks) klRefreshLeft(k); }); }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') klRefreshAll(); });
 window.addEventListener('pageshow',e=>{ if(e.persisted) klRefreshAll(); });
-function klOpen(url,w){ if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
+// Klausimų mokėjimas atidaromas naujame lange per trumpą DELNAS perėjimo ekraną (/klausk?pay=…), ne staiga Stripe
+function klOpen(url,w){ if(/^https:\/\/checkout\.stripe\.com\//.test(url)) url='/klausk?pay='+encodeURIComponent(url); if(w&&!w.closed){ w.location.href=url; return; } const nw=window.open(url,'_blank'); if(!nw) location.href=url; }
 function setupKlauskBlock(o){
   const $=id=>document.getElementById(id);
   const btn=$(o.btn), qEl=$(o.q), err=$(o.err); if(!btn||!qEl) return;
