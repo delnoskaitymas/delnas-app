@@ -4554,8 +4554,13 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     let { photos } = req.body || {};
     if (!isValidCheckoutSessionId(sessionId)) return res.status(400).json({ error: 'Neteisingas užsakymas' });
     const existing = loadPoraOrders()[sessionId];
+    // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo (ir pakartotinė užklausa iš to paties telefono)
+    if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
+      return res.json({ started: true, status: existing.status });
+    }
     // Nuotolinis režimas: pirmojo partnerio nuotraukos jau išsaugotos, antrasis atsiunčia savo 2
-    if (existing && existing.status === 'waiting_partner' && Array.isArray(photos) && photos.length === 2) {
+    // (ir bandant iš naujo po nepavykusios analizės — pirmojo nuotraukos laikomos, kol analizė pavyksta)
+    if (existing && existing.firstSavedAt && Array.isArray(photos) && photos.length === 2) {
       const first = loadPoraFirstPhotos(sessionId);
       if (!first) return res.status(410).json({ error: 'Pirmojo partnerio nuotraukos nebegalioja — nufotografuokite abu iš naujo' });
       photos = [...first, ...photos];
@@ -4563,13 +4568,8 @@ app.post('/pora/start', sensitiveLimiter, async (req, res) => {
     if (!isValidPhotosArray(photos) || photos.length !== 4) return res.status(400).json({ error: 'Reikia 4 delnų nuotraukų' });
     // Šio užsakymo analizė jau buvo atlikta (įrašas ištrintas, liko tik žymė)
     if (!existing && loadPoraUsed()[sessionId]) return res.status(410).json({ error: 'Ši porų analizė jau atlikta' });
-    // Viena analizė vienam užsakymui: jei jau baigta ar vykdoma — nepaleidžiame iš naujo
-    if (existing && (existing.status === 'done' || (existing.status === 'pending' && Date.now() - existing.startedAt < 10 * 60 * 1000))) {
-      return res.json({ started: true, status: existing.status });
-    }
     const s = await getPaidPoraSession(sessionId);
     if (!s) return res.status(403).json({ error: 'Užsakymas neapmokėtas' });
-    deletePoraFirstPhotos(sessionId);
     const prevPora = repeatPoraPrev(s.promo, sessionId);
     updatePoraOrder(sessionId, { nameA: s.nameA, nameB: s.nameB, email: s.email, amount: s.amount, status: 'pending', error: null, startedAt: Date.now(), createdAt: (existing && existing.createdAt) || Date.now(), ...(prevPora ? { prevPora } : {}) });
     res.json({ started: true, status: 'pending' });
@@ -4660,7 +4660,7 @@ function runPoraJob(sessionId, photos, s) {
           result.palyginimas = { ...cmp, pctPrev: clampScore(prev.result.suderinamumas), pctNow: clampScore(result.suderinamumas), prevDate: prev.finishedAt || prev.createdAt || 0 };
         }
       } catch (e) { console.error(`[pora] palyginimo klaida ${sessionId}:`, e.message); }
-      clearInterval(hb); deleteRunPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); statInc(sessionId.startsWith('gp_') ? 'gift_result_pora' : 'pora_result'); console.log(`[pora] analizė baigta ${sessionId}`);
+      clearInterval(hb); deleteRunPhotos(sessionId); deletePoraFirstPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); statInc(sessionId.startsWith('gp_') ? 'gift_result_pora' : 'pora_result'); console.log(`[pora] analizė baigta ${sessionId}`);
     })
     .catch(err => {
       clearInterval(hb); deleteRunPhotos(sessionId);
