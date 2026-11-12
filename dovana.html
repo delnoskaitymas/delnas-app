@@ -539,7 +539,7 @@ body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
       <div class="err" id="r-err"></div>
     </form>
     <a class="how-link" href="/dovana">🎁 Nori padovanoti kitam?</a>
-    <a class="how-link back-res hidden" href="/" style="width:fit-content">Grįžti atgal</a>
+    <!-- Kodo įvedimo ekrane grįžimo mygtuko nėra -->
   </section>
 
   <!-- 4. KLAIDA -->
@@ -1019,6 +1019,8 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Tęsti';
   });
 
+  // Kodo įvedimas: anksčiau šiame lange atidaryta dovana pamirštama — be kodo grįžus atgal ji nebeatsidaro
+  if (location.pathname.replace(/\/+$/, '') === '/kodas') { try { sessionStorage.removeItem('delnasGiftCode'); } catch (x) {} }
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
   else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
@@ -1106,8 +1108,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
         }
         // Kodo įvedimas ir kuponas, atidaryti iš žinutės ar laiško (ne iš šios svetainės puslapio) — ankstesnis lango puslapis
         // gali būti kitas (pvz. anksčiau atidaryta dovanos nuoroda), todėl į jį negrįžtama: langas uždaromas
+        // Kuponas, atidarytas iš žinutės ar laiško — ankstesnis lango puslapis gali būti kitas, todėl į jį negrįžtama: langas uždaromas
         let same=false; try{ same=!!document.referrer&&new URL(document.referrer).origin===location.origin; }catch(x){}
-        if(!same&&(location.pathname.replace(/\/+$/,'')==='/kodas'||location.pathname.indexOf('/dovana/kortele')===0)){ closeOrNote(btn); return; }
+        if(!same&&location.pathname.indexOf('/dovana/kortele')===0){ closeOrNote(btn); return; }
         if(history.length>1){ history.back(); return; } closeOrNote(btn); return;
       }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;

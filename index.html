@@ -6877,6 +6877,8 @@ async function giftOnceRefresh(){
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') giftOnceRefresh(); });
 window.addEventListener('focus',giftOnceRefresh);
 window.addEventListener('pageshow',e=>{ if(e.persisted) giftOnceRefresh(); });
+// Grįžus naršyklės „atgal“ iš kodo įvedimo (kodas ten pamirštamas) — anksčiau atidaryta dovana nebeatsidaro
+window.addEventListener('pageshow',e=>{ if(!e.persisted||!window._giftCode) return; let c=null,pd=null; try{ c=sessionStorage.getItem('delnasGiftCode'); pd=sessionStorage.getItem('delnasGiftPending'); }catch(x){} if(!c&&!pd) location.reload(); });
 // Porų rezultate: −20 % dovanai (24 val.) — kaip Gyvenimo žemėlapio rezultate
 function poraOnceGift(once){
   const gifts=document.querySelector('#s-pora-result .rb-gifts');
