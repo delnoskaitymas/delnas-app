@@ -7245,10 +7245,11 @@ function buildPoraPdfDoc(){
   doc.text('Dėkojame, kad patikėjote mums savo delnų analizę.', W/2, y, {align:'center'});
   doc.text('Daugiau įžvalgų ir naujų atradimų rasite:', W/2, y+9, {align:'center'});
   doc.setFont('NotoSans','bold'); doc.setFontSize(13);
-  const bl='www.delnaskaitymas.lt', bw=doc.getTextWidth(bl)+14, bh=9, bx=W/2-bw/2, by=y+16;
+  // Porų analizės PDF — nuoroda į porų suderinamumo puslapį
+  const bl='www.delnaskaitymas.lt/pora', bw=doc.getTextWidth(bl)+14, bh=9, bx=W/2-bw/2, by=y+16;
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.roundedRect(bx, by, bw, bh, 2, 2, 'S');
   doc.setTextColor(...GOLD2); doc.text(bl, W/2, by+bh/2+3.2, {align:'center'});
-  doc.link(bx, by, bw, bh, { url:'https://www.delnaskaitymas.lt' });
+  doc.link(bx, by, bw, bh, { url:'https://www.delnaskaitymas.lt/pora' });
   doc.setFont('NotoSans','normal'); doc.setFontSize(10); doc.setTextColor(140,112,55);
   let ny=by+bh+10;
   doc.splitTextToSize('Ši analizė – dirbtinio intelekto pagal tradicinės chiromantijos motyvus sugeneruota savęs pažinimo priemonė, o ne profesionali konsultacija.', maxW-20).forEach(l=>{ doc.text(l, W/2, ny, {align:'center'}); ny+=5.5; });
