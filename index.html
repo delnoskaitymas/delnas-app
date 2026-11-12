@@ -6945,8 +6945,8 @@ async function loadPoraDuo(live){
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — <span style="white-space:nowrap">'+eur(d.price)+'\u00a0€</span></a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
         (d.remote?'':'<button type="button" class="pora-remote-link" style="margin:8px auto 0" data-code="'+poraEsc(o.code)+'" data-name="'+poraEsc(name||'')+'">📤 Nusiųsti '+poraEsc(f.dat||name||'')+'</button>')+'</div>'; };
-  // Pirkėjas (A) asmeninę analizę atliko šio apsilankymo metu šiame telefone
-  if(recentDone('asm')&&!d.a.used) d.a={...d.a,used:true,code:''};
+  // „Paruoštas“ — tik tikrai šiai porai atlikta asmeninė analizė (serveris: šios poros kodas panaudotas ar rinkinio kaina),
+  // ne bet kuri šiame telefone neseniai atlikta analizė
   const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
   // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
   // Grįžus į langą blokas nepaslepiamas (žmogus grįžta prie jo) — rodoma, kad abiejų analizės paruoštos
