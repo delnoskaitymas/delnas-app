@@ -6779,6 +6779,13 @@ function poraReveal(){
 }
 
 // Porų „Klauskite“ blokas inicijuojamas vieną kartą, kai parodomas porų rezultatas
+// „Mano analizės“ iš porų rezultato — atsidaro su šio žmogaus el. paštu: pirmajam — porų užsakymo (šiame telefone įsimintu),
+// antrajam — jo paties (PDF ar klausimams naudotu); nežinomas — laukelis tuščias (ne kito žmogaus el. paštas)
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('#s-pora-result a[href^="/mano"]'); if(!a) return;
+  const sid=(window._pora||{}).sid||''; let em='';
+  try{ em=poraIsPartner()?(localStorage.getItem('delnasPoraKlEmP:'+sid)||localStorage.getItem('delnasPoraPdf:'+sid)||''):(localStorage.getItem('delnasPoraBuyerEm:'+sid)||''); localStorage.setItem('delnasManoPrefill',JSON.stringify({e:em,at:Date.now()})); }catch(x){}
+},true);
 // Antrasis poros žmogus (atėjo per nuorodą ?partneris=1) — įsimenama tik šiame naršyklės lange (sessionStorage),
 // kad tame pačiame telefone pirmojo žmogaus rezultatas nebūtų rodomas kaip antrojo
 function poraIsPartner(){
@@ -6940,7 +6947,11 @@ async function loadPoraDuo(live){
   if(!d||!d.price||!d.a||!d.b) return;
   window._poraDuoPrices={price:d.price,base:d.base};
   const eur=c=>(c/100).toFixed(2).replace('.',',');
+  // Porų analizė per nuorodą (skirtinguose telefonuose): kiekvienas savo analizę užsako tik pats —
+  // pirmasis (užsakęs) mato tik savo mygtuką, antrasis (atėjęs per nuorodą) — tik savo
+  const mine=d.remote?(poraIsPartner()?'b':'a'):'';
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
+    if(mine&&side!==mine&&!o.used) return '<div style="font-size:13px;color:var(--muted);padding:4px 0;line-height:1.5">'+g+' gyvenimo žemėlapį '+poraEsc(f.nom||name||'')+' gali užsisakyti savo telefone</div>';
     return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' gyvenimo žemėlapis paruoštas</div>'
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — <span style="white-space:nowrap">'+eur(d.price)+'\u00a0€</span></a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
@@ -7235,6 +7246,8 @@ function poraDownloadPdf(){ try{ buildPoraPdfDoc().save(poraPdfName()); }catch(e
 function poraPartnerMailSetup(){
   // Antrasis poros žmogus (atėjo per nuorodą) — įsimenama šiame telefone, kad ir grįžus iš kitų puslapių (be „partneris“ adrese) rodytų tą patį
   const sid=(window._pora||{}).sid||'', isPartner=poraIsPartner();
+  // Pirmasis žmogus: šiame telefone užsakant įrašytas el. paštas susiejamas su šia pora („Mano analizės“ atsidarys su juo)
+  if(!isPartner&&sid) try{ if(!localStorage.getItem('delnasPoraBuyerEm:'+sid)){ const b=JSON.parse(localStorage.getItem('delnasPoraBuyerEmLast')||'null'); if(b&&b.e&&Date.now()-b.at<864e5) localStorage.setItem('delnasPoraBuyerEm:'+sid,b.e); } }catch(e){}
   const box=document.getElementById('pora-partner-mail'); if(!box||!isPartner) return;
   const p=window._pora||{}, a=ltForms(p.nameA||'');
   document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF jau išsiųstas '+(a.dat||p.nameA||'')+' el. paštu. Nori gauti ir sau?';
