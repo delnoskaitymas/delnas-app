@@ -5399,7 +5399,7 @@ function abandonSubject(it, p) {
   const v = vocPrefix(it.name); return `${v ? v + 'tavo' : 'Tavo'} gyvenimo žemėlapis laukia (−${p.pct} % 24 valandoms)`;
 }
 function klauskDigestSubject(name, pora, n) {
-  const v = vocPrefix(name), w = pora ? 'jūsų' : 'tavo';
+  const v = pora ? '' : vocPrefix(name), w = pora ? 'jūsų' : 'tavo';
   return `✋ ${v ? v + w : capFirst(w)} delnų ${n === 1 ? 'atsakymas' : 'atsakymai'}${n > 1 ? ` (${n})` : ''}`;
 }
 function giftRecipientSubject(g) {
@@ -5545,14 +5545,15 @@ function buildResultEmailHtml({ isGift, name, orderNumber, poraLine, receipt, gi
   const mano = `<a href="${appBaseUrl()}/mano?utm_source=email&amp;utm_campaign=rezultatas" style="color:#d4a843">„Mano analizės“</a>`;
   return `<div style="font-family:Georgia,serif;background:#07040f;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto"><div style="text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">✦</div><div style="font-size:21px;font-weight:700;color:#d4a843;margin-bottom:8px">${isGift ? '🎁 Tavo dovana atkeliavo' : 'Mokėjimas gautas, ačiū'}${name ? ', ' + escapeHtml(ltPhrase(name, 'voc')) : ''}!</div><div style="font-size:16px;color:rgba(245,238,216,.88)">Tavo gyvenimo žemėlapis paruoštas.</div></div>${EMC.card(EMC.p('Visą gyvenimo žemėlapį rasi <b style="color:#f5eed8">pridėtame PDF faile</b>.', 6) + EMC.p('Jis taip pat išsaugotas skiltyje ' + mano + '.', 0), true)}${kl}${receipt ? `<div style="margin-top:16px">${receipt}</div>` : ''}${!receipt && orderNumber ? `<p style="font-family:Arial,sans-serif;text-align:center;font-size:13px;color:rgba(245,238,216,.6);margin:14px 0 0">Užsakymo numeris: <b style="color:#d4a843;letter-spacing:.05em">${escapeHtml(orderNumber)}</b></p>` : ''}${poraLine || ''}${giftEmailCard(gp, false, 'rezultatas')}${EMAIL_FOOTER_HTML}</div>`;
 }
+// Porų klausimai — kiekvienas poros žmogus perka ir gauna atskirai, todėl kreipiamasi be vardų („jūs“)
 function klauskPaidSubject(o) {
-  const pora = o.kind === 'pora', v = vocPrefix(o.name);
+  const pora = o.kind === 'pora', v = pora ? '' : vocPrefix(o.name);
   const t = pora ? 'galite užduoti 3 klausimus savo delnams ✦' : 'gali užduoti 3 klausimus savo delnams ✦';
   return v ? v + t : capFirst(t);
 }
 function buildKlauskPaidEmailHtml(o, id) {
   const pora = o.kind === 'pora';
-  return EMC.wrap(EMC.head('✦', `Mokėjimas gautas, ačiū${o.name ? ', ' + escapeHtml(ltPhrase(o.name, 'voc')) : ''}!`, pora ? 'Galite užduoti 3 klausimus delnams.' : 'Gali užduoti 3 klausimus delnams.')
+  return EMC.wrap(EMC.head('✦', `Mokėjimas gautas, ačiū${o.name && !pora ? ', ' + escapeHtml(ltPhrase(o.name, 'voc')) : ''}!`, pora ? 'Galite užduoti 3 klausimus delnams.' : 'Gali užduoti 3 klausimus delnams.')
     + EMC.card(EMC.p(pora ? 'Atsakymai remsis jūsų poros delnų analize.' : 'Atsakymai remsis tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#klausti`, 'Užduoti klausimus'), true)
     + EMC.receipt(payReceiptHtml({ item: pora ? 'Klauskite savo delnų — 3 klausimai porai' : 'Klausk savo delnų — 3 klausimai', amount: o.amount, at: o.paidAt, note: pora ? WAIVER.klPora : WAIVER.kl })));
 }
@@ -5584,7 +5585,7 @@ async function sendKlauskDigest(id) {
 }
 function klauskReminderSubject(o) {
   const pora = o.kind === 'pora';
-  return '✋ ' + capFirst(`${vocPrefix(o.name)}${pora ? 'jūsų' : 'tavo'} 3 klausimai delnams dar laukia`);
+  return '✋ ' + capFirst(`${pora ? '' : vocPrefix(o.name)}${pora ? 'jūsų' : 'tavo'} 3 klausimai delnams dar laukia`);
 }
 function buildKlauskReminderHtml(o, id) {
   const pora = o.kind === 'pora';
