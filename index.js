@@ -2688,7 +2688,9 @@ function handlePaidAnalysis(paymentRef, metadata, email) {
     if (metadata && metadata.ref) statInc('ref_paid');
   }
   const refBy = metadata && (metadata.refBy || metadata.ref);
-  if (refBy) rewardReferrer(normalizeRefCode(refBy), paymentRef, email, 'asmenine');
+  // Asmeninė analizė porų kaina (iš porų analizės) — jau su nuolaida, kvietimo dovana neskiriama
+  let pk = ''; try { pk = metadata && metadata.promo ? ((loadPromos().codes[String(metadata.promo).toUpperCase()] || {}).kind || '') : ''; } catch (e) {}
+  if (refBy && pk !== 'duo' && pk !== 'bundle') rewardReferrer(normalizeRefCode(refBy), paymentRef, email, 'asmenine');
   if (metadata && metadata.promo) markPromoUsed(metadata.promo, paymentRef);
   markEmailPaid(email);
 }
@@ -5311,6 +5313,8 @@ function markKlauskPaid(id, orders, s) {
   const o = orders[id];
   if (!o || o.paid) return;
   o.paid = true; o.paidAt = Date.now(); o.amount = s.amount_total; saveKlauskOrders(orders); statInc('klausk_paid');
+  // Porų klausimus pirko antrasis poros žmogus savo el. paštu — porų analizė rodoma ir jo „Mano analizėse“
+  try { if (o.kind === 'pora' && o.poraSid && isValidEmail(o.email)) { const po = loadPoraOrders()[o.poraSid]; if (po && String(po.email || '').toLowerCase() !== o.email.toLowerCase() && !po.partnerEmail) updatePoraOrder(o.poraSid, { partnerEmail: o.email }); } } catch (e) {}
   // Mokėjimo patvirtinimas klientui (vietoj Stripe kvito) su nuoroda į klausimus
   if (isValidEmail(o.email)) mailer.sendMail({ from: `"DELNAS" <${CLIENT_EMAIL_FROM}>`, to: o.email, subject: klauskPaidSubject(o), html: buildKlauskPaidEmailHtml(o, id) })
     .catch(e => console.error('[klausk] patvirtinimo laiško klaida:', e.message));
@@ -6778,7 +6782,8 @@ function manoItems(email) {
   const analizes = Object.values(loadSaved().items).filter(x => x.email === e)
     .sort((a, b) => b.createdAt - a.createdAt)
     .map(x => ({ id: x.id, name: x.name || '', createdAt: x.createdAt, expiresAt: x.expiresAt, compare: !!(x.result && x.result.palyginimas) }));
-  const poros = Object.entries(loadPoraOrders()).filter(([, o]) => (o.email || '').toLowerCase() === e && o.status === 'done')
+  // Porų analizė — užsakiusiojo ir antrojo poros žmogaus (jo el. paštas: PDF ar klausimų pirkimas) „Mano analizėse“
+  const poros = Object.entries(loadPoraOrders()).filter(([, o]) => ((o.email || '').toLowerCase() === e || (o.partnerEmail || '').toLowerCase() === e) && o.status === 'done')
     .map(([id, o]) => ({ id, nameA: o.nameA || '', nameB: o.nameB || '', pct: Math.round(Number(o.result && o.result.suderinamumas)) || null, createdAt: o.finishedAt || o.createdAt || 0 }))
     .sort((a, b) => b.createdAt - a.createdAt);
   // Tos pačios analizės klausimų pirkimai — viena eilutė (id — užsakymas, kuriame dar liko klausimų, arba naujausias)
@@ -6880,6 +6885,8 @@ app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   if (type === 'pora' || type === 'kl') {
     const key = String(id || '');
     const orders = type === 'pora' ? loadPoraOrders() : loadKlauskOrders(), o = orders[key];
+    // Antrasis poros žmogus „ištrina“ porų analizę tik iš savo sąrašo (užsakiusiojo analizė lieka)
+    if (type === 'pora' && o && (o.partnerEmail || '').toLowerCase() === email && (o.email || '').toLowerCase() !== email) { updatePoraOrder(key, { partnerEmail: null, partnerRemovedEmail: email }); return res.json({ ok: true }); }
     if (!o || (o.email || '').toLowerCase() !== email) return res.status(404).json({ error: 'Įrašas nerastas' });
     // Klausimai: ištrinami visi tos pačios analizės pirkimai (sąraše jie rodomi viena eilute)
     const gone = type === 'kl' && o.paid ? klauskFamilyOrders(key, o, orders).map(([xid, x]) => [xid, x]) : [[key, o]];
