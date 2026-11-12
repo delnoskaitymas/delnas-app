@@ -195,10 +195,11 @@ function aiBody(o, effort) {
 }
 // AI atmetė užklausą (klaida ar atsisakymas) — tiksli priežastis į serverio žurnalą ir vienas laiškas adminui per parą
 const _aiErrNotified = { day: '' };
-const _aiLog = []; // paskutiniai AI atsakymai ir analizių klaidos — /admin/ai-test
-function aiLogAdd(x) { _aiLog.push({ at: Date.now(), ...x }); if (_aiLog.length > 40) _aiLog.shift(); }
+const _aiLog = []; // paskutiniai AI atsakymai ir analizių klaidos — /admin/ai-test, /admin/ai-log
+function aiLogAdd(x) { _aiLog.push({ at: Date.now(), ...x }); if (_aiLog.length > 60) _aiLog.shift(); }
 const _fetchOrig = global.fetch;
 global.fetch = async function (url, opts) {
+  const _t0 = Date.now();
   const res = await _fetchOrig.apply(this, arguments);
   try {
     if (!String(url).startsWith('https://api.anthropic.com/') || typeof res.clone !== 'function') return res;
@@ -206,7 +207,7 @@ global.fetch = async function (url, opts) {
     let err = '';
     let reqInfo = ''; try { const rb = JSON.parse(opts.body); reqInfo = `max_tokens ${rb.max_tokens}, nuotraukų ${(JSON.stringify(rb.messages).match(/"type":"image"/g) || []).length}`; } catch (e) {}
     const txt = ((j && j.content) || []).map(x => x.type === 'text' ? x.text : (x.type === 'thinking' && x.thinking ? '[thinking] ' + x.thinking : '')).join(' ').trim();
-    aiLogAdd({ kind: 'AI atsakymas', preview: txt.slice(0, 300) + (txt.length > 300 ? '… (' + txt.length + ' simb.)' : ''), status: res.status, stop: (j && j.stop_reason) || '', out: (j && j.usage && j.usage.output_tokens) || '', blocks: ((j && j.content) || []).map(x => x.type).join(','), info: reqInfo, err: j && j.error ? `${j.error.type}: ${j.error.message}` : (j && j.stop_reason === 'refusal' ? 'refusal ' + JSON.stringify(j.stop_details || {}) : '') });
+    aiLogAdd({ kind: 'AI atsakymas', sec: Math.round((Date.now() - _t0) / 1000), preview: txt.slice(0, 300) + (txt.length > 300 ? '… (' + txt.length + ' simb.)' : ''), status: res.status, stop: (j && j.stop_reason) || '', out: (j && j.usage && j.usage.output_tokens) || '', blocks: ((j && j.content) || []).map(x => x.type).join(','), info: reqInfo, err: j && j.error ? `${j.error.type}: ${j.error.message}` : (j && j.stop_reason === 'refusal' ? 'refusal ' + JSON.stringify(j.stop_details || {}) : '') });
     if (!res.ok) err = (j && j.error) ? `${j.error.type}: ${j.error.message}` : 'HTTP ' + res.status;
     else if (j && j.stop_reason === 'refusal') err = 'refusal: ' + ((j.stop_details && (j.stop_details.category || j.stop_details.explanation)) || '');
     if (!err) return res;
@@ -4261,6 +4262,7 @@ async function runCoupleAnalysis(photos, nameA, nameB) {
     catch (e) {
       last = e;
       console.log(`[pora] analizė nepavyko, bandymas ${attempt}/2: ${e.message}`);
+      aiLogAdd({ kind: `Porų analizė: bandymas ${attempt}/2 nepavyko`, err: e.message });
       if (/authentication_error|permission_error|invalid_request_error/.test(e.message)) break;
     }
   }
@@ -4656,6 +4658,8 @@ function saveRunPhotos(id, photos) { try { fs.mkdirSync(PORA_RUN_DIR, { recursiv
 function loadRunPhotos(id) { try { const d = JSON.parse(fs.readFileSync(poraRunFile(id), 'utf8')); return Array.isArray(d.photos) && d.photos.length === 4 ? d.photos : null; } catch (e) { return null; } }
 function deleteRunPhotos(id) { try { fs.unlinkSync(poraRunFile(id)); } catch (e) {} }
 function runPoraJob(sessionId, photos, s) {
+  const _pt0 = Date.now();
+  aiLogAdd({ kind: 'Porų analizė pradėta', info: sessionId.slice(0, 18) });
   saveRunPhotos(sessionId, photos);
   updatePoraOrder(sessionId, { hb: Date.now() });
   const hb = setInterval(() => { try { const o = loadPoraOrders()[sessionId]; if (o && o.status === 'pending') updatePoraOrder(sessionId, { hb: Date.now() }); } catch (e) {} }, 20000);
@@ -4669,9 +4673,11 @@ function runPoraJob(sessionId, photos, s) {
           result.palyginimas = { ...cmp, pctPrev: clampScore(prev.result.suderinamumas), pctNow: clampScore(result.suderinamumas), prevDate: prev.finishedAt || prev.createdAt || 0 };
         }
       } catch (e) { console.error(`[pora] palyginimo klaida ${sessionId}:`, e.message); }
+      aiLogAdd({ kind: 'Porų analizė baigta', sec: Math.round((Date.now() - _pt0) / 1000), info: sessionId.slice(0, 18) });
       clearInterval(hb); deleteRunPhotos(sessionId); deletePoraFirstPhotos(sessionId); updatePoraOrder(sessionId, { status: 'done', result, finishedAt: Date.now() }); statInc(sessionId.startsWith('gp_') ? 'gift_result_pora' : 'pora_result'); console.log(`[pora] analizė baigta ${sessionId}`);
     })
     .catch(err => {
+      aiLogAdd({ kind: 'Porų analizė nepavyko', sec: Math.round((Date.now() - _pt0) / 1000), info: sessionId.slice(0, 18), err: err.message });
       clearInterval(hb); deleteRunPhotos(sessionId);
       updatePoraOrder(sessionId, { status: 'error', error: err.message });
       console.error(`[pora] analizės klaida ${sessionId}:`, err.message);
@@ -6175,6 +6181,14 @@ function testPng(n) { // n×n auksinės spalvos PNG
   const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(n * 3).fill(Buffer.from([212, 168, 67]))]);
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.concat(Array(n).fill(row)))), chunk('IEND', Buffer.alloc(0))]).toString('base64');
 }
+// Tik žurnalas (be bandomųjų AI užklausų — nekainuoja): AI atsakymų trukmė, pabaigos priežastis, porų analizių eiga
+app.get('/admin/ai-log', sensitiveLimiter, (req, res) => {
+  if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
+  res.setHeader('Cache-Control', 'no-store');
+  const t = x => new Date(x.at).toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+  const rows = _aiLog.slice().reverse().map(x => `<tr><td>${t(x)}</td><td>${escapeHtml(x.kind || '')}</td><td>${x.sec != null ? x.sec + ' s' : ''}</td><td>${escapeHtml(String(x.status || ''))}</td><td class="${x.stop === 'max_tokens' ? 'bad' : ''}">${escapeHtml(x.stop || '')}</td><td>${escapeHtml(String(x.out || ''))}</td><td>${escapeHtml(x.info || '')}</td><td class="${x.err ? 'bad' : ''}">${escapeHtml(x.err || '')}</td></tr>`).join('');
+  res.send(`<!DOCTYPE html><html lang="lt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AI žurnalas</title><style>body{font-family:-apple-system,sans-serif;padding:16px;font-size:13px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:4px 6px;text-align:left;vertical-align:top}.bad{color:#b00;font-weight:bold}</style></head><body><h2 style="font-size:17px">AI žurnalas (nuo serverio paleidimo, naujausi viršuje)</h2><p style="color:#666">Šis puslapis AI užklausų nesiunčia. „max_tokens“ — atsakymas nukirptas (per ilgas).</p>${rows ? `<table><tr><th>Laikas</th><th>Kas</th><th>Trukmė</th><th>Kodas</th><th>Pabaiga</th><th>Išvesties žetonai</th><th>Užklausa</th><th>Klaida</th></tr>${rows}</table>` : '<p>Įrašų dar nėra.</p>'}</body></html>`);
+});
 app.get('/admin/ai-test', sensitiveLimiter, async (req, res) => {
   if (!isAdminKey(req.query.key)) return res.status(403).send('Neteisingas raktas');
   res.setHeader('Cache-Control', 'no-store');
