@@ -5085,6 +5085,19 @@ function klauskResultFor(order) {
   if (order && order.reward && order.kind !== 'pora') { const r = latestPersonalResult(order.email); if (r) return r; }
   return order.result;
 }
+// Atsakymas pastraipomis (ištisinį tekstą sunku skaityti): jei AI pateikė vieną ilgą pastraipą — suskaidoma po 2–3 sakinius
+function klauskParas(text) {
+  if (typeof text !== 'string') return text;
+  const ps = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
+  const out = [];
+  for (const p of ps) {
+    const sn = p.split(EDITOR_SENT_RE).map(x => x.trim()).filter(Boolean);
+    if (sn.length <= 4) { out.push(p); continue; }
+    const n = Math.ceil(sn.length / 3), size = Math.ceil(sn.length / n);
+    for (let i = 0; i < sn.length; i += size) out.push(sn.slice(i, i + size).join(' '));
+  }
+  return out.join('\n\n');
+}
 // Ankstesni klausimai ir atsakymai AI kontekstui: ir kitų tos pačios analizės pirkimų (order.qaPrev), kad atsakymai nesikartotų
 function klauskPrevQa(order) { return [...(order.qaPrev || []), ...(order.qa || [])].filter(x => x && x.q && x.a).slice(-12); }
 async function answerKlausk(order, question) {
@@ -5099,7 +5112,7 @@ ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : 
 KLAUSIMAS: ${question}
 
 KAIP ATSAKYTI:
-- 7–10 sakinių, sklandus tekstas „tu“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės (be „Puikus klausimas“).
+- 7–10 sakinių, suskirstytų į 3–4 trumpas pastraipas (po 2–3 sakinius; pastraipas skirk tuščia eilute), „tu“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės (be „Puikus klausimas“).
 - NEKARTOK ANALIZĖS: nekopijuok ir neperpasakok jos sakinių, formuluočių ar teiginių — žmogus juos jau skaitė. Remkis 2–3 konkrečiais analizės dalykais (pvz. kokia stiprybė čia padės, kokia kliūtis trukdo), bet parašyk tai, ko analizėje NĖRA: kodėl būtent ši situacija taip klostosi (iš kurių savybių ji kyla), kaip tai pasireiškia būtent klausime minimoje situacijoje, ko tikėtis ir ką daryti.
 - KIEKVIENAS ATSAKYMAS — SKIRTINGAS: atsakyk tiksliai į tai, ko klausiama; nerašyk bendro apibendrinimo apie žmogų. Jei ankstesni klausimai panašūs — rinkis kitus analizės aspektus, kitus paaiškinimus ir kitus žingsnius nei ankstesniuose atsakymuose; nė vienas sakinys neturi kartoti ankstesnio atsakymo.
 - Konkrečiai ir vertingai: kiekvienas sakinys turi nešti naują, naudingą mintį būtent šiam žmogui — be įžanginių ir apibendrinančių frazių, be patarimų, tinkančių bet kam.
@@ -5110,7 +5123,7 @@ KAIP ATSAKYTI:
 ${klauskLangRules('tu')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
-  return klauskGenderFix(await klauskCallAI(prompt), 'tu');
+  return klauskParas(await klauskGenderFix(await klauskCallAI(prompt), 'tu'));
 }
 
 // Giminės patikrinimas „Klausk“ atsakymui: sakiniai su giminę dažnai rodančiais žodžiais pataisomi neutraliai (tik jei tokių yra).
@@ -5182,7 +5195,7 @@ ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : 
 KLAUSIMAS: ${question}
 
 KAIP ATSAKYTI:
-- 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
+- 7–10 sakinių, suskirstytų į 3–4 trumpas pastraipas (po 2–3 sakinius; pastraipas skirk tuščia eilute), kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
 ${poraNameRules(A, B)}
 - NEKARTOK ANALIZĖS: nekopijuok ir neperpasakok jos sakinių, formuluočių ar teiginių — pora juos jau skaitė. Remkis 2–3 konkrečiais analizės dalykais (savybėmis, delnų skirtumais ar panašumais), bet parašyk tai, ko analizėje NĖRA: kodėl būtent ši situacija jums taip klostosi (iš kurių jūsų savybių ar skirtumų ji kyla), kaip tai pasireiškia būtent klausime minimoje situacijoje, ko tikėtis ir ką daryti.
 - KIEKVIENAS ATSAKYMAS — SKIRTINGAS: atsakyk tiksliai į tai, ko klausiama; nerašyk bendro apibendrinimo apie jūsų santykius. Jei ankstesni klausimai panašūs — rinkis kitus analizės aspektus, kitus paaiškinimus ir kitus žingsnius nei ankstesniuose atsakymuose; nė vienas sakinys neturi kartoti ankstesnio atsakymo.
@@ -5195,7 +5208,7 @@ ${poraNameRules(A, B)}
 ${klauskLangRules('jūs')}
 
 ATSAKYK TIK ATSAKYMO TEKSTU.`;
-  return klauskGenderFix(await klauskCallAI(prompt), 'jūs');
+  return klauskParas(await klauskGenderFix(await klauskCallAI(prompt), 'jūs'));
 }
 
 // Grįžimas iš klausimų puslapio į asmeninės analizės rezultatą (kai pradinis langas jau uždarytas)
@@ -5241,7 +5254,8 @@ app.post('/klausk/create-checkout', sensitiveLimiter, async (req, res) => {
       if (!isValidCheckoutSessionId(poraSid)) return res.status(400).json({ error: 'Neteisingas porų užsakymas' });
       const po = loadPoraOrders()[poraSid];
       if (!po || po.status !== 'done' || !po.result) return res.status(400).json({ error: 'Porų analizė nerasta' });
-      email = po.email; name = `${po.nameA} ir ${po.nameB}`;
+      // Kiekvienas poros žmogus perka savo el. paštu (atsakymai, kvitas, „Mano analizės“ — tik jam); be jo — porų užsakymo el. paštas
+      email = isValidEmail(email) ? String(email).trim() : po.email; name = `${po.nameA} ir ${po.nameB}`;
       if (!isValidEmail(email)) return res.status(400).json({ error: 'Nerastas užsakymo el. paštas' });
       record = { kind: 'pora', email, name, nameA: po.nameA, nameB: po.nameB, poraSid, result: po.result };
     } else {
@@ -5336,13 +5350,14 @@ function klauskFamilyActive(id, o, orders) {
 }
 // Rezultato ekranui: ar šiai analizei (asmeninės sesija ar porų užsakymas) yra apmokėtų, dar neužduotų klausimų
 app.get('/klausk/active', pollLimiter, (req, res) => {
-  const sid = String(req.query.sid || ''), pora = String(req.query.pora || '');
+  const sid = String(req.query.sid || ''), pora = String(req.query.pora || ''), em = String(req.query.em || '').trim().toLowerCase();
   const okP = pora && isValidCheckoutSessionId(pora), okS = !okP && isAnalysisSid(sid);
   if (!okP && !okS) return res.json({});
   let best = null, answered = 0, view = null;
   for (const [id, o] of Object.entries(loadKlauskOrders())) {
     if (!o || !o.paid) continue;
-    if (okP ? !(o.kind === 'pora' && o.poraSid === pora) : !(o.kind !== 'pora' && o.analysisSession === sid)) continue;
+    // Porų klausimai — tik šio žmogaus (jo el. paštu pirkti); kito poros žmogaus klausimai nerodomi
+    if (okP ? !(o.kind === 'pora' && o.poraSid === pora && em && String(o.email || '').toLowerCase() === em) : !(o.kind !== 'pora' && o.analysisSession === sid)) continue;
     const n = (o.qa || []).length, left = KLAUSK_MAX_QUESTIONS - n - (klauskInFlight.has(id) ? 1 : 0);
     if (left > 0 && (!best || (o.createdAt || 0) > best.at)) best = { id, left, at: o.createdAt || 0, gift: !!o.gift };
     // Jau užduoti klausimai — perkrovus rezultatą rodoma, kiek atsakyta, ir nuoroda juos peržiūrėti
@@ -5438,7 +5453,7 @@ function buildGiftRecipientReminderHtml(g) {
 // Klausimų atsakymų laiškas: kiekvienas atsakymas atskiroje kortelėje, kai jų daugiau nei vienas — sąrašas viršuje.
 // left — kiek klausimų liko šiame pirkime (0 — paskutinis laiškas „Visi tavo atsakymai“)
 function buildKlauskFinalHtml({ pora, qa, off, id, left = 0 }) {
-  const cards = qa.map((x, j) => `<div style="margin:20px 0 0;border:1px solid rgba(212,168,67,.45);border-radius:16px;padding:20px 18px 8px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${KLAUSK_ORD[j + off] || j + off + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;line-height:1.4;color:#f0d58a;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(212,168,67,.2)">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${escapeHtml(x.a).split(/\n+/).filter(Boolean).map(t => `<p style="margin:0 0 12px">${t}</p>`).join('')}</div></div>`).join('');
+  const cards = qa.map((x, j) => `<div style="margin:20px 0 0;border:1px solid rgba(212,168,67,.45);border-radius:16px;padding:20px 18px 8px;background:#000"><div style="font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.12em;color:#d4a843;margin-bottom:8px">✦ ${KLAUSK_ORD[j + off] || j + off + 1 + '-AS'} KLAUSIMAS</div><div style="font-size:17px;font-style:italic;line-height:1.4;color:#f0d58a;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(212,168,67,.2)">„${escapeHtml(x.q)}“</div><div style="font-size:15px;line-height:1.7;color:rgba(245,238,216,.88)">${escapeHtml(klauskParas(x.a)).split(/\n+/).filter(Boolean).map(t => `<p style="margin:0 0 12px">${t}</p>`).join('')}</div></div>`).join('');
   const toc = qa.length < 2 ? '' : `<div style="margin:16px 0 0;padding:16px 18px;border:1px solid rgba(212,168,67,.3);border-radius:16px;background:#0d0a16"><div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:.14em;color:#d4a843;font-weight:bold;margin-bottom:6px">ŠIAME LAIŠKE</div><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;line-height:1.5">${qa.map((x, j) => `<tr><td style="padding:4px 10px 4px 0;color:#d4a843;font-weight:bold;vertical-align:top">${j + off + 1}.</td><td style="padding:4px 0;color:rgba(245,238,216,.88)">${escapeHtml(x.q)}</td></tr>`).join('')}</table></div>`;
   const price = (KLAUSK_PRICE_CENTS / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
   const foot = '<p style="font-family:Arial,sans-serif;text-align:center;font-size:11px;color:rgba(245,238,216,.45);margin:12px 0 0">Savęs pažinimo priemonė, ne profesionali konsultacija.</p>';
