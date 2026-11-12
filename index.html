@@ -4896,27 +4896,31 @@ function buildResultPdfDoc(r, name, orderNumber){
   const dg=r.delnai_greta;
   if(dg&&dg.sirdis){
     if(y > PAGE_BOTTOM - 60){ y = newPage(); }
-    doc.setFont('NotoSans','bold'); doc.setFontSize(19); doc.setTextColor(...GOLD); doc.text('TAVO DELNAI GRETA', margin, y); y += 8;
-    doc.setFont('NotoSans','normal'); doc.setFontSize(13); doc.setTextColor(...BODY); doc.text('Kairysis delnas — su kuo gimei, dešinysis — kuo tapai dabar.', margin, y); y += 11;
-    const colW=(maxW-8)/2;
+    doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD); doc.text('TAVO DELNAI GRETA', margin, y); y += 7;
+    doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...MUTED); doc.text('Kairysis delnas — su kuo gimei, dešinysis — kuo tapai dabar.', margin, y); y += 9;
+    // Toks pat išdėstymas kaip porų PDF („JŪSŲ DELNAI GRETA“): rėmeliai su užrašais, išvada su auksine juostele
+    const colW=(maxW-8)/2, cellTxt=x=>x&&typeof x==='object'?('Matosi: '+(x.p||'')+'\nReiškia: '+(x.r||'')):String(x||'');
     [['sirdis','ŠIRDIES LINIJA · JAUSMAI'],['protas','GALVOS LINIJA · MĄSTYMAS'],['gyvenimas','GYVENIMO LINIJA · TEMPAS']].forEach(([k,t])=>{
       const c=dg[k]; if(!c) return;
-      doc.setFont('NotoSans','normal'); doc.setFontSize(13);
-      const L=doc.splitTextToSize(c.kairys,colW), R=doc.splitTextToSize(c.desinys,colW);
-      const h=14+Math.max(L.length,R.length)*6.5;
-      if(y + h > PAGE_BOTTOM){ y = newPage(); }
-      doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD); doc.text(t, margin, y); y += 7;
-      doc.setFontSize(10.5); doc.setTextColor(...GOLD2); doc.text('KAIRYSIS · PRIGIMTIS', margin, y); doc.text('DEŠINYSIS · DABAR', margin+colW+8, y); y += 6;
-      doc.setFont('NotoSans','normal'); doc.setFontSize(13); doc.setTextColor(...BODY);
-      L.forEach((l,i)=>doc.text(l, margin, y+i*6.5)); R.forEach((l,i)=>doc.text(l, margin+colW+8, y+i*6.5));
-      y += Math.max(L.length,R.length)*6.5 + 6;
+      doc.setFont('NotoSans','normal'); doc.setFontSize(11);
+      const sp=x=>cellTxt(x).split('\n').reduce((a,l)=>a.concat(doc.splitTextToSize(l, colW-6)),[]);
+      const L=sp(c.kairys), R=sp(c.desinys), boxH=Math.max(L.length,R.length)*5.2+10;
+      if(y + 8 + boxH + 8 > PAGE_BOTTOM){ y = newPage(); }
+      doc.setFont('NotoSans','bold'); doc.setFontSize(11.5); doc.setTextColor(...GOLD); doc.text(t, margin, y); y += 4;
+      [[margin,'KAIRYSIS · PRIGIMTIS',L],[margin+colW+8,'DEŠINYSIS · DABAR',R]].forEach(([bx,lab,lines])=>{
+        doc.setDrawColor(110,88,38); doc.setLineWidth(0.3); doc.roundedRect(bx, y, colW, boxH, 2, 2, 'S');
+        doc.setFont('NotoSans','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text(lab, bx+3, y+5);
+        doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...BODY); lines.forEach((l,i)=>doc.text(l, bx+3, y+10.2+i*5.2));
+      });
+      y += boxH + 8;
     });
     if(dg.isvada){
-      doc.setFont('NotoSans','bold'); doc.setFontSize(14);
+      doc.setFont('NotoSans','normal'); doc.setFontSize(11);
       const I=doc.splitTextToSize(dg.isvada, maxW-6);
-      if(y + I.length*7 + 4 > PAGE_BOTTOM){ y = newPage(); }
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.8); doc.line(margin, y-5, margin, y-5+I.length*7+2);
-      doc.setTextColor(...GOLD2); I.forEach(l=>{ doc.text(l, margin+5, y); y += 7; });
+      if(y + I.length*5.6 + 4 > PAGE_BOTTOM){ y = newPage(); }
+      doc.setFillColor(...GOLD); doc.rect(margin, y-3.6, 0.8, I.length*5.6, 'F');
+      doc.setTextColor(243,231,198); I.forEach(l=>{ doc.text(l, margin+4, y); y += 5.6; });
+      y += 4;
     }
     y += 3; doc.setDrawColor(...DIVIDER); doc.setLineWidth(0.5); doc.line(margin, y, W-margin, y); y += 16;
   }
