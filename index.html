@@ -311,6 +311,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 .cmp-spin{width:26px;height:26px;margin:10px auto 2px;border-radius:50%;border:2px solid rgba(212,168,67,.25);border-top-color:var(--gold2);animation:sp 1s linear infinite}
 /* Grįžus iš klausimų — suskleistas klausimų blokas: patvirtinimas + „Užduoti dar 3 klausimus“ */
 .kl.kl-done > :not(.kl-done-box):not(.rs-label){display:none!important}
+.kl.kl-fold:not(.kl-done) > :not(.rs-label):not(.kl-txt):not(.kl-answered):not(.kl-fold-btn){display:none!important}
+.kl-fold-btn{display:none}.kl.kl-fold:not(.kl-done) .kl-fold-btn{display:block;margin-top:14px}
 .kl-done-box{display:none;text-align:center}.kl.kl-done .kl-done-box{display:block}
 .kl-done-ok{font-size:13px;color:var(--gold2);margin:2px 0 12px;line-height:1.5}
 .o-remind{margin:2px 4px 12px;text-align:center;font-family:'DM Sans',sans-serif}
@@ -4261,6 +4263,8 @@ function renderResultExtra(r){
     })()
   });
   if(window._manoView) manoKlView();
+  // Grįžta iš porų analizės — klausimų blokas trumpas
+  try{ if(sessionStorage.getItem('delnasKlFold')){ sessionStorage.removeItem('delnasKlFold'); klFold(document.querySelector('#r-extra .kl')); } }catch(e){}
 }
 
 // ═══ „Klausk savo delnų“ blokas (asmeninis ir porų): klausimo laukelis + mokėjimas naujame lange ═══
@@ -4358,6 +4362,22 @@ function klMarkDone(kl, ks){
   // Apmokėti klausimai dar neišnaudoti — siūlome užduoti likusius, o ne pirkti naujų
   if(ks&&/^(cs_[A-Za-z0-9_]{4,190}|kp_[a-f0-9]{24})$/.test(ks)){ kl.dataset.ks=ks; klRefreshLeft(kl); }
   kl.classList.add('kl-done');
+}
+// Grįžus iš kitos analizės (porų ↔ asmeninės) — klausimų blokas trumpas: tekstas ir auksinis mygtukas, paspaudus išsiskleidžia forma.
+// Jau užduotų klausimų blokas (kl-done) ir „Mano analizių“ atsakymai nekeičiami
+function klFold(kl){
+  if(!kl||kl.classList.contains('kl-fold')||kl.querySelector('.kl-mine')) return;
+  const b=document.createElement('button'); b.type='button'; b.className='kl-btn kl-fold-btn';
+  const lbl=()=>{ const kb=kl.querySelector('.kl-btn:not(.kl-fold-btn)'), t=(kl.querySelector('.kl-txt')||{}).textContent||'', bt=kb?kb.textContent:'';
+    const pr=bt.match(/\d+,\d+\s*€/);
+    if(pr) return '✋ Užduoti klausimus — '+pr[0];
+    const m=t.match(/liko (\d+)/), n=m?m[1]:(/3 klausimai/.test(t)?'3':'');
+    return '✦ Užduoti klausimus'+(n?' (liko '+n+')':''); };
+  b.textContent=lbl();
+  const mo=new MutationObserver(()=>{ const v=lbl(); if(b.textContent!==v) b.textContent=v; });
+  mo.observe(kl,{subtree:true,childList:true,characterData:true});
+  b.addEventListener('click',()=>{ mo.disconnect(); kl.classList.remove('kl-fold'); b.remove(); const q=kl.querySelector('textarea'); if(q) q.focus(); });
+  kl.appendChild(b); kl.classList.add('kl-fold');
 }
 // Nauji 3 klausimai — laukelis išvalomas (ankstesnis klausimas jau užduotas)
 function klNewRound(kl){ kl.classList.remove('kl-done'); const q=kl.querySelector('textarea'); if(q){ q.value=''; q.dispatchEvent(new Event('input',{bubbles:true})); q.focus(); } }
@@ -6866,6 +6886,8 @@ function poraOnceGift(once){
 // live=true — atnaujinama grįžus į langą (pvz. po asmeninės analizės kitame skirtuke): blokas neišvalomas iš anksto (ekranas nešokinėja)
 // Grįžta iš asmeninės analizės (/?pora=…#asmenine) — asmeninių analizių blokas su vardais rodomas visada, kad būtų aišku, kurioje analizėje esi ir kas atlikta
 const _poraDuoReturn=/^#(asmenine|dovanos)$/.test(location.hash);
+// Grįžus iš asmeninės analizės — klausimų blokas trumpas
+if(location.hash==='#asmenine'){ const f=()=>klFold(document.getElementById('pora-kl')); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',f); else f(); }
 async function loadPoraDuo(live){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
   if(!box||!p.sid) return; if(!live) box.innerHTML='';
@@ -6997,7 +7019,7 @@ function poraBackToPersonal(){
   a.style.cssText="position:absolute;top:calc(10px + var(--sat,0px));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
   a.addEventListener('click',e=>{
     e.preventDefault();
-    if(d.b){ location.href=d.b; return; }
+    if(d.b){ try{ sessionStorage.setItem('delnasKlFold','1'); }catch(x){} location.href=d.b; return; }
     // Asmeninis rezultatas liko ankstesniame lange — šis langas uždaromas; jei naršyklė neleidžia — paaiškinama
     try{ if(window.opener&&!window.opener.closed) window.opener.focus(); }catch(x){}
     try{ window.close(); }catch(x){}
