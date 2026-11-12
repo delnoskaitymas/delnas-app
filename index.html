@@ -3575,6 +3575,11 @@ async function finalizeRetryAfterPayment(){
   }
 }
 
+function shimmerSync(){
+  try{ document.querySelectorAll('.ls.active').forEach(e=>{ (e.getAnimations?e.getAnimations():[]).forEach(a=>{ if(a.animationName==='lsShimmer'&&a.startTime!==0) a.startTime=0; }); }); }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') requestAnimationFrame(shimmerSync); });
+window.addEventListener('pageshow',()=>requestAnimationFrame(shimmerSync));
 function activateStep(n,done,waveDelayMs,prefix){
   prefix=prefix||'ls';
   if(prefix==='ls') window._currentStep=n;
@@ -3618,7 +3623,10 @@ function activateStep(n,done,waveDelayMs,prefix){
     el.style.backgroundSize='300% 100%';
     el.style.backgroundRepeat='no-repeat';
     el.style.animation='lsShimmer 2.6s linear infinite';
-    el.style.animationDelay=breatheDelay+'s';
+    el.style.animationDelay='0s'; void breatheDelay;
+    // Visų punktų šviesa pririšama prie to paties laiko taško (startTime = 0): net jei telefonas puslapį buvo
+    // sustabdęs ir animacijos prasidėjo skirtingu metu, spindulys visuose punktuose eina viena vertikalia linija
+    requestAnimationFrame(shimmerSync);
     // Ryškus tekstas
     const aTxt=el.querySelector('.ls-text');
     if(aTxt){aTxt.style.color='#e8e2d4';aTxt.style.fontWeight='600';}
