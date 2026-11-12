@@ -6574,6 +6574,21 @@ async function poraCopyRemote(btn){
   poraRemoteState(true);
 }
 
+// Grįžus į langą, kuris buvo fone (telefonas jį užšaldė ties „… eilė“, nuorodos siuntimu ar laukimu): būsena patikrinama iš karto —
+// rezultatas paruoštas — atidaromas be tarpinių ekranų; analizė vyksta — iškart laukimo ekranas
+async function poraResync(){
+  const p=window._pora, scr=document.querySelector('.screen.active');
+  if(document.visibilityState!=='visible'||!p||!p.sid||window._poraShown||!scr||!/^s-pora-(next|remote|wait)$/.test(scr.id)) return;
+  try{
+    const d=await (await fetch('/pora/status?session_id='+encodeURIComponent(p.sid))).json();
+    if(window._poraShown) return;
+    if(d.status==='done'&&d.result){ poraStopProgress(); clearTimeout(window._poraFinT); clearInterval(window._poraRemoteTimer); document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.opacity=''; }); renderPoraResult(d.result); return; }
+    if(d.status==='pending'&&scr.id!=='s-pora-wait'){ clearInterval(window._poraRemoteTimer); go('s-pora-wait'); poraProgress(true); poraPoll(); }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',poraResync);
+window.addEventListener('focus',poraResync);
+window.addEventListener('pageshow',poraResync);
 // keep=true — tylus pakartojimas (procentai ir ekranas nekeičiami)
 async function poraStart(keep){
   const p=window._pora;
@@ -6697,6 +6712,7 @@ function poraPoll(){
   const t0=Date.now();
   if(!window._poraProgTimer||!window._poraT0||window._poraDone) poraProgress(!window._poraT0);
   (async function tick(){
+    if(window._poraShown) return;
     try{
       const d=await (await fetch('/pora/status?session_id='+encodeURIComponent(window._pora.sid))).json();
       if(d.status==='done' && d.result){ poraFinishProgress(()=>renderPoraResult(d.result)); return; }
@@ -7082,6 +7098,7 @@ function poraBackToPersonal(){
   addEndBack(sr,'Grįžti į gyvenimo žemėlapį','res-home');
 }
 function renderPoraResult(r){
+  window._poraShown=true; clearInterval(window._poraRemoteTimer);
   markDone('pora');
   // Asmeniniame rezultate (kitame skirtuke) — nuoroda „Atidaryti porų rezultatą“
   try{ const sid=(window._pora||{}).sid; if(sid) localStorage.setItem('delnasDonePoraSid',sid); }catch(e){}
