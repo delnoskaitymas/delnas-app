@@ -313,6 +313,21 @@ document.addEventListener('DOMContentLoaded',()=>{ try{
 }catch(e){} });
 </script>
 <script>
+// Porų dovana (/pora?dovana=KODAS), atidaryta prieš kodo įvedimo ekraną: grįžus naršyklės „atgal“ iš /kodas
+// dovana neatidaroma be kodo — vėl rodomas kodo įvedimas
+(function(){
+  try{
+    const c=new URLSearchParams(location.search).get('dovana'); if(!c) return;
+    const k='delnasPoraGiftAt:'+c.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const stale=()=>(+sessionStorage.getItem('delnasKodasAt')||0)>(+sessionStorage.getItem(k)||0);
+    const nav=((performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||{}).type;
+    if(nav==='back_forward'&&stale()){ location.replace('/kodas'); return; }
+    if(nav!=='back_forward') sessionStorage.setItem(k,String(Date.now()));
+    window.addEventListener('pageshow',e=>{ if(e.persisted&&stale()) location.replace('/kodas'); });
+  }catch(e){}
+})();
+</script>
+<script>
 // Atėjus iš rezultato ekrano — adresas grįžti išsaugomas skirtuke (iki puslapis išvalo adreso parametrus; Stripe grąžina be jų)
 (function(){ const K='delnasPoraBack';
   try{

@@ -2,6 +2,11 @@
 <html lang="lt">
 <head>
 <script>try{ if(/[?&]pora=/.test(location.search)) document.documentElement.classList.add('pora-boot'); }catch(e){}</script>
+<script>/* Dovana, atidaryta šiame lange prieš kodo įvedimo ekraną (/kodas): grįžus naršyklės „atgal“ ji neatidaroma be kodo — vėl kodo įvedimas */
+(function(){try{var st=function(){return history.state&&history.state.delnasGift&&(+sessionStorage.getItem('delnasKodasAt')||0)>(+sessionStorage.getItem('delnasAsmGiftAt')||0);};
+var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='back_forward'&&st()){location.replace('/kodas');return;}
+window.addEventListener('pageshow',function(e){if(e.persisted&&st())location.replace('/kodas');});}catch(e){}})();
+</script>
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
 window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
@@ -7325,7 +7330,10 @@ async function poraShareCard(){
       if(c.length===8) sessionStorage.setItem('delnasGiftCode',c.slice(0,4)+'-'+c.slice(4));
       p.delete('dovana');
       const qs=p.toString();
-      history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);
+      // Šis istorijos įrašas pažymimas kaip dovanos atidarymas (grįžus „atgal“ iš kodo įvedimo — vėl kodo įvedimas)
+      sessionStorage.setItem('delnasAsmGiftAt',String(Date.now()));
+      history.replaceState({delnasGift:1},'',location.pathname+(qs?'?'+qs:'')+location.hash);
+      window.addEventListener('load',()=>{ try{ if(!(history.state&&history.state.delnasGift)) history.replaceState(Object.assign({},history.state,{delnasGift:1}),''); }catch(e){} });
     }
   }catch(e){}
   // Porų analizė, klausimai, „Mano analizės“, apmokėtas užsakymas — ne dovanos ekranas: neatidarytos dovanos užrašas nerodomas (kodas lieka skirtuke)
