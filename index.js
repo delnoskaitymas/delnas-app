@@ -5361,7 +5361,10 @@ function klauskFamilyActive(id, o, orders) {
 }
 // Rezultato ekranui: ar šiai analizei (asmeninės sesija ar porų užsakymas) yra apmokėtų, dar neužduotų klausimų
 app.get('/klausk/active', pollLimiter, (req, res) => {
-  const sid = String(req.query.sid || ''), pora = String(req.query.pora || ''), em = String(req.query.em || '').trim().toLowerCase();
+  const sid = String(req.query.sid || ''), pora = String(req.query.pora || '');
+  let em = String(req.query.em || '').trim().toLowerCase();
+  // Pirmasis poros žmogus (be el. pašto laukelio) — jo klausimai porų užsakymo el. paštu
+  if (!em && req.query.buyer && pora && isValidCheckoutSessionId(pora)) { const po = loadPoraOrders()[pora]; em = String((po && po.email) || '').toLowerCase(); }
   const okP = pora && isValidCheckoutSessionId(pora), okS = !okP && isAnalysisSid(sid);
   if (!okP && !okS) return res.json({});
   let best = null, answered = 0, view = null;

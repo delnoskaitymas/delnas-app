@@ -6779,18 +6779,27 @@ function poraReveal(){
 }
 
 // Porų „Klauskite“ blokas inicijuojamas vieną kartą, kai parodomas porų rezultatas
+// Antrasis poros žmogus (atėjo per nuorodą ?partneris=1) — įsimenama tik šiame naršyklės lange (sessionStorage),
+// kad tame pačiame telefone pirmojo žmogaus rezultatas nebūtų rodomas kaip antrojo
+function poraIsPartner(){
+  const sid=(window._pora||{}).sid||''; if(!sid) return false;
+  try{ if(new URLSearchParams(location.search).get('partneris')==='1'){ sessionStorage.setItem('delnasPoraPartner:'+sid,'1'); return true; } return sessionStorage.getItem('delnasPoraPartner:'+sid)==='1'; }catch(e){ return false; }
+}
 function setupPoraKlausk(){
   const btn=document.getElementById('pora-kl-btn'); if(!btn||btn.dataset.ready) return; btn.dataset.ready='1';
   const sid=(window._pora||{}).sid||'';
   // Kiekvienas poros žmogus klausimus perka savo el. paštu: atsakymai, kvitas ir „Mano analizės“ — tik jam (kito klausimų nemato).
   // Laukelyje — šiame telefone šiai porai anksčiau naudotas arba šio telefono el. paštas
-  const emEl=document.getElementById('pora-kl-email'), emKey='delnasPoraKlEm:'+sid;
-  // emOwn — el. paštas, kuriuo šiame telefone jau pirkti šios poros klausimai (tik pagal jį rodomi jau apmokėti klausimai)
-  let emOwn='', em0=''; try{ emOwn=localStorage.getItem(emKey)||''; em0=emOwn||localStorage.getItem('delnasPoraPdf:'+sid)||(JSON.parse(localStorage.getItem('delnasManoEmail')||'null')||{}).e||''; }catch(e){}
-  if(emEl&&!emEl.value) emEl.value=em0;
-  // „Mano analizės“ šiame telefone atsidarys su klausimus perkančio žmogaus el. paštu
-  btn.addEventListener('click',()=>{ const v=(emEl&&emEl.value||'').trim(); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) try{ localStorage.setItem(emKey,v); localStorage.setItem('delnasManoEmail',JSON.stringify({e:v,at:Date.now()})); }catch(e){} },true);
-  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', emailEl:'pora-kl-email', you:true, body:email=>({kind:'pora',poraSid:(window._pora||{}).sid,email}),
+  // Pirmasis žmogus (užsakęs porų analizę) — el. pašto laukelio nėra: klausimai jo užsakymo el. paštu.
+  // Antrasis — laukelyje jo paties el. paštas (kuriuo gavo PDF ar anksčiau pirko klausimus), niekada ne pirmojo
+  const partner=poraIsPartner(), emEl=document.getElementById('pora-kl-email'), emKey='delnasPoraKlEmP:'+sid, buyKey='delnasPoraKlBuyer:'+sid;
+  let emOwn='', em0='', buyerOwn=false; try{ emOwn=partner?(localStorage.getItem(emKey)||''):''; em0=partner?(emOwn||localStorage.getItem('delnasPoraPdf:'+sid)||''):''; buyerOwn=!partner&&localStorage.getItem(buyKey)==='1'; }catch(e){}
+  if(emEl){ if(partner){ if(!emEl.value) emEl.value=em0; } else emEl.classList.add('hidden'); }
+  btn.addEventListener('click',()=>{ try{
+    if(!partner){ localStorage.setItem(buyKey,'1'); return; }
+    const v=(emEl&&emEl.value||'').trim(); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ localStorage.setItem(emKey,v); localStorage.setItem('delnasManoEmail',JSON.stringify({e:v,at:Date.now()})); }
+  }catch(e){} },true);
+  setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', ...(partner?{emailEl:'pora-kl-email'}:{}), you:true, body:email=>({kind:'pora',poraSid:(window._pora||{}).sid,...(partner?{email}:{})}),
     // Porų dovanoje įskaičiuoti 3 klausimai — blokas jau apmokėtas
     prepaid:(async()=>{ const u=/^gp_/.test(sid)?await (async()=>{
       const r=await fetch('/klausk/pora-gift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poraSid:sid})});
@@ -6801,7 +6810,7 @@ function setupPoraKlausk(){
       btn.textContent='Gauti atsakymus';
       return '/klausk?s='+((window._klFam&&window._klFam[d.id])||d.id);
     })():null;
-      const a=sid&&emOwn?await klActive('#pora-kl',{pora:sid,em:emOwn},true):null;
+      const a=sid&&(emOwn||buyerOwn)?await klActive('#pora-kl',partner?{pora:sid,em:emOwn}:{pora:sid,buyer:1},true):null;
       return u||a;
     })() });
 }
@@ -7225,8 +7234,7 @@ function poraDownloadPdf(){ try{ buildPoraPdfDoc().save(poraPdfName()); }catch(e
 // Antras poros žmogus (atidarė nuorodą savo telefone) — PDF galima gauti ir į savo el. paštą
 function poraPartnerMailSetup(){
   // Antrasis poros žmogus (atėjo per nuorodą) — įsimenama šiame telefone, kad ir grįžus iš kitų puslapių (be „partneris“ adrese) rodytų tą patį
-  const sid=(window._pora||{}).sid||'';
-  let isPartner=false; try{ isPartner=new URLSearchParams(location.search).get('partneris')==='1'; if(isPartner&&sid) localStorage.setItem('delnasPoraPartner:'+sid,'1'); else if(sid) isPartner=localStorage.getItem('delnasPoraPartner:'+sid)==='1'; }catch(e){}
+  const sid=(window._pora||{}).sid||'', isPartner=poraIsPartner();
   const box=document.getElementById('pora-partner-mail'); if(!box||!isPartner) return;
   const p=window._pora||{}, a=ltForms(p.nameA||'');
   document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF jau išsiųstas '+(a.dat||p.nameA||'')+' el. paštu. Nori gauti ir sau?';
