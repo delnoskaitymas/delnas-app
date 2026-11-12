@@ -3136,7 +3136,7 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
       }
     } catch (e) { console.error('[email-result-pdf] porų eilutės klaida:', e.message); }
     // −20 % dovanai (24 val.) — tas pats kodas kaip rezultato ekrane (/promo/offers)
-    try { if (pay || (isGift && ownsPaymentRef(paymentRef, { token }) && giftAnalysis(paymentRef))) onceGift = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email: pay && isValidEmail(pay.email) ? pay.email : email, key: 'once:' + paymentRef }); } catch (e) {}
+    try { if (pay || (isGift && ownsPaymentRef(paymentRef, { token }) && giftAnalysis(paymentRef))) onceGift = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email: pay && isValidEmail(pay.email) ? pay.email : email, key: onceKeyFor(paymentRef, pay && pay.metadata) }); } catch (e) {}
     // Įskaičiuoti klausimai (dovanoje arba pirkti kartu su analize) — užsakymas sukuriamas iškart:
     // laiške mygtukas „Užduoti klausimus“, o dovanos klausimus randa ir priminimas
     let klauskId = null;
@@ -6491,6 +6491,16 @@ function manoOffers(email, manoId) {
   const bundle = find('bundle'), once = find('once');
   return { once: promoLive(once), bundle: promoLive(bundle), poraPrice: PORA_PRICE_CENTS, hasPora: !!(bundle && bundle.usedBy) || recentDone(email, 'pora') };
 }
+// −20 % dovanai: asmeninė analizė porų kaina (iš porų analizės) naudoja tą patį pasiūlymą kaip porų analizė —
+// abiem poros žmonėms ir abiejuose rezultatuose rodoma tiek pat likusių dovanų (išnaudotos neatsiranda iš naujo)
+function onceKeyFor(paymentRef, meta) {
+  try {
+    const c = meta && meta.promo ? String(meta.promo).toUpperCase() : '';
+    const ps = loadPromos(), pr = c && ps.codes[c];
+    if (pr && pr.kind === 'duo') { const k = Object.keys(ps.byKey).find(x => ps.byKey[x] === c), m = k && k.match(/^duo:(.+):[ab]$/); if (m) return 'once:' + m[1]; }
+  } catch (e) {}
+  return 'once:' + paymentRef;
+}
 app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
   try {
     const { paymentRef } = req.body || {};
@@ -6507,7 +6517,7 @@ app.post('/promo/offers', sensitiveLimiter, async (req, res) => {
     const p = await getPaidAnalysisPayment(paymentRef);
     if (!p) return res.json({});
     const email = isValidEmail(p.email) ? p.email : '';
-    const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: 'once:' + paymentRef });
+    const once = createPromo({ kind: 'once', product: 'dovana', pct: ONCE_PCT, ttlMs: DAY_MS, email, key: onceKeyFor(paymentRef, p.metadata) });
     const bundle = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email, key: 'bundle:' + paymentRef });
     // Porų analizė jau užsakyta šia kaina — jos nebesiūlome
     const hasPora = !!bundle.usedBy || recentDone(email, 'pora');
