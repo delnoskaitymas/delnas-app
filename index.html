@@ -7230,9 +7230,9 @@ function poraPartnerMailSetup(){
 // PDF išsiųstas antrajam poros žmogui — laukelis paslepiamas, aiškiai parašyta, kur išsiųstas
 function poraPartnerSent(email){
   const p=window._pora||{}, a=ltForms(p.nameA||''), row=document.querySelector('#pora-partner-mail > div'), msg=document.getElementById('pora-partner-msg');
-  document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF išsiųstas '+(a.dat||p.nameA||'')+' ir tau el. paštu.';
+  document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF išsiųstas '+(a.dat||p.nameA||'')+' ir tau — kiekvienam savo el. paštu.';
   if(row) row.style.display='none';
-  if(msg){ msg.textContent='✓ PDF išsiųstas į '+email; msg.style.cssText='font-size:13px;color:var(--gold2);margin-top:8px;display:block'; }
+  if(msg){ msg.textContent='✓ Tau — į '+email; msg.style.cssText='font-size:13px;color:var(--gold2);margin-top:8px;display:block'; }
 }
 async function poraPartnerEmail(){
   const inp=document.getElementById('pora-partner-email'), btn=document.getElementById('pora-partner-btn'), msg=document.getElementById('pora-partner-msg');
