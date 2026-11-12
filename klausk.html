@@ -30,7 +30,15 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.13),transparent 60%),#000}
-.wrap{max-width:520px;margin:0 auto;padding:40px 16px 48px}
+.wrap{max-width:520px;margin:0 auto;padding:40px 16px 48px;animation:klIn .5s ease both}
+/* Sklandus pasirodymas: puslapis ir kiekviena dalis (patikrinus užsakymą) — pamažu, kaip kiti ekranai */
+@keyframes klIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#list>.qa:not(.new),#ask-wrap:not(.hidden),#all-done:not(.hidden),#status:not(.hidden),#wait:not(.hidden){animation:klIn .45s ease both}
+/* Perėjimas į mokėjimą (/klausk?pay=…): trumpas DELNAS ekranas, tada Stripe */
+#pay-wait{display:none;text-align:center;margin-top:8px}
+.kl-pay .wrap>*:not(.brand):not(.hero):not(#h1):not(#pay-wait){display:none!important}
+.kl-pay #pay-wait{display:block}
+.kl-pay .wrap{transition:opacity .35s ease}
 .brand{text-align:center;font:700 19px 'Playfair Display',serif;letter-spacing:.32em;color:var(--gold)}
 .hero{position:relative;width:112px;height:112px;margin:24px auto 16px;border-radius:50%;background:#000;border:3px solid rgba(212,168,67,.7);
   box-shadow:0 0 18px rgba(212,168,67,.35),inset 0 0 18px rgba(212,168,67,.1)}
@@ -86,11 +94,17 @@ a,button{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
+<script>
+// Mokėjimo perėjimas: klausimų mokėjimas atidaromas naujame lange per šį puslapį — trumpai parodomas DELNAS ekranas,
+// tada (išblukus) atidaromas Stripe. Leidžiami tik Stripe mokėjimo adresai
+(function(){ try{ var u=new URLSearchParams(location.search).get('pay'); if(u&&/^https:\/\/checkout\.stripe\.com\//.test(u)){ window._klPay=u; document.documentElement.classList.add('kl-pay'); } }catch(e){} })();
+</script>
 <script src="/kl-pavyzdziai.js"></script>
 <div class="wrap">
   <div class="brand">DELNAS</div>
   <div class="hero"><i></i></div>
   <h1 id="h1">Klausk savo <em>delnų</em></h1>
+  <div id="pay-wait"><div class="think"><div class="orb"></div><span>Jungiamasi prie saugaus mokėjimo…</span></div></div>
   <p class="lead" id="lead">Tikrinamas užsakymas…</p>
 
   <div id="status" class="status hidden"></div>
@@ -145,7 +159,9 @@ document.getElementById('back-link').addEventListener('click', e => {
     location.href = '/';
   }, 300);
 });
+if (window._klPay) setTimeout(() => { const w = document.querySelector('.wrap'); if (w) w.style.opacity = '0'; setTimeout(() => location.replace(window._klPay), 350); }, 900);
 (function(){
+  if (window._klPay) return;
   const $ = id => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const sid = params.get('s');
