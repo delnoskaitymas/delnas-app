@@ -397,7 +397,7 @@ body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
   try{
     const p=new URLSearchParams(location.search), g=p.get('grizti'), c=p.get('utm_campaign');
     // Iš laiško (utm_source=email) — ne iš rezultato lango: mygtukas „Grįžti atgal“
-    if(p.get('utm_source')==='email') sessionStorage.removeItem(K);
+    if(p.get('utm_source')==='email'){ sessionStorage.removeItem(K); try{ sessionStorage.setItem('delnasGiftExt',JSON.stringify({at:Date.now()})); }catch(x){} }
     else if(g&&/^\/\?(pora|kl|mano)=[^\s]*$/.test(g)&&g.length<600) sessionStorage.setItem(K,JSON.stringify({b:g,at:Date.now()}));
     else if(c==='rezultatas'||c==='pora') sessionStorage.setItem(K,JSON.stringify({b:'',at:Date.now()}));
   }catch(e){}
@@ -1081,6 +1081,15 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   // Atėjus iš „Mano analizių“ — grįžtama į jas (žingsniu atgal), ne į anksčiau atidarytą rezultatą
   try{ const r=document.referrer?new URL(document.referrer):null; if(r&&r.origin===location.origin&&r.pathname==='/mano') d=null; }catch(e){}
   // Ne iš rezultato — „Grįžti atgal“ ten, iš kur atėjo (ir į laišką ar kitą svetainę); naujame lange be istorijos — langas uždaromas
+  // Atidaryta iš el. laiško ar pokalbio (naujame lange, be ankstesnio puslapio) — grįžti galima tik uždarius langą;
+  // jei naršyklė neleidžia jo uždaryti, vietoj mygtuko paaiškinama (pradžios ekranas neatidaromas)
+  let ext=false; try{ const x=JSON.parse(sessionStorage.getItem('delnasGiftExt')||'null'); ext=!!(x&&Date.now()-x.at<6*3600e3); }catch(e){}
+  const closeOrNote=btn=>{
+    try{ window.close(); }catch(x){}
+    setTimeout(()=>{ const n=document.createElement('div'); n.style.cssText='font-size:12px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5';
+      n.textContent='Šį langą gali uždaryti — grįši ten, iš kur atėjai'+(ext?' (laiškas)':'')+'.';
+      const row=btn.closest('.links-row'); if(row&&row.querySelector('#how-open')){ btn.style.display='none'; const dot=row.querySelector('.dot'); if(dot) dot.style.display='none'; row.after(n); } else { btn.replaceWith(n); } },300);
+  };
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
     btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
@@ -1093,9 +1102,9 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
         let pre=null; try{ pre=JSON.parse(sessionStorage.getItem('delnasGiftPre')||'null'); }catch(x){}
         if(pre&&location.pathname.indexOf('/dovana/kortele')===0&&Date.now()-pre.at<6*3600e3&&history.length>pre.len){
           if(pre.len>1){ history.go(pre.len-1-history.length); return; }
-          try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return;
+          closeOrNote(btn); return;
         }
-        if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ location.href='/'; },300); return;
+        if(history.length>1){ history.back(); return; } closeOrNote(btn); return;
       }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;
       // jei uždaryti negalima — atidaromas rezultatas prie to paties bloko
