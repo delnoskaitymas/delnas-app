@@ -2141,7 +2141,7 @@ ATSAKYK TIKTAI JSON. Pradėk nuo {.
 // Tikslas: be klaidų, be pasikartojimų tarp blokų, tekstas atitinka bloko pavadinimą, be tuščių sakinių.
 // Ankstesnė AI korektūra (pašalinta 2026-09-24) pati kurdavo klaidų, todėl čia griežti apribojimai:
 // redaktorius gali tik IŠBRAUKTI sakinį arba NEDAUG PATAISYTI sakinį (pakeista ≤ ~35 % raidžių);
-// didesni perrašymai atmetami, skyriuje lieka ≥ 9 sakiniai (porų — ≥ 8), trumpi elementai (įžvalgos, lentelės) tik taisomi.
+// didesni perrašymai atmetami, skyriuje lieka ≥ 9 sakiniai (porų — ≥ 9), trumpi elementai (įžvalgos, lentelės) tik taisomi.
 // Bet kokios klaidos atveju paliekamas originalas.
 const EDITOR_SENT_RE = /(?<=[.!?…])\s+(?=[A-ZĄČĘĖĮŠŲŪŽ„"0-9])/;
 function editDistance(a, b) {
@@ -2218,7 +2218,7 @@ ${lines.join('\n')}`;
       else nRej++;
     }
     for (const S of secs) {
-      // Skyriuje lieka bent minKeep sakinių (asmeninėje 9, porų 8), išbraukiama ne daugiau kaip 3
+      // Skyriuje lieka bent minKeep sakinių (asmeninėje 9, porų 9), išbraukiama ne daugiau kaip 3
       const maxDel = Math.min(3, Math.max(0, S.sents.length - minKeep));
       const del = [...S.del].slice(0, maxDel); nDel += del.length;
       const kept = S.sents.map((x, k) => del.includes(k) ? null : (S.fix[k] != null ? (nFix++, S.fix[k]) : x)).filter(Boolean);
@@ -2270,7 +2270,7 @@ async function poraEditorPass(r) {
   if (r.sritys) for (const k of Object.keys(r.sritys)) { const d = r.sritys[k]; if (d) for (const f of ['fraze', 'aprasymas']) items.push({ label: `sritis ${k}`, get: () => d[f], set: v => { d[f] = v; } }); }
   if (Array.isArray(r.poros_bruozai)) r.poros_bruozai.forEach((_, i) => items.push({ label: 'poros bruožas', get: () => r.poros_bruozai[i], set: v => { r.poros_bruozai[i] = v; } }));
   if (items.length) blocks.push({ title: 'Delnų palyginimo lentelės ir sritys', sections: [], items });
-  await textEditorPass(blocks, '„jūs“', 'pora', 8);
+  await textEditorPass(blocks, '„jūs“', 'pora', 9);
   if (typeof poraNeutral === 'function') for (const s of poraTextSlots(r)) s.set(poraNeutral(s.text));
   return r;
 }
@@ -4174,8 +4174,9 @@ function ltPhrase(s, c) { return String(s || '').split(/(\s+)/).map(w => /^\s*$/
 // Bendros taisyklės apie vardus porų tekstuose (analizė ir „Klauskite“)
 function poraNameRules(A, B) {
   const forms = [ltNameForms(A), ltNameForms(B)].filter(Boolean);
-  return `- VARDUS NAUDOK SAIKINGAI, BET JŲ NEPRALEISK — tai rimta, profesionali analizė: vardai suteikia asmeniškumo, o per dažnai kartojami skamba skurdžiai ir komiškai. KIEKVIENAME skyriuje (traukia…patarimai) paminėk abu vardus — kiekvieną vardą 1 kartą (daugiausiai 2 kartus, jei skyrius ilgas), ten, kur kalbi apie konkretaus žmogaus bruožą ar indėlį; likusį tekstą rašyk apie jus kaip porą. Išvadose (palyginimuose) vardą rašyk tik jei būtina atskirti, ne daugiau kaip po kartą. Vardas — vienintelis lyčiai neutralus būdas atskirti žmones. NIEKADA neatskirk žmonių žodžiais „vienas… kitas…“, „vienas iš jūsų“, „vienas žmogus“, „kitas“ — tai giminę rodančios formos. Kitur rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“). Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite savo porai…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
-- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „vienas kitą“, „viena kitą“, „vienas prie kito“, „vienas kitam“, „vienas iš jūsų“, „vienas žmogus… kitas…“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „ta, kuri“ / „tas, kuris“ (KLAIDA: „Mila jūsų poroje yra ta, kuri drąsiau reiškia jausmus“ — teisingai: „Mila jūsų poroje drąsiau reiškia jausmus“), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „jūsų poroje“, „savo porai“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
+  return `- VARDUS NAUDOK SAIKINGAI, BET JŲ NEPRALEISK — tai rimta, profesionali analizė: vardai suteikia asmeniškumo, o per dažnai kartojami skamba skurdžiai ir komiškai. KIEKVIENAME skyriuje (traukia…patarimai) paminėk abu vardus — kiekvieną vardą 1 kartą (daugiausiai 2 kartus, jei skyrius ilgas), ten, kur kalbi apie konkretaus žmogaus bruožą ar indėlį; likusį tekstą rašyk apie jus kaip porą. Išvadose (palyginimuose) vardą rašyk tik jei būtina atskirti, ne daugiau kaip po kartą. Vardas — vienintelis lyčiai neutralus būdas atskirti žmones. NIEKADA neatskirk žmonių žodžiais „vienas… kitas…“, „vienas iš jūsų“, „vienas žmogus“, „kitas“ — tai giminę rodančios formos. Kitur rašyk apie jus kaip porą („jūs“, „jums“, „jūsų poroje“, „tarpusavyje“). Nesikreipk į vieną iš jų vardu (NE „${A}, pasakyk…“) — patarimus rašyk jums kaip porai („pasakykite vienas kitam…“, „aptarkite tarpusavyje…“). Trumpose įžvalgose vardų nenaudok.
+- LYČIAI NEUTRALI KALBA: žmonių lytis nežinoma (pora gali būti bet kokia), todėl NIEKADA nerašyk giminę rodančių formų apie juos: ne „viena kitą“, „viena kitai“, „viena kitos“ (moteriška giminė), „vienas iš jūsų“, „vienas žmogus… kitas…“, „abu“, „abi“, „abiem“, „abiejų“ (apie žmones), „ta, kuri“ / „tas, kuris“ (KLAIDA: „Mila jūsų poroje yra ta, kuri drąsiau reiškia jausmus“ — teisingai: „Mila jūsų poroje drąsiau reiškia jausmus“), „partneris/partnerė“, „jis/ji“, „jo/jos“, ne giminę rodančių dalyvių ar būdvardžių („pavargęs“, „ramus“, „linkęs“, „pasiruošusi“). Vietoj jų — „tarpusavyje“, „vienas kitą / vienas kitam / vienas kito“ (ši abipusiškumo forma leidžiama), „kartu“, „jums“, „jūsų“, vardas (kilmininku: „${A} delnai“), arba sakinį perrašyk taip, kad giminės nereikėtų (ne „esate linkę“, o „jums būdinga“).
+- TEMŲ SKYRIŲ TEKSTUOSE IR KLAUSIMŲ ATSAKYMUOSE NIEKADA nenaudok žodžių „savo pora“, „savo poroje“, „savo porai“, „savo porą“, „savo poros“ — jie skamba nenatūraliai. Vietoj jų — vardas, „vienas kitą“, „tarpusavyje“, „kartu“ arba „jūsų santykiuose“.
 - Kai vardą naudoji, linksniuok jį taisyklingai${forms.length ? ' — naudok TIKSLIAI šias formas: ' + forms.join('; ') : ''}.`;
 }
 
@@ -4211,24 +4212,24 @@ function poraNeutral(t) {
     .replace(new RegExp(`${start}([Aa])b[ui]\\s+([${L}]+(?:ate|ote|ite|ėte|atės|otės|itės|ėtės))${end}`, 'g'), (m, a, v) => a === 'A' ? v[0].toUpperCase() + v.slice(1) : v)
     // „papildo vienas kitą“ (apie savybes) → „dera tarpusavyje“
     .replace(new RegExp(`${start}papildo\\s+(?:vienas|viena)\\s+kitą${end}`, 'g'), 'dera tarpusavyje')
-    // „vienas kitą/kitam/kitu/kito“ → „savo porą/porai/pora/poros“ („savo pora“ = kitas poros žmogus)
+    // „vienas kitą“ paliekamas (leidžiama forma); moteriška „viena kitą/kitai/kita/kitos“ → „vienas kitą/kitam/kitu/kito“
     .replace(new RegExp(`${V}(?:su\\s+kitu|su\\s+kita|prie\\s+kito|prie\\s+kitos)${end}`, 'g'), 'tarpusavyje')
-    .replace(new RegExp(`${V}be\\s+(?:kito|kitos)${end}`, 'g'), 'be savo poros')
-    .replace(new RegExp(`${V}kitą${end}`, 'g'), 'savo porą')
-    .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'savo porai')
-    .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'savo pora')
-    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'savo poros')
-    // „Viena kitos įtaka“ sakinio pradžioje → „Jūsų tarpusavio įtaka“; „mokykitės viena iš kitos“ → „mokykitės iš savo poros“
+    .replace(new RegExp(`${V}be\\s+(?:kito|kitos)${end}`, 'g'), 'be vienas kito')
+    .replace(new RegExp(`${V}kitą${end}`, 'g'), 'vienas kitą')
+    .replace(new RegExp(`${V}(?:kitam|kitai)${end}`, 'g'), 'vienas kitam')
+    .replace(new RegExp(`${V}(?:kitu|kita)${end}`, 'g'), 'vienas kitu')
+    .replace(new RegExp(`${V}(?:kito|kitos)${end}`, 'g'), 'vienas kito')
+    // „Viena kitos įtaka“ sakinio pradžioje → „Jūsų tarpusavio įtaka“; „mokykitės viena iš kitos“ → „mokykitės vienas iš kito“
     .replace(new RegExp(`(^|[.!?]\\s+)Vien(?:a|as)\\s+(?:kitos|kito)\\s+`, 'g'), '$1Jūsų tarpusavio ')
-    .replace(new RegExp(`${V}iš\\s+(?:kito|kitos)${end}`, 'g'), 'iš savo poros')
+    .replace(new RegExp(`${V}iš\\s+(?:kito|kitos)${end}`, 'g'), 'vienas iš kito')
     // „X linkusi/linkęs planuoti“ → „X mėgsta planuoti“; „linkusi į aktyvumą“ → „labiau renkasi aktyvumą“
     .replace(new RegExp(`${start}(?:linkusi|linkęs|linkusios|linkę)\\s+į\\s+`, 'g'), 'labiau renkasi ')
     .replace(new RegExp(`${start}(?:linkusi|linkęs)\\s+(?=[${L}]+ti${end})`, 'g'), 'mėgsta ')
     .replace(new RegExp(`${start}(?:linkusios|linkę)\\s+(?=[${L}]+ti${end})`, 'g'), 'mėgstate ')
     // „tinka abiems“ → „tinka jums“
     .replace(new RegExp(`${start}(tinka|svarbu|patinka|naudinga|reikia|patogu|gera)\\s+abiem(?:s)?${end}`, 'g'), '$1 jums')
-    // „pasitiki kito gebėjimais“, „su kito poreikiais“ → „… savo poros …“
-    .replace(new RegExp(`${start}(pasitiki|pasitikite|su|kartu\\s+su)\\s+kito\\s+`, 'g'), '$1 savo poros ')
+    // „pasitiki kito gebėjimais“, „su kito poreikiais“ → „… vienas kito …“
+    .replace(new RegExp(`${start}(pasitiki|pasitikite|su|kartu\\s+su)\\s+kito\\s+`, 'g'), '$1 vienas kito ')
     // Giminę rodantys būdvardžiai po „tapo/tampa/būti/būna/išlieka/jaučiasi“ → prieveiksmis
     // („tapo atsargesnis“ → „ėmė elgtis atsargiau“, „natūralu būti šiltesniam ir atviresniam“ → „natūralu elgtis šilčiau ir atviriau“)
     .replace(new RegExp(`${start}(tapo|tampa|tapti|būti|būna|išlieka|jaučiasi|jaučiatės)\\s+(${ADJ}(?:(?:,\\s+|\\s+ir\\s+)${ADJ})*)${end}`, 'g'), (m, v, list, off, all) => {
@@ -4301,7 +4302,7 @@ async function poraNeutralPass(r, nameA, nameB) {
 
 Rask tekstus, kuriuose apie ŽMONES (apie kurį nors iš jų ar apie juos kartu, „jūs“) pavartotos giminę rodančios formos, ir perrašyk tik tuos sakinius neutraliai, išlaikydamas prasmę, toną ir „jūs“ kreipinį:
 - būdvardžiai ir dalyviai apie žmogų ar „jūs“: „linkusi/linkęs“, „jaučiasi sulaikoma/varginamas“, „jaučiatės sulaikomi“, „esate pasirengę“, „stipresni“, „rami“, „atviras“, „pavargusi“, „skirtingais“ → rašyk veiksmažodžiu, prieveiksmiu ar daiktavardžiu („mėgsta“, „labiau renkasi“, „Linai trūksta laisvės“, „Moniką vargina per greitas tempas“, „jums netrūksta pasiryžimo“, „kartu esate stipresnė pora“);
-- „vienas kitą/kito“, „viena kitos“, „vienas iš jūsų… kitas…“, „abu“, „abi“, „abiem“, „abiems“, „kito“ (apie žmogų) → „tarpusavyje“, „jūsų tarpusavio“, „savo poros“, „jums“;
+- „viena kitą/kitos“ (moteriška giminė), „vienas iš jūsų… kitas…“, „abu“, „abi“, „abiem“, „abiems“, „kito“ (apie žmogų) → „tarpusavyje“, „jūsų tarpusavio“, „vienas kitą / vienas kitam / vienas kito“, „jums“ (NIEKADA „savo pora“, „savo poroje“, „savo porai“, „savo porą“, „savo poros“);
 - įvardžiai „jis“, „ji“, „jo“, „jos“, „jam“, „jai“, „pats“, „pati“ apie žmogų → vardas tinkamu linksniu arba perrašytas sakinys.
 Būdvardžiai apie daiktus („linija ilga“, „ryšys stiprus“, „delnai nufotografuoti“) — taisyklingi, jų NEKEISK. Vardų nekeisk. Neperrašinėk tekstų, kuriuose giminės apie žmones nėra. Kiekvieną pataisytą tekstą grąžink VISĄ.
 
@@ -4358,7 +4359,7 @@ KAIP ANALIZUOTI (darbo eiga, svarbiausia tikslumui):
 
 TAISYKLĖS:
 - Kreipkis į abu kartu „jūs“ forma (jūs, jūsų, jums), esamuoju laiku.
-- IŠ VARDŲ LYTIES NESPRĘSK: net jei vardas atrodo moteriškas ar vyriškas (Monika, Lina, Tomas), rašyk taip, kad tekstas tiktų bet kokios lyties žmonėms ir bet kokiai porai. KLAIDA → TEISINGAI: „Lina linkusi į aktyvumą“ → „Lina labiau renkasi aktyvumą“; „Monika linkusi planuoti“ → „Monika mėgsta planuoti“; „jaučiasi sulaikoma / varginama“ → „Linai trūksta laisvės“, „Moniką vargina per greitas tempas“; „viena kitos įtaka“, „mokykitės viena iš kitos“ → „jūsų tarpusavio įtaka“, „mokykitės iš savo poros“; „tinka abiems“ → „tinka jums“; „pasitiki kito gebėjimais“, „su kito poreikiais“ → „pasitiki savo poros gebėjimais“, „su savo poros poreikiais“; „kas vienam sunku, kitam lengva“ → „kas sunku vienam iš jūsų, tą lengvai padaro jūsų pora“; apie jus daugiskaitos būdvardžių ir dalyvių taip pat nerašyk („esate pasirengę“, „esate stipresni“, „daro jus skirtingais“ → „jums netrūksta pasiryžimo“, „kartu esate stipresnė pora“, „jūsų skirtumai“).
+- IŠ VARDŲ LYTIES NESPRĘSK: net jei vardas atrodo moteriškas ar vyriškas (Monika, Lina, Tomas), rašyk taip, kad tekstas tiktų bet kokios lyties žmonėms ir bet kokiai porai. KLAIDA → TEISINGAI: „Lina linkusi į aktyvumą“ → „Lina labiau renkasi aktyvumą“; „Monika linkusi planuoti“ → „Monika mėgsta planuoti“; „jaučiasi sulaikoma / varginama“ → „Linai trūksta laisvės“, „Moniką vargina per greitas tempas“; „viena kitos įtaka“, „mokykitės viena iš kitos“ → „jūsų tarpusavio įtaka“, „mokykitės vienas iš kito“; „tinka abiems“ → „tinka jums“; „pasitiki kito gebėjimais“, „su kito poreikiais“ → „pasitiki vienas kito gebėjimais“, „atsižvelgia į vienas kito poreikius“; „kas vienam sunku, kitam lengva“ → „kas sunku ${A}, tą lengvai padaro ${B}“ (su vardais); apie jus daugiskaitos būdvardžių ir dalyvių taip pat nerašyk („esate pasirengę“, „esate stipresni“, „daro jus skirtingais“ → „jums netrūksta pasiryžimo“, „kartu esate stipresnė pora“, „jūsų skirtumai“).
 - LYČIAI NEUTRALI KALBA VISUOSE LAUKUOSE (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): žmonių lytis nežinoma. Apie žmogų ar apie jus NIEKADA nerašyk giminę rodančių būdvardžių, dalyvių ar įvardžių — nei paprastų, nei lyginamųjų (KLAIDA: „tapo atsargesnis“, „natūralu būti šiltesniam“, „jaučiasi saugi“, „yra rami“, „pavargusi“, „linkęs“, „jis/ji“, „būti atviresniems“). Rašyk veiksmažodžiu, prieveiksmiu ar daiktavardžiu: „ėmė elgtis atsargiau“, „natūralu šilčiau ir atviriau reikšti jausmus“, „jaučiasi saugiai“, „būdinga ramybė“, „kai trūksta jėgų“. Būdvardžiai leidžiami tik apie daiktus („linija ilga“, „ryšys stiprus“).
 ${poraNameRules(A, B)}
 - Skyrių tekstuose (traukia…patarimai) PATIEMS fiziniams požymiams vietos neskirk — rašyk išvadas apie jų santykį. Fiziniai požymiai aprašomi TIK lauke „palyginimai“.
@@ -4366,11 +4367,12 @@ ${poraNameRules(A, B)}
 - JSON formatui: teksto viduje NIEKADA nenaudok dvigubų kabučių ". Jei reikia pabrėžti — naudok 'apostrofus'.
 - Įžvalgos (izvalgos) ir poros bruožai — TA PAČIA „jūs“ forma kaip tekstas: NIEKADA trečiojo asmens veiksmažodis be „jūs/jūsų“ (KLAIDA: „Vengia konfliktų“, „Siekia artumo“ — teisingai: „Vengiate konfliktų“, „Jūsų siekis — artumas“).
 
-${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („vienas kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
-- Kiekvienas skyrius: 9–10 sakinių (NIEKADA daugiau nei 10 ir mažiau nei 8), išsamus ir sklandus tekstas (ne sąrašas) iš konkrečių tiesioginių faktų apie jūsų santykius — be pavyzdžių, scenarijų ir iliustracijų; skyriai nesikartoja tarpusavyje.
+${klauskLangRules('jūs', { physicalOk: true, extraCheck: '5. Ar įžvalgos parašytos „jūs“ forma, o skyriuose nėra fizinių požymių?\n6. Ar NĖRA giminę rodančių formų apie žmones („viena kitą“, „abu“, „abiem“, „linkęs/linkusi“, „jis/ji“, „atsargesnis/šiltesnė“, „rami/saugus“, „linkusi/linkęs“, „sulaikoma/varginama“, „viena kitos“, „abiems“, „kito“, „pasirengę/stipresni“) — ir lentelėje, ir visuose kituose laukuose? Ar nenusprendei lyties iš vardų? Jei yra — perrašyk neutraliai (veiksmažodžiu ar prieveiksmiu).\n7. Ar KIEKVIENAME skyriuje (traukia…patarimai) abu vardai paminėti po 1 kartą (ne daugiau kaip po 2)? Jei vardo nėra — įterpk jį ten, kur kalbama apie to žmogaus bruožą; jei per daug — pakeisk „jūs/jūsų“.' })}
+- Kiekvienas skyrius: 10–11 sakinių (NIEKADA daugiau nei 11 ir mažiau nei 9), išsamus ir sklandus tekstas (ne sąrašas) iš konkrečių tiesioginių faktų apie jūsų santykius — be pavyzdžių, scenarijų ir iliustracijų; skyriai nesikartoja tarpusavyje.
 - SVARBIAUSIA PIRMIAU: kiekviename skyriuje pirmiausia pateik tai, kas iš ŠIŲ delnų matyti svarbiausia ir labiausiai asmeniška jūsų porai pagal skyriaus pavadinimą — tokius konkrečius dalykus, kad pora atpažintų save („tai tikrai apie mus“); be pagyrų, be bendrų frazių ir be pažadų.
 - VISUR (skyriuose, palyginimuose, išvadose, įžvalgose, srityse, bruožuose): tik tai, kas išplaukia iš ŠIŲ delnų ir jų analizės — konkrečiai, kiek įmanoma tiksliau, tiesiai, be užuolankų, be pavyzdžių, be papildomų žodžių ir sakinių, kurie nieko nepridėtų.
 - TIESIAI, NE APLINKUI: kiekvienas sakinys tiesiai pasako faktą apie jus — veiksmažodžiu, ką darote, kaip elgiatės, ko norite ar vengiate (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate.“). DRAUDŽIAMA aplinkiniai sakiniai, kurie apsako kažką šalia, bet nepasako tiesiai (KLAIDA: „Jūsų ryšyje slypi kažkas, kas…“, „Tai, kaip žiūrite vienas į kitą, atskleidžia…“).
+- KIEKVIENAS SAKINYS — VERTINGAS IR KONKRETUS: tik tai, kas tikrai svarbu ir naudinga ŠIAI porai ir kas išplaukia iš ŠIŲ delnų stebėjimų bei palyginimų (kuo jūsų delnai panašūs ir kuo skiriasi). Pora turi jausti, kad gauna tikslią, vertingą informaciją apie save, o ne bendrus patarimus, tinkančius bet kuriai porai. DRAUDŽIAMA įžanginės, apibendrinančios ir „vatos“ frazės bei žodžiai, kurie nieko nepridėtų (pvz. „Jūsų santykiuose svarbu…“, „Tai rodo, kad…“, „Verta atkreipti dėmesį…“, „Kaip ir kiekvienai porai…“, „iš esmės“, „tam tikra prasme“). Patikrinimas: jei sakinį išmetus pora neprarastų konkrečios informacijos apie save — jį perrašyk konkrečiau.
 - DAUGUMA SAKINIŲ IŠSAMŪS: skyriuose dauguma sakinių išsamūs — paprastai 12–22 žodžiai: faktas ir tai, kaip jis pasireiškia jūsų santykiuose ar ką jums reiškia (pvz. „Ginčus sprendžiate greitai ir ilgai nepykstate, nes jums svarbiau vėl susikalbėti nei įrodyti savo tiesą.“). Vienas kitas sakinys skyriuje gali būti trumpesnis (6–10 žodžių), jei taip mintis aiškesnė, bet DRAUDŽIAMA tekstas vien iš trumpų, kapotų sakinių. Ilgesnis sakinys vis tiek turi būti aiškus, be vatos ir be kelių šalutinių sakinių grandinės.
 
 STEBĖJIMAI (pildyk PATĮ PIRMĄ): a — ${gA} delnų išsami atskira analizė, b — ${gB} (kiekvienam 8–12 sakinių, iki 1500 simbolių, konkretūs matomi požymiai ir jų reikšmė; tai darbinis pagrindas, vartotojui nerodomas).
@@ -4381,18 +4383,20 @@ PALYGINIMAI (pildyk po stebėjimų — remkis jais): keturios sritys — sirdies
   - r (ką reiškia): viena aiški reikšmė, 3–8 žodžiai, be vardo (pvz. jausmus reiškia šiltai, bet apgalvotai).
 - b: tas pats apie ${aB} — {"p":"…","r":"…"}
 - isvada: VIENAS trumpas sakinys (iki 110 simbolių), BE VARDŲ, „jūs“ forma — ką šis skirtumas ar panašumas reiškia jūsų porai ir ką verta daryti (pvz. Jausmus reiškiate skirtingu tempu — verta atvirai kalbėtis, kiek laiko reikia artumui.). Nerašyk „vienas… kitas…“.
-- Visi šie laukai — LYČIAI NEUTRALIAI: jokių giminę rodančių būdvardžių ar dalyvių apie žmogų („atvira“, „ramus“, „linkęs“), jokių „abu“, „abi“, „vienas kitą“.
+- Visi šie laukai — LYČIAI NEUTRALIAI: jokių giminę rodančių būdvardžių ar dalyvių apie žmogų („atvira“, „ramus“, „linkęs“), jokių „abu“, „abi“, „viena kitą“ („vienas kitą“ leidžiama).
 
 SRITYS (balai 0–100, įvertink kiekvieną atskirai pagal palyginimus; balai turi skirtis tarpusavyje ir atspindėti šią porą): jausmai (jausmai ir artumas), bendravimas, vertybes (vertybės ir požiūris), kasdienybe (kasdienybė ir gyvenimo ritmas), trauka (trauka ir aistra), ateitis (ateities planai). Kiekvienai — tik balas (sveikas skaičius 55–98); iš jų skaičiuojamas bendras suderinamumas.
 
-SKYRIAI:
-- traukia (Kas jus traukia ir sieja): kas jus natūraliai sieja ir ką kiekvienas iš jūsų randa savo poroje
-- bendravimas (Kaip bendraujate ir sprendžiate nesutarimus): jūsų bendravimo stiliai, kaip jie dera, kaip geriausiai išspręsti nesutarimus
-- papildo (Kaip jūsų savybės dera tarpusavyje): kur vieno žmogaus stiprybė užpildo kito silpnesnę vietą
-- trintis (Kur gali kilti trintis): 2–3 konkrečios sritys ir kaip su jomis tvarkytis
-- ateitis (Požiūris į pinigus, namus ir ateitį): kur jūsų požiūriai sutampa ir kur verta susitarti
-- stiprybe (Jūsų poros stiprybė): kas daro jūsų porą išskirtinę
-- patarimai (Patarimai jūsų porai): 3–4 praktiški patarimai, parašyti sklandžiu tekstu
+SKYRIAI — kiekvienas kalba TIK apie savo temą ir atskleidžia 3 žemiau nurodytas potemes, sklandžiu tekstu (ne sąrašu). Potemių aprašymai NĖRA sakinių šablonai: NEKOPIJUOK jų žodžių ir nepradėk jais sakinių — kiekvieną mintį suformuluok naujais žodžiais apie ŠIĄ porą. Skyriai nesikartoja tarpusavyje: prieš rašydamas kiekvieną skyrių, patikrink, kas jau pasakyta, ir rašyk tik NAUJĄ turinį.
+- KRITIŠKAI SVARBU — TIK SAVO TEMA: kiekviename skyriuje KIEKVIENAS sakinys turi atitikti BŪTENT to skyriaus pavadinimą. Ta pati savybė, tas pats delnų skirtumas, ta pati situacija ar tas pats patarimas negali būti aprašyti dviejuose skyriuose — nei tais pačiais, nei kitais žodžiais. Jei mintis labiau tinka kitam skyriui — rašyk ją tik ten. Jei kurią nors savybę reikia paminėti keliuose skyriuose, kiekviename atskleisk VISIŠKAI KITĄ jos pusę, atitinkančią to skyriaus temą.
+- BE TUŠČIŲ ŽODŽIŲ: jokių sakinių, kurie tik pakartoja skyriaus pavadinimą, apibendrina ar „užpildo“ tekstą (pvz. „Bendravimas jums labai svarbus.“, „Kiekviena pora susiduria su iššūkiais.“, „Ateitis priklauso nuo jūsų.“). Kiekvienas sakinys — aiškus, konkretus faktas ar naudingas patarimas apie ŠIĄ porą.
+- traukia (Kas jus traukia ir sieja): (a) kuri konkreti abiejų delnų panašybė jus labiausiai sieja ir kaip ji jaučiasi kasdien; (b) kokias konkrečias savybes ${A} vertina ${gB} charakteryje, o ${B} — ${gA} (tai, ko pačiam trūksta); (c) kas jūsų ryšį palaiko ilgainiui, kai pirminė trauka nurimsta. NĖRA apie bendravimą, trintį ar poros stiprybę
+- bendravimas (Kaip bendraujate ir sprendžiate nesutarimus): (a) kuo konkrečiai skiriasi jūsų bendravimo būdai (tempas, atvirumas, kaip reiškiate nepasitenkinimą); (b) kaip dažniausiai įsiplieskia ir kaip baigiasi jūsų nesutarimai; (c) koks konkretus susitarimo būdas jums veikia geriausiai. NĖRA apie pinigus, ateitį ar bendrus patarimus
+- papildo (Kaip jūsų savybės dera tarpusavyje): (a) kur ${gA} stiprybė konkrečiai užpildo ${gB} silpnesnę vietą ir atvirkščiai; (b) kuriose kasdienėse srityse kartu jums sekasi geriau nei atskirai; (c) kur panašios savybės jus stiprina, o kur — dvigubina tą patį silpnumą. NĖRA apie trauką ar konfliktus
+- trintis (Kur gali kilti trintis): (a) 2–3 konkrečios trinties sritys ir iš kokio jūsų delnų skirtumo kiekviena kyla; (b) kokiose situacijose tai labiausiai išryškėja ir kaip tada elgiasi ${A}, o kaip ${B}; (c) kaip konkrečiai su tuo tvarkytis, kad trintis netaptų kartojimosi ratu. Jei bendravimo nesutarimai jau aprašyti skyriuje „bendravimas“ — čia rašyk apie KITAS sritis (tempą, erdvę, įpročius, sprendimus)
+- ateitis (Požiūris į pinigus, namus ir ateitį): (a) kaip skiriasi jūsų požiūris į pinigus — taupymas, išlaidos, rizika; (b) ko ${A} ir ${B} tikisi iš namų ir bendros kasdienybės; (c) kur jūsų ateities planai sutampa ir dėl ko verta susitarti iš anksto. Rašyk TIK apie pinigus, namus ir ateities planus
+- stiprybe (Jūsų poros stiprybė): (a) kas daro jūsų porą išskirtinę ir retai pasitaikančią; (b) kokius sunkumus kartu jums lengviau įveikti nei daugumai porų ir kodėl; (c) kokį jūsų bendrą gebėjimą verta naudoti daugiau. NEKARTOK to, kas jau parašyta skyriuose „traukia“ ir „papildo“ — čia tik tai, kas jus išskiria KAIP PORĄ
+- patarimai (Patarimai jūsų porai): 3–4 konkretūs, praktiški patarimai, kiekvienas tiesiogiai susietas su jūsų delnų skirtumu ar panašumu (kas, kada ir kaip daryti), parašyti sklandžiu tekstu. NEKARTOK patarimų, jau duotų skyriuose „bendravimas“, „trintis“ ar „ateitis“ — čia tik NAUJI patarimai
 
 Taip pat:
 - poros_bruozai: 3 trumpos (2–4 žodžių) frazės, apibūdinančios šią porą (pvz. Gilus tarpusavio supratimas)
@@ -5087,17 +5091,19 @@ async function answerKlausk(order, question) {
   if (order.kind === 'pora') return answerKlauskPora(order, question);
   const prev = klauskPrevQa(order).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
   const name = order.name || '';
-  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Atsakyk remdamasis BŪTENT šia analize: jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis.
+  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas patarėjas. Žemiau — ${name ? name + ' ' : 'žmogaus '}asmeninė delnų analizė (jau sugeneruota iš jo delnų nuotraukų). Žmogus užduoda asmeninį klausimą. Analizė — tik tavo PAGRINDAS: iš jos remkis jo stiprybėmis, kryptimi, santykių ir bendravimo būdu, finansiniu potencialu, artėjančiais pokyčiais ir kliūtimis, bet atsakyk BŪTENT į šį klausimą ir nagrinėk jį plačiau ir giliau, nei parašyta analizėje.
 
-ASMENINĖ DELNŲ ANALIZĖ:
+ASMENINĖ DELNŲ ANALIZĖ (žmogus ją jau perskaitė — NEKARTOK jos):
 ${klauskContextText(klauskResultFor(order))}${klauskCompareText(klauskCompareOf(order), false)}
 ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
 KLAUSIMAS: ${question}
 
 KAIP ATSAKYTI:
 - 7–10 sakinių, sklandus tekstas „tu“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės (be „Puikus klausimas“).
-- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (pvz. kokia jo stiprybė čia padės, kokia kliūtis trukdo) — kad žmogus jaustų, jog atsakymas skirtas būtent jam.
-- Pabaigoje — 2–3 aiškūs, praktiški žingsniai, ką daryti dabar (sklandžiu tekstu, ne sąrašu).
+- NEKARTOK ANALIZĖS: nekopijuok ir neperpasakok jos sakinių, formuluočių ar teiginių — žmogus juos jau skaitė. Remkis 2–3 konkrečiais analizės dalykais (pvz. kokia stiprybė čia padės, kokia kliūtis trukdo), bet parašyk tai, ko analizėje NĖRA: kodėl būtent ši situacija taip klostosi (iš kurių savybių ji kyla), kaip tai pasireiškia būtent klausime minimoje situacijoje, ko tikėtis ir ką daryti.
+- KIEKVIENAS ATSAKYMAS — SKIRTINGAS: atsakyk tiksliai į tai, ko klausiama; nerašyk bendro apibendrinimo apie žmogų. Jei ankstesni klausimai panašūs — rinkis kitus analizės aspektus, kitus paaiškinimus ir kitus žingsnius nei ankstesniuose atsakymuose; nė vienas sakinys neturi kartoti ankstesnio atsakymo.
+- Konkrečiai ir vertingai: kiekvienas sakinys turi nešti naują, naudingą mintį būtent šiam žmogui — be įžanginių ir apibendrinančių frazių, be patarimų, tinkančių bet kam.
+- Pabaigoje — 2–3 aiškūs, praktiški žingsniai, tiesiogiai susiję su klausimu (kas, kada ir kaip daryti; sklandžiu tekstu, ne sąrašu).
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk mirties, ligų, nelaimių, išsiskyrimo ar konkrečių datų. Neduok medicininių, teisinių ar konkrečių investavimo patarimų — tokiu atveju švelniai pasakyk, kad dėl to verta pasitarti su specialistu, ir atsakyk tik apie tai, ką analizė sako apie žmogaus savybes ir sprendimų būdą.
 - Jei klausimas rodo, kad žmogui labai sunku arba kyla minčių apie savęs žalojimą — atsakyk itin švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: Vilties linija 116 123 (visą parą), Jaunimo linija 8 800 28888, skubiai — 112.
 - Jei klausimas visai nesusijęs su žmogaus gyvenimu (pvz. matematika, kodas) — trumpai ir maloniai paaiškink, kad atsakai tik į klausimus apie jo paties gyvenimą, ir pasiūlyk, ko galėtų paklausti.
@@ -5124,8 +5130,8 @@ async function klauskGenderFix(text, you) {
     paras.forEach((p, pi) => p.trim().split(EDITOR_SENT_RE).forEach((x, si) => { if (x.match(KLAUSK_GENDER_RE)) units.push({ pi, si, x }); }));
     if (!units.length) return text;
     const pl = you === 'jūs';
-    const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — sakiniai iš atsakymo, parašyto „${pl ? 'jūs' : 'tu'}“ forma. ${pl ? 'Šių žmonių (poros)' : 'Skaitytojo'} LYTIS NEŽINOMA, todėl apie ${pl ? 'juos' : 'skaitytoją'} negali būti giminę rodančių žodžių: „pats/pati“, padalyvių -damas/-dama („nelaukdamas“), dalyvių -ęs/-usi („linkęs“, „pasirengęs“), būdvardžių („ramus“, „atsargesnis“), giminę turinčių daiktavardžių apie ${pl ? 'juos' : 'skaitytoją'} („būtum ekspertas“, „tapsi vadovu“)${pl ? ', „vienas kitą“, „abu“, „abi“, „abiem“ apie žmones' : ''}.
-Kiekvieną sakinį, kuriame tokių žodžių apie ${pl ? 'žmones' : 'skaitytoją'} YRA, pataisyk neutraliai mažiausiu pakeitimu (pvz. „nelaukdamas“ → „ir nelauk“, „kur pats sprendi“ → „kur savarankiškai sprendi“, „būtum ekspertas“ → „tavo žinios būtų vertinamos“${pl ? ', „vienas kitą“ → „tarpusavyje“' : ''}). Žodžių apie daiktus, kitus žmones ar sąvokas („linija ilga“, „vienas žingsnis“, „seno pažįstamo“) NEKEISK. Prasmės, stiliaus ir kitų žodžių nekeisk. Nenaudok kabučių ženklo ".
+    const prompt = `Tu — lietuvių kalbos redaktorius. Žemiau — sakiniai iš atsakymo, parašyto „${pl ? 'jūs' : 'tu'}“ forma. ${pl ? 'Šių žmonių (poros)' : 'Skaitytojo'} LYTIS NEŽINOMA, todėl apie ${pl ? 'juos' : 'skaitytoją'} negali būti giminę rodančių žodžių: „pats/pati“, padalyvių -damas/-dama („nelaukdamas“), dalyvių -ęs/-usi („linkęs“, „pasirengęs“), būdvardžių („ramus“, „atsargesnis“), giminę turinčių daiktavardžių apie ${pl ? 'juos' : 'skaitytoją'} („būtum ekspertas“, „tapsi vadovu“)${pl ? ', „viena kitą“, „abu“, „abi“, „abiem“ apie žmones („vienas kitą“ leidžiama — nekeisk)' : ''}.
+Kiekvieną sakinį, kuriame tokių žodžių apie ${pl ? 'žmones' : 'skaitytoją'} YRA, pataisyk neutraliai mažiausiu pakeitimu (pvz. „nelaukdamas“ → „ir nelauk“, „kur pats sprendi“ → „kur savarankiškai sprendi“, „būtum ekspertas“ → „tavo žinios būtų vertinamos“${pl ? ', „viena kitą“ → „vienas kitą“' : ''}). Žodžių apie daiktus, kitus žmones ar sąvokas („linija ilga“, „vienas žingsnis“, „seno pažįstamo“) NEKEISK. Prasmės, stiliaus ir kitų žodžių nekeisk. Nenaudok kabučių ženklo ".
 Atsakyk TIK JSON: {"N":"visas pataisytas sakinys"} — tik tiems sakiniams, kuriuos taisei; jei taisyti nereikia — {}.
 
 ${units.map((u, i) => `[${i + 1}] ${u.x}`).join('\n')}`;
@@ -5168,9 +5174,9 @@ async function klauskCallAI(prompt) {
 async function answerKlauskPora(order, question) {
   const A = order.nameA || 'Pirmasis žmogus', B = order.nameB || 'Antrasis žmogus';
   const prev = klauskPrevQa(order).map((x, i) => `${i + 1}. Klausimas: ${x.q}\nAtsakymas: ${x.a}`).join('\n\n');
-  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Atsakyk remdamasis BŪTENT šia analize.
+  const prompt = `Tu esi patyręs chiromantas ir šiltas, išmintingas porų patarėjas. Žemiau — ${A} ir ${B} porų suderinamumo analizė, sugeneruota iš abiejų delnų nuotraukų (A — ${A}, B — ${B}). Pora užduoda klausimą apie savo santykius. Analizė — tik tavo PAGRINDAS: iš jos remkis jų savybėmis ir delnų skirtumais, bet atsakyk BŪTENT į šį klausimą ir nagrinėk jį plačiau ir giliau, nei parašyta analizėje.
 
-PORŲ ANALIZĖ:
+PORŲ ANALIZĖ (pora ją jau perskaitė — NEKARTOK jos):
 ${klauskPoraContext(order.result)}${klauskCompareText(order.result && order.result.palyginimas, true)}
 ${prev ? `ANKSČIAU UŽDUOTI KLAUSIMAI IR ATSAKYMAI (nesikartok):\n${prev}\n` : ''}
 KLAUSIMAS: ${question}
@@ -5178,8 +5184,10 @@ KLAUSIMAS: ${question}
 KAIP ATSAKYTI:
 - 7–10 sakinių, sklandus tekstas, kreipkis į abu kartu „jūs“ forma, esamuoju laiku, šiltai ir konkrečiai. Pradėk iškart nuo esmės.
 ${poraNameRules(A, B)}
-- Susiek atsakymą su 2–3 konkrečiais dalykais iš analizės (kaip jūsų savybės dera tarpusavyje, kur kyla trintis, ką rodo jūsų delnų palyginimas) — kad pora jaustų, jog atsakymas skirtas būtent jai.
-- Pabaigoje — 2–3 aiškūs, praktiški žingsniai jūsų porai (sklandžiu tekstu, ne sąrašu).
+- NEKARTOK ANALIZĖS: nekopijuok ir neperpasakok jos sakinių, formuluočių ar teiginių — pora juos jau skaitė. Remkis 2–3 konkrečiais analizės dalykais (savybėmis, delnų skirtumais ar panašumais), bet parašyk tai, ko analizėje NĖRA: kodėl būtent ši situacija jums taip klostosi (iš kurių jūsų savybių ar skirtumų ji kyla), kaip tai pasireiškia būtent klausime minimoje situacijoje, ko tikėtis ir ką daryti.
+- KIEKVIENAS ATSAKYMAS — SKIRTINGAS: atsakyk tiksliai į tai, ko klausiama; nerašyk bendro apibendrinimo apie jūsų santykius. Jei ankstesni klausimai panašūs — rinkis kitus analizės aspektus, kitus paaiškinimus ir kitus žingsnius nei ankstesniuose atsakymuose; nė vienas sakinys neturi kartoti ankstesnio atsakymo.
+- Konkrečiai ir vertingai: kiekvienas sakinys turi nešti naują, naudingą mintį šiai porai — be įžanginių ir apibendrinančių frazių, be patarimų, tinkančių bet kuriai porai.
+- Pabaigoje — 2–3 aiškūs, praktiški žingsniai, tiesiogiai susiję su klausimu (kas, kada ir kaip daryti; sklandžiu tekstu, ne sąrašu).
 - Apie delnus rašyk daugiskaita.
 - Tai savęs pažinimo patirtis, ne profesionali konsultacija. Nepranašauk išsiskyrimo, neištikimybės, ligų, nelaimių ar konkrečių datų; nespręsk už porą, ar jiems būti kartu. Neduok medicininių, teisinių ar investavimo patarimų — tokiu atveju švelniai pasakyk, kad verta pasitarti su specialistu.
 - Jei klausimas rodo smurtą, grėsmę ar minčių apie savęs žalojimą — atsakyk švelniai, palaikančiai ir paragink nedelsiant kreiptis pagalbos: skubiai — 112, Vilties linija 116 123 (visą parą), pagalba nukentėjusiems nuo smurto — 8 800 66366 (Moterų linija) arba 8 800 55522 (Vyrų linija).
