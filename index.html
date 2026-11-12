@@ -4274,6 +4274,8 @@ function manoKlView(){
   const rest=all.find(o=>o.left>0&&(o.qa||[]).length)||all.find(o=>o.left>0);
   // Apmokėti (įskaičiuoti) klausimai dar neužduoti — forma su „✓ jau apmokėti“ lieka kaip yra
   if(!qa.length&&pre&&(!rest||rest.id===pre.id)) return;
+  // Klausimų dar nėra ir neliko apmokėtų — blokas toks pat kaip rezultate po apmokėjimo (laukelis ir mygtukas)
+  if(!qa.length&&!rest) return;
   const lbl=blk.querySelector('.rs-label');
   const form=document.createElement('div'); form.className='kl-form';
   [...blk.children].forEach(c=>{ if(c!==lbl) form.appendChild(c); });
