@@ -1020,7 +1020,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
   });
 
   // Kodo įvedimas: anksčiau šiame lange atidaryta dovana pamirštama — be kodo grįžus atgal ji nebeatsidaro
-  if (location.pathname.replace(/\/+$/, '') === '/kodas') { try { sessionStorage.removeItem('delnasGiftCode'); } catch (x) {} }
+  if (location.pathname.replace(/\/+$/, '') === '/kodas') { try { sessionStorage.removeItem('delnasGiftCode'); sessionStorage.setItem('delnasKodasAt', String(Date.now())); } catch (x) {} }
   if (location.pathname.replace(/\/+$/, '') === '/kodas') { show('v-redeem'); document.title = 'DELNAS — Dovanos kodas'; }
   else if (params.get('session_id')) confirmPaid(params.get('session_id'));
   else if (params.get('kodas')) openCard(params.get('kodas'));
