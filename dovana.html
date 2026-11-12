@@ -912,12 +912,17 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     catch (e) { alert('Nepavyko paruošti kupono. Pabandyk dar kartą.'); }
     b.textContent = t;
   });
+  // Kopijuojama ne plika nuoroda, o visa žinutė (kam, nuo ko, kas dovanojama) — kad gavėjas suprastų, kas tai
   $('copy').addEventListener('click', async () => {
-    const link = redeemLink(current.code);
-    try { await navigator.clipboard.writeText(link); $('copy').textContent = 'Nukopijuota ✓'; }
-    catch (e) { prompt('Nukopijuok nuorodą:', link); }
+    const link = redeemLink(current.code), msg = giftMsgText() + link + '\n\nArba įvesk kodą ' + current.code + ' čia: ' + location.origin + '/kodas';
+    try { await navigator.clipboard.writeText(msg); $('copy').textContent = 'Nukopijuota ✓'; }
+    catch (e) { prompt('Nukopijuok žinutę:', msg); }
     setTimeout(() => { $('copy').textContent = 'Kopijuoti nuorodą'; }, 2000);
   });
+  function giftMsgText() {
+    const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai delnams! 💞' : ' ir 3 klausimai delnams!') : (current.kind === 'pora' ? '! 💞' : '!'));
+    return '🎁 Dovana ' + (current.recipientName ? ltPhrase(current.recipientName, 'dat') : (current.kind === 'pora' ? 'jums' : 'tau')) + (current.fromName ? ' nuo ' + ltPhrase(current.fromName, 'gen') : '') + what + '\n\n👉 Atidaryk dovaną: ';
+  }
   $('share').addEventListener('click', async () => {
     const link = redeemLink(current.code);
     const what = (current.kind === 'pora' ? ' — porų suderinamumas pagal jūsų delnus' : ' — asmeninis gyvenimo žemėlapis pagal tavo delnus') + (current.klausk ? (current.kind === 'pora' ? ' ir 3 klausimai delnams! 💞' : ' ir 3 klausimai delnams!') : (current.kind === 'pora' ? '! 💞' : '!'));

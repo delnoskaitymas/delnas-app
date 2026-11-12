@@ -264,15 +264,22 @@ app.use((req, res, next) => {
 
 // Dovanos nuoroda (/?dovana=… arba /pora?dovana=…) — nuorodos peržiūra Messenger / WhatsApp / Facebook
 // rodo, kad tai dovana (kitaip — bendras puslapio aprašymas iš <!--og--> bloko)
-function sendHtmlWithOg(res, file, title, desc) {
+function sendHtmlWithOg(res, file, title, desc, image) {
   let h = fs.readFileSync(path.join(__dirname, file), 'utf8');
   const t = escapeHtml(title), d = escapeHtml(desc);
+  if (image) h = h.replace(/(<meta (?:property="og:image"|name="twitter:image") content=")[^"]*/g, '$1https://www.delnaskaitymas.lt/img/' + image);
   h = h.replace(/(<meta (?:property="og:title"|name="twitter:title"|property="og:image:alt") content=")[^"]*/g, '$1' + t)
        .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*/g, '$1' + d);
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(h);
 }
 app.use((req, res, next) => {
+  // Porų analizės nuoroda (antrajam žmogui — /?pora=…&partneris=1, ir porų rezultatas) — porų paveikslėlis ir aprašymas
+  if (req.method === 'GET' && typeof req.query.pora === 'string' && typeof req.query.dovana !== 'string' && (req.path === '/' || req.path === '/index.html')) {
+    return req.query.partneris
+      ? sendHtmlWithOg(res, 'index.html', '💞 Porų suderinamumas — DELNAS', 'Tave kviečia nufotografuoti delnus porų suderinamumo analizei. Atidaryk nuorodą — tau mokėti nereikia.', 'og-pora.jpg')
+      : sendHtmlWithOg(res, 'index.html', '💞 Porų suderinamumas — DELNAS', 'Porų suderinamumo analizė pagal abiejų delnus.', 'og-pora.jpg');
+  }
   if (req.method !== 'GET' || typeof req.query.dovana !== 'string') return next();
   if (req.path === '/' || req.path === '/index.html')
     return sendHtmlWithOg(res, 'index.html', '🎁 Tau dovana — DELNAS gyvenimo žemėlapis', 'Tau padovanotas asmeninis gyvenimo žemėlapis pagal delnus. Atidaryk dovaną ir nufotografuok delnus — mokėti nereikės.');
