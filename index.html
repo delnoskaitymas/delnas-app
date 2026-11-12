@@ -388,8 +388,8 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 #s-pora-wait div:has(> .load-steps) > div:first-child{height:12px!important}
 /* Asmeninės analizės laukimas — antraštė ir temų laukeliai tokie pat kaip porų analizės ekrane, delno ikona šiek tiek mažesnė */
 #s-loading .load-wrap{padding-top:40px!important}
-#s-loading .load-title{font-size:23px!important}
-#s-loading #hand-container{width:120px!important;height:120px!important}
+#s-loading .load-title{font-size:20px!important}
+#s-loading #hand-container{width:100px!important;height:100px!important}
 #s-loading .load-steps{gap:5px!important}
 #s-loading .ls{padding:8px 12px;gap:10px;border-radius:10px;border-top-color:rgba(255,255,255,.05)}
 #s-loading .ls-icon{width:24px;height:24px;border-radius:6px}
@@ -6780,7 +6780,7 @@ async function renderDuoNext(){
     box.innerHTML='';
     if(sr) sr.classList.add('duo-mode');
     if(sr&&!document.getElementById('duo-back')){
-      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#dovanos'; l.textContent='Grįžti į porų suderinamumą';
+      const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent='Grįžti į porų suderinamumą';
       l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
       sr.prepend(l);
     }
@@ -6862,6 +6862,8 @@ function poraOnceGift(once){
   giftOnceShow('pora-rb-once',gifts,once);
 }
 // live=true — atnaujinama grįžus į langą (pvz. po asmeninės analizės kitame skirtuke): blokas neišvalomas iš anksto (ekranas nešokinėja)
+// Grįžta iš asmeninės analizės (/?pora=…#asmenine) — asmeninių analizių blokas su vardais rodomas visada, kad būtų aišku, kurioje analizėje esi ir kas atlikta
+const _poraDuoReturn=/^#(asmenine|dovanos)$/.test(location.hash);
 async function loadPoraDuo(live){
   const p=window._pora||{}, box=document.getElementById('pora-duo'), fb=document.getElementById('pora-personal-btn');
   if(!box||!p.sid) return; if(!live) box.innerHTML='';
@@ -6882,7 +6884,7 @@ async function loadPoraDuo(live){
   const both=d.a.used&&d.b.used; // abu jau atliko — kaina ir galiojimas nebereikalingi
   // Abu jau turi asmenines analizes — šio pasiūlymo bloko nebereikia (lieka „Pasidalinkite ar padovanokite“)
   // Grįžus į langą blokas nepaslepiamas (žmogus grįžta prie jo) — rodoma, kad abiejų analizės paruoštos
-  if(both&&!live){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
+  if(both&&!live&&!_poraDuoReturn){ const pb=document.getElementById('pora-personal'); if(pb) pb.style.display='none'; box.innerHTML=''; if(fb) fb.style.display='none'; return; }
   box.innerHTML=(both?'':'<div style="font-size:13px;color:#e8e2d4;margin-bottom:10px">💞 Kiekvienam — po <b style="color:var(--gold2)">'+eur(d.price)+' €</b>'+(d.base&&d.base>d.price?' <s style="opacity:.55">'+eur(d.base)+' €</s>':'')+'<div style="font-size:11px;color:var(--muted);margin-top:3px">Galioja iki '+_ltDay(d.expiresAt)+'</div></div>')+
     '<div style="display:flex;flex-direction:column;gap:'+(both?4:12)+'px">'+one(d.a,p.nameA,'a')+one(d.b,p.nameB,'b')+'</div>';
   box.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>poraDuoShare(b.dataset.code,b.dataset.name,b)));
@@ -7589,6 +7591,16 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
     const pc=document.getElementById('r-pora-card'); if(!pc||pc.dataset.done||!pc.offsetParent) return;
     let at=0; try{ at=(JSON.parse(localStorage.getItem('delnasDone')||'{}')||{}).pora||0; }catch(e){}
     if(at<=t0) return;
+    poraCardMarkDone(pc);
+  };
+  document.addEventListener('visibilitychange',chk); window.addEventListener('focus',chk);
+})();
+// „Jums dviem“ — porų analizė šiame telefone jau atlikta: vietoj pasiūlymo rodoma, kad atlikta, ir nuoroda į porų rezultatą
+function poraCardMarkDone(pc){
+    if(!pc||pc.dataset.done) return;
+    // Asmeninė analizė daryta iš porų rezultato — „Jums dviem“ nerodomas (grįžtama į porų rezultatą)
+    try{ if(sessionStorage.getItem('delnasDuo')||sessionStorage.getItem('delnasDuoTab')) return; }catch(e){}
+    pc.style.display='';
     pc.dataset.done='1';
     pc.innerHTML='<div style="font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:6px;font-family:\'Playfair Display\',serif">💞 Jums dviem</div>'+
       '<div style="font-size:14px;color:#e8e2d4">✓ Porų analizė atlikta</div><div class="pc-done-txt" style="font-size:12px;color:var(--muted);margin-top:4px">PDF failas išsiųstas el. paštu, rezultatas išsaugotas „Mano&nbsp;analizėse“.</div>';
@@ -7599,14 +7611,12 @@ function _ltDay(ts){ try{ return new Date(ts).toLocaleDateString('lt-LT',{year:'
       a.style.cssText="display:table;margin:10px auto 0;font:600 13px 'DM Sans',sans-serif;color:var(--gold2);text-decoration:underline;text-underline-offset:3px";
       pc.appendChild(a);
     }
-  };
-  document.addEventListener('visibilitychange',chk); window.addEventListener('focus',chk);
-})();
+}
 // Paspaudus porų pasiūlymą — /pora formoje iš anksto įrašomas vardas ir el. paštas (tik šiame įrenginyje)
 document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('a.rb-pora')){ try{ localStorage.setItem('delnasMe',JSON.stringify({name:window.userName||'',email:window._userEmail||'',at:Date.now()})); }catch(x){} } },true);
 // Rezultato ekrane: −20 % dovana (24 val.) ir porų analizė rinkinio kaina / jau apmokėtas porų kuponas
 async function loadResultOffers(){
-  if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
+  if(recentDone('pora')) poraCardMarkDone(document.getElementById('r-pora-card'));
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })()
     ||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   // „Mano analizėse“ — tos analizės dar galiojantys pasiūlymai (porų rinkinio kaina, −20 % dovanai), kaip rezultato ekrane
@@ -7618,7 +7628,7 @@ async function loadResultOffers(){
   const gifts=document.querySelector('#s-result .rb-gifts');
   if(d.once&&gifts&&!document.getElementById('rb-once')) giftOnceShow('rb-once',gifts,d.once);
   // Porų analizė jau atlikta ar užsakyta — „Jums dviem“ nebesiūlome
-  if(d.hasPora||recentDone('pora')){ d.hasPora=true; const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
+  if(d.hasPora||recentDone('pora')){ d.hasPora=true; const pc=document.getElementById('r-pora-card'); if(recentDone('pora')) poraCardMarkDone(pc); else if(pc) pc.style.display='none'; }
   const pora=d.hasPora?null:document.querySelector('#s-result .rb-pora');
   if(pora){
     if(d.bundle&&!pora.querySelector('.rb-deal')){
@@ -7867,7 +7877,7 @@ document.addEventListener('click',e=>{
       window._manoId=id; window._manoT=t;
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
-      if(recentDone('pora')){ const pc=document.getElementById('r-pora-card'); if(pc) pc.style.display='none'; }
+      if(recentDone('pora')) poraCardMarkDone(document.getElementById('r-pora-card'));
       if(!/^#(dovanos|klausti)$/.test(location.hash)) requestAnimationFrame(()=>requestAnimationFrame(delnasReveal));
     }catch(e){ delnasReveal(); alert(e.message||'Nepavyko atidaryti analizės'); location.href='/mano?t='+encodeURIComponent(t); }
   };
