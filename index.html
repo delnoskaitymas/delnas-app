@@ -5359,6 +5359,8 @@ let _refRwBusy=false;
 async function refRewardsRefresh(){
   const box=document.getElementById('ref-rewards'), sr=document.getElementById('s-result');
   if(!box||_refRwBusy||window._manoView) return;
+  // Asmeninė analizė, atlikta iš porų analizės (porų kaina) — kvietimo dovanų blokas nerodomas
+  try{ if(sessionStorage.getItem('delnasDuo')||sessionStorage.getItem('delnasDuoTab')||(JSON.parse(sessionStorage.getItem('delnasPromo')||'null')||{}).kind==='duo'){ box.style.display='none'; box.innerHTML=''; return; } }catch(e){}
   const payRef=window._paymentRef||(()=>{ try{ return sessionStorage.getItem('delnasPayRef'); }catch(e){ return null; } })()
     ||(window._isGiftOrder?(window._giftRef||(()=>{ try{ return sessionStorage.getItem('delnasGiftRef'); }catch(e){ return null; } })()):null);
   if(!payRef) return;
@@ -6769,9 +6771,11 @@ function setupPoraKlausk(){
   // Kiekvienas poros žmogus klausimus perka savo el. paštu: atsakymai, kvitas ir „Mano analizės“ — tik jam (kito klausimų nemato).
   // Laukelyje — šiame telefone šiai porai anksčiau naudotas arba šio telefono el. paštas
   const emEl=document.getElementById('pora-kl-email'), emKey='delnasPoraKlEm:'+sid;
-  let em0=''; try{ em0=localStorage.getItem(emKey)||(JSON.parse(localStorage.getItem('delnasManoEmail')||'null')||{}).e||''; }catch(e){}
+  // emOwn — el. paštas, kuriuo šiame telefone jau pirkti šios poros klausimai (tik pagal jį rodomi jau apmokėti klausimai)
+  let emOwn='', em0=''; try{ emOwn=localStorage.getItem(emKey)||''; em0=emOwn||(JSON.parse(localStorage.getItem('delnasManoEmail')||'null')||{}).e||''; }catch(e){}
   if(emEl&&!emEl.value) emEl.value=em0;
-  btn.addEventListener('click',()=>{ const v=(emEl&&emEl.value||'').trim(); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) try{ localStorage.setItem(emKey,v); }catch(e){} },true);
+  // „Mano analizės“ šiame telefone atsidarys su klausimus perkančio žmogaus el. paštu
+  btn.addEventListener('click',()=>{ const v=(emEl&&emEl.value||'').trim(); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) try{ localStorage.setItem(emKey,v); localStorage.setItem('delnasManoEmail',JSON.stringify({e:v,at:Date.now()})); }catch(e){} },true);
   setupKlauskBlock({ q:'pora-kl-q', ex:'pora-kl-ex', btn:'pora-kl-btn', err:'pora-kl-err', emailEl:'pora-kl-email', you:true, body:email=>({kind:'pora',poraSid:(window._pora||{}).sid,email}),
     // Porų dovanoje įskaičiuoti 3 klausimai — blokas jau apmokėtas
     prepaid:(async()=>{ const u=/^gp_/.test(sid)?await (async()=>{
@@ -6783,7 +6787,7 @@ function setupPoraKlausk(){
       btn.textContent='Gauti atsakymus';
       return '/klausk?s='+((window._klFam&&window._klFam[d.id])||d.id);
     })():null;
-      const a=sid&&em0?await klActive('#pora-kl',{pora:sid,em:em0},true):null;
+      const a=sid&&emOwn?await klActive('#pora-kl',{pora:sid,em:emOwn},true):null;
       return u||a;
     })() });
 }
