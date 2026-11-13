@@ -1110,18 +1110,19 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     // Kuponas, atidarytas iš žinutės ar laiško — ankstesnis lango puslapis gali būti kitas, todėl į jį negrįžtama: langas uždaromas
     let same=false; try{ same=!!document.referrer&&new URL(document.referrer).origin===location.origin; }catch(x){}
     if(!same&&location.pathname.indexOf('/dovana/kortele')===0) return {};
-    return history.length>1?{back:1}:{};
+    return pos>1?{back:1}:{};
   };
   // Langą reikėtų uždaryti, bet naršyklė to neleidžia (lange jau yra kitų puslapių, pvz. grįžus iš „Padovanoti dar vieną“) —
   // mygtuko „Grįžti atgal“ ir užrašo „Šį langą gali uždaryti“ nerodome
   const syncBack=()=>{ if(d) return; const m=backMode(), hide=!m.go&&!m.back&&history.length>1;
     document.querySelectorAll('.back-res').forEach(btn=>{ btn.classList.toggle('hidden',hide); btn.style.display=hide?'none':''; if(hide){ const n=btn.closest('.links-row')?btn.closest('.links-row').nextElementSibling:btn.nextElementSibling; if(n&&!n.classList.contains('back-res-note')&&/langą gali uždaryti/.test(n.textContent)) n.remove(); } }); };
-  // Kuponas, iš kurio grįžtama uždarant langą (atidarytas iš laiško ar žinutės): „Padovanoti dar vieną“ atidaromas naujame lange —
-  // šio lango istorija lieka tuščia, todėl „Grįžti atgal“ ir toliau uždaro langą (grįžtama į laišką), o formos lange „Grįžti atgal“ —
-  // uždaro formos langą (grįžtama į kuponą)
-  const syncAgain=()=>{ const a=document.getElementById('again'); if(!a) return; const m=backMode(), toNew=!d&&!m.go&&!m.back&&location.pathname.indexOf('/dovana/kortele')===0;
-    if(toNew){ a.target='_blank'; a.rel='opener'; } else { a.removeAttribute('target'); a.removeAttribute('rel'); } };
-  addEventListener('pageshow',()=>{ syncAgain(); syncBack(); });
+  // Puslapis, iš kurio grįžtama uždarant langą (atidarytas iš laiško ar žinutės): kitos šios svetainės nuorodos (pvz. „Padovanoti dar vieną“)
+  // atidaromos naujame lange — šio lango istorija lieka tuščia, todėl „Grįžti atgal“ ir toliau uždaro langą (grįžtama į laišką),
+  // o naujame lange „Grįžti atgal“ uždaro tą langą (grįžtama čia)
+  document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[href]'); if(!a||d||a.target||a.classList.contains('back-res')) return;
+    let u=null; try{ u=new URL(a.href,location.href); }catch(x){ return; } if(u.origin!==location.origin||(u.pathname===location.pathname&&u.search===location.search)) return;
+    const m=backMode(); if(!m.go&&!m.back){ a.target='_blank'; a.rel='opener'; } },true);
+  addEventListener('pageshow',syncBack);
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
     btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
