@@ -128,6 +128,15 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 .tabs button{padding:11px 8px;font-size:13.5px;white-space:normal;line-height:1.25}
 @media (max-width:370px){.tabs button{font-size:12.5px;padding:10px 6px}}
 .tabs button i{font-size:13px}
+/* Skirtukai — didesni ir aiškiai pasirenkami: šviesesnis tekstas, ryškesnis rėmelis, apskritimas (pasirinktas — užpildytas) */
+body.list-view .tabs{gap:8px;padding:8px 0}
+body.list-view .tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 6px;font-size:13.5px;font-weight:600;white-space:nowrap;color:#e8e2d4;background:linear-gradient(180deg,rgba(212,168,67,.09),rgba(212,168,67,.03));border:1px solid rgba(212,168,67,.55);border-radius:13px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+body.list-view .tabs button::before{content:'';flex-shrink:0;width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(212,168,67,.75);box-sizing:border-box}
+body.list-view .tabs button.on{background:linear-gradient(180deg,rgba(240,201,106,.26),rgba(212,168,67,.14));border-color:var(--gold2);color:var(--gold2);box-shadow:0 0 12px rgba(212,168,67,.28)}
+body.list-view .tabs button.on::before{background:var(--gold2);border-color:var(--gold2);box-shadow:0 0 6px rgba(240,201,106,.7)}
+body.list-view .tabs button[disabled]{opacity:.38;box-shadow:none}
+body.list-view .tabs button i{margin-left:0;font-size:13px}
+@media (max-width:370px){body.list-view .tabs button{font-size:12.5px;gap:5px;padding:9px 4px}}
 @media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 </style>
 </head>
