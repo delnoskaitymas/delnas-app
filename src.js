@@ -20,6 +20,11 @@
   } catch (e) {}
   // Pirkimas priskiriamas paskutiniam reklamos šaltiniui (jei buvo per 30 d.); vienas kartas vienam užsakymui
   window.delnasSrcBuy = function (kind, key) {
+    // Draugo nuolaida vienkartinė: jei šis pirkimas buvo su draugo kodu (siųstas mokant per pastarąsias 6 val.) — kodas šiame telefone pamirštamas
+    try {
+      const sent = JSON.parse(localStorage.getItem('delnasRefSent') || 'null'), r = JSON.parse(localStorage.getItem('delnasRef') || 'null');
+      if (sent && Date.now() - sent.at < 6 * 3600e3) { if (r && r.c === sent.c) localStorage.removeItem('delnasRef'); localStorage.removeItem('delnasRefSent'); }
+    } catch (e) {}
     try {
       const d = JSON.parse(localStorage.getItem('delnasSrc') || 'null');
       if (!d || Date.now() - d.at > 30 * 864e5) return;

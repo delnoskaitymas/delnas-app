@@ -1620,6 +1620,8 @@ function getRefCode(){
   try{ const d=JSON.parse(localStorage.getItem('delnasRef')||'null'); if(d&&d.c&&Date.now()-d.at<30*864e5&&!isOwnRef(d.c)) return d.c; }catch(e){}
   return '';
 }
+// Mokant su draugo kodu — įsimenama, kad po sėkmingo pirkimo kodas būtų pamirštas (nuolaida vienkartinė, žr. src.js)
+function refForPay(){ const c=getRefCode(); try{ if(c) localStorage.setItem('delnasRefSent',JSON.stringify({c,at:Date.now()})); }catch(e){} return c; }
 // Savo pasidalintas kodas šiame telefone neveikia sau (serveris jo vis tiek nepritaiko) — „−10 %“ nerodome
 function isOwnRef(c){ try{ return (JSON.parse(localStorage.getItem('delnasOwnRef')||'[]')||[]).includes(c); }catch(e){ return false; } }
 function rememberOwnRef(link){
@@ -1789,7 +1791,7 @@ async function initiatePayment(){
       // Suma NESIUNČIAMA — serveris (/create-checkout) visada naudoja
       // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
       const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
+        body:JSON.stringify({email,name,method:'revolut',bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:refForPay(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
       const data=await res.json();
       if(data.promoGone) promoGoneRefresh();
       if(data.url){_savePhotos();window.location.href=data.url;}
@@ -1802,7 +1804,7 @@ async function initiatePayment(){
     // savo ACTIVE_PRICE_ID (activePrice.unit_amount), kliento siunčiamas
     // amount būtų ignoruojamas.
     const res=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,email,ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({name,email,ref:refForPay(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(data.promoGone) promoGoneRefresh();
     if(!data.clientSecret)throw new Error(data.error||'Serverio klaida');
@@ -6263,7 +6265,7 @@ function initPayment(){
       window._googlePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:refForPay(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(d.promoGone){ ev.complete('fail'); promoGoneRefresh(); const pe=document.getElementById('stripe-card-errors'); if(pe){ pe.textContent=d.error; pe.style.display='block'; } return; }
         if(!d.clientSecret){ev.complete('fail');return;}
@@ -6311,7 +6313,7 @@ function initPayment(){
       window._applePayPR=pr;
       pr.on('paymentmethod',async(ev)=>{
         const r=await fetch('/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
+          body:JSON.stringify({name:window._userName||'',email:window._userEmail||'',ref:refForPay(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
         const d=await r.json();
         if(d.promoGone){ ev.complete('fail'); promoGoneRefresh(); const pe=document.getElementById('stripe-card-errors'); if(pe){ pe.textContent=d.error; pe.style.display='block'; } return; }
         if(!d.clientSecret){ev.complete('fail');return;}
@@ -6366,7 +6368,7 @@ async function quickPay(method){
     // savo ACTIVE_PRICE_ID, kliento siunčiamas amount būtų ignoruojamas.
     const res=await fetch('/create-checkout',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:getRefCode(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
+      body:JSON.stringify({email:window._userEmail||'',name:window._userName||'',method,bgSessionId:window.bgSessionId||'',orderNumber:window._orderNumber||'',ref:refForPay(),promo:getPromoCode(),addKlausk:!!window._addKlausk})});
     const data=await res.json();
     if(data.url){_savePhotos();window.location.href=data.url;}
   }catch(e){console.error(e);}
