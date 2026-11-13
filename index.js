@@ -6916,7 +6916,7 @@ app.get('/mano/item', sensitiveLimiter, async (req, res) => {
   let own = ownRefCodes(email);
   // Dar nėra kvietimo kodo — sukuriamas šiai analizei (el. paštą patvirtina „Mano analizių“ nuoroda), kad draugai gautų −10 %, o kvietėjas — atlygį
   if (!own.length && it.result) { const c = createRefCode({ email, name: it.name || '', paymentRef: 'mano:' + it.id, result: it.result, ip: ipTag(req) }); if (c) own = [c]; }
-  let klausk = null, klauskAll = [];
+  let duo = null; let klausk = null, klauskAll = [];
   try {
     const sv = loadSaved(), sid = Object.keys(sv.bySession).find(k => sv.bySession[k] === it.id);
     klausk = await manoKlauskFor(it, sid);
@@ -6927,9 +6927,11 @@ app.get('/mano/item', sensitiveLimiter, async (req, res) => {
         .filter(([, o]) => o.paid && o.kind !== 'pora' && (o.email || '').toLowerCase() === email && (o.analysisSession === sid || refs.has(o.paymentRef)))
         .sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0))
         .map(([id, o]) => ({ id, qa: (o.qa || []).filter(x => x && x.q && x.a).map(x => ({ q: x.q, a: x.a })), left: KLAUSK_MAX_QUESTIONS - (o.qa || []).length }));
+      // Asmeninė analizė, apmokėta porų kaina (iš porų suderinamumo) — rezultato pabaigoje kito poros žmogaus eilė
+      for (const r of refs) { duo = duoOfPayment(r); if (duo) break; }
     }
   } catch (e) { console.error('[mano] klausimų klaida:', e.message); }
-  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', klausk, klauskAll, ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
+  res.json({ id: it.id, name: it.name, createdAt: it.createdAt, result: it.result, email, orderNumber: it.orderNumber || '', klausk, klauskAll, duo, ownRefs: own, refLink: own.length ? { code: own[0], link: `${appBaseUrl()}/?ref=${own[0]}`, pct: REF_DISCOUNT_PCT } : null });
 });
 app.post('/mano/delete', sensitiveLimiter, (req, res) => {
   const { t, id } = req.body || {};
