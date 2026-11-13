@@ -7284,6 +7284,8 @@ function poraPartnerSent(email){
   document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF išsiųstas '+(a.dat||p.nameA||'')+' ir tau — kiekvienam savo el. paštu.';
   if(row) row.style.display='none';
   if(msg){ msg.textContent='✓ Tau — į '+email; msg.style.cssText='font-size:13px;color:var(--gold2);margin-top:8px;display:block'; }
+  // Porų klausimų laukelis — tuo pačiu el. paštu (jei dar tuščias), kad nereikėtų rašyti antrą kartą
+  const ke=document.getElementById('pora-kl-email'); if(ke&&!ke.value.trim()&&email){ ke.value=email; ke.dispatchEvent(new Event('input',{bubbles:true})); ke.dispatchEvent(new Event('change',{bubbles:true})); }
 }
 async function poraPartnerEmail(){
   const inp=document.getElementById('pora-partner-email'), btn=document.getElementById('pora-partner-btn'), msg=document.getElementById('pora-partner-msg');
