@@ -80,6 +80,22 @@ body.list-view h1{font-size:29px;margin-top:0}
 body.list-view .wrap{padding-top:58px}
 body.list-view #list-lead{margin-bottom:4px}
 .item[hidden],.sec[hidden]{display:none!important}
+/* Sąrašas telpa į ekraną be slinkimo: kompaktiškesnė viršutinė dalis ir įrašai; daug įrašų — slenka tik sąrašas (#items) */
+body.list-view .wrap{padding-top:50px!important;padding-bottom:14px!important}
+body.list-view .brand{font-size:16px!important}
+body.list-view .hero{width:62px!important;height:62px!important;margin:8px auto 6px!important}
+body.list-view h1{font-size:25px!important;margin-bottom:2px}
+body.list-view #list-lead{font-size:13px;margin-bottom:2px}
+body.list-view .tabs{padding:6px 0;gap:6px}
+body.list-view .tabs button{padding:8px 6px;font-size:12.5px}
+body.list-view .item{padding:10px 12px;margin-bottom:8px;gap:10px}
+body.list-view .item .ic{width:32px;height:32px;font-size:15px}
+body.list-view .item b{font-size:15px}
+body.list-view .item small{font-size:11.5px}
+body.list-view #next-btn{margin-top:8px;padding:13px}
+body.list-view .gift-line{margin-top:8px;font-size:12.5px;line-height:1.5}
+body.list-view .fine{margin-top:10px}
+#items.fit-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* Nuorodos prašymas — telpa į vieną ekraną */
 body.ask-sent #v-ask .note{display:none}
 @media (max-height:820px){
@@ -216,7 +232,7 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     const cats = [['asm', 'Gyvenimo žemėlapis', d.analizes.length], ['pora', 'Porų suderinamumas', d.poros.length], ['kl', 'Asmeniniai klausimai', kAsm], ['klp', 'Porų klausimai', kPora]];
     const first = (cats.find(c => c[2]) || cats[0])[0];
     const tabs = h ? '<div class="tabs" id="tabs">' + cats.map(c => '<button type="button" data-cat="' + c[0] + '"' + (c[0] === first ? ' class="on"' : '') + (c[2] ? '' : ' disabled') + '>' + c[1] + ' <i>' + c[2] + '</i></button>').join('') + '</div>' : '';
-    $('list').innerHTML = h ? tabs + h : '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
+    $('list').innerHTML = h ? tabs + '<div id="items">' + h + '</div>' : '<div class="empty">Išsaugotų analizių kol kas nėra.</div>';
     // Pagrindinis mygtukas — pagal atidarytą skirtuką (klausimams — paskutinės tos rūšies analizės klausimų blokas)
     const nb = $('next-btn');
     const next = c => {
@@ -232,14 +248,19 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       nb.style.display = lastK && kLeft(lastK) ? 'none' : '';
       nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
-    const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); };
+    // Visas ekranas telpa be slinkimo: jei įrašų daugiau nei telpa — slenka tik sąrašas
+    const fitList = () => { const it = $('items'); if (!it) return; it.classList.remove('fit-scroll'); it.style.maxHeight = '';
+      const over = document.documentElement.scrollHeight - window.innerHeight;
+      if (over > 1) { it.style.maxHeight = Math.max(150, it.offsetHeight - over - 2) + 'px'; it.classList.add('fit-scroll'); } };
+    window.addEventListener('resize', fitList);
+    const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); fitList(); };
     show(first);
     const tb = $('tabs');
     if (tb) tb.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b || b.disabled) return;
       tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
       show(b.dataset.cat);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' }); { const it = $('items'); if (it) it.scrollTop = 0; }
       saveView(b.dataset.cat, 0);
     });
     // Grįžus iš atidarytos analizės — tas pats skirtukas ir ta pati vieta sąraše (šiame skirtuke, iki 6 val.)
@@ -249,11 +270,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       if (vb) {
         tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === vb));
         show(v.cat);
-        requestAnimationFrame(() => window.scrollTo(0, v.y || 0));
+        requestAnimationFrame(() => { const it = $('items'); if (it && it.classList.contains('fit-scroll')) it.scrollTop = v.y || 0; else window.scrollTo(0, v.y || 0); });
       }
     } catch (e) {}
     // Išeinant iš sąrašo (analizė, klausimai, dovana ar kita nuoroda) — įsimenama, kuris skirtukas ir kur sąraše
-    const keep = () => { const on = tb && tb.querySelector('button.on'); saveView(on ? on.dataset.cat : '', Math.round(window.scrollY)); };
+    const keep = () => { const on = tb && tb.querySelector('button.on'); const it = $('items'); saveView(on ? on.dataset.cat : '', Math.round(it && it.classList.contains('fit-scroll') ? it.scrollTop : window.scrollY)); };
     // „Mano analizės“ atidarytos naujame lange (iš el. laiško, klausimų ar rezultato) — analizės, klausimai ir dovanos atidaromi atskirame lange:
     // grįžus jis uždaromas ir lieka šis sąrašas toje pačioje vietoje, o „Grįžti atgal“ gali uždaryti ir šį langą (grįžtama į laišką ar ankstesnį langą)
     let child = null;
