@@ -2918,7 +2918,7 @@ app.post('/create-checkout', sensitiveLimiter, async (req, res) => {
     // Apskaičiuotos eilutės (kaina — PERSONAL_PRICE_CENTS, su nuolaida ir priedais)
     const lineItems = [
       { price_data: { currency: q.currency, unit_amount: q.base - q.discount, product_data: { name: q.discount ? `DELNAS — Gyvenimo žemėlapis (${q.promoCode ? 'nuolaida' : `draugo nuolaida −${REF_DISCOUNT_PCT} %`})` : 'DELNAS — Gyvenimo žemėlapis' } }, quantity: 1 },
-      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }] : []),
+      ...(q.bump ? [{ price_data: { currency: q.currency, unit_amount: q.bump, product_data: { name: 'DELNAS — 3 klausimai delnams' } }, quantity: 1 }] : []),
     ];
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['revolut_pay'],
@@ -5250,7 +5250,7 @@ async function createKlauskCheckout(record) {
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card', 'revolut_pay'],
-    line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: record.kind === 'pora' ? 'DELNAS — Klauskite savo delnų: porai (3 klausimai)' : 'DELNAS — Klausk savo delnų (3 klausimai)' } }, quantity: 1 }],
+    line_items: [{ price_data: { currency: 'eur', unit_amount: KLAUSK_PRICE_CENTS, product_data: { name: record.kind === 'pora' ? 'DELNAS — 3 klausimai delnams (porai)' : 'DELNAS — 3 klausimai delnams' } }, quantity: 1 }],
     locale: 'lt',
     customer_email: email,
     metadata: { type: 'klausk', kind: record.kind || 'asmenine', email, name: (name || '').trim().slice(0, 120) },
@@ -5750,7 +5750,7 @@ app.post('/gift/create-checkout', sensitiveLimiter, async (req, res) => {
         },
         quantity: 1
       }, ...(giftKlauskCents > 0 ? [{
-        price_data: { currency: activePrice.currency, unit_amount: giftKlauskCents, product_data: { name: kind === 'pora' ? 'DELNAS — Klauskite savo delnų (3 klausimai porai, dovanoje)' : 'DELNAS — Klausk savo delnų (3 klausimai, dovanoje)' } },
+        price_data: { currency: activePrice.currency, unit_amount: giftKlauskCents, product_data: { name: kind === 'pora' ? 'DELNAS — 3 klausimai delnams (porai, dovanoje)' : 'DELNAS — 3 klausimai delnams (dovanoje)' } },
         quantity: 1
       }] : [])],
       locale: 'lt',
