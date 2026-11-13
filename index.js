@@ -5452,6 +5452,8 @@ const EMC = {
   // Bendras laiškų išdėstymas (kaip „Mokėjimas gautas“): rėmelis, antraštė, kortelės, smulkus tekstas, poraštė
   wrap: inner => `<div style="font-family:Georgia,serif;background:#000000;color:#f5eed8;padding:32px 20px;max-width:480px;margin:0 auto">${inner}${EMAIL_FOOTER_HTML}</div>`,
   head: (icon, title, sub) => `<div style="text-align:center"><div style="font-size:26px;margin-bottom:8px;color:#d4a843">${icon}</div><div style="font-size:21px;font-weight:700;line-height:1.35;color:#d4a843;margin-bottom:8px">${title}</div>${sub ? `<div style="font-size:16px;line-height:1.5;color:rgba(245,238,216,.88)">${sub}</div>` : ''}</div>`,
+  // Programėlės delno ikona (auksinis žiedas) — klausimų atsakymų laiškų viršuje; išjungus paveikslėlius matomas užrašas „DELNAS“
+  palm: () => `<img src="${appBaseUrl()}/img/email-palm.png" width="80" height="80" alt="DELNAS" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;font-family:Georgia,serif;font-size:14px;letter-spacing:.3em;color:#d4a843">`,
   note: t => `<p style="font-family:Arial,sans-serif;text-align:center;font-size:12px;line-height:1.6;color:rgba(245,238,216,.55);margin:16px 0 0">${t}</p>`,
   unsub: (q, href) => `<p style="font-family:Arial,sans-serif;text-align:center;font-size:12px;line-height:1.6;color:rgba(245,238,216,.5);margin:16px 0 0">${q} <a href="${href}" style="color:rgba(212,168,67,.75);text-decoration:underline">Atsisakyti</a></p>`,
   receipt: html => `<div style="margin-top:16px">${html}</div>`,
@@ -5484,11 +5486,11 @@ function buildKlauskFinalHtml({ pora, qa, off, id, left = 0, email }) {
   if (left > 0) {
     const one = qa.length === 1, w = pora ? 'jūsų' : 'tavo';
     const liko = left === 1 ? 'Liko užduoti 1 klausimą' : `Liko užduoti ${left} klausimus`;
-    return EMC.wrap(EMC.head('✋', one ? `Atsakymas į ${w} klausimą` : `Atsakymai į ${w} klausimus`, liko) + toc + cards
+    return EMC.wrap(EMC.head(EMC.palm(), one ? `Atsakymas į ${w} klausimą` : `Atsakymai į ${w} klausimus`, liko) + toc + cards
       + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#klausti`, left === 1 ? 'Užduoti paskutinį klausimą' : `Užduoti kitą klausimą (liko ${left})`)}</div>`
       + EMC.note(pora ? 'Atsakymus taip pat rasite skiltyje ' + mano + '.' : 'Atsakymus taip pat rasi skiltyje ' + mano + '.') + manoMailNote(pora) + foot);
   }
-  return EMC.wrap(EMC.head('✋', pora ? 'Visi jūsų atsakymai' : 'Visi tavo atsakymai', `${qa.length} klausimai ir atsakymai viename laiške`) + toc + cards
+  return EMC.wrap(EMC.head(EMC.palm(), pora ? 'Visi jūsų atsakymai' : 'Visi tavo atsakymai', `${qa.length} klausimai ir atsakymai viename laiške`) + toc + cards
     + `<div style="text-align:center;margin-top:24px">${EMC.btn(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}#daugiau`, `Užduoti dar 3 klausimus — ${price}`)}</div>`
     + EMC.note(pora ? 'Šį laišką verta išsaugoti — jame visi trys atsakymai.<br>Atsakymus taip pat rasite skiltyje ' + mano + '.' : 'Šį laišką verta išsaugoti — jame visi trys atsakymai.<br>Atsakymus taip pat rasi skiltyje ' + mano + '.') + manoMailNote(pora)
     + foot);
@@ -5631,7 +5633,7 @@ function klauskReminderSubject(o) {
 }
 function buildKlauskReminderHtml(o, id) {
   const pora = o.kind === 'pora';
-  return EMC.wrap(EMC.head('✋', `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas#klausti`, 'Užduoti klausimus'), true));
+  return EMC.wrap(EMC.head(EMC.palm(), `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas#klausti`, 'Užduoti klausimus'), true));
 }
 async function sendKlauskReminder(id) {
   const orders = loadKlauskOrders(), o = orders[id];
