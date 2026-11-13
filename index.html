@@ -6971,7 +6971,7 @@ async function loadPoraDuo(live){
   // pirmasis (užsakęs) mato tik savo mygtuką, antrasis (atėjęs per nuorodą) — tik savo
   const mine=d.remote?(poraIsPartner()?'b':'a'):'';
   const one=(o,name,side)=>{ const f=ltForms(name||''), g=poraEsc(f.gen||name||'');
-    if(mine&&side!==mine&&!o.used) return '<div style="font-size:13px;color:var(--muted);padding:4px 0;line-height:1.5">'+g+' gyvenimo žemėlapį '+poraEsc(f.nom||name||'')+' gali užsisakyti savo telefone</div>';
+    if(mine&&side!==mine&&!o.used) return '<div style="font-size:13px;color:var(--muted);padding:4px 0;line-height:1.5">'+poraEsc(f.nom||name||'')+' gyvenimo žemėlapį gali užsisakyti savo telefone.</div>';
     return o.used ? '<div style="font-size:13px;color:var(--gold2);padding:4px 0">✓ '+g+' gyvenimo žemėlapis paruoštas</div>'
       : '<div><a class="btn" href="/?promo='+encodeURIComponent(o.code)+'&amp;duo='+encodeURIComponent(p.sid)+'&amp;kas='+side+'&amp;utm_source=app&amp;utm_campaign=pora-duo" target="_blank" rel="noopener" style="margin:0;display:block;text-decoration:none;background:#cfa24a;border:none;color:#140d02;box-shadow:none">'+g+' gyvenimo žemėlapis — <span style="white-space:nowrap">'+eur(d.price)+'\u00a0€</span></a>'+
         // Daryta per nuorodą (skirtinguose telefonuose) — abu rezultatą mato savo telefone, siųsti nereikia
