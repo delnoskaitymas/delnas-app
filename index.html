@@ -1631,7 +1631,8 @@ function rememberOwnRef(link){
 }
 // Trumpas kvietimo adresas kortelėms (delnaskaitymas.lt/d/KODAS); be kodo — įprastas adresas
 // Kortelių apačioje — tik svetainės adresas (nuolaida pritaikoma per nuorodą žinutėje, kuria dalijamasi)
-function cardRefLabel(){ return 'www.delnaskaitymas.lt'; }
+// Kortelės apačioje — svetainės adresas (porų kortelėje — porų puslapis)
+function cardRefLabel(link, fallback){ return fallback || 'www.delnaskaitymas.lt'; }
 // Trumpas kvietimo adresas su kodu (delnaskaitymas.lt/d/KODAS); be kodo — įprastas adresas
 function refCodeLabel(link){ try{ const c=String(new URL(link,location.origin).searchParams.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length>=5) return 'delnaskaitymas.lt/d/'+c; }catch(e){} return 'www.delnaskaitymas.lt'; }
 const _eur=c=>(c/100).toFixed(2).replace('.',',');
