@@ -4665,13 +4665,26 @@ function pdfCompareNote(doc, text, o){
 function pdfFrame(doc, x, w, top, bottom){ if(bottom-top<8) return; doc.setDrawColor(118,94,40); doc.setLineWidth(0.35); doc.roundedRect(x, top, w, bottom-top, 4, 4, 'S'); }
 function pdfStar(doc, cx, cy, r, col){ const k=r*0.3, P=[[0,-r],[k,-k],[r,0],[k,k],[0,r],[-k,k],[-r,0],[-k,-k]];
   doc.setFillColor(...col); doc.lines(P.slice(1).map((p,i)=>[p[0]-P[i][0], p[1]-P[i][1]]), cx+P[0][0], cy+P[0][1], [1,1], 'F', true); }
+// Įžvalgų ženkleliai PDF — tie patys kaip ekrane (pillIconSvgs): SVG iš anksto paverčiami PNG (PDF kuriamas sinchroniškai)
+const PDF_ICONS={};
+function pdfIconsPreload(){
+  try{ const svgs=pillIconSvgs();
+    Object.keys(svgs).forEach(k=>{ if(PDF_ICONS[k]) return;
+      const svg=svgs[k].replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ').replace('width="12" height="12"','width="96" height="96"').replace('rgba(212,168,67,.75)','#e9bf5c');
+      const im=new Image(); im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=c.height=96; c.getContext('2d').drawImage(im,0,0,96,96); PDF_ICONS[k]=c.toDataURL('image/png'); }catch(e){} };
+      im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+  }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',pdfIconsPreload); else pdfIconsPreload();
+// Ženklelio raktas — ta pati logika kaip pillIconFor (tame pačiame sąraše nesikartoja)
+function pdfIconKey(text, used){ let key=pillIconKey(text); if(used.has(key)){ const alt=PILL_ICON_ORDER.find(k=>!used.has(k)); if(alt) key=alt; } used.add(key); return key; }
 // Įžvalgos kortelė: fonas, auksinė juostelė kairėje, ženklelis kvadratėlyje, auksinis tekstas. y — pirmos eilutės pagrindo linija
-function pdfInsightCard(doc, x, w, y, lines, lh, asc, col){
+function pdfInsightCard(doc, x, w, y, lines, lh, asc, col, icon){
   const top=y-asc, bot=y+(lines.length-1)*lh+asc*0.45, h=bot-top, cy=top+h/2, sq=Math.min(6, h-2);
   doc.setFillColor(20,16,7); doc.setDrawColor(44,37,22); doc.setLineWidth(0.2); doc.roundedRect(x, top, w, h, 2, 2, 'FD');
   doc.setFillColor(212,168,67); doc.rect(x, top, 0.7, h, 'F');
   doc.setFillColor(40,32,13); doc.setDrawColor(212,168,67); doc.setLineWidth(0.2); doc.roundedRect(x+3, cy-sq/2, sq, sq, 1.2, 1.2, 'FD');
-  pdfStar(doc, x+3+sq/2, cy, sq*0.3, [240,201,106]);
+  const png=icon&&PDF_ICONS[icon]; if(png){ const is=sq*0.62; try{ doc.addImage(png,'PNG', x+3+(sq-is)/2, cy-is/2, is, is); }catch(e){ pdfStar(doc, x+3+sq/2, cy, sq*0.3, [240,201,106]); } } else pdfStar(doc, x+3+sq/2, cy, sq*0.3, [240,201,106]);
   doc.setTextColor(...col); lines.forEach((l,i)=>doc.text(l, x+sq+6, y+i*lh));
 }
 // Baigiamoji temos frazė: plona linija ir „✦ …“ blankiai auksine spalva. Grąžina naują y (pagrindo linija po teksto)
@@ -4897,7 +4910,9 @@ function buildResultPdfDoc(r, name, orderNumber){
     doc.setFont('NotoSans','bold');
     doc.setFontSize(INSIGHT_FONT_SIZE);
     doc.setTextColor(...GOLD2);
+    const usedIc = new Set();
     items.forEach((txt, i) => {
+      const ic = pdfIconKey(txt, usedIc);
       // PASTABA: plotis skaičiuojamas taip, kad kartu su bulleto įtrauka
       // (margin+3) tekstas NIEKADA neišeitų už dešinės paraštės.
       const bulletWidth = maxW - 15;
@@ -4918,7 +4933,7 @@ function buildResultPdfDoc(r, name, orderNumber){
       while(rest.length){
         if(y > PAGE_BOTTOM){ y = newPage(); }
         const n = Math.max(1, Math.min(rest.length, Math.floor((PAGE_BOTTOM - y) / INSIGHT_LINE_H) + 1));
-        pdfInsightCard(doc, margin, maxW, y, rest.slice(0, n), INSIGHT_LINE_H, 6.2, GOLD2);
+        pdfInsightCard(doc, margin, maxW, y, rest.slice(0, n), INSIGHT_LINE_H, 6.2, GOLD2, ic);
         y += n * INSIGHT_LINE_H; rest = rest.slice(n);
       }
       // Tarpas TIK tarp punktų — po PASKUTINIO punkto NEBEDEDAME (kitaip
@@ -7300,10 +7315,10 @@ function buildPoraPdfDoc(){
     doc.splitTextToSize(textParas(r[k]).join(' '), maxW).forEach(l=>{ if(y>278){ y=np(); doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
     // Įžvalgos — kortelės kaip ekrane (.insight-card)
     const iz=(r.izvalgos||{})[k]||[];
-    if(iz.length){ y+=2;
-      iz.forEach(t=>{ doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); const L=doc.splitTextToSize(t, maxW-16);
+    if(iz.length){ y+=2; const usedIc=new Set();
+      iz.forEach(t=>{ const ic=pdfIconKey(t, usedIc); doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); const L=doc.splitTextToSize(t, maxW-16);
         if(y+L.length*6.4>282) y=np(); doc.setFont('NotoSans','bold'); doc.setFontSize(12.5);
-        pdfInsightCard(doc, M, maxW, y, L, 6.4, 5, GOLD2); y+=L.length*6.4+3.6; }); }
+        pdfInsightCard(doc, M, maxW, y, L, 6.4, 5, GOLD2, ic); y+=L.length*6.4+3.6; }); }
     const pn=pc&&pc.skyriai&&pc.skyriai[k];
     if(pn){ y+=2; y=pdfCompareNote(doc, pcN(pn), {...pcO, y}); y+=4; }
     // Baigiamoji frazė (✦ …) po plona linija; rėmelis uždaromas
