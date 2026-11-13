@@ -5633,7 +5633,7 @@ function klauskReminderSubject(o) {
 }
 function buildKlauskReminderHtml(o, id) {
   const pora = o.kind === 'pora';
-  return EMC.wrap(EMC.head('✋', `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas#klausti`, 'Užduoti klausimus'), true));
+  return EMC.wrap(EMC.head(EMC.palm(), `${pora ? 'Jūsų' : 'Tavo'} 3 klausimai delnams dar laukia`) + EMC.card(EMC.p(pora ? 'Jie įskaičiuoti į jūsų dovaną. Paklauskite apie savo porą to, kas rūpi labiausiai — atsakymai remiasi jūsų poros analize.' : 'Jie įskaičiuoti į tavo dovaną. Paklausk apie viską, kas rūpi labiausiai — atsakymai remiasi tavo delnų analize.', 14) + EMC.main(`${appBaseUrl()}/klausk?s=${encodeURIComponent(id)}&amp;utm_source=email&amp;utm_campaign=klausk-priminimas#klausti`, 'Užduoti klausimus'), true));
 }
 async function sendKlauskReminder(id) {
   const orders = loadKlauskOrders(), o = orders[id];
