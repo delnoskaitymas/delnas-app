@@ -6626,7 +6626,7 @@ function poraShowRemote(link,sent){
 }
 // auto=true — kviečiama iškart paruošus nuorodą; jei naršyklė siuntimo lango neatveria, lieka auksinis mygtukas
 async function poraShareRemote(auto){
-  const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus — sužinosime mūsų poros suderinamumą:';
+  const p=window._pora, text=p.nameA+' laukia tavo delnų 💞 Atidaryk nuorodą ir nufotografuok savo delnus porų suderinamumo analizei:';
   try{ if(navigator.share){ await navigator.share({ title:'Porų suderinamumas', text, url:p.remoteLink }); poraRemoteState(true); return; } }
   catch(e){ if(auto||(e&&e.name==='AbortError')) return; }
   if(!auto) poraCopyRemote(document.getElementById('pr-remote-copy'));
