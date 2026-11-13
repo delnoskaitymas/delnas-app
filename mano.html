@@ -128,6 +128,9 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 .tabs button{padding:11px 8px;font-size:13.5px;white-space:normal;line-height:1.25}
 @media (max-width:370px){.tabs button{font-size:12.5px;padding:10px 6px}}
 .tabs button i{font-size:13px}
+/* Sąrašas — be delno ikonos, kad tilptų daugiau analizių: „DELNAS“ su plona auksine šviesos juosta (kaip dovanų formoje) */
+body.list-view .hero{display:none!important}
+body.list-view .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 14px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
 @media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 </style>
 </head>
