@@ -5511,9 +5511,13 @@ function poraDuoEmailOffer(o, sessionId, partner) {
   const eur = c => (c / 100).toFixed(2).replace('.', ',') + '&nbsp;€';
   // Kiekvienam — savas mygtukas su vardu (tie patys vienkartiniai kodai kaip porų rezultate, /pora/offers)
   const email = isValidEmail(o.email) ? o.email : '';
+  // Kodo galiojimas — rodomas laiške „Galioja iki …“ (kaip porų rezultato ekrane)
+  let exp = 0;
+  const until = () => exp ? EMC.small(`Galioja iki ${fmtLtDate(exp)}`) : '';
   const btn = side => {
     const nm = side === 'a' ? o.nameA : o.nameB, f = ltFormsObj(nm) || {};
     const pr = createPromo({ kind: 'duo', product: 'asmenine', price: PORA_DUO_CENTS, ttlMs: 30 * DAY_MS, email, key: 'duo:' + sessionId + ':' + side });
+    if (pr && pr.expiresAt) exp = exp ? Math.min(exp, pr.expiresAt) : pr.expiresAt;
     const link = `${appBaseUrl()}/?promo=${encodeURIComponent(pr.code)}&amp;duo=${encodeURIComponent(sessionId)}&amp;kas=${side}&amp;utm_source=email&amp;utm_campaign=pora-duo`;
     return EMC.btn(link, `${escapeHtml(f.gen || nm)} gyvenimo žemėlapis`);
   };
@@ -5523,14 +5527,16 @@ function poraDuoEmailOffer(o, sessionId, partner) {
   if (o.firstSavedAt) {
     const mine = partner ? 'b' : 'a', nm = mine === 'a' ? o.nameA : o.nameB, f = ltFormsObj(nm) || {};
     if (used[mine]) return '';
-    return EMC.card(EMC.h('✦ ' + escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis') + EMC.p('Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnai?') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + btn(mine));
+    // Kaip porų rezultato ekrane („O kas laukia kiekvieno iš jūsų?“), tik vienam žmogui — jo paties laiške
+    const b = btn(mine);
+    return EMC.card(EMC.h('✦ O kas laukia tavęs?') + EMC.p('Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnai?') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + until() + b);
   }
   const btns = (used.a ? '' : btn('a')) + (used.b ? '' : btn('b'));
   if (used.a || used.b) {
     const nm = used.a ? o.nameB : o.nameA, f = ltFormsObj(nm) || {};
-    return EMC.card(EMC.h('✦ ' + escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + btns);
+    return EMC.card(EMC.h('✦ ' + escapeHtml(f.gen || nm) + ' gyvenimo žemėlapis') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + until() + btns);
   }
-  return EMC.card(EMC.h('✦ O kas laukia kiekvieno iš jūsų?') + EMC.p('Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + EMC.small('kiekvienam') + btns);
+  return EMC.card(EMC.h('✦ O kas laukia kiekvieno iš jūsų?') + EMC.p('Kada pastangos virs pinigais, koks lūžis artėja ir kas trukdo pasiekti to, ko nusipelnote?') + EMC.price(eur(PORA_DUO_CENTS), eur(PERSONAL_PRICE_CENTS)) + EMC.small('kiekvienam') + until() + btns);
 }
 // Mokėjimo patvirtinimas laiškuose (vietoj Stripe kvito): paslauga, suma, data, užsakymo nr., pardavėjas
 // Atsisakymo teisės patvirtinimas „patvariojoje laikmenoje“ (Direktyvos 2011/83/ES 8 str. 7 d.) — po mokėjimo patvirtinimu laiške
