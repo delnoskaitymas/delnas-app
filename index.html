@@ -394,9 +394,10 @@ html.pora-boot #s-home > :not(#pora-welcome){visibility:hidden}
 #s-pora-wait .ls-text{font-size:12.5px;line-height:1.35;letter-spacing:.01em;font-weight:400!important}
 #s-pora-wait div:has(> .load-steps) > div:first-child{height:12px!important}
 /* Asmeninės analizės laukimas — antraštė ir temų laukeliai tokie pat kaip porų analizės ekrane, delno ikona šiek tiek mažesnė */
-#s-loading .load-wrap{padding-top:40px!important}
-#s-loading .load-title{font-size:20px!important}
-#s-loading #hand-container{width:100px!important;height:100px!important}
+#s-loading .load-wrap{padding-top:50px!important}
+#s-loading .pbar-wrap{margin-top:14px!important;margin-bottom:14px!important}
+#s-loading .load-title{font-size:22px!important}
+#s-loading #hand-container{width:106px!important;height:106px!important}
 #s-loading .load-steps{gap:5px!important}
 #s-loading .ls{padding:8px 12px;gap:10px;border-radius:10px;border-top-color:rgba(255,255,255,.05)}
 #s-loading .ls-icon{width:24px;height:24px;border-radius:6px}
@@ -7284,6 +7285,8 @@ function poraPartnerSent(email){
   document.getElementById('pora-final-text').textContent='Ši analizė priklauso tik jums. PDF išsiųstas '+(a.dat||p.nameA||'')+' ir tau — kiekvienam savo el. paštu.';
   if(row) row.style.display='none';
   if(msg){ msg.textContent='✓ Tau — į '+email; msg.style.cssText='font-size:13px;color:var(--gold2);margin-top:8px;display:block'; }
+  // Porų klausimų laukelis — tuo pačiu el. paštu (jei dar tuščias), kad nereikėtų rašyti antrą kartą
+  const ke=document.getElementById('pora-kl-email'); if(ke&&!ke.value.trim()&&email){ ke.value=email; ke.dispatchEvent(new Event('input',{bubbles:true})); ke.dispatchEvent(new Event('change',{bubbles:true})); }
 }
 async function poraPartnerEmail(){
   const inp=document.getElementById('pora-partner-email'), btn=document.getElementById('pora-partner-btn'), msg=document.getElementById('pora-partner-msg');
