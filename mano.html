@@ -131,7 +131,15 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 .tabs button i{font-size:13px}
 /* Sąrašas — be delno ikonos, kad tilptų daugiau analizių: „DELNAS“ su plona auksine šviesos juosta (kaip dovanų formoje) */
 body.list-view .hero{display:none!important}
-body.list-view .brand::after{content:'';display:block;width:44px;height:1px;margin:12px auto 14px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
+body.list-view .brand::after{content:'';display:block;width:44px;height:1px;margin:8px auto 8px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.8),transparent)}
+/* Sąrašo blokas kuo didesnis: mažesni tarpai aplink jį (eilutės ir skirtukai nesumažinti) */
+body.list-view h1{margin-bottom:0!important}
+body.list-view #list-lead{margin-bottom:6px}
+body.list-view .tabs{padding:4px 0}
+body.list-view #next-btn{margin-top:10px}
+body.list-view .gift-line{margin-top:8px}
+body.list-view .fine{margin-top:8px}
+body.list-view .wrap{padding-bottom:12px!important}
 @media (display-mode: standalone),(display-mode: fullscreen){:root{--sat:env(safe-area-inset-top)}}
 </style>
 </head>
