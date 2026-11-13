@@ -642,7 +642,7 @@ function giftOpenScreen(d, onOpen){
     btn.textContent = 'Jungiamasi prie Stripe…';
     try {
       const r = await fetch('/pora/create-checkout', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: window._refCode || storedRef(), remind: !window._noRemind }) });
+        body: JSON.stringify({ email: $('f-email').value.trim(), nameA: $('f-a').value.trim(), nameB: $('f-b').value.trim(), promo: window._promoCode || '', ref: (() => { const c = window._refCode || storedRef(); try { if (c) localStorage.setItem('delnasRefSent', JSON.stringify({ c, at: Date.now() })); } catch (e) {} return c; })(), remind: !window._noRemind }) });
       const d = await r.json();
       // Nuolaida ką tik panaudota kitame lange ar nebegalioja — rodoma tikra kaina, mokama tik paspaudus dar kartą
       if (d.promoGone) { window._promoCode = ''; window._poraPromoGone = true; $('gift-note').classList.add('hidden'); document.body.classList.remove('has-note'); }
