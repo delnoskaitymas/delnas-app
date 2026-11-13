@@ -6807,6 +6807,11 @@ document.addEventListener('click',e=>{
   const sid=(window._pora||{}).sid||''; let em='';
   try{ em=poraIsPartner()?(localStorage.getItem('delnasPoraKlEmP:'+sid)||localStorage.getItem('delnasPoraPdf:'+sid)||''):(localStorage.getItem('delnasPoraBuyerEm:'+sid)||''); localStorage.setItem('delnasManoPrefill',JSON.stringify({e:em,at:Date.now()})); }catch(x){}
 },true);
+// „Mano analizės“ iš asmeninės analizės rezultato — atsidaro su šios analizės el. paštu (ne paskutiniu šiame telefone naudotu)
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('#s-result a[href^="/mano"]'); if(!a) return;
+  try{ localStorage.setItem('delnasManoPrefill',JSON.stringify({e:window._userEmail||window.userEmail||'',at:Date.now()})); }catch(x){}
+},true);
 // Antrasis poros žmogus (atėjo per nuorodą ?partneris=1) — įsimenama tik šiame naršyklės lange (sessionStorage),
 // kad tame pačiame telefone pirmojo žmogaus rezultatas nebūtų rodomas kaip antrojo
 function poraIsPartner(){
