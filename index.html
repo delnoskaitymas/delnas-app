@@ -447,6 +447,7 @@ body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back
 /* Rezultato pabaigoje su grįžimo mygtuku — be didelio tuščio tarpo virš jo (tuščias užsakymo numeris nerodomas, apačios paraštė mažesnė) */
 .screen :has(+ .end-back){padding-bottom:6px!important}
 #r-order-number:empty,#pora-order-number:empty{display:none}
+#r-duo-next:not(:empty){margin-top:24px}
 .screen:has(.end-back) #r-rate > :last-child,.screen:has(.end-back) #pora-rate > :last-child{margin-bottom:0}
 .end-back{display:block;margin:18px auto 30px;padding:12px 22px;border-radius:999px;background:transparent;border:1px solid rgba(212,168,67,.55);color:var(--gold2);font:600 14px 'DM Sans',sans-serif;cursor:pointer}
 .result-final{text-align:center;padding:24px 16px;margin:8px 0 14px;background:rgba(212,168,67,.04);border:.5px solid rgba(212,168,67,.2);border-radius:16px}
@@ -1083,10 +1084,10 @@ body:has(#s-result.active) #mano-back,body:has(#s-pora-result.active) #mano-back
       </div>
 
     </div>
-    <!-- Atėjus iš porų rezultato — „Dabar — … eilė“ (po „Pasidalink, pakviesk ar padovanok“; „Jums dviem“ tada paslepiamas) -->
-    <div id="r-duo-next"></div>
     <div id="r-plan"></div>
     <div id="r-rate"></div>
+    <!-- Atėjus iš porų rezultato — „Dabar — … eilė“ pabaigoje, šalia „Grįžti į porų suderinamumą“ (pirmiau — šio žmogaus priminimas ir vertinimas; „Jums dviem“ tada paslepiamas) -->
+    <div id="r-duo-next"></div>
     <div id="r-order-number" style="text-align:center;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.03em"></div>
   </div>
 </div>
