@@ -4657,6 +4657,26 @@ function pdfCompareNote(doc, text, o){
   doc.setFont('NotoSans','normal'); doc.setFontSize(11.5*s); doc.setTextColor(...o.BODY); L.forEach(l=>{ doc.text(l, o.M+5, y); y+=5.8*s; });
   return y;
 }
+// Temų blokų elementai PDF — kaip rezultato ekrane: rėmelis, ✦ ženklelis, įžvalgos kortelė
+function pdfFrame(doc, x, w, top, bottom){ if(bottom-top<8) return; doc.setDrawColor(118,94,40); doc.setLineWidth(0.35); doc.roundedRect(x, top, w, bottom-top, 4, 4, 'S'); }
+function pdfStar(doc, cx, cy, r, col){ const k=r*0.3, P=[[0,-r],[k,-k],[r,0],[k,k],[0,r],[-k,k],[-r,0],[-k,-k]];
+  doc.setFillColor(...col); doc.lines(P.slice(1).map((p,i)=>[p[0]-P[i][0], p[1]-P[i][1]]), cx+P[0][0], cy+P[0][1], [1,1], 'F', true); }
+// Įžvalgos kortelė: fonas, auksinė juostelė kairėje, ženklelis kvadratėlyje, auksinis tekstas. y — pirmos eilutės pagrindo linija
+function pdfInsightCard(doc, x, w, y, lines, lh, asc, col){
+  const top=y-asc, bot=y+(lines.length-1)*lh+asc*0.45, h=bot-top, cy=top+h/2, sq=Math.min(6, h-2);
+  doc.setFillColor(20,16,7); doc.setDrawColor(44,37,22); doc.setLineWidth(0.2); doc.roundedRect(x, top, w, h, 2, 2, 'FD');
+  doc.setFillColor(212,168,67); doc.rect(x, top, 0.7, h, 'F');
+  doc.setFillColor(40,32,13); doc.setDrawColor(212,168,67); doc.setLineWidth(0.2); doc.roundedRect(x+3, cy-sq/2, sq, sq, 1.2, 1.2, 'FD');
+  pdfStar(doc, x+3+sq/2, cy, sq*0.3, [240,201,106]);
+  doc.setTextColor(...col); lines.forEach((l,i)=>doc.text(l, x+sq+6, y+i*lh));
+}
+// Baigiamoji temos frazė: plona linija ir „✦ …“ blankiai auksine spalva. Grąžina naują y (pagrindo linija po teksto)
+function pdfSecFooter(doc, x, w, y, text, sz, lh){
+  doc.setDrawColor(56,45,19); doc.setLineWidth(0.25); doc.line(x, y, x+w, y); y+=lh+1.5;
+  doc.setFont('NotoSans','normal'); doc.setFontSize(sz); doc.setTextColor(160,128,56);
+  const L=doc.splitTextToSize(text, w-5); pdfStar(doc, x+1.4, y-sz*0.12, sz*0.11, [160,128,56]);
+  L.forEach((l,i)=>doc.text(l, x+4, y+i*lh)); return y+(L.length-1)*lh;
+}
 // „Delnai greta“ blokas PDF — toks pat kaip rezultato ekrane: auksinis rėmelis, centruota antraštė ir paantraštė,
 // kiekviena linija atskirta plona linija, pavadinimas centre, du langeliai greta, išvada su auksine juostele
 // d = { title, sub, rows:[{ label, cells:[[užrašas, tekstas|{p,r}],…], isv }], isvTitle, isv }
@@ -4710,7 +4730,7 @@ function pdfGretaBlock(doc, o, d){
 function buildResultPdfDoc(r, name, orderNumber){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, H = 297; const margin = 20; const maxW = W - margin*2;
+  const W = 210, H = 297; const margin = 20; const maxW = W - margin*2; const PAGE_BOTTOM_F = 266;
 
   // ═══════════════════════════════════════════════════════════════════
   // TAMSUS FONAS — PDF vizualiai atkartoja rezultatų ekraną (#s-result):
@@ -4731,9 +4751,13 @@ function buildResultPdfDoc(r, name, orderNumber){
     doc.setFillColor(0,0,0);
     doc.rect(0,0,W,H,'F');
   }
+  // Temos rėmelis: perkeliant į naują puslapį — uždaromas šio puslapio apačioje ir tęsiamas naujame
+  let secFrame=null;
   function newPage(){
+    if(secFrame) pdfFrame(doc, margin-7, maxW+14, secFrame.top, Math.min(y-3, PAGE_BOTTOM_F+7));
     doc.addPage();
     fillDark();
+    if(secFrame) secFrame.top=22;
     return 32;
   }
 
@@ -4858,6 +4882,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   const INSIGHT_LINE_H = 8.8;   // tarpas tarp įžvalgų/sąrašo eilučių
   const INSIGHT_GAP = 4;        // tarpas tarp atskirų įžvalgų/punktų
   const PAGE_BOTTOM = 266;      // apatinė riba, po kurios pereinama į naują puslapį
+  const ASM_FOOTERS=['Šios stiprybės yra tavo — jos niekur nedingsta ir visada su tavimi.','Kai žmogus eina savo keliu — viskas sekasi lengviau.','Suprasti, kaip tu bendrauji — tai pirmas žingsnis geresnių santykių link.','Pinigai eina paskui sprendimus — savo potencialą tereikia panaudoti.','Tai, kas tave išskiria iš kitų — yra ir tavo didžiausias privalumas.','Pokyčiai visada atveria naujas galimybes — svarbu jų nepaleisti.','Kas žino savo kliūtis — tas gali jas įveikti.'];
 
   // Bendra pagalbinė f-ja bulletų sąrašui (įžvalgos arba stiprybių sąrašas)
   // piešti — auksinė (gold2), su "•" ženkleliu, kaip ekrano .insight-text
@@ -4871,8 +4896,8 @@ function buildResultPdfDoc(r, name, orderNumber){
     items.forEach((txt, i) => {
       // PASTABA: plotis skaičiuojamas taip, kad kartu su bulleto įtrauka
       // (margin+3) tekstas NIEKADA neišeitų už dešinės paraštės.
-      const bulletWidth = maxW - 6;
-      const bulletLines = doc.splitTextToSize('•  ' + txt, bulletWidth);
+      const bulletWidth = maxW - 15;
+      const bulletLines = doc.splitTextToSize(txt, bulletWidth);
       const neededH = bulletLines.length * INSIGHT_LINE_H;
       const remainingOnPage = PAGE_BOTTOM - y;
       // SVARBU: punktas perkeliamas VISAS į naują puslapį TIK tada, kai
@@ -4884,11 +4909,14 @@ function buildResultPdfDoc(r, name, orderNumber){
       if(neededH <= (PAGE_BOTTOM - 20) && neededH > remainingOnPage && remainingOnPage < 40){
         y = newPage();
       }
-      bulletLines.forEach(bl => {
+      // Kortelė kaip ekrane (.insight-card) — piešiama dalimis, jei netelpa puslapyje
+      let rest = bulletLines;
+      while(rest.length){
         if(y > PAGE_BOTTOM){ y = newPage(); }
-        doc.text(bl, margin + 3, y);
-        y += INSIGHT_LINE_H;
-      });
+        const n = Math.max(1, Math.min(rest.length, Math.floor((PAGE_BOTTOM - y) / INSIGHT_LINE_H) + 1));
+        pdfInsightCard(doc, margin, maxW, y, rest.slice(0, n), INSIGHT_LINE_H, 6.2, GOLD2);
+        y += n * INSIGHT_LINE_H; rest = rest.slice(n);
+      }
       // Tarpas TIK tarp punktų — po PASKUTINIO punkto NEBEDEDAME (kitaip
       // jis sudėtų su prieš-brūkšnio tarpu ir prieš liniją susidarytų
       // pernelyg didelis tuščias plotas).
@@ -4951,7 +4979,7 @@ function buildResultPdfDoc(r, name, orderNumber){
       title:'Tavo delnai greta', sub:'Kairysis delnas rodo, su kuo gimei, dešinysis — kuo tapai dabar',
       rows:[['sirdis','Širdies linija · jausmai'],['protas','Galvos linija · mąstymas'],['gyvenimas','Gyvenimo linija · tempas']].filter(([k])=>dg[k]).map(([k,label])=>({ label, cells:[['Kairysis · prigimtis',dg[k].kairys],['Dešinysis · dabar',dg[k].desinys]] })),
       isvTitle:'Ką per gyvenimą išsiugdei', isv:dg.isvada||'' });
-    y += 14;
+    y += 26;
   }
 
   sections.forEach(([title, text, insights, pills], secIdx) => {
@@ -4997,12 +5025,13 @@ function buildResultPdfDoc(r, name, orderNumber){
       if(y + neededForStart > PAGE_BOTTOM){ y = newPage(); }
     }
 
-    // Skyriaus pavadinimas (auksinis, pusjuodis, kaip .rs-label ekrane)
+    // Temos rėmelis (kaip .rs-std ekrane) ir pavadinimas (auksinis, pusjuodis, kaip .rs-label)
+    secFrame = { top: y - 13 };
     doc.setFont('NotoSans','bold');
     doc.setFontSize(19);
     doc.setTextColor(...GOLD);
-    doc.text(title.toUpperCase(), margin, y);
-    y += 13;
+    doc.splitTextToSize(title.toUpperCase(), maxW - 12).forEach(tl => { doc.text(tl, margin, y, {charSpace:0.35}); y += 9.5; });
+    y += 3.5;
     // Pagrindinis tekstas (šviesiai pilkas ant juodo fono, kaip .rs-body)
     doc.setFont('NotoSans','normal');
     doc.setFontSize(BODY_FONT_SIZE);
@@ -5034,12 +5063,14 @@ function buildResultPdfDoc(r, name, orderNumber){
     // skiriamoji linija (brūkšniai) NIEKADA neuž liptų ant teksto virš
     // jos ar sekančios temos antraštės po jos.
     // Po paskutinio skyriaus brūkšnio nėra — iškart eina padėkos blokas
-    if(secIdx === sections.length - 1) return;
-    y += 3;
-    doc.setDrawColor(...DIVIDER);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, W-margin, y);
-    y += 16;
+    // Baigiamoji frazė (✦ …) po plona linija, kaip ekrane; rėmelis uždaromas
+    y += 1;
+    if(y + 18 > PAGE_BOTTOM + 6){ y = newPage(); }
+    y = pdfSecFooter(doc, margin, maxW, y, ASM_FOOTERS[secIdx]||'', 14, 6.6);
+    pdfFrame(doc, margin-7, maxW+14, secFrame.top, y + 6);
+    secFrame = null;
+    if(secIdx === sections.length - 1){ y += 6; return; }
+    y += 6 + 10 + 13;
     // Apsauga: jei po brūkšnio liko labai mažai vietos (<15mm), linija
     // paliekama "pakibusi" prie paties puslapio krašto — tokiu atveju iš
     // karto pereinama į naują puslapį, kad sekanti tema pradėtų švariai.
@@ -7201,7 +7232,9 @@ function buildPoraPdfDoc(){
   doc.setFont('NotoSans','normal'); doc.setFontSize(12); doc.setTextColor(...MUTED); doc.text('suderinamumas', W/2, y, {align:'center'}); y+=7;
   doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD2); doc.text(poraLevel(r.suderinamumas||0), W/2, y+1, {align:'center'}); y+=9;
   const pc=r.palyginimas&&Array.isArray(r.palyginimas.sritys)&&r.palyginimas.sritys.length?r.palyginimas:null;
-  const pcO={ M, maxW, bottom:280, newPage:()=>{ doc.addPage(); dark(); return 30; }, s:1, GOLD, GOLD2, BODY, MUTED }, pcN=t=>poraNeutralText(String(t||''));
+  // Temos rėmelis: perkeliant į naują puslapį — uždaromas šio puslapio apačioje ir tęsiamas naujame
+  let fr=null; const np=()=>{ if(fr!==null) pdfFrame(doc, M-7, maxW+14, fr, Math.min(y-3, 287)); doc.addPage(); dark(); if(fr!==null) fr=20; return 30; };
+  const pcO={ M, maxW, bottom:280, newPage:np, s:1, GOLD, GOLD2, BODY, MUTED }, pcN=t=>poraNeutralText(String(t||''));
   const pcDiff=pc&&pc.pctPrev?(pc.pctNow-pc.pctPrev>0?'+'+(pc.pctNow-pc.pctPrev)+' %':pc.pctNow<pc.pctPrev?'−'+(pc.pctPrev-pc.pctNow)+' %':'nepakito'):'';
   if(pcDiff){ doc.setFont('NotoSans','normal'); doc.setFontSize(11); doc.setTextColor(...GOLD2); doc.text('Anksčiau buvo '+pc.pctPrev+' % · '+pcDiff, W/2, y, {align:'center'}); y+=8; }
   doc.setFont('NotoSans','normal'); doc.setTextColor(...MUTED);
@@ -7248,21 +7281,31 @@ function buildPoraPdfDoc(){
     y=pdfGretaBlock(doc, { M, maxW, y, bottom:282, newPage:()=>{ doc.addPage(); dark(); return 30; }, GOLD, GOLD2, BODY, MUTED, FRAME:[118,94,40] }, {
       title:'Jūsų delnai greta', sub:'Ką parodė palyginimas',
       rows:PORA_CMP.filter(([k])=>r.palyginimai[k]).map(([k,label])=>{ const c=r.palyginimai[k]; return { label, cells:[[pp.nameA||'',c.a],[pp.nameB||'',c.b]], isv:c.isvada||'' }; }) });
-    y+=14;
+    y+=22;
   }
-  PORA_SECTIONS.forEach(([k,title])=>{
-    if(y>250){ doc.addPage(); dark(); y=30; }
+  PORA_SECTIONS.forEach(([k,title],si)=>{
+    if(y>240) y=np();
+    // Temos rėmelis (kaip .rs-std ekrane) ir pavadinimas
+    fr=y-10;
     doc.setFont('NotoSans','bold'); doc.setFontSize(15); doc.setTextColor(...GOLD);
-    doc.splitTextToSize(title.toUpperCase(), maxW).forEach(l=>{ doc.text(l, M, y); y+=8; });
+    doc.splitTextToSize(title.toUpperCase(), maxW-10).forEach(l=>{ doc.text(l, M, y, {charSpace:0.3}); y+=8; });
     y+=2; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY);
-    doc.splitTextToSize(textParas(r[k]).join(' '), maxW).forEach(l=>{ if(y>275){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
+    doc.splitTextToSize(textParas(r[k]).join(' '), maxW).forEach(l=>{ if(y>278){ y=np(); doc.setFont('NotoSans','normal'); doc.setFontSize(14); doc.setTextColor(...BODY); } doc.text(l, M, y); y+=7.2; });
+    // Įžvalgos — kortelės kaip ekrane (.insight-card)
     const iz=(r.izvalgos||{})[k]||[];
-    if(iz.length){ y+=2; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2);
-      iz.forEach(t=>{ doc.splitTextToSize('•  '+t, maxW-4).forEach(l=>{ if(y>278){ doc.addPage(); dark(); y=30; doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); } doc.text(l, M+2, y); y+=6.4; }); y+=1.5; }); }
+    if(iz.length){ y+=2;
+      iz.forEach(t=>{ doc.setFont('NotoSans','bold'); doc.setFontSize(12.5); const L=doc.splitTextToSize(t, maxW-16);
+        if(y+L.length*6.4>282) y=np(); doc.setFont('NotoSans','bold'); doc.setFontSize(12.5);
+        pdfInsightCard(doc, M, maxW, y, L, 6.4, 5, GOLD2); y+=L.length*6.4+3.6; }); }
     const pn=pc&&pc.skyriai&&pc.skyriai[k];
-    if(pn){ y+=2; y=pdfCompareNote(doc, pcN(pn), {...pcO, y}); }
-    y+=10;
+    if(pn){ y+=2; y=pdfCompareNote(doc, pcN(pn), {...pcO, y}); y+=4; }
+    // Baigiamoji frazė (✦ …) po plona linija; rėmelis uždaromas
+    if(y+12>286) y=np();
+    y=pdfSecFooter(doc, M, maxW, y, PORA_FOOTERS[k]||'', 10.5, 5.2);
+    pdfFrame(doc, M-7, maxW+14, fr, y+5); fr=null;
+    y+=5+10+10;
   });
+  y-=10;
   // Pabaiga — tokia pati kaip asmeninės analizės PDF: padėka, mygtukas į svetainę, pastaba apie paslaugos pobūdį
   if(y>228){ doc.addPage(); dark(); y=30; }
   y+=4;
