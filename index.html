@@ -4698,45 +4698,48 @@ function pdfSecFooter(doc, x, w, y, text, sz, lh){
 // kiekviena linija atskirta plona linija, pavadinimas centre, du langeliai greta, išvada su auksine juostele
 // d = { title, sub, rows:[{ label, cells:[[užrašas, tekstas|{p,r}],…], isv }], isvTitle, isv }
 function pdfGretaBlock(doc, o, d){
-  const M=o.M, W=o.maxW, P=6, iw=W-P*2, colW=(iw-4)/2, LH=4.9, GOLD=o.GOLD, GOLD2=o.GOLD2, BODY=o.BODY, MUTED=o.MUTED;
-  const LINE=[64,52,22], CELL=[16,13,5], CELLB=[78,62,26], ISV=[24,19,8];
+  // k — mastelis: raidės ir tarpai tokio dydžio, kaip to PDF temų blokuose; rėmelis — tokio pat pločio kaip temų rėmeliai
+  const k=o.k||1, M=o.M, W=o.maxW, iw=W, X0=M, gap=4*k, colW=(iw-gap)/2, LH=4.9*k, GOLD=o.GOLD, GOLD2=o.GOLD2, BODY=o.BODY, MUTED=o.MUTED;
+  const LINE=[64,52,22], CELL=[16,13,5], CELLB=[78,62,26], ISV=[24,19,8], FS=10.5*k, LS=8*k, SS=7.5*k, SLH=3.6*k, pad=3*k;
   const fit=(t,w,sz,b)=>{ doc.setFont('NotoSans',b?'bold':'normal'); doc.setFontSize(sz); return doc.splitTextToSize(String(t||''), w); };
   const ctr=(t,y,sz,b,col,cs)=>{ doc.setFont('NotoSans',b?'bold':'normal'); doc.setFontSize(sz); doc.setTextColor(...col);
     const w=doc.getTextWidth(t)+(cs||0)*(t.length-1); doc.text(t, M+W/2-w/2, y, cs?{charSpace:cs}:undefined); };
   const blocks=[];
   // Antraštė
-  { const S=fit(d.sub, iw-6, 10); blocks.push({ h:9+S.length*4.6+2, draw:y=>{ ctr(d.title, y+6, 17, false, GOLD2); S.forEach((l,i)=>ctr(l, y+11.5+i*4.6, 10, false, MUTED)); } }); }
+  { const TS=17*Math.min(k,1.25), SB=10*k, S=fit(d.sub, iw-6, SB), sl=SB*0.46;
+    blocks.push({ h:TS*0.53+3+S.length*sl+2*k, draw:y=>{ ctr(d.title, y+TS*0.36, TS, false, GOLD2); S.forEach((l,i)=>ctr(l, y+TS*0.36+3+SB*0.4+i*sl, SB, false, MUTED)); } }); }
   // Langelio turinys: [ [dydis, spalva, eilutės, storas, tarpas prieš] … ]
-  const cellParts=v=>{ if(v&&typeof v==='object'){ return [[7.5,[150,120,52],['MATOSI'],1,0],[10.5,BODY,fit(v.p,colW-6,10.5),0,0.6],[7.5,[150,120,52],['REIŠKIA'],1,2.2],[10.5,[232,226,212],fit(v.r,colW-6,10.5),0,0.6]]; } return [[10.5,BODY,fit(v,colW-6,10.5),0,0]]; };
-  const partsH=ps=>ps.reduce((a,[sz,,L,b,g])=>a+g+L.length*(b?3.6:LH),0);
+  const cellParts=v=>{ if(v&&typeof v==='object'){ return [[SS,[150,120,52],['MATOSI'],1,0],[FS,BODY,fit(v.p,colW-2*pad,FS),0,0.6*k],[SS,[150,120,52],['REIŠKIA'],1,2.2*k],[FS,[232,226,212],fit(v.r,colW-2*pad,FS),0,0.6*k]]; } return [[FS,BODY,fit(v,colW-2*pad,FS),0,0]]; };
+  const partsH=ps=>ps.reduce((a,[sz,,L,b,g])=>a+g+L.length*(b?SLH:LH),0);
+  const ISL=5*k;
   (d.rows||[]).forEach(r=>{
-    const C=r.cells.map(([lab,v])=>[lab,cellParts(v)]), cH=Math.max(...C.map(([,ps])=>partsH(ps)))+11;
-    const I=r.isv?fit(r.isv, iw-10, 10.5):[], iH=I.length?I.length*5+6+3:0;
-    blocks.push({ h:7+6+cH+iH+2, draw:(y,cont)=>{
-      if(!cont){ doc.setDrawColor(...LINE); doc.setLineWidth(0.25); doc.line(M+P, y+2, M+W-P, y+2); }
-      ctr(String(r.label).toUpperCase(), y+9.5, 9, true, GOLD, 0.5);
-      let cy=y+13;
-      C.forEach(([lab,ps],i)=>{ const bx=M+P+i*(colW+4);
+    const C=r.cells.map(([lab,v])=>[lab,cellParts(v)]), cH=Math.max(...C.map(([,ps])=>partsH(ps)))+11*k;
+    const I=r.isv?fit(r.isv, iw-10*k, FS):[], iH=I.length?I.length*ISL+6*k+3*k:0;
+    blocks.push({ h:13*k+cH+iH+2*k, draw:(y,cont)=>{
+      if(!cont){ doc.setDrawColor(...LINE); doc.setLineWidth(0.25); doc.line(X0, y+2*k, X0+iw, y+2*k); }
+      ctr(String(r.label).toUpperCase(), y+9.5*k, 9*k, true, GOLD, 0.5*k);
+      let cy=y+13*k;
+      C.forEach(([lab,ps],i)=>{ const bx=X0+i*(colW+gap);
         doc.setFillColor(...CELL); doc.setDrawColor(...CELLB); doc.setLineWidth(0.25); doc.roundedRect(bx, cy, colW, cH, 2.5, 2.5, 'FD');
-        doc.setFont('NotoSans','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text(String(lab).toUpperCase(), bx+3, cy+5.2, {charSpace:0.25});
-        let ty=cy+10.2; ps.forEach(([sz,col,L,b,g])=>{ ty+=g; doc.setFont('NotoSans',b?'bold':'normal'); doc.setFontSize(sz); doc.setTextColor(...col); L.forEach(l=>{ doc.text(l, bx+3, ty); ty+=b?3.6:LH; }); });
+        doc.setFont('NotoSans','bold'); doc.setFontSize(LS); doc.setTextColor(...GOLD); doc.text(String(lab).toUpperCase(), bx+pad, cy+5.2*k, {charSpace:0.25*k});
+        let ty=cy+10.2*k; ps.forEach(([sz,col,L,b,g])=>{ ty+=g; doc.setFont('NotoSans',b?'bold':'normal'); doc.setFontSize(sz); doc.setTextColor(...col); L.forEach(l=>{ doc.text(l, bx+pad, ty); ty+=b?SLH:LH; }); });
       });
-      if(I.length){ const iy=cy+cH+3, ih=I.length*5+5;
-        doc.setFillColor(...ISV); doc.roundedRect(M+P, iy, iw, ih, 2, 2, 'F'); doc.setFillColor(...GOLD); doc.rect(M+P, iy, 0.7, ih, 'F');
-        doc.setFont('NotoSans','normal'); doc.setFontSize(10.5); doc.setTextColor(...BODY); I.forEach((l,i)=>doc.text(l, M+P+4, iy+5.6+i*5)); }
+      if(I.length){ const iy=cy+cH+3*k, ih=I.length*ISL+5*k;
+        doc.setFillColor(...ISV); doc.roundedRect(X0, iy, iw, ih, 2, 2, 'F'); doc.setFillColor(...GOLD); doc.rect(X0, iy, 0.7, ih, 'F');
+        doc.setFont('NotoSans','normal'); doc.setFontSize(FS); doc.setTextColor(...BODY); I.forEach((l,i)=>doc.text(l, X0+4*k, iy+5.6*k+i*ISL)); }
     } });
   });
   // Bendra išvada (asmeninė analizė)
-  if(d.isv){ const I=fit(d.isv, iw-10, 10.5), ih=I.length*5+13;
-    blocks.push({ h:ih+6, draw:y=>{ const iy=y+5;
-      doc.setFillColor(...ISV); doc.roundedRect(M+P, iy, iw, ih, 2, 2, 'F'); doc.setFillColor(...GOLD); doc.rect(M+P, iy, 0.7, ih, 'F');
-      doc.setFont('NotoSans','normal'); doc.setFontSize(12.5); doc.setTextColor(...GOLD2); doc.text(d.isvTitle||'', M+P+4, iy+6.5);
-      doc.setFontSize(10.5); doc.setTextColor(...BODY); I.forEach((l,i)=>doc.text(l, M+P+4, iy+12.5+i*5)); } }); }
-  // Išdėstymas per puslapius: kiekviename puslapyje — savas rėmelis
-  let y=o.y, top=y; const PADB=5;
-  if(y+blocks[0].h+(blocks[1]?blocks[1].h:0)+PADB+4>o.bottom){ y=o.newPage(); top=y; }
-  y+=4;
-  const frame=(a,b)=>{ doc.setDrawColor(...o.FRAME); doc.setLineWidth(0.35); doc.roundedRect(M, a, W, b-a, 4, 4, 'S'); };
+  if(d.isv){ const I=fit(d.isv, iw-10*k, FS), ih=I.length*ISL+13*k;
+    blocks.push({ h:ih+6*k, draw:y=>{ const iy=y+5*k;
+      doc.setFillColor(...ISV); doc.roundedRect(X0, iy, iw, ih, 2, 2, 'F'); doc.setFillColor(...GOLD); doc.rect(X0, iy, 0.7, ih, 'F');
+      doc.setFont('NotoSans','normal'); doc.setFontSize(12.5*k); doc.setTextColor(...GOLD2); doc.text(d.isvTitle||'', X0+4*k, iy+6.5*k);
+      doc.setFontSize(FS); doc.setTextColor(...BODY); I.forEach((l,i)=>doc.text(l, X0+4*k, iy+12.5*k+i*ISL)); } }); }
+  // Išdėstymas per puslapius: kiekviename puslapyje — savas rėmelis (toks pat kaip temų: 7 mm už paraščių)
+  let y=o.y, top=y; const PADB=6;
+  if(y+blocks[0].h+(blocks[1]?blocks[1].h:0)+PADB+6>o.bottom){ y=o.newPage(); top=y; }
+  y+=6;
+  const frame=(a,b)=>{ doc.setDrawColor(...o.FRAME); doc.setLineWidth(0.35); doc.roundedRect(M-7, a, W+14, b-a, 4, 4, 'S'); };
   blocks.forEach((bk,i)=>{
     let cont=false; if(i&&y+bk.h+PADB>o.bottom){ frame(top, y+PADB); y=o.newPage(); top=y; y+=2; cont=true; }
     bk.draw(y,cont); y+=bk.h;
@@ -4994,7 +4997,7 @@ function buildResultPdfDoc(r, name, orderNumber){
   const dg=r.delnai_greta;
   if(dg&&dg.sirdis){
     // Toks pat vaizdas kaip rezultato ekrane („Tavo delnai greta“)
-    y = pdfGretaBlock(doc, { M:margin, maxW, y, bottom:PAGE_BOTTOM, newPage, GOLD, GOLD2, BODY, MUTED, FRAME:[118,94,40] }, {
+    y = pdfGretaBlock(doc, { M:margin, maxW, y, bottom:PAGE_BOTTOM, newPage, GOLD, GOLD2, BODY, MUTED, FRAME:[118,94,40], k:1.55 }, {
       title:'Tavo delnai greta', sub:'Kairysis delnas rodo, su kuo gimei, dešinysis — kuo tapai dabar',
       rows:[['sirdis','Širdies linija · jausmai'],['protas','Galvos linija · mąstymas'],['gyvenimas','Gyvenimo linija · tempas']].filter(([k])=>dg[k]).map(([k,label])=>({ label, cells:[['Kairysis · prigimtis',dg[k].kairys],['Dešinysis · dabar',dg[k].desinys]] })),
       isvTitle:'Ką per gyvenimą išsiugdei', isv:dg.isvada||'' });
@@ -7300,7 +7303,7 @@ function buildPoraPdfDoc(){
     if(y>215){ doc.addPage(); dark(); y=30; }
     // Toks pat vaizdas kaip rezultato ekrane („Jūsų delnai greta“)
     const pp=window._pora||{};
-    y=pdfGretaBlock(doc, { M, maxW, y, bottom:282, newPage:()=>{ doc.addPage(); dark(); return 30; }, GOLD, GOLD2, BODY, MUTED, FRAME:[118,94,40] }, {
+    y=pdfGretaBlock(doc, { M, maxW, y, bottom:282, newPage:()=>{ doc.addPage(); dark(); return 30; }, GOLD, GOLD2, BODY, MUTED, FRAME:[118,94,40], k:1.2 }, {
       title:'Jūsų delnai greta', sub:'Ką parodė palyginimas',
       rows:PORA_CMP.filter(([k])=>r.palyginimai[k]).map(([k,label])=>{ const c=r.palyginimai[k]; return { label, cells:[[pp.nameA||'',c.a],[pp.nameB||'',c.b]], isv:c.isvada||'' }; }) });
     y+=22;
