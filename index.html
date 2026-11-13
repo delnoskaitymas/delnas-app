@@ -6921,7 +6921,7 @@ function addEndBack(sr, label, topId){
 // Asmeninio rezultato viršuje, jei atėjo iš porų rezultato: „Dabar — Karlės eilė“ (tame pačiame telefone)
 async function renderDuoNext(){
   const box=document.getElementById('r-duo-next'); if(!box) return; box.innerHTML='';
-  if(window._manoView) return;
+  // Ir atidarius iš „Mano analizių“ ar laiško — jei analizė daryta iš porų suderinamumo, kito žmogaus eilė rodoma pabaigoje
   let duo=null; try{ duo=JSON.parse(sessionStorage.getItem('delnasDuo')||'null'); }catch(e){}
   let duoPromo=false; try{ duoPromo=!!sessionStorage.getItem('delnasDuoTab')||(JSON.parse(sessionStorage.getItem('delnasPromo')||'null')||{}).kind==='duo'; }catch(e){}
   // Asmeninė analizė atlikta iš porų analizės (porų kaina) — pora suderinamumą jau žino, „Jums dviem“ nerodome
@@ -6933,6 +6933,8 @@ async function renderDuoNext(){
   const other=duo.side==='a'?'b':'a', o=d[other], name=other==='a'?d.nameA:d.nameB;
   if(!o||!name) return;
   const sr=document.getElementById('s-result'), pc=document.getElementById('r-pora-card');
+  // Atidarius iš „Mano analizių“ — tik kito žmogaus eilė (grįžimas lieka į „Mano analizes“, ne į porų rezultatą)
+  if(window._manoView&&(o.used||d.remote)) return;
   // Abu jau atliko asmenines analizes (paskutinis žmogus) — tik grįžimas į porų rezultatą, prie bloko, iš kurio atėjo
   if(o.used){
     if(pc) pc.style.display='none';
@@ -6971,12 +6973,13 @@ async function renderDuoNext(){
   // Vienas ryškus mygtukas — kito poros žmogaus analizė; klausimų ir dalinimosi mygtukai tampa kontūriniai
   if(sr) sr.classList.add('duo-mode');
   // Maža nuoroda ekrano viršuje (kaip „Mano analizės“) — „Dariaus eilė“: veda į porų rezultatą iškart prie kito žmogaus analizės mygtuko
-  if(sr&&!document.getElementById('duo-back')){
+  // Atidarius iš „Mano analizių“ grįžimas lieka į „Mano analizes“
+  if(sr&&!window._manoView&&!document.getElementById('duo-back')){
     const l=document.createElement('a'); l.id='duo-back'; l.href='/?pora='+encodeURIComponent(duo.sid)+'#asmenine'; l.textContent=f.gen+' eilė';
     l.style.cssText="position:absolute;top:calc(10px + var(--sat));left:12px;z-index:5;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(212,168,67,.55);color:#f0d58a;font:600 13px 'DM Sans',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent";
     sr.prepend(l);
   }
-  addEndBack(sr,'Grįžti į porų suderinamumą','duo-back');
+  if(!window._manoView) addEndBack(sr,'Grįžti į porų suderinamumą','duo-back');
   // Tame pačiame skirtuke — tas pats pradžios ekranas, kaip ir pirmajam žmogui, tik su kito kodu
   document.getElementById('duo-next-btn').addEventListener('click',()=>{ location.href='/?promo='+encodeURIComponent(o.code)+'&duo='+encodeURIComponent(duo.sid)+'&kas='+other; });
 }
@@ -8062,6 +8065,8 @@ document.addEventListener('click',e=>{
       window._manoKlausk=d.klausk&&d.klausk.id?d.klausk:null;
       window._manoKlauskAll=Array.isArray(d.klauskAll)?d.klauskAll:[];
       window._manoId=id; window._manoT=t;
+      // Asmeninė analizė iš porų suderinamumo — pabaigoje kito poros žmogaus eilė (kaip ir iškart po analizės)
+      try{ if(d.duo&&d.duo.sid){ sessionStorage.setItem('delnasDuo',JSON.stringify({sid:d.duo.sid,side:d.duo.side})); sessionStorage.setItem('delnasDuoTab','1'); } }catch(e){}
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       go('s-result'); displayResult(d.result);
       if(recentDone('pora')) poraCardMarkDone(document.getElementById('r-pora-card'));
