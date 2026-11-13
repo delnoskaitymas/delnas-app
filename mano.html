@@ -86,9 +86,10 @@ body.list-view .wrap{padding-top:calc(34px + var(--sat,0px))!important;padding-b
 body.list-view .brand{font-size:18px!important}
 body.list-view .hero{width:84px!important;height:84px!important;margin:10px auto 8px!important}
 body.list-view h1{font-size:29px!important;margin-bottom:2px}
-body.list-view #list-lead{font-size:13px;margin-bottom:2px}
+body.list-view #list-lead{font-size:13px;margin-bottom:12px}
 body.list-view .tabs{padding:6px 0;gap:6px}
-body.list-view .tabs button{padding:8px 6px;font-size:12.5px}
+body.list-view .tabs{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.list-view .tabs button{min-width:0;min-height:44px;padding:11px 6px;font-size:13.5px;line-height:1.25;white-space:normal}
 body.list-view .item{padding:10px 12px;margin-bottom:8px;gap:10px}
 body.list-view .item .ic{width:32px;height:32px;font-size:15px}
 body.list-view .item b{font-size:15px}
@@ -254,10 +255,18 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
     // Visas ekranas telpa be slinkimo: jei įrašų daugiau nei telpa — slenka tik sąrašas
-    const fitList = () => { const it = $('items'); if (!it) return; it.classList.remove('fit-scroll'); it.style.maxHeight = '';
+    // Skirtukų užrašai — vienoje eilutėje: šriftas mažinamas (visiems vienodai, ne mažiau 12 px), kol telpa ilgiausias (pvz. dviženkliai skaičiai);
+    // jei vis tiek netelpa — užrašas keliama į antrą eilutę (už ekrano neišeina)
+    const fitTabs = () => { const bs = [...document.querySelectorAll('#tabs button')]; if (!bs.length) return;
+      const set = v => bs.forEach(b => { b.style.fontSize = v + 'px'; }), wide = () => bs.some(b => { b.style.whiteSpace = 'nowrap'; const o = b.scrollWidth > b.clientWidth; b.style.whiteSpace = ''; return o; });
+      let f = 13.5; set(f); while (f > 12 && wide()) { f -= 0.5; set(f); } const one = !wide(); bs.forEach(b => { b.style.whiteSpace = one ? 'nowrap' : ''; }); };
+    const fitList = () => { fitTabs(); const it = $('items'); if (!it) return; it.classList.remove('fit-scroll'); it.style.maxHeight = '';
       const over = document.documentElement.scrollHeight - window.innerHeight;
-      if (over > 1) { it.style.maxHeight = Math.max(150, it.offsetHeight - over - 2) + 'px'; it.classList.add('fit-scroll'); } };
+      if (over > 1) { it.style.maxHeight = Math.max(120, it.offsetHeight - over - 2) + 'px'; it.classList.add('fit-scroll'); } };
     window.addEventListener('resize', fitList);
+    // Šriftai įsikelia vėliau — aukščiai pasikeičia, todėl perskaičiuojama dar kartą (ekranas visada telpa, iš kur beatėjus)
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitList);
+    window.addEventListener('load', fitList);
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); fitList(); };
     show(first);
     const tb = $('tabs');

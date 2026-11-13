@@ -715,12 +715,22 @@ function giftOpenScreen(d, onOpen){
   let d=null; try{ d=JSON.parse(sessionStorage.getItem(K)||'null'); }catch(e){}
   if(d&&Date.now()-d.at>6*3600e3) d=null;
   // Ne iš rezultato — „Grįžti atgal“ ten, iš kur atėjo (ir į laišką ar kitą svetainę); naujame lange be istorijos — langas uždaromas
+  // Šio puslapio vieta lango istorijoje (išsaugoma atidarant, ne grįžus): grįžus iš kito puslapio istorijoje lieka ir tolesni puslapiai
+  const posKey='delnasPoraPos:'+location.pathname+location.search;
+  let navType=''; try{ navType=(performance.getEntriesByType('navigation')[0]||{}).type||''; }catch(x){}
+  let pos=0; try{ pos=+sessionStorage.getItem(posKey)||0; if(!pos||navType!=='back_forward'){ pos=history.length; sessionStorage.setItem(posKey,String(pos)); } }catch(x){ pos=history.length; }
+  // Pirmas puslapis lange (atidarytas iš laiško ar žinutės) — „Grįžti atgal“ uždaro langą. Kitos šios svetainės nuorodos atidaromos naujame lange,
+  // kad šio lango istorija liktų tuščia ir langą būtų galima uždaryti; jei vis tiek neįmanoma — mygtukas nerodomas
+  document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[href]'); if(!a||d||pos>1||a.target||a.classList.contains('back-res')) return;
+    let u=null; try{ u=new URL(a.href,location.href); }catch(x){ return; } if(u.origin!==location.origin||(u.pathname===location.pathname&&u.search===location.search)) return;
+    a.target='_blank'; a.rel='opener'; },true);
+  addEventListener('pageshow',()=>{ if(d) return; const hide=pos<=1&&history.length>1; document.querySelectorAll('.back-res').forEach(b=>{ b.style.display=hide?'none':''; }); });
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
     btn.textContent=d?'Grįžti į gyvenimo žemėlapį':'Grįžti atgal';
     btn.addEventListener('click',e=>{
       e.preventDefault();
-      if(!d){ if(history.length>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ btn.textContent='Šį langą gali uždaryti'; btn.style.pointerEvents='none'; },300); return; }
+      if(!d){ if(pos>1){ history.back(); return; } try{ window.close(); }catch(x){} setTimeout(()=>{ btn.textContent='Šį langą gali uždaryti'; btn.style.pointerEvents='none'; },300); return; }
       // Atidaryta naujame skirtuke iš rezultato — pirmiausia skirtukas uždaromas (ir po pirkimo): lieka rezultatas toje pačioje vietoje;
       // jei uždaryti negalima — atidaromas rezultatas prie to paties bloko
       if(d.b){ try{ sessionStorage.setItem('delnasKlFold','1'); }catch(x){} try{ window.close(); }catch(x){} setTimeout(()=>{ location.href=d.b; },300); return; }
