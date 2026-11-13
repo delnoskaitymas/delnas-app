@@ -129,9 +129,9 @@ body:not(.list-view) .wrap{padding-top:52px!important;padding-bottom:76px!import
 @media (max-width:370px){.tabs button{font-size:12.5px;padding:10px 6px}}
 .tabs button i{font-size:13px}
 /* Skirtukai — didesni ir aiškiai pasirenkami: šviesesnis tekstas, ryškesnis rėmelis, apskritimas (pasirinktas — užpildytas) */
-body.list-view .tabs{gap:8px;padding:8px 0}
-body.list-view .tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 6px;font-size:13.5px;font-weight:600;white-space:nowrap;color:#e8e2d4;background:linear-gradient(180deg,rgba(212,168,67,.09),rgba(212,168,67,.03));border:1px solid rgba(212,168,67,.55);border-radius:13px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
-body.list-view .tabs button::before{content:'';flex-shrink:0;width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(212,168,67,.75);box-sizing:border-box}
+body.list-view .tabs{gap:8px;padding:8px 0;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.list-view .tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 4px;font-size:13.5px;font-weight:600;white-space:nowrap;min-width:0;overflow:hidden;color:#e8e2d4;background:linear-gradient(180deg,rgba(212,168,67,.09),rgba(212,168,67,.03));border:1px solid rgba(212,168,67,.55);border-radius:13px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+body.list-view .tabs button::before{content:'';flex-shrink:0;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(212,168,67,.75);box-sizing:border-box}
 body.list-view .tabs button.on{background:linear-gradient(180deg,rgba(240,201,106,.26),rgba(212,168,67,.14));border-color:var(--gold2);color:var(--gold2);box-shadow:0 0 12px rgba(212,168,67,.28)}
 body.list-view .tabs button.on::before{background:var(--gold2);border-color:var(--gold2);box-shadow:0 0 6px rgba(240,201,106,.7)}
 body.list-view .tabs button[disabled]{opacity:.38;box-shadow:none}
@@ -260,10 +260,17 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
     // Visas ekranas telpa be slinkimo: jei įrašų daugiau nei telpa — slenka tik sąrašas
-    const fitList = () => { const it = $('items'); if (!it) return; it.classList.remove('fit-scroll'); it.style.maxHeight = '';
+    // Skirtukų tekstas telpa vienoje eilutėje: šriftas mažinamas (visiems vienodai), kol netelpa ilgiausias (pvz. dviženkliai skaičiai)
+    const fitTabs = () => { const bs = [...document.querySelectorAll('#tabs button')]; if (!bs.length) return;
+      let f = 13.5; const set = v => bs.forEach(b => { b.style.fontSize = v + 'px'; b.style.gap = (v < 12.5 ? 4 : 6) + 'px'; });
+      set(f); while (f > 10.5 && bs.some(b => b.scrollWidth > b.clientWidth + 0.5)) { f -= 0.5; set(f); } };
+    const fitList = () => { fitTabs(); const it = $('items'); if (!it) return; it.classList.remove('fit-scroll'); it.style.maxHeight = '';
       const over = document.documentElement.scrollHeight - window.innerHeight;
-      if (over > 1) { it.style.maxHeight = Math.max(150, it.offsetHeight - over - 2) + 'px'; it.classList.add('fit-scroll'); } };
+      if (over > 1) { it.style.maxHeight = Math.max(120, it.offsetHeight - over - 2) + 'px'; it.classList.add('fit-scroll'); } };
     window.addEventListener('resize', fitList);
+    // Šriftai įsikelia vėliau — aukščiai pasikeičia, todėl perskaičiuojama dar kartą
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitList);
+    window.addEventListener('load', fitList);
     const show = c => { $('list').querySelectorAll('.item').forEach(el => { el.hidden = el.dataset.cat !== c; }); next(c); fitList(); };
     show(first);
     const tb = $('tabs');
