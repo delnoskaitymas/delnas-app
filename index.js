@@ -3137,7 +3137,9 @@ app.post('/email-result-pdf', sensitiveLimiter, async (req, res) => {
     try {
       // Porų suderinamumas rinkinio kaina — pirkėjui ir dovanos gavėjui (ne tam, kas jau užsakė rinkinį)
       const ga = isGift && ownsPaymentRef(paymentRef, { token }) ? giftAnalysis(paymentRef) : null;
-      if (pay || ga) {
+      // Asmeninė analizė padaryta iš porų analizės (porų kaina) — porų analizė jau atlikta, jos nebesiūlome
+      let fromPora = false; try { const pc = pay && pay.metadata && pay.metadata.promo ? loadPromos().codes[String(pay.metadata.promo).toUpperCase()] : null; fromPora = !!(pc && pc.kind === 'duo'); } catch (e) {}
+      if ((pay || ga) && !fromPora) {
         const em = pay && isValidEmail(pay.email) ? pay.email : email;
         const pr = createPromo({ kind: 'bundle', product: 'pora', price: PORA_BUNDLE_CENTS, ttlMs: 30 * DAY_MS, email: em, key: 'bundle:' + paymentRef });
         if (!pr.usedBy && Date.now() < pr.expiresAt && !recentDone(em, 'pora')) poraLine = resultPoraLineHtml(pr);
@@ -5512,6 +5514,8 @@ function poraDuoEmailOffer(o, sessionId, partner) {
     const link = `${appBaseUrl()}/?promo=${encodeURIComponent(pr.code)}&amp;duo=${encodeURIComponent(sessionId)}&amp;kas=${side}&amp;utm_source=email&amp;utm_campaign=pora-duo`;
     return EMC.btn(link, `${escapeHtml(f.gen || nm)} gyvenimo žemėlapis`);
   };
+  // Porų analizė užsakyta iš asmeninės analizės (rinkinio kaina) — pirkėjo laiške asmeninių analizių pasiūlymo nėra
+  if (!partner && poraBuyerHasPersonal(sessionId, o)) return '';
   // Porų analizė per nuorodą (skirtinguose telefonuose): laiške — tik to žmogaus, kuriam laiškas, asmeninė analizė
   if (o.firstSavedAt) {
     const mine = partner ? 'b' : 'a', nm = mine === 'a' ? o.nameA : o.nameB, f = ltFormsObj(nm) || {};
