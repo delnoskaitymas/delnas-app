@@ -57,6 +57,7 @@ input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(212,168,67,.25)}
 .item small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .item .act{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .item a.open{color:#140f02;background:var(--gold);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+.item a.more3{color:var(--gold2);font:600 12px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 .item button.del{background:none;border:none;color:var(--faint);font:400 11.5px 'DM Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:0}
 .tx .pct{display:inline-block;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#140d02;background:var(--gold2);border-radius:999px;padding:2px 8px;margin-left:4px;vertical-align:2px;white-space:nowrap}
 .item a.open.more{white-space:normal;text-align:center;line-height:1.25;max-width:130px}
@@ -225,7 +226,10 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
     const kLeft = k => typeof k.left === 'number' ? k.left : Math.max(0, 3 - k.count);
     if (d.klausimai.length) {
       h += '<div class="sec" data-cat="kl">Klausk savo delnų</div>';
-      h += d.klausimai.map(k => '<div class="item" data-cat="' + (k.kind === 'pora' ? 'klp' : 'kl') + '" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš ' + (k.total || 3) + '</small></div><div class="act"><a class="open' + (kLeft(k) ? ' more' : '') + '" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + (kLeft(k) ? '#klausti' : '') + '">' + (!kLeft(k) ? 'Atidaryti' : !k.count ? 'Užduoti klausimus' : kLeft(k) === 1 ? 'Užduoti likusį klausimą' : 'Užduoti likusius klausimus') + '</a><button type="button" class="del">Ištrinti</button></div></div>').join('');
+      h += d.klausimai.map(k => '<div class="item" data-cat="' + (k.kind === 'pora' ? 'klp' : 'kl') + '" data-type="kl" data-id="' + esc(k.id) + '"><div class="ic">✦</div><div class="tx"><b>' + (k.name ? esc(k.name) + ' — ' : '') + (k.kind === 'pora' ? 'klausimai porai' : 'asmeniniai klausimai') + '</b><small>' + day(k.createdAt) + ' · atsakyta ' + k.count + ' iš ' + (k.total || 3) + '</small></div><div class="act"><a class="open' + (kLeft(k) ? ' more' : '') + '" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + (kLeft(k) ? '#klausti' : '') + '">' + (!kLeft(k) ? 'Atidaryti' : !k.count ? 'Užduoti klausimus' : kLeft(k) === 1 ? 'Užduoti likusį klausimą' : 'Užduoti likusius klausimus') + '</a>' +
+        // Visi klausimai užduoti — nauji 3 klausimai būtent šiai analizei (eilutėje matyti, kuriai)
+        (!kLeft(k) ? '<a class="more3" href="/klausk?s=' + encodeURIComponent(k.id) + '&mt=' + encodeURIComponent(t) + '#daugiau">+ 3 klausimai — 4,99 €</a>' : '') +
+        '<button type="button" class="del">Ištrinti</button></div></div>').join('');
     }
     // Keturi skirtukai — paspaudus rodoma būtent tai, ko reikia
     const kAsm = d.klausimai.filter(k => k.kind !== 'pora').length, kPora = d.klausimai.length - kAsm;
@@ -239,13 +243,11 @@ document.addEventListener('DOMContentLoaded',()=>{ try{ let h=sessionStorage.get
       const lastA = d.analizes[0], lastP = d.poros[0];
       let txt = 'Naujas gyvenimo žemėlapis', href = '/';
       if (c === 'pora') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      // Klausimų skirtukuose — tik klausimai ir atsakymai; naujų klausimų pirkimas — smulki nuoroda į klausimų puslapį (ne į rezultatą)
-      const lastK = (c === 'kl' || c === 'klp') ? d.klausimai.filter(k => (k.kind === 'pora') === (c === 'klp')).sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0))[0] : null;
-      let lnk = false;
-      if (lastK) { lnk = true; txt = 'Norėtum paklausti dar? Užduoti 3 naujus klausimus'; href = '/klausk?s=' + encodeURIComponent(lastK.id) + '&mt=' + encodeURIComponent(t) + '#daugiau'; }
-      else if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
-      // Paskutiniai klausimai dar neišnaudoti — jų mygtukas yra sąraše, papildomos nuorodos nereikia
-      nb.style.display = lastK && kLeft(lastK) ? 'none' : '';
+      // Klausimų skirtukuose — naujiems klausimams mygtukai yra prie kiekvienos analizės eilutės (aišku, kuria analize remsis);
+      // apačioje — kaip kituose skirtukuose: nauja tos rūšies analizė
+      const lnk = false;
+      if (c === 'klp') { txt = 'Naujas porų suderinamumas'; href = '/pora'; }
+      nb.style.display = '';
       nb.textContent = txt; nb.href = href; nb.classList.toggle('lnk', lnk);
     };
     // Visas ekranas telpa be slinkimo: jei įrašų daugiau nei telpa — slenka tik sąrašas
