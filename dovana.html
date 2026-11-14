@@ -211,7 +211,7 @@ a{color:var(--gold)}
 .gcard .exp{font-size:11px;color:rgba(255,255,255,.4);margin-top:6px}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 /* Kortelės rodinys — viskas viename ekrane */
-body.card-view .wrap{padding-top:28px;padding-bottom:26px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body.card-view .wrap{padding-top:62px;padding-bottom:50px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 body.card-view .wrap > .brand, body.card-view .wrap > .fine{display:none}
 body.card-view #v-card{margin:auto 0}
 #v-card h1{font-size:28px;margin:0 0 4px}
@@ -366,11 +366,13 @@ body.form-view:has(#v-form:not(.hidden)) .wrap > .brand::after{content:'';displa
 body.promo-on #v-form .intro{display:flex;flex-direction:column}
 body.promo-on #v-form #form-h1{order:2;margin:0}
 body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
-/* „Grįžti atgal“ ir „Kaip tai veikia?“ — vienoje eilutėje */
-#v-form .links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;margin-top:8px}
-#v-form .links-row .how-link{margin:0!important;display:inline-block;width:auto}
-#v-form .links-row .back-res:not(.hidden) + .dot{display:inline}
-#v-form .links-row .dot{display:none;color:var(--muted)}
+/* „Grįžti atgal“ ir „Kaip tai veikia?“ / „Padovanoti dar vieną“ — vienoje eilutėje (grįžimas — užrašas, ne mygtukas) */
+.links-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;margin-top:8px}
+.links-row .how-link{margin:0!important;display:inline-block;width:auto}
+.links-row .back-res:not(.hidden) + .dot{display:inline}
+.links-row .dot{display:none;color:var(--muted)}
+#v-card .links-row{margin-top:12px;gap:0 8px}
+#v-card .links-row .how-link{text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(212,168,67,.4)}
 /* Pinigų grąžinimo sąlygų langas (kaip programėlės mokėjimo ekrane, dovanų kuponui — „tu“) */
 .rf-link{background:none;border:none;padding:0;font:inherit;color:var(--gold);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(212,168,67,.5);cursor:pointer}
 .rf-bg{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:12px}
@@ -520,9 +522,8 @@ body.promo-on #v-form #promo-tag{order:3;margin:10px auto 2px!important}
       <button class="btn ghost" id="copy">Kopijuoti nuorodą</button>
     </div>
     <a id="c-link" href="#" class="hidden"></a>
-    <a class="btn ghost back-res hidden" href="/" style="text-align:center;text-decoration:none;margin-top:10px">Grįžti į rezultatą</a>
+    <div class="links-row"><a class="how-link back-res hidden" href="/">Grįžti į rezultatą</a><span class="dot">·</span><a class="how-link" href="/dovana" id="again">🎁 Padovanoti dar vieną</a></div>
     <div class="back-res-note hidden" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">Rezultatas liko ankstesniame lange — šį langą gali uždaryti.</div>
-    <a class="how-link" href="/dovana" id="again" style="text-decoration-color:rgba(212,168,67,.4)">🎁 Padovanoti dar vieną</a>
   </section>
 
   <!-- 5. KODO ĮVEDIMAS (/kodas) -->
@@ -1095,7 +1096,7 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     try{ window.close(); }catch(x){}
     setTimeout(()=>{ const n=document.createElement('div'); n.style.cssText='font-size:12px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5';
       n.textContent='Šį langą gali uždaryti — grįši ten, iš kur atėjai'+(ext?' (laiškas)':'')+'.';
-      const row=btn.closest('.links-row'); if(row&&row.querySelector('#how-open')){ btn.style.display='none'; const dot=row.querySelector('.dot'); if(dot) dot.style.display='none'; row.after(n); } else { btn.replaceWith(n); } },300);
+      const row=btn.closest('.links-row'); if(row){ btn.style.display='none'; const dot=row.querySelector('.dot'); if(dot) dot.style.display='none'; row.after(n); } else { btn.replaceWith(n); } },300);
   };
   // Šio puslapio vieta lango istorijoje (išsaugoma atidarant, ne grįžus): grįžus iš „Padovanoti dar vieną“ istorijoje lieka
   // ir tolesni puslapiai, todėl history.length nebetinka
