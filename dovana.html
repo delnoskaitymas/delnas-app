@@ -1124,6 +1124,14 @@ function ltPhrase(s,c){ return String(s||'').split(/(\s+)/).map(w=>/^\s*$/.test(
     let u=null; try{ u=new URL(a.href,location.href); }catch(x){ return; } if(u.origin!==location.origin||(u.pathname===location.pathname&&u.search===location.search)) return;
     const m=backMode(); if(!m.go&&!m.back){ a.target='_blank'; a.rel='opener'; } },true);
   addEventListener('pageshow',syncBack);
+  // Iš kupono ekrano paspaudus „Padovanoti dar vieną“ — grįžus čia „Grįžti atgal“ ir užrašo „Šį langą gali uždaryti“ nebėra
+  // (atidarius naujame lange — paslepiama iškart, tame pačiame — grįžus, pagal įsimintą žymą)
+  const agKey=()=>'delnasGiftAgain:'+location.pathname+location.search; // adresas skaičiuojamas paspaudus (po apmokėjimo jis pakeičiamas į /dovana/kortele)
+  const hideBack=()=>{ document.querySelectorAll('.back-res').forEach(btn=>{ btn.classList.add('hidden'); btn.style.display='none'; const row=btn.closest('.links-row'); const n=row?row.nextElementSibling:btn.nextElementSibling;
+      if(n&&n.classList.contains('back-res-note')) n.classList.add('hidden'); else if(n&&/langą gali uždaryti/.test(n.textContent)) n.remove(); }); };
+  const again=document.getElementById('again');
+  if(again) again.addEventListener('click',()=>{ if(d) return; try{ sessionStorage.setItem(agKey(),'1'); }catch(x){} setTimeout(hideBack,300); });
+  addEventListener('pageshow',()=>{ if(d) return; let f=false; try{ f=!!sessionStorage.getItem(agKey()); }catch(x){} if(f) hideBack(); });
   document.querySelectorAll('.back-res').forEach(btn=>{
     btn.classList.remove('hidden');
     btn.textContent=d?'Grįžti į rezultatą':'Grįžti atgal';
