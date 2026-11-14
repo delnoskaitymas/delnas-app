@@ -9,11 +9,13 @@ window.addEventListener('pageshow',function(e){if(e.persisted&&st())location.rep
 </script>
 <script>/* Rezultatas per nuorodą (klausimų puslapis, laiškas, „Mano analizės“, grįžimas iš dovanos ar asmeninės analizės, perkrautas rezultatas) —
    nerodyti pradžios ekrano, kol rezultatas neparodytas ir neatšokta prie reikiamos vietos (atidengia delnasReveal()) */
-window.delnasReveal=function(){try{document.documentElement.classList.remove("kl-boot")}catch(e){}};
+window.delnasReveal=function(){try{var d=document.documentElement;if(!d.classList.contains("kl-boot"))return;d.classList.remove("kl-boot");d.classList.add("boot-in")}catch(e){}};
 try{var q=location.search,h=location.hash,r=/[?&]kl=(cs_|kp_)/.test(q)||(/[?&]mano=/.test(q)&&/[?&]t=/.test(q))||(/[?&]pora=/.test(q)&&/^#(klausk|dovanos|asmenine|klausti|priminimas)$/.test(h))||/[?&]dovana=/.test(q);
 if(!r&&!q){var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"&&sessionStorage.getItem("delnasLastRes"))r=true;}
 if(r){document.documentElement.classList.add("kl-boot");setTimeout(window.delnasReveal,7000);}}catch(e){}</script>
-<style>html.kl-boot body>*{visibility:hidden!important}</style>
+<style>html.kl-boot body>*{visibility:hidden!important}
+/* Paruoštas puslapis parodomas sklandžiai (kaip ekranai), ne staiga */
+@keyframes bootIn{from{opacity:0}to{opacity:1}}html.boot-in body{animation:bootIn .45s cubic-bezier(.25,.46,.45,.94) backwards}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">

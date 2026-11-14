@@ -6,9 +6,11 @@
 <meta name="theme-color" content="#000000">
 <title>DELNAS — Porų suderinamumas</title>
 <script>/* Dovanos nuoroda (?dovana=…): puslapis nerodomas, kol paruošta dovanos kortelė — be formos mirktelėjimo */
-window.pdReveal=function(){try{document.documentElement.classList.remove("pd-boot")}catch(e){}};
+window.pdReveal=function(){try{var d=document.documentElement;if(!d.classList.contains("pd-boot"))return;d.classList.remove("pd-boot");d.classList.add("boot-in")}catch(e){}};
 try{if(/[?&]dovana=/.test(location.search)){document.documentElement.classList.add("pd-boot");setTimeout(window.pdReveal,6000);}}catch(e){}</script>
-<style>html.pd-boot body>*{visibility:hidden!important}</style>
+<style>html.pd-boot body>*{visibility:hidden!important}
+/* Paruoštas puslapis parodomas sklandžiai (kaip ekranai), ne staiga */
+@keyframes bootIn{from{opacity:0}to{opacity:1}}html.boot-in body{animation:bootIn .45s cubic-bezier(.25,.46,.45,.94) backwards}</style>
 <!--og-->
 <meta name="description" content="Porų suderinamumo analizė pagal abiejų delnus: kas jus sieja, kaip jūsų savybės dera ir kur verta susitarti.">
 <link rel="canonical" href="https://www.delnaskaitymas.lt/pora">
