@@ -305,7 +305,7 @@ app.get('/sitemap.xml', (req, res) => {
 // jokių variantų su „//“, %2f ar didžiosiomis raidėmis). Serverio kodas,
 // duomenų failai, nuotraukos, .git, reklamos aplankas ir visa kita — 404.
 const PUBLIC_FILES = new Set(['/index.html', '/pora.html', '/dovana.html', '/mano.html', '/klausk.html',
-  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/kl-pavyzdziai.js', '/manifest.json',
+  '/privatumo-politika.html', '/naudojimosi-salygos.html', '/src.js', '/awake.js', '/fx.js', '/kl-pavyzdziai.js', '/manifest.json',
   // PDF, paveikslėlio ir QR bibliotekos — iš mūsų serverio (ne iš svetimo CDN), versijos užfiksuotos
   '/vendor/jspdf.umd.min.js', '/vendor/html2canvas.min.js', '/vendor/qrcode.min.js']);
 const PUBLIC_IMG_RE = /^\/img\/[a-z0-9_-]+\.(jpg|png|webp)$/;
